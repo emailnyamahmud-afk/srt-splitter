@@ -11,7 +11,7 @@
 'use client'
 
 import type { SrtEntry, SrtPart } from './srt'
-import { edgeTTS, EDGE_VOICES, DEFAULT_EDGE_VOICE, type EdgeVoice } from './edge-tts'
+import { edgeTTS, EDGE_VOICES, DEFAULT_EDGE_VOICE, type EdgeVoice, getEdgeProxyUrl, setEdgeProxyUrl } from './edge-tts'
 import {
   openaiTTS,
   OPENAI_VOICES,
@@ -39,7 +39,7 @@ import {
 } from './audio-utils'
 
 // Re-export semua yang dibutuhkan UI
-export { EDGE_VOICES, DEFAULT_EDGE_VOICE, type EdgeVoice }
+export { EDGE_VOICES, DEFAULT_EDGE_VOICE, type EdgeVoice, getEdgeProxyUrl, setEdgeProxyUrl }
 export { OPENAI_VOICES, DEFAULT_OPENAI_VOICE, type OpenAIVoice }
 export { OPENROUTER_MODELS, DEFAULT_OPENROUTER_MODEL, type OpenRouterModel }
 export { OPENAI_VOICES as OPENAI_VOICE_OPTIONS }

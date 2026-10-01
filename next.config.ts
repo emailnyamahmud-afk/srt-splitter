@@ -1,28 +1,18 @@
 import type { NextConfig } from "next";
 
-// For GitHub Pages project sites (https://USERNAME.github.io/REPO_NAME/),
-// basePath is automatically set to "/REPO_NAME" when building under GitHub Actions.
-// For root domain or local dev, basePath stays empty.
+const isVercel = process.env.VERCEL === "1";
 const repoName =
   process.env.GITHUB_REPOSITORY?.split("/")[1] ?? "";
 const isGHPages = process.env.GITHUB_ACTIONS === "true" && !!repoName;
 
 const nextConfig: NextConfig = {
-  // Static export: build produces a fully static site under ./out
-  // that can be opened with any static server (e.g. `bunx serve out`)
-  // or even file:// in most browsers.
-  output: "export",
+  // On Vercel: keep default (no output: export) so /api/* routes work as functions.
+  // On GitHub Pages: use static export (no backend possible).
+  output: isVercel ? undefined : "export",
   basePath: isGHPages ? `/${repoName}` : "",
-  // App Router already supports this. Disable image optimization since
-  // static export cannot use the server-side image optimizer.
-  images: {
-    unoptimized: true,
-  },
-  // Produce flat HTML in case the user opens via file://
+  images: { unoptimized: true },
   trailingSlash: true,
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  typescript: { ignoreBuildErrors: true },
   reactStrictMode: false,
 };
 

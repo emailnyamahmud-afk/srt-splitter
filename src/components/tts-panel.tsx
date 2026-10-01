@@ -38,6 +38,8 @@ import {
   getOpenRouterKey,
   setOpenRouterKey,
   testOpenRouterKey,
+  getEdgeProxyUrl,
+  setEdgeProxyUrl,
   type TTSProgress,
   type SplitResult,
   type Provider,
@@ -481,11 +483,35 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
           </div>
         )}
 
+        {/* Edge proxy URL config (only when on Edge provider + non-Vercel deployment) */}
+        {provider === 'edge' && typeof window !== 'undefined' && !window.location.origin.includes('vercel.app') && !window.location.origin.includes('localhost') && (
+          <div className="rounded-lg border border-blue-200 dark:border-blue-800 p-3 bg-blue-50/30 dark:bg-blue-950/10">
+            <Label htmlFor="edge-proxy" className="text-xs font-medium">
+              Edge TTS Proxy URL (untuk GitHub Pages)
+            </Label>
+            <p className="text-xs text-muted-foreground mt-1 mb-2">
+              Browser tidak bisa langsung ke Microsoft Edge TTS (Origin check). Deploy proxy ke Vercel dulu, lalu paste URL di sini.
+              Panduan deploy proxy: ada di file <code>api/edge-tts.js</code> di repo.
+            </p>
+            <Input
+              id="edge-proxy"
+              type="text"
+              defaultValue={typeof window !== 'undefined' ? getEdgeProxyUrl() : ''}
+              placeholder="https://your-vercel-app.vercel.app/api/edge-tts"
+              className="text-xs"
+              onBlur={(e) => {
+                setEdgeProxyUrl(e.target.value)
+                toast.success('Edge proxy URL disimpan')
+              }}
+            />
+          </div>
+        )}
+
         {/* Notice */}
         <div className="text-xs text-muted-foreground flex items-start gap-2 pt-1">
           <AlertCircle className="size-3.5 mt-0.5 shrink-0" />
           <span>
-            <strong>Edge TTS (default):</strong> Gratis, native Indonesia (Gadis/Ardi). Butuh internet (WebSocket ke Microsoft).
+            <strong>Edge TTS (default):</strong> Gratis, native Indonesia (Gadis/Ardi). Pakai Vercel proxy (butuh internet).
             <br />
             <strong>OpenAI TTS:</strong> Premium, $0.015/1k chars. API key dari platform.openai.com.
             <br />
