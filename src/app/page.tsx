@@ -293,29 +293,40 @@ export default function Home() {
                   <div className="flex items-center justify-between">
                     <Label className="text-sm font-medium">Durasi maksimal per file</Label>
                     <Badge variant="outline" className="font-mono">
-                      {maxMinutes} menit
+                      {maxMinutes >= 60
+                        ? `${Math.floor(maxMinutes / 60)}j ${maxMinutes % 60 > 0 ? `${maxMinutes % 60}m` : ''}`
+                        : `${maxMinutes} menit`}
                     </Badge>
                   </div>
                   <Slider
                     value={[maxMinutes]}
                     onValueChange={(v) => setMaxMinutes(v[0])}
                     min={5}
-                    max={120}
+                    max={300}
                     step={5}
                     className="w-full"
                   />
+                  <div className="text-xs text-muted-foreground text-center">
+                    5 menit → 5 jam. Untuk film 3-4 jam, pilih 240m (4j) atau 300m (5j) agar tidak di-split.
+                  </div>
                   <div className="flex flex-wrap gap-2">
-                    {[10, 15, 20, 30, 45, 60, 90].map((m) => (
-                      <Button
-                        key={m}
-                        size="sm"
-                        variant={maxMinutes === m ? 'default' : 'outline'}
-                        onClick={() => setMaxMinutes(m)}
-                        className="h-7 px-2 text-xs"
-                      >
-                        {m}m
-                      </Button>
-                    ))}
+                    {/* Minutes presets */}
+                    {[10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 300].map((m) => {
+                      const label = m >= 60
+                        ? (m % 60 === 0 ? `${m / 60}j` : `${Math.floor(m / 60)}j${m % 60}m`)
+                        : `${m}m`
+                      return (
+                        <Button
+                          key={m}
+                          size="sm"
+                          variant={maxMinutes === m ? 'default' : 'outline'}
+                          onClick={() => setMaxMinutes(m)}
+                          className="h-7 px-2 text-xs"
+                        >
+                          {label}
+                        </Button>
+                      )
+                    })}
                   </div>
                 </div>
 
