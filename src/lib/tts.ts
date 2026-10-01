@@ -140,6 +140,21 @@ export async function synthesizeText(
   }
 }
 
+/**
+ * Generate narration audio for SRT entries, stitched into one WAV.
+ *
+ * STRATEGY (audio natural, utuh, TIDAK diubah):
+ * - Audio TTS tetap utuh 100% — tidak dipotong, tidak di-speed up, pitch natural
+ * - Position pakai SRT timing (entry.start)
+ * - Kalau audio cue lebih panjang dari cue duration → "push back" cue berikutnya
+ *   (cue berikutnya mulai setelah audio sebelumnya selesai, bukan overlap)
+ * - Kalau audio cue lebih pendek dari cue duration → biarkan ada silence di akhir cue
+ *   (audio tetap natural, hanya posisi tidak overlap)
+ *
+ * Hasil: audio 100% natural, sinkron dengan SRT start time, tidak ada chipmunk.
+ *
+ * Output: WAV 24kHz mono 16-bit PCM.
+ */
 export async function narrateEntries(
   entries: SrtEntry[],
   opts: NarrationOptions,
@@ -148,8 +163,9 @@ export async function narrateEntries(
 
   opts.onStage?.({ stage: 'synthesizing', message: 'Mulai synthesizing…', percent: 0 })
   const total = entries.length
-  const segments: Float32Array[] = []
-  const silenceBefore: number[] = []
+  // Position-based approach: tiap segment punya (position, audio) absolut
+  const placedSegments: { position: number; audio: Float32Array }[] = []
+  let cursor = 0 // cursor sample position untuk push-back (audio berikutnya mulai setelah ini)
   let successCount = 0
   let failCount = 0
   let firstError = ''
@@ -159,12 +175,11 @@ export async function narrateEntries(
     const text = entry.textLines.join(' ').trim()
 
     if (!text) {
+      // Empty cue: just advance cursor to cue.end (no audio)
       if (opts.respectTiming) {
-        segments.push(new Float32Array(Math.floor((entry.end - entry.start) * OUTPUT_SAMPLE_RATE)))
-        silenceBefore.push(0)
+        cursor = Math.max(cursor, Math.floor(entry.end * OUTPUT_SAMPLE_RATE))
       } else {
-        segments.push(new Float32Array(0))
-        silenceBefore.push(0)
+        cursor += Math.floor(0.3 * OUTPUT_SAMPLE_RATE) // 300ms gap
       }
       opts.onLineProgress?.(i + 1, total, '(empty)')
       continue
@@ -180,61 +195,47 @@ export async function narrateEntries(
     try {
       const synth = await synthesizeText(text, opts)
 
-      let adjusted: Float32Array
+      let audio: Float32Array
 
       if (synth.pcm) {
-        // Kokoro: langsung pakai PCM Float32Array, tidak perlu decode
+        // Kokoro: langsung pakai PCM Float32Array
         if (synth.pcm.length === 0) throw new Error('Empty audio output')
-        const sampleRate = synth.sampleRate || OUTPUT_SAMPLE_RATE
-        if (opts.respectTiming) {
-          const cueDuration = entry.end - entry.start
-          const prevEnd = i > 0 ? entries[i - 1].end : 0
-          silenceBefore.push(Math.floor(Math.max(0, entry.start - prevEnd) * sampleRate))
-          const targetSamples = Math.floor(cueDuration * sampleRate)
-          if (synth.pcm.length > targetSamples) {
-            adjusted = synth.pcm.slice(0, targetSamples)
-          } else if (synth.pcm.length < targetSamples) {
-            adjusted = new Float32Array(targetSamples)
-            adjusted.set(synth.pcm, 0)
-          } else {
-            adjusted = synth.pcm
-          }
-        } else {
-          silenceBefore.push(Math.floor(0.3 * sampleRate))
-          adjusted = synth.pcm
-        }
+        audio = synth.pcm
       } else {
         // Edge/OpenAI/OpenRouter: decode MP3 ke PCM
         if (synth.audioBlob.size === 0) throw new Error('Empty audio output')
-        // Decode dengan sample rate yang sama dengan output (24000Hz untuk Edge TTS)
         const audioBuffer = await decodeAudioBlob(synth.audioBlob, OUTPUT_SAMPLE_RATE)
-        // Pakai sample rate dari audio buffer (konsisten dengan encode)
-        const sr = audioBuffer.sampleRate
-        if (opts.respectTiming) {
-          const cueDuration = entry.end - entry.start
-          const prevEnd = i > 0 ? entries[i - 1].end : 0
-          silenceBefore.push(Math.floor(Math.max(0, entry.start - prevEnd) * sr))
-          adjusted = await adjustDuration(audioBuffer, cueDuration, sr, { maxSpeedUp: 1.5 })
-        } else {
-          silenceBefore.push(Math.floor(0.3 * sr))
-          const mono = new Float32Array(audioBuffer.length)
-          audioBuffer.copyFromChannel(mono, 0)
-          adjusted = mono
-        }
+        audio = new Float32Array(audioBuffer.length)
+        audioBuffer.copyFromChannel(audio, 0)
       }
 
-      segments.push(adjusted)
+      // Tentukan position berdasarkan mode
+      let position: number
+      if (opts.respectTiming) {
+        // Sync ke SRT: position = entry.start, tapi tidak overlap dengan audio sebelumnya
+        const cueStartSamples = Math.floor(entry.start * OUTPUT_SAMPLE_RATE)
+        position = Math.max(cueStartSamples, cursor) // push-back kalau overlap
+      } else {
+        // No sync: audio berurutan dengan 300ms gap
+        position = cursor
+      }
+
+      placedSegments.push({ position, audio })
+
+      // Update cursor (audio berikutnya mulai setelah audio ini selesai)
+      cursor = position + audio.length
+
       successCount++
     } catch (e) {
       failCount++
       if (!firstError) firstError = (e as Error).message
       console.error('TTS failed for line', i, e)
+      // Kalau gagal, advance cursor sesuai mode
       if (opts.respectTiming) {
-        segments.push(new Float32Array(Math.floor((entry.end - entry.start) * OUTPUT_SAMPLE_RATE)))
+        cursor = Math.max(cursor, Math.floor(entry.end * OUTPUT_SAMPLE_RATE))
       } else {
-        segments.push(new Float32Array(0))
+        cursor += Math.floor(0.3 * OUTPUT_SAMPLE_RATE)
       }
-      silenceBefore.push(0)
     }
   }
 
@@ -252,19 +253,25 @@ export async function narrateEntries(
   }
 
   opts.onStage?.({ stage: 'stitching', message: 'Menjahit audio…', percent: 90 })
-  const allAudio = concatenateWithSilence(segments, silenceBefore, OUTPUT_SAMPLE_RATE)
 
-  if (opts.respectTiming) {
-    const targetEnd = entries[entries.length - 1].end
-    const currentDuration = allAudio.length / OUTPUT_SAMPLE_RATE
-    if (currentDuration < targetEnd) {
-      const pad = Math.floor((targetEnd - currentDuration) * OUTPUT_SAMPLE_RATE)
-      const padded = new Float32Array(allAudio.length + pad)
-      padded.set(allAudio, 0)
-      opts.onStage?.({ stage: 'stitching', message: `Padding ke ${targetEnd.toFixed(1)}s`, percent: 95 })
-      const blob = encodeWav(padded, OUTPUT_SAMPLE_RATE)
-      return { blob, sampleRate: OUTPUT_SAMPLE_RATE, durationSec: targetEnd, previewUrl: URL.createObjectURL(blob) }
+  // Hitung total length: maksimum dari (cursor akhir) dan (SRT end time)
+  const srtEnd = entries[entries.length - 1].end
+  const totalSamples = Math.max(cursor, Math.floor(srtEnd * OUTPUT_SAMPLE_RATE))
+
+  // Build output Float32Array dengan audio di posisi absolut
+  const allAudio = new Float32Array(totalSamples)
+  for (const seg of placedSegments) {
+    // Copy audio ke posisi (kalau melebihi totalSamples, truncate sesuai)
+    const endPos = Math.min(seg.position + seg.audio.length, totalSamples)
+    const copyLength = endPos - seg.position
+    if (copyLength > 0) {
+      allAudio.set(seg.audio.subarray(0, copyLength), seg.position)
     }
+  }
+
+  // Kalau respectTiming dan total audio < SRT end, pad silence ke SRT end
+  if (opts.respectTiming && cursor < srtEnd * OUTPUT_SAMPLE_RATE) {
+    // totalSamples sudah = srtEnd, jadi no need pad lagi
   }
 
   const blob = encodeWav(allAudio, OUTPUT_SAMPLE_RATE)

@@ -467,7 +467,10 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
               <div className="flex items-end justify-between gap-3">
                 <div>
                   <Label htmlFor="timing" className="text-xs">Sync timing ke SRT</Label>
-                  <p className="text-xs text-muted-foreground mt-1">ON: audio dipas/dipercepat sesuai cue.</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ON: audio mulai di cue.start, push-back kalau overlap (audio utuh, pitch natural).
+                    OFF: audio berurutan dengan 300ms gap.
+                  </p>
                 </div>
                 <Switch id="timing" checked={respectTiming} onCheckedChange={setRespectTiming} />
               </div>
@@ -576,7 +579,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
             <br />
             <strong>OpenRouter TTS:</strong> Gateway ke banyak model (OpenAI, ElevenLabs, MiniMax). API key dari openrouter.ai/keys.
             <br />
-            <strong>Timing sync:</strong> Audio tiap baris dipercepat (max 1.5x) kalau lebih panjang dari cue, atau di-pad silence kalau lebih pendek.
+            <strong>Timing sync:</strong> Audio 100% natural (tidak dipotong, tidak di-speed up). Kalau audio lebih panjang dari cue, cue berikutnya akan mulai setelah audio selesai (push-back). Pitch pasti natural.
           </span>
         </div>
       </CardContent>
