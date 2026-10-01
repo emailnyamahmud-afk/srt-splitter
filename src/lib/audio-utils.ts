@@ -91,10 +91,16 @@ export function padWithSilence(audio: Float32Array, targetSamples: number): Floa
 /**
  * Adjust audio duration to fit target duration (in seconds).
  *
- * Strategy:
- * - If audio longer than target: speed up to fit (preserve pitch)
+ * Strategy (NO speed up to avoid pitch change — pitch stays natural):
+ * - If audio longer than target: truncate (cut off the end)
  * - If audio shorter than target: pad with silence at end
  * - If equal: return as-is
+ *
+ * Why no speed up: `preservePitch` property is not universal across browsers
+ * (Chrome: preservePitch, Safari: webkitPreservePitch, Firefox: preservesPitch).
+ * If browser doesn't support, playbackRate would change pitch → "chipmunk voice".
+ * Truncating keeps pitch 100% natural, only downside is audio may cut mid-sentence
+ * if cue is shorter than TTS output.
  *
  * Returns Float32Array at given sampleRate.
  */
@@ -102,9 +108,8 @@ export async function adjustDuration(
   audioBuffer: AudioBuffer,
   targetDurationSec: number,
   sampleRate: number,
-  options: { maxSpeedUp?: number } = {},
+  _options: { maxSpeedUp?: number } = {},
 ): Promise<Float32Array> {
-  const maxSpeedUp = options.maxSpeedUp ?? 1.5 // Don't speed up more than 1.5x (sounds weird beyond)
   const sourceDuration = audioBuffer.duration
   const targetSamples = Math.floor(targetDurationSec * sampleRate)
 
@@ -112,27 +117,25 @@ export async function adjustDuration(
     return new Float32Array(targetSamples) // silence
   }
 
-  if (Math.abs(sourceDuration - targetDurationSec) < 0.05) {
-    // Within 50ms — close enough, just truncate/pad
-    const mono = toMono(audioBuffer)
-    return padWithSilence(mono, targetSamples)
+  // Get mono PCM at audioBuffer's native sample rate, then resample to target sample rate
+  const mono = toMono(audioBuffer)
+
+  // Simple linear resample if sample rates differ
+  if (audioBuffer.sampleRate !== sampleRate) {
+    const resampled = new Float32Array(targetSamples > 0 ? Math.floor(mono.length * sampleRate / audioBuffer.sampleRate) : 0)
+    for (let i = 0; i < resampled.length; i++) {
+      const srcIdx = i * audioBuffer.sampleRate / sampleRate
+      const idx0 = Math.floor(srcIdx)
+      const idx1 = Math.min(idx0 + 1, mono.length - 1)
+      const frac = srcIdx - idx0
+      resampled[i] = mono[idx0] * (1 - frac) + mono[idx1] * frac
+    }
+    // Truncate or pad to target
+    return padWithSilence(resampled, targetSamples)
   }
 
-  if (sourceDuration > targetDurationSec) {
-    // Need to speed up
-    let ratio = sourceDuration / targetDurationSec
-    if (ratio > maxSpeedUp) {
-      // Can't speed up beyond max — truncate instead
-      ratio = maxSpeedUp
-      const spedUp = await speedUpAudio(audioBuffer, ratio, sampleRate)
-      return padWithSilence(spedUp, targetSamples) // truncate by padding to exact length
-    }
-    return await speedUpAudio(audioBuffer, ratio, sampleRate)
-  } else {
-    // Audio shorter than target — pad with silence
-    const mono = toMono(audioBuffer)
-    return padWithSilence(mono, targetSamples)
-  }
+  // Same sample rate — just truncate or pad
+  return padWithSilence(mono, targetSamples)
 }
 
 /**
