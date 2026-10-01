@@ -272,9 +272,23 @@ export async function narrateEntries(
 
   opts.onStage?.({ stage: 'stitching', message: 'Menjahit audio…', percent: 90 })
 
-  // Total durasi = SRT end time (WAJIB)
+  // Hitung total length berdasarkan mode
   const srtEnd = entries[entries.length - 1].end
-  const totalSamples = Math.floor(srtEnd * OUTPUT_SAMPLE_RATE)
+  const srtEndSamples = Math.floor(srtEnd * OUTPUT_SAMPLE_RATE)
+
+  let totalSamples: number
+  if (opts.respectTiming) {
+    // ON (sync ke SRT): total durasi = SRT end time (WAJIB)
+    totalSamples = srtEndSamples
+  } else {
+    // OFF (audio natural utuh): total = max dari semua segment end position
+    // Jangan batasi ke srtEnd — audio harus utuh meski lebih panjang dari SRT
+    let maxEnd = 0
+    for (const seg of placedSegments) {
+      maxEnd = Math.max(maxEnd, seg.position + seg.audio.length)
+    }
+    totalSamples = Math.max(maxEnd, srtEndSamples)
+  }
 
   // Build output Float32Array dengan audio di posisi absolut
   const allAudio = new Float32Array(totalSamples)

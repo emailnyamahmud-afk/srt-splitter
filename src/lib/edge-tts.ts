@@ -18,14 +18,10 @@ export interface EdgeVoice {
 }
 
 export const EDGE_VOICES: EdgeVoice[] = [
-  { name: 'id-ID-GadisNeural', label: '🇮🇩 Indonesia — Gadis (Perempuan, natural)', lang: 'id-ID', gender: 'Female' },
-  { name: 'id-ID-ArdiNeural', label: '🇮🇩 Indonesia — Ardi (Laki-laki, natural)', lang: 'id-ID', gender: 'Male' },
-  { name: 'en-US-AriaNeural', label: '🇺🇸 English US — Aria (Female)', lang: 'en-US', gender: 'Female' },
-  { name: 'en-US-GuyNeural', label: '🇺🇸 English US — Guy (Male)', lang: 'en-US', gender: 'Male' },
-  { name: 'en-AU-NatashaNeural', label: '🇦🇺 English AU — Natasha (Female)', lang: 'en-AU', gender: 'Female' },
-  { name: 'zh-CN-XiaoxiaoNeural', label: '🇨🇳 Mandarin — Xiaoxiao (Female)', lang: 'zh-CN', gender: 'Female' },
-  { name: 'ja-JP-NanamiNeural', label: '🇯🇵 Japanese — Nanami (Female)', lang: 'ja-JP', gender: 'Female' },
-  { name: 'ko-KR-SunHiNeural', label: '🇰🇷 Korean — Sun-Hi (Female)', lang: 'ko-KR', gender: 'Female' },
+  { name: 'id-ID-GadisNeural', label: '🇮🇩 Indonesia — Gadis (Perempuan)', lang: 'id-ID', gender: 'Female' },
+  { name: 'id-ID-ArdiNeural', label: '🇮🇩 Indonesia — Ardi (Laki-laki)', lang: 'id-ID', gender: 'Male' },
+  { name: 'jv-ID-SitiNeural', label: '🇮🇩 Jawa — Siti (Perempuan)', lang: 'jv-ID', gender: 'Female' },
+  { name: 'jv-ID-DimasNeural', label: '🇮🇩 Jawa — Dimas (Laki-laki)', lang: 'jv-ID', gender: 'Male' },
 ]
 
 export const DEFAULT_EDGE_VOICE = 'id-ID-GadisNeural'
