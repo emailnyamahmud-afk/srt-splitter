@@ -69,9 +69,9 @@ export function setEdgeProxyUrl(url: string): void {
 export async function edgeTTS(
   text: string,
   voice: string = DEFAULT_EDGE_VOICE,
-  opts: { rate?: string; volume?: string; pitch?: string; targetDuration?: number; allowSlowDown?: boolean } = {},
+  opts: { rate?: string; volume?: string; pitch?: string } = {},
 ): Promise<Blob> {
-  const { rate = '+0%', volume = '+0%', pitch = '+0Hz', targetDuration, allowSlowDown = true } = opts
+  const { rate = '+0%', volume = '+0%', pitch = '+0Hz' } = opts
   if (!text.trim()) {
     return new Blob([])
   }
@@ -80,7 +80,7 @@ export async function edgeTTS(
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, voice, rate, volume, pitch, targetDuration, allowSlowDown }),
+    body: JSON.stringify({ text, voice, rate, volume, pitch }),
   })
 
   if (!response.ok) {

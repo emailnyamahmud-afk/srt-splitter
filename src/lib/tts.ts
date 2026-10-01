@@ -43,6 +43,7 @@ import {
 } from './kokoro-tts'
 import {
   decodeAudioBlob,
+  toMono,
   encodeWav,
   downloadBlob as downloadBlobUtil,
 } from './audio-utils'
@@ -95,8 +96,8 @@ export interface NarrationResult {
 }
 
 /**
- * Synthesize text. Untuk Edge TTS, kirim targetDuration agar server time-stretch
- * dengan FFmpeg atempo (pitch natural, no chipmunk, audio fit ke cue).
+ * Synthesize text. Edge TTS: natural rate (rate='+0%').
+ * Speed up/slow down di-handle client-side dengan OfflineAudioContext + preservePitch.
  */
 export async function synthesizeText(
   text: string,
@@ -106,10 +107,8 @@ export async function synthesizeText(
     model?: string
     apiKey?: string
     speed?: number           // Kokoro speed (default 1.0)
-    rate?: string             // Edge TTS prosody rate (e.g. '+50%')
+    rate?: string             // Edge TTS prosody rate (default '+0%' = natural)
     openaiSpeed?: number      // OpenAI/OpenRouter speed (0.25-4.0)
-    targetDuration?: number   // Target duration in seconds (Edge TTS: server time-stretch via FFmpeg)
-    allowSlowDown?: boolean    // Edge TTS: true = slow down kalau audio < target, false = return asli
     onModelProgress?: (p: TTSProgress) => void
   },
 ): Promise<{ audioBlob: Blob; mimeType: string; pcm?: Float32Array; sampleRate?: number }> {
@@ -119,13 +118,9 @@ export async function synthesizeText(
 
   switch (opts.provider) {
     case 'edge':
-      // Edge TTS: kirim targetDuration + allowSlowDown agar server FFmpeg time-stretch (pitch natural)
+      // Edge TTS: natural rate, speed up di-handle client-side
       return {
-        audioBlob: await edgeTTS(text, opts.voice, {
-          rate: opts.rate || '+0%',
-          targetDuration: opts.targetDuration,
-          allowSlowDown: opts.allowSlowDown,
-        }),
+        audioBlob: await edgeTTS(text, opts.voice, { rate: opts.rate || '+0%' }),
         mimeType: 'audio/mp3',
       }
     case 'kokoro': {
@@ -152,35 +147,37 @@ export async function synthesizeText(
 }
 
 /**
- * Estimate rate ratio untuk fit text ke cue duration.
+ * Speed up atau slow down audio di client dengan OfflineAudioContext + preservePitch.
+ * TANPA detune (detune membatalkan speed up — bug sebelumnya).
  *
- * Heuristic: ~11 chars/sec untuk Indonesia normal speech rate.
- * - text 100 chars → natural duration ~9.1s
- * - cue 5s → ratio = 9.1/5 = 1.82x → rate +82% (Edge TTS) atau speed 1.82 (OpenAI)
- *
- * Clamp 0.7-2.0 (jangan terlalu ekstrem):
- * - Edge TTS rate range: -50% sampai +200%
- * - OpenAI speed range: 0.25-4.0
- * - Kokoro speed range: 0.5-2.0
- *
- * 0.7 = audio 30% lebih lambat dari normal (kalau cue lebih panjang dari natural)
- * 2.0 = audio 2x lebih cepat dari normal (kalau cue lebih pendek dari natural)
+ * @param audioBuffer Source audio
+ * @param ratio > 1.0 = speed up (lebih cepat), < 1.0 = slow down (lebih lambat)
+ * @param sampleRate Output sample rate
  */
-function estimateRateRatio(text: string, cueDurationSec: number): number {
-  const charsPerSec = 11 // Indonesia normal rate (sedikit konservatif)
-  const naturalDuration = Math.max(text.length / charsPerSec, 0.5)
-  let ratio = naturalDuration / cueDurationSec
-  ratio = Math.min(Math.max(ratio, 0.7), 2.0)
-  return ratio
-}
-
-/**
- * Format ratio jadi Edge TTS rate percent string.
- * ratio 1.0 = +0%, 1.5 = +50%, 0.8 = -20%
- */
-function formatEdgeRate(ratio: number): string {
-  const percent = Math.round((ratio - 1) * 100)
-  return (percent >= 0 ? '+' : '') + percent + '%'
+async function timeStretchClient(
+  audioBuffer: AudioBuffer,
+  ratio: number,
+  sampleRate: number,
+): Promise<Float32Array> {
+  const targetLength = Math.floor(audioBuffer.length / ratio)
+  const offlineCtx = new OfflineAudioContext(1, targetLength, sampleRate)
+  const source = offlineCtx.createBufferSource()
+  source.buffer = audioBuffer
+  source.playbackRate.value = ratio
+  // Set SEMUA preservePitch variants — browser pakai yang dia kenal
+  const anySource = source as unknown as {
+    preservePitch?: boolean
+    webkitPreservePitch?: boolean
+    preservesPitch?: boolean
+  }
+  try { anySource.preservePitch = true } catch { /* ignore */ }
+  try { anySource.webkitPreservePitch = true } catch { /* ignore */ }
+  try { anySource.preservesPitch = true } catch { /* ignore */ }
+  // TIDAK pakai detune — detune membatalkan speed up!
+  source.connect(offlineCtx.destination)
+  source.start()
+  const rendered = await offlineCtx.startRendering()
+  return toMono(rendered)
 }
 
 /**
@@ -189,17 +186,19 @@ function formatEdgeRate(ratio: number): string {
  * DUA MODE:
  *
  * ON (respectTiming=true): audio fit ke cue duration (durasi = SRT)
- * - Server-side rate (Edge TTS prosody rate / OpenAI speed / Kokoro speed)
- *   Pitch natural di server — 100% reliable di semua browser (no chipmunk)
- * - Audio diposisikan di entry.start (SRT timing WAJIB)
- * - Truncate/pad ke cue duration (estimasi rate tidak perfect, sisa kecil)
+ * - Generate Edge TTS natural (rate='+0%', pitch natural dari server)
+ * - Decode audio, ukur actual duration
+ * - Kalau audio != cue duration: speed up/slow down di client dengan
+ *   OfflineAudioContext + preservePitch (semua 3 varian, TANPA detune)
+ *   Pitch natural, audio fit ke cue, no chipmunk
+ * - Position = entry.start (SRT timing WAJIB)
  * - Total durasi = SRT end time
  *
  * OFF (respectTiming=false): audio natural alami (TANPA POTONGAN)
  * - Generate TTS natural (no rate change)
  * - Sequential playback (position = cursor, satu demi satu)
  * - Audio utuh 100% (no truncate, no pad)
- * - Total durasi = sum semua audio (boleh lebih panjang/pendek dari SRT)
+ * - Total durasi = sum semua audio
  *
  * Output: WAV 24kHz mono 16-bit PCM.
  */
@@ -212,7 +211,7 @@ export async function narrateEntries(
   opts.onStage?.({ stage: 'synthesizing', message: 'Mulai synthesizing…', percent: 0 })
   const total = entries.length
   const placedSegments: { position: number; audio: Float32Array }[] = []
-  let cursor = 0 // untuk OFF mode (sequential playback)
+  let cursor = 0
   let successCount = 0
   let failCount = 0
   let firstError = ''
@@ -222,11 +221,10 @@ export async function narrateEntries(
     const text = entry.textLines.join(' ').trim()
 
     if (!text) {
-      // Empty cue: advance cursor
       if (opts.respectTiming) {
         cursor = Math.max(cursor, Math.floor(entry.end * OUTPUT_SAMPLE_RATE))
       } else {
-        cursor += Math.floor(0.3 * OUTPUT_SAMPLE_RATE) // 300ms gap
+        cursor += Math.floor(0.3 * OUTPUT_SAMPLE_RATE)
       }
       opts.onLineProgress?.(i + 1, total, '(empty)')
       continue
@@ -240,74 +238,70 @@ export async function narrateEntries(
     })
 
     try {
-      let synth
-      let position: number
+      // Generate TTS natural (no rate change — rate='+0%' default)
+      const synth = await synthesizeText(text, opts)
+
+      let audioBuffer: AudioBuffer
+
+      if (synth.pcm) {
+        // Kokoro: buat AudioBuffer dari PCM
+        if (synth.pcm.length === 0) throw new Error('Empty audio output')
+        const pcmSampleRate = synth.sampleRate || OUTPUT_SAMPLE_RATE
+        const ctx = new AudioContext({ sampleRate: pcmSampleRate })
+        audioBuffer = ctx.createBuffer(1, synth.pcm.length, pcmSampleRate)
+        audioBuffer.copyToChannel(synth.pcm, 0)
+        ctx.close()
+      } else {
+        // Edge/OpenAI/OpenRouter: decode MP3 ke AudioBuffer
+        if (synth.audioBlob.size === 0) throw new Error('Empty audio output')
+        audioBuffer = await decodeAudioBlob(synth.audioBlob, OUTPUT_SAMPLE_RATE)
+      }
+
       let finalAudio: Float32Array
+      let position: number
 
       if (opts.respectTiming) {
-        // === ON MODE: server-side FFmpeg time-stretch (Edge TTS), server-side rate (OpenAI/Kokoro) ===
+        // === ON MODE: speed up/slow down di client, sync ke SRT ===
         const cueDuration = entry.end - entry.start
+        const actualDuration = audioBuffer.duration
 
-        // Untuk Edge TTS: kirim targetDuration, server akan FFmpeg atempo time-stretch
-        //   (pitch natural, audio fit ke cue, no chipmunk, no truncation)
-        // Untuk OpenAI/OpenRouter: kirim speed ratio (server-side pitch preservation)
-        // Untuk Kokoro: kirim speed ratio (server-side)
-        const ratio = estimateRateRatio(text, cueDuration)
-        const edgeRate = formatEdgeRate(ratio)
-        const allowSlowDown = opts.speedMode === 'speedup-slowdown'
-
-        synth = await synthesizeText(text, {
-          ...opts,
-          rate: edgeRate,
-          openaiSpeed: ratio,
-          speed: ratio,
-          targetDuration: opts.provider === 'edge' ? cueDuration : undefined,
-          allowSlowDown: opts.provider === 'edge' ? allowSlowDown : undefined,
-        })
-
-        // Decode ke PCM
-        if (synth.pcm) {
-          finalAudio = synth.pcm
-          if (synth.sampleRate && synth.sampleRate !== OUTPUT_SAMPLE_RATE) {
-            finalAudio = linearResample(finalAudio, synth.sampleRate, OUTPUT_SAMPLE_RATE)
+        if (Math.abs(actualDuration - cueDuration) < 0.05) {
+          // Sudah dekat cue duration — pakai asli
+          finalAudio = toMono(audioBuffer)
+          // Resample ke OUTPUT_SAMPLE_RATE kalau perlu
+          if (audioBuffer.sampleRate !== OUTPUT_SAMPLE_RATE) {
+            finalAudio = linearResample(finalAudio, audioBuffer.sampleRate, OUTPUT_SAMPLE_RATE)
           }
+        } else if (actualDuration > cueDuration) {
+          // Audio lebih panjang → SPEED UP (ratio > 1.0)
+          const ratio = actualDuration / cueDuration
+          finalAudio = await timeStretchClient(audioBuffer, ratio, OUTPUT_SAMPLE_RATE)
         } else {
-          if (synth.audioBlob.size === 0) throw new Error('Empty audio output')
-          const audioBuffer = await decodeAudioBlob(synth.audioBlob, OUTPUT_SAMPLE_RATE)
-          finalAudio = new Float32Array(audioBuffer.length)
-          audioBuffer.copyFromChannel(finalAudio, 0)
-        }
-
-        // Fit ke cue duration: truncate/pad (sisa kecil, server FFmpeg sudah fit dekat)
-        const cueSamples = Math.floor(cueDuration * OUTPUT_SAMPLE_RATE)
-        if (finalAudio.length > cueSamples) {
-          finalAudio = finalAudio.subarray(0, cueSamples)
-        } else if (finalAudio.length < cueSamples) {
-          const padded = new Float32Array(cueSamples)
-          padded.set(finalAudio, 0)
-          finalAudio = padded
+          // Audio lebih pendek dari cue
+          if (opts.speedMode === 'speedup-slowdown') {
+            // Slow down (ratio < 1.0) untuk fit ke cue
+            const ratio = actualDuration / cueDuration
+            finalAudio = await timeStretchClient(audioBuffer, ratio, OUTPUT_SAMPLE_RATE)
+          } else {
+            // Speed up only: pad silence
+            finalAudio = toMono(audioBuffer)
+            if (audioBuffer.sampleRate !== OUTPUT_SAMPLE_RATE) {
+              finalAudio = linearResample(finalAudio, audioBuffer.sampleRate, OUTPUT_SAMPLE_RATE)
+            }
+            const cueSamples = Math.floor(cueDuration * OUTPUT_SAMPLE_RATE)
+            const padded = new Float32Array(cueSamples)
+            padded.set(finalAudio, 0)
+            finalAudio = padded
+          }
         }
 
         position = Math.floor(entry.start * OUTPUT_SAMPLE_RATE)
       } else {
         // === OFF MODE: natural audio, sequential playback ===
-        // Generate natural (no rate)
-        synth = await synthesizeText(text, opts)
-
-        // Decode ke PCM
-        if (synth.pcm) {
-          finalAudio = synth.pcm
-          if (synth.sampleRate && synth.sampleRate !== OUTPUT_SAMPLE_RATE) {
-            finalAudio = linearResample(finalAudio, synth.sampleRate, OUTPUT_SAMPLE_RATE)
-          }
-        } else {
-          if (synth.audioBlob.size === 0) throw new Error('Empty audio output')
-          const audioBuffer = await decodeAudioBlob(synth.audioBlob, OUTPUT_SAMPLE_RATE)
-          finalAudio = new Float32Array(audioBuffer.length)
-          audioBuffer.copyFromChannel(finalAudio, 0)
+        finalAudio = toMono(audioBuffer)
+        if (audioBuffer.sampleRate !== OUTPUT_SAMPLE_RATE) {
+          finalAudio = linearResample(finalAudio, audioBuffer.sampleRate, OUTPUT_SAMPLE_RATE)
         }
-
-        // OFF: NO truncation. Audio utuh 100%.
         position = cursor
         cursor = position + finalAudio.length
       }
@@ -339,10 +333,8 @@ export async function narrateEntries(
   // Hitung total samples
   let totalSamples: number
   if (opts.respectTiming) {
-    // ON: total = SRT end (sync to SRT, WAJIB)
     totalSamples = Math.floor(entries[entries.length - 1].end * OUTPUT_SAMPLE_RATE)
   } else {
-    // OFF: total = max end dari semua segment (audio utuh, tidak dibatasi SRT)
     let maxEnd = 0
     for (const seg of placedSegments) {
       maxEnd = Math.max(maxEnd, seg.position + seg.audio.length)
@@ -350,7 +342,7 @@ export async function narrateEntries(
     totalSamples = maxEnd
   }
 
-  // Build output Float32Array
+  // Build output
   const allAudio = new Float32Array(totalSamples)
   for (const seg of placedSegments) {
     const endPos = Math.min(seg.position + seg.audio.length, totalSamples)

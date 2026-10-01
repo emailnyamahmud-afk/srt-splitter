@@ -1,31 +1,18 @@
-// Vercel Serverless Function: Edge TTS Proxy + FFmpeg audio sync
+// Vercel Serverless Function: Edge TTS Proxy
 //
 // Browser JavaScript cannot set the `Origin` header to chrome-extension://...
 // (browser security restriction). Microsoft Edge TTS endpoint requires this
 // specific Origin header, so we use this proxy to forward the request.
 //
-// Selain itu, server-side kita bisa pakai FFmpeg untuk time-stretch audio
-// dengan pitch preservation (librubberband). Ini cara yang sama dengan
-// Voicertool.com — audio fit ke cue duration, pitch natural, no chipmunk.
-//
 // POST /api/edge-tts
-// Body: {
-//   "text": "Halo",
-//   "voice": "id-ID-GadisNeural",
-//   "rate": "+0%",          // Edge TTS prosody rate (server-side)
-//   "targetDuration": 5.0    // Target duration in seconds (FFmpeg atempo akan fit audio)
-// }
-// Response: audio/mp3 binary (duration = targetDuration, pitch natural)
+// Body: { "text": "Halo", "voice": "id-ID-GadisNeural", "rate": "+0%" }
+// Response: audio/mp3 binary
+//
+// NOTE: FFmpeg tidak jalan di Vercel Lambda. Time-stretch di-handle client-side
+// dengan OfflineAudioContext + preservePitch (semua 3 varian cross-browser).
 
 import WebSocket from 'ws';
 import crypto from 'crypto';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import { tmpdir } from 'os';
-import { join } from 'path';
-import { writeFileSync, readFileSync, unlinkSync, existsSync } from 'fs';
-
-const execAsync = promisify(exec);
 
 const TRUSTED_CLIENT_TOKEN = '6A5AA1D4EAFF4E9FB37E23D68491D6F4';
 const BASE_URL = 'speech.platform.bing.com/consumer/speech/synthesize/readaloud';
@@ -121,86 +108,6 @@ function edgeTTS(text, voice = 'id-ID-GadisNeural', rate = '+0%', volume = '+0%'
   });
 }
 
-/**
- * Time-stretch audio ke target duration dengan FFmpeg atempo filter.
- * Pitch tetap natural (librubberband via atempo filter).
- *
- * @param {Buffer} mp3Buffer Source audio MP3
- * @param {number} targetDurationSec Target duration in seconds
- * @param {boolean} allowSlowDown Kalau true: slow down kalau audio < target.
- *   Kalau false: return asli (no slow down, hanya speed up).
- * @returns {Promise<Buffer>} MP3 audio dengan duration = targetDurationSec
- */
-async function timeStretchAudio(mp3Buffer, targetDurationSec, allowSlowDown = true) {
-  // Simpan ke file sementara
-  const inFile = join(tmpdir(), `tts_in_${Date.now()}_${noDashUuid()}.mp3`);
-  const outFile = join(tmpdir(), `tts_out_${Date.now()}_${noDashUuid()}.mp3`);
-
-  try {
-    writeFileSync(inFile, mp3Buffer);
-
-    // Dapatkan durasi asli dengan ffprobe
-    const { stdout: probeOut } = await execAsync(`ffprobe -v error -show_entries format=duration -of csv=p=0 "${inFile}"`);
-    const sourceDuration = parseFloat(probeOut.trim());
-
-    if (isNaN(sourceDuration) || sourceDuration <= 0) {
-      return mp3Buffer; // Tidak bisa probe, return asli
-    }
-
-    // Kalau source duration sudah dekat target (±5%), return asli
-    if (Math.abs(sourceDuration - targetDurationSec) < 0.05) {
-      return mp3Buffer;
-    }
-
-    // Kalau source < target dan tidak allowSlowDown, return asli (no slow down)
-    if (sourceDuration < targetDurationSec && !allowSlowDown) {
-      return mp3Buffer;
-    }
-
-    // Hitung atempo ratio
-    // ratio > 1.0 = speed up (audio lebih cepat, lebih pendek)
-    // ratio < 1.0 = slow down (audio lebih lambat, lebih panjang)
-    let ratio = sourceDuration / targetDurationSec;
-
-    // Untuk ratio > 2.0, chain multiple atempo filters
-    // e.g. ratio 4.0 → atempo=2.0,atempo=2.0
-    let atempoChain = '';
-    let remainingRatio = ratio;
-    while (remainingRatio > 2.0) {
-      atempoChain += 'atempo=2.0,';
-      remainingRatio /= 2.0;
-    }
-    atempoChain += `atempo=${remainingRatio.toFixed(6)}`;
-
-    // Untuk ratio < 0.5 (sangat lambat), juga chain
-    while (remainingRatio < 0.5) {
-      atempoChain = `atempo=0.5,` + atempoChain;
-      remainingRatio /= 0.5;
-    }
-
-    // Run FFmpeg dengan atempo filter
-    // -y: overwrite output
-    // -i: input
-    // -filter:a: audio filter (atempo = time-stretch with pitch preservation)
-    // -b:a: bitrate
-    const cmd = `ffmpeg -y -i "${inFile}" -filter:a "${atempoChain}" -b:a 48k -ar 24000 -ac 1 "${outFile}"`;
-    await execAsync(cmd, { timeout: 30000 });
-
-    if (!existsSync(outFile)) {
-      return mp3Buffer; // FFmpeg gagal, return asli
-    }
-
-    const result = readFileSync(outFile);
-    return result;
-  } catch (e) {
-    console.error('FFmpeg error:', e.message);
-    return mp3Buffer; // Fallback: return audio asli
-  } finally {
-    try { unlinkSync(inFile); } catch {}
-    try { unlinkSync(outFile); } catch {}
-  }
-}
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -214,7 +121,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed, use POST' });
   }
 
-  const { text, voice, rate, volume, pitch, targetDuration, allowSlowDown } = req.body || {};
+  const { text, voice, rate, volume, pitch } = req.body || {};
 
   if (!text || typeof text !== 'string') {
     return res.status(400).json({ error: 'Field "text" is required' });
@@ -225,19 +132,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Step 1: Generate audio dari Edge TTS dengan rate natural
     const audio = await edgeTTS(text, voice || 'id-ID-GadisNeural', rate, volume, pitch);
-
-    // Step 2: Kalau ada targetDuration, time-stretch dengan FFmpeg atempo
-    let finalAudio = audio;
-    if (targetDuration && typeof targetDuration === 'number' && targetDuration > 0) {
-      finalAudio = await timeStretchAudio(audio, targetDuration, allowSlowDown !== false);
-    }
-
     res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Content-Length', finalAudio.length);
+    res.setHeader('Content-Length', audio.length);
     res.setHeader('Cache-Control', 'no-cache, no-store');
-    res.status(200).send(finalAudio);
+    res.status(200).send(audio);
   } catch (e) {
     console.error('Edge TTS error:', e.message);
     res.status(502).json({ error: 'Edge TTS failed: ' + e.message });
