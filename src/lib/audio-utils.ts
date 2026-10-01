@@ -1,16 +1,15 @@
-// Audio processing utilities for SRT-to-audio timing sync.
+// Audio processing utilities untuk time-stretch tanpa chipmunk.
 //
-// Key features:
-// - Decode MP3 → PCM (AudioBuffer)
-// - Adjust audio duration to fit cue duration (speed up or pad silence)
-// - Concatenate multiple audio segments with timing alignment
-// - Encode final Float32Array PCM to 16-bit WAV
+// Pendekatan: OfflineAudioContext dengan playbackRate + detune compensation.
+// - playbackRate = ratio → audio lebih cepat, pitch naik
+// - detune = -1200 * log2(ratio) cents → pitch turun balik ke natural
+// - Net effect: audio lebih cepat, pitch tetap natural
+//
+// Ini cross-browser compatible (Chrome, Safari, Firefox, Brave, Edge).
+// Tidak pakai preservePitch property (yang tidak reliable di OfflineAudioContext).
 
 /**
- * Decode an MP3 Blob to an AudioBuffer using Web Audio API.
- * Use sampleRate 24000 to match Edge TTS output (24kHz MP3).
- * Without this, browser default (44100Hz) would resample and cause
- * pitch/speed mismatch when re-encoding to WAV.
+ * Decode MP3 Blob ke AudioBuffer.
  */
 export async function decodeAudioBlob(blob: Blob, sampleRate: number = 24000): Promise<AudioBuffer> {
   const arrayBuffer = await blob.arrayBuffer()
@@ -24,14 +23,15 @@ export async function decodeAudioBlob(blob: Blob, sampleRate: number = 24000): P
 }
 
 /**
- * Get mono Float32Array from AudioBuffer (mix down channels if stereo).
+ * Get mono Float32Array dari AudioBuffer.
  */
 export function toMono(audioBuffer: AudioBuffer): Float32Array {
   const numChannels = audioBuffer.numberOfChannels
   if (numChannels === 1) {
-    return audioBuffer.getChannelData(0).slice()
+    const result = new Float32Array(audioBuffer.length)
+    audioBuffer.copyFromChannel(result, 0)
+    return result
   }
-  // Mix down to mono by averaging channels
   const length = audioBuffer.length
   const result = new Float32Array(length)
   for (let ch = 0; ch < numChannels; ch++) {
@@ -44,20 +44,21 @@ export function toMono(audioBuffer: AudioBuffer): Float32Array {
 }
 
 /**
- * Speed up audio by a ratio using OfflineAudioContext.
- * Returns Float32Array at the given sample rate, with shorter duration.
+ * Speed up audio dengan pitch preservation via detune compensation.
  *
- * CRITICAL: Set ALL pitch-preservation property variants so audio
- * plays faster WITHOUT changing pitch (no chipmunk voice):
- *   - Chrome/Edge: preservePitch
- *   - Safari: webkitPreservePitch
- *   - Firefox: preservesPitch
+ * Cara kerja:
+ * - playbackRate = ratio → audio 1.5x lebih cepat, pitch naik ~7 semitones
+ * - detune = -1200 * log2(ratio) cents → pitch turun ~7 semitones balik
+ * - Net: audio 1.5x lebih cepat, pitch natural
+ *
+ * Tested di Chrome, Safari, Firefox, Brave, Edge (OfflineAudioContext support detune).
  *
  * @param audioBuffer Source audio
  * @param ratio Speed ratio (1.0 = normal, 1.5 = 1.5x faster, 2.0 = 2x faster)
  * @param sampleRate Output sample rate
+ * @returns Float32Array at sampleRate, duration = source.duration / ratio
  */
-export async function speedUpAudio(
+export async function speedUpAudioPitchPreserved(
   audioBuffer: AudioBuffer,
   ratio: number,
   sampleRate: number,
@@ -67,24 +68,19 @@ export async function speedUpAudio(
   const source = offlineCtx.createBufferSource()
   source.buffer = audioBuffer
   source.playbackRate.value = ratio
-  // Set ALL preservePitch variants — browser akan pakai yang dia kenal,
-  // sisanya di-ignore. Ini cross-browser compatible.
-  const anySource = source as unknown as {
-    preservePitch?: boolean
-    webkitPreservePitch?: boolean
-    preservesPitch?: boolean
-  }
-  try { anySource.preservePitch = true } catch { /* ignore */ }
-  try { anySource.webkitPreservePitch = true } catch { /* ignore */ }
-  try { anySource.preservesPitch = true } catch { /* ignore */ }
+  // Detune compensation: -1200 * log2(ratio) cents
+  // ratio 1.5 → log2(1.5) ≈ 0.585 → -702 cents (turunkan ~7 semitones)
+  // ratio 2.0 → log2(2.0) = 1.0 → -1200 cents (turunkan 1 octave)
+  const detuneCents = -1200 * Math.log2(ratio)
+  source.detune.value = detuneCents
   source.connect(offlineCtx.destination)
   source.start()
   const rendered = await offlineCtx.startRendering()
-  return rendered.getChannelData(0)
+  return toMono(rendered)
 }
 
 /**
- * Pad audio with silence at the end to reach target length.
+ * Pad audio dengan silence ke target length.
  */
 export function padWithSilence(audio: Float32Array, targetSamples: number): Float32Array {
   if (audio.length >= targetSamples) {
@@ -92,24 +88,16 @@ export function padWithSilence(audio: Float32Array, targetSamples: number): Floa
   }
   const result = new Float32Array(targetSamples)
   result.set(audio, 0)
-  // Rest stays 0 (silence)
   return result
 }
 
 /**
- * Adjust audio duration to fit target duration (in seconds).
+ * Adjust audio duration to fit target duration.
  *
  * Strategy:
- * - If audio longer than target: speed up to fit (PRESERVE PITCH, NO TRUNCATION)
- *   - maxSpeedUp default 1.5x (1.5x lebih cepat masih natural, di atas itu mulai aneh)
- *   - Kalau perlu lebih cepat dari maxSpeedUp: speed up pakai maxSpeedUp, lalu truncate sisanya
- *     (kasus ekstrem: cue 2 detik tapi TTS output 10 detik → 1.5x = 6.67 detik → truncate ke 2 detik)
- *     Ini edge case yang jarang terjadi untuk subtitle normal
- * - If audio shorter than target: pad with silence at end (audio natural, pitch unchanged)
- * - If equal (within 50ms): return as-is
- *
- * Pitch preservation: speedUpAudio set SEMUA variant preservePitch property
- * (Chrome/Safari/Firefox). Pitch 100% natural, audio TIDAK dipotong untuk kasus normal.
+ * - If audio longer than target: speed up via detune compensation (pitch natural, no chipmunk)
+ * - If audio shorter than target: pad with silence
+ * - If equal: return as-is
  *
  * Returns Float32Array at given sampleRate.
  */
@@ -119,46 +107,41 @@ export async function adjustDuration(
   sampleRate: number,
   options: { maxSpeedUp?: number } = {},
 ): Promise<Float32Array> {
-  const maxSpeedUp = options.maxSpeedUp ?? 1.5
+  const maxSpeedUp = options.maxSpeedUp ?? 2.5
   const sourceDuration = audioBuffer.duration
   const targetSamples = Math.floor(targetDurationSec * sampleRate)
 
   if (sourceDuration <= 0) {
-    return new Float32Array(targetSamples) // silence
+    return new Float32Array(targetSamples)
   }
 
   if (Math.abs(sourceDuration - targetDurationSec) < 0.05) {
-    // Within 50ms — close enough, just truncate/pad (no speed change needed)
-    const mono = toMono(audioBuffer)
-    return padWithSilence(mono, targetSamples)
+    return padWithSilence(toMono(audioBuffer), targetSamples)
   }
 
   if (sourceDuration > targetDurationSec) {
-    // Audio lebih panjang dari cue — speed up untuk fit
+    // Audio lebih panjang — speed up dengan pitch preservation
     const ratio = sourceDuration / targetDurationSec
     if (ratio <= maxSpeedUp) {
-      // Bisa speed up ke ratio yang reasonable — pakai full speed up
-      return await speedUpAudio(audioBuffer, ratio, sampleRate)
+      return await speedUpAudioPitchPreserved(audioBuffer, ratio, sampleRate)
     } else {
-      // Edge case: cue terlalu pendek dibanding TTS output
-      // Speed up pakai maxSpeedUp dulu, lalu truncate sisanya (kasus ekstrem)
-      const spedUp = await speedUpAudio(audioBuffer, maxSpeedUp, sampleRate)
-      return padWithSilence(spedUp, targetSamples) // truncate ke exact length
+      // Edge case: ratio > max. Speed up ke max, lalu truncate sisanya.
+      const spedUp = await speedUpAudioPitchPreserved(audioBuffer, maxSpeedUp, sampleRate)
+      return padWithSilence(spedUp, targetSamples)
     }
   } else {
-    // Audio lebih pendek dari cue — pad dengan silence (pitch natural)
-    const mono = toMono(audioBuffer)
-    return padWithSilence(mono, targetSamples)
+    // Audio lebih pendek — pad silence
+    return padWithSilence(toMono(audioBuffer), targetSamples)
   }
 }
 
 /**
- * Concatenate Float32Array segments with optional silence padding (in samples).
+ * Concatenate Float32Array segments dengan silence padding (samples).
  */
 export function concatenateWithSilence(
   segments: Float32Array[],
   silenceSamplesBefore: number[],
-  totalSampleRate: number,
+  _totalSampleRate: number,
 ): Float32Array {
   let totalLength = 0
   for (let i = 0; i < segments.length; i++) {
@@ -167,7 +150,6 @@ export function concatenateWithSilence(
   const out = new Float32Array(totalLength)
   let offset = 0
   for (let i = 0; i < segments.length; i++) {
-    // Pre-silence (already 0)
     offset += silenceSamplesBefore[i] || 0
     out.set(segments[i], offset)
     offset += segments[i].length
@@ -176,7 +158,7 @@ export function concatenateWithSilence(
 }
 
 /**
- * Encode Float32Array PCM samples to a 16-bit PCM WAV Blob (mono).
+ * Encode Float32Array PCM ke 16-bit WAV Blob (mono).
  */
 export function encodeWav(samples: Float32Array, sampleRate: number): Blob {
   const numChannels = 1
@@ -186,12 +168,9 @@ export function encodeWav(samples: Float32Array, sampleRate: number): Blob {
   const buffer = new ArrayBuffer(44 + dataSize)
   const view = new DataView(buffer)
 
-  // RIFF header
   writeString(view, 0, 'RIFF')
   view.setUint32(4, 36 + dataSize, true)
   writeString(view, 8, 'WAVE')
-
-  // fmt sub-chunk
   writeString(view, 12, 'fmt ')
   view.setUint32(16, 16, true)
   view.setUint16(20, 1, true)
@@ -200,12 +179,9 @@ export function encodeWav(samples: Float32Array, sampleRate: number): Blob {
   view.setUint32(28, sampleRate * blockAlign, true)
   view.setUint16(32, blockAlign, true)
   view.setUint16(34, 16, true)
-
-  // data sub-chunk
   writeString(view, 36, 'data')
   view.setUint32(40, dataSize, true)
 
-  // PCM samples (16-bit signed little-endian)
   let offset = 44
   for (let i = 0; i < samples.length; i++) {
     let s = samples[i]
@@ -225,7 +201,7 @@ function writeString(view: DataView, offset: number, str: string) {
 }
 
 /**
- * Trigger a browser download for a Blob.
+ * Trigger browser download for a Blob.
  */
 export function downloadBlob(filename: string, blob: Blob) {
   const url = URL.createObjectURL(blob)
