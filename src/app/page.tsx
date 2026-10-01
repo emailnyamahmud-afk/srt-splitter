@@ -13,6 +13,8 @@ import {
   RefreshCw,
   Trash2,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -48,6 +50,8 @@ export default function Home() {
   const [resetTimestamps, setResetTimestamps] = useState<boolean>(false)
   const [isDragging, setIsDragging] = useState<boolean>(false)
   const [isZipping, setIsZipping] = useState<boolean>(false)
+  const [isListExpanded, setIsListExpanded] = useState<boolean>(false)
+  const [isPreviewExpanded, setIsPreviewExpanded] = useState<boolean>(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Restore state from localStorage on mount
@@ -373,16 +377,31 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            {/* Result overview */}
+            {/* Result overview — collapsible (default collapsed to save space) */}
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">Hasil Pemecahan</CardTitle>
-                    <CardDescription>
-                      {splitResult.parts.length} file — dipotong di batas subtitle
-                    </CardDescription>
-                  </div>
+                <div className="flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsListExpanded(!isListExpanded)}
+                    className="flex items-center gap-2 text-left hover:opacity-80 transition-opacity"
+                    aria-expanded={isListExpanded}
+                  >
+                    {isListExpanded ? (
+                      <ChevronUp className="size-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="size-4 text-muted-foreground" />
+                    )}
+                    <div>
+                      <CardTitle className="text-lg">Hasil Pemecahan</CardTitle>
+                      <CardDescription>
+                        {splitResult.parts.length} file — dipotong di batas subtitle.{' '}
+                        <span className="text-xs text-muted-foreground">
+                          ({isListExpanded ? 'Klik untuk sembunyikan' : 'Klik untuk melihat list'})
+                        </span>
+                      </CardDescription>
+                    </div>
+                  </button>
                   <Button
                     size="sm"
                     disabled={isZipping}
@@ -419,8 +438,9 @@ export default function Home() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
-                <ScrollArea className="max-h-[480px] pr-3">
+              {isListExpanded && (
+                <CardContent>
+                  <ScrollArea className="max-h-[480px] pr-3">
                   <div className="space-y-2">
                     {splitResult.parts.map((part) => {
                       const filename = `${prefix}-${String(part.index).padStart(2, '0')}.srt`
@@ -465,23 +485,43 @@ export default function Home() {
                     })}
                   </div>
                 </ScrollArea>
-              </CardContent>
+                </CardContent>
+              )}
             </Card>
 
-            {/* Preview of first part */}
+            {/* Preview of first part — collapsible */}
             {splitResult.parts.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">
-                    Preview: {prefix}-01.srt
-                  </CardTitle>
-                  <CardDescription>
-                    3 subtitle pertama & terakhir dari file pertama.
-                  </CardDescription>
+                  <button
+                    type="button"
+                    onClick={() => setIsPreviewExpanded(!isPreviewExpanded)}
+                    className="flex items-center gap-2 text-left hover:opacity-80 transition-opacity w-full"
+                    aria-expanded={isPreviewExpanded}
+                  >
+                    {isPreviewExpanded ? (
+                      <ChevronUp className="size-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="size-4 text-muted-foreground" />
+                    )}
+                    <div>
+                      <CardTitle className="text-lg">
+                        Preview: {prefix}-01.srt
+                      </CardTitle>
+                      <CardDescription>
+                        3 subtitle pertama & terakhir dari file pertama.{' '}
+                        <span className="text-xs text-muted-foreground">
+                          ({isPreviewExpanded ? 'Klik untuk sembunyikan' : 'Klik untuk melihat'})
+                        </span>
+                      </CardDescription>
+                    </div>
+                  </button>
                 </CardHeader>
-                <CardContent>
-                  <PreviewPart part={splitResult.parts[0]} resetTimestamps={resetTimestamps} />
-                </CardContent>
+                {isPreviewExpanded && (
+                  <CardContent>
+                    <PreviewPart part={splitResult.parts[0]} resetTimestamps={resetTimestamps} />
+                  </CardContent>
+                )}
               </Card>
             )}
 

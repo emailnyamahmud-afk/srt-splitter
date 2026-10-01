@@ -1,22 +1,35 @@
 # SRT Splitter
 
-Aplikasi web untuk memecah file SRT (subtitle) menjadi beberapa bagian dengan durasi yang dapat diatur. **100% berjalan di browser** — tidak ada server, tidak ada upload file ke mana pun. Aman dipakai di rumah untuk file pribadi.
+Aplikasi web untuk memecah file SRT (subtitle) menjadi beberapa bagian dengan durasi yang dapat diatur, **plus konversi subtitle ke audio narasi (TTS)** dengan suara Indonesia natural. **100% berjalan di browser** — tidak ada server, tidak ada upload file SRT ke mana pun. Aman dipakai di rumah untuk file pribadi.
 
-> ✅ **Status deploy:** Siap untuk GitHub Pages. Source code, build config, dan workflow file sudah lengkap di repo. Konfigurasi `basePath` auto-detect dari environment.
->
-> ⚠️ **Catatan penting:** Workflow file `.github/workflows/deploy.yml` ada di source code tetapi **belum ter-commit ke remote** karena keterbatasan scope token PAT saat push awal. Lihat **Langkah 2 — Tambahkan Workflow** di bawah untuk mengaktifkannya (cukup sekali, ~2 menit).
+> ✅ **Live di:** https://emailnyamahmud-afk.github.io/srt-splitter/
 
-## Fitur
+## Fitur Utama
 
+### 📑 Split SRT
 - Drag-and-drop file `.srt` atau klik untuk pilih
-- Atur durasi per file (5–120 menit, atau preset 10/15/20/30/45/60/90 menit)
+- Atur durasi per file: **5 menit sampai 5 jam** (slider + preset 10m, 15m, 20m, 30m, 45m, 1j, 1j30m, 2j, 3j, 4j, 5j)
 - Pilih apakah timestamp direset ke `00:00:00` atau dipertahankan asli
 - Potong di batas subtitle — tidak ada kalimat yang terputus di tengah
-- Unduh semua hasil split sebagai satu file ZIP (via JSZip)
-- Unduh source code langsung dari dalam aplikasi
-- Preview awal & akhir tiap file untuk verifikasi cepat
+- Unduh hasil split sebagai satu file ZIP (via JSZip)
+- Untuk film panjang (3-4 jam), pilih preset **4j** atau **5j** agar tidak di-split
+
+### 🔊 TTS (Text-to-Speech) — Audio Narasi
+- **Microsoft Edge TTS** — neural voices Indonesia native (`id-ID-Gadis` perempuan, `id-ID-Ardi` laki-laki)
+  - Kualitas setara Azure Cloud TTS berbayar, tapi **gratis** (pakai Edge browser's free endpoint)
+  - Voice tambahan: English, Mandarin, Japanese, Korean
+- **Audio timing di-sync ke SRT** — kalau audio lebih panjang dari cue, di-speed-up (max 1.5x, preserve pitch); kalau lebih pendek, di-pad silence. Hasil audio pas dengan durasi SRT asli
+- **Preview Mode** (Browser SpeechSynthesis) — dengar langsung pakai voice browser (di macOS: Damayanti Indonesia native). Tidak butuh internet, tidak bisa export ke file
+- Output: WAV 24kHz mono, 16-bit PCM — siap di-mux ke video asli
+
+### 💾 Persistence
+- **State tersimpan di localStorage** — refresh halaman tidak reset upload
+- SRT content, filename, durasi split, prefix, dan toggle reset-timestamp semua ter-restore otomatis
+
+### 📱 UI/UX
+- Collapsible cards — "Hasil Pemecahan" dan "Preview" bisa di-collapse agar TTS panel selalu terlihat
 - Mobile-friendly, light/dark mode
-- 100% offline — tidak ada panggilan ke server
+- 100% client-side — tidak ada panggilan ke server (kecuali Edge TTS ke Microsoft untuk audio)
 
 ## Stack Teknologi
 
@@ -269,19 +282,25 @@ srt-splitter/
 ├── public/
 │   ├── logo.svg
 │   ├── robots.txt
+│   ├── coi-serviceworker.js    # Cross-origin isolation (untuk multi-thread WASM)
 │   └── srt-splitter-source.zip  # Source code ZIP untuk self-distribution
 ├── scripts/
 │   ├── split_srt.py             # Versi CLI Python (alternatif)
 │   └── build_source_zip.py     # Build ulang source ZIP
 ├── src/
 │   ├── app/
-│   │   ├── layout.tsx          # Root layout, metadata, font
-│   │   ├── page.tsx            # Halaman utama UI SRT Splitter
+│   │   ├── layout.tsx          # Root layout, metadata, font, coi-script
+│   │   ├── page.tsx            # Halaman utama UI SRT Splitter (split + persistence + collapsibles)
 │   │   └── globals.css         # Styling global + Tailwind
 │   ├── lib/
 │   │   ├── srt.ts              # Parser, splitter, serializer SRT (client-side)
+│   │   ├── edge-tts.ts         # Microsoft Edge TTS WebSocket client (Indonesia native)
+│   │   ├── audio-utils.ts      # Decode MP3, speed-up, pad silence, encode WAV, timing sync
+│   │   ├── tts.ts              # High-level TTS engine: combine edge-tts + audio-utils
 │   │   └── utils.ts            # Helpers shadcn (cn)
 │   └── components/
+│       ├── tts-panel.tsx       # UI panel TTS (Preview + Export mode)
+│       ├── coi-script.tsx      # Inject coi-serviceworker
 │       └── ui/                 # Komponen shadcn/ui (Card, Button, dll)
 ├── .gitignore
 ├── next.config.ts              # Static export + basePath auto-detect
@@ -292,21 +311,42 @@ srt-splitter/
 
 ## 📖 Cara Pakai Aplikasi
 
+### Untuk Split SRT
 1. Buka aplikasi di browser
 2. Seret file `.srt` ke area upload, atau klik "Pilih File SRT"
-3. Atur durasi per file (slider atau klik preset 10/15/20/30/45/60/90 menit)
+3. Atur durasi per file:
+   - Slider (5 menit → 5 jam) atau klik preset: `10m`, `15m`, `20m`, `30m`, `45m`, `1j`, `1j30m`, `2j`, `3j`, `4j`, `5j`
+   - Untuk film 3-4 jam yang tidak ingin di-split, pilih `4j` atau `5j`
 4. Isi prefix nama file (misal `S6` → output `S6-01.srt`, `S6-02.srt`, …)
 5. Toggle "Reset timestamp per file ke 00:00:00":
    - **OFF** (default): timestamp asli dipertahankan — cocok untuk dipasang langsung ke video asli
    - **ON**: tiap file mulai dari `00:00:00` — cocok untuk video yang sudah dipotong per segmen
-6. Klik **Unduh ZIP** untuk download semua, atau tombol download per file
+6. Klik **Unduh ZIP** untuk download semua, atau expand "Hasil Pemecahan" untuk download per-file
+
+### Untuk TTS (Konversi Subtitle ke Audio)
+1. Setelah upload SRT, scroll ke bawah sampai panel ungu "Generate Audio (TTS)"
+2. **Preview Mode** (hijau, atas) — untuk dengar cepat:
+   - Pilih voice browser (di macOS: Damayanti Indonesia native)
+   - Klik "Baris 1", "Baris 2", dst — dengar langsung, tidak bisa export
+3. **Export Mode** (ungu, bawah) — untuk download audio file:
+   - Pilih voice Edge TTS (default: 🇮🇩 Indonesia — Gadis)
+   - Toggle "Sync timing ke SRT" (default ON — audio di-adjust ke durasi cue asli)
+   - Klik **Generate & Download ZIP** untuk download semua, atau generate per-split
+4. Audio output: WAV 24kHz mono, 16-bit PCM, durasi sama dengan SRT asli
+
+### Tips
+- **Refresh halaman tidak reset** — file SRT dan setting tersimpan di localStorage
+- **Film panjang**: pilih preset `4j`/`5j` di split, lalu "Generate Full Audio" — tunggu ~10-20 menit di Mac idle untuk 3-4 jam subtitle
+- **Edge TTS butuh internet** (cloud-based). Preview Mode bisa offline. Badge "Online/Offline" menunjukkan status
 
 ## 🔒 Privacy
 
-- **Tidak ada upload ke server.** Semua parsing, splitting, dan ZIP generation terjadi di browser
+- **Tidak ada upload SRT ke server.** Semua parsing, splitting, dan ZIP generation terjadi di browser
 - File `.srt` kamu tidak pernah dikirim ke mana pun
+- Edge TTS mengirim **hanya teks subtitle** ke `speech.platform.bing.com` (untuk dijadikan audio) — teks dikirim per baris, tidak disimpan di app
 - Tidak ada analytics, tidak ada tracking
 - Aman untuk file subtitle pribadi atau sensitif
+- **Untuk privacy maksimal** (offline total): pakai Preview Mode (Browser SpeechSynthesis)
 
 ## 🛠️ Development Notes
 
@@ -315,6 +355,7 @@ srt-splitter/
 - Lint bersih (tidak ada warning)
 - TypeScript: `ignoreBuildErrors: true` sengaja di-enable untuk build reliability (tidak ada error yang di-hide, hanya supaya build tidak fail karena strict type check di template shadcn)
 - `src/lib/db.ts` adalah sisa dari template, **tidak dipakai** oleh app manapun — aman untuk dihapus di follow-up
+- COI serviceworker (`public/coi-serviceworker.js`) ada di repo untuk enable SharedArrayBuffer (multi-thread WASM) — sekarang tidak terpakai karena Edge TTS pakai WebSocket, tapi tetap di-keep kalau nanti pakai VITS lagi
 
 ## 📝 Lisensi
 
