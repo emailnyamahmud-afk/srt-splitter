@@ -96,6 +96,9 @@ export function padWithSilence(audio: Float32Array, targetSamples: number): Floa
  *
  * Strategy:
  * - If audio longer than target: speed up via detune compensation (pitch natural, no chipmunk)
+ *   - HAPUS maxSpeedUp limit — audio harus utuh meski harus di-speed up 5x atau lebih
+ *   - Untuk ratio sangat besar (>4x), pitch masih natural via detune compensation
+ *     (audio akan terdengar sangat cepat tapi tidak chipmunk dan tidak dipotong)
  * - If audio shorter than target: pad with silence
  * - If equal: return as-is
  *
@@ -105,9 +108,8 @@ export async function adjustDuration(
   audioBuffer: AudioBuffer,
   targetDurationSec: number,
   sampleRate: number,
-  options: { maxSpeedUp?: number } = {},
+  _options: { maxSpeedUp?: number } = {},
 ): Promise<Float32Array> {
-  const maxSpeedUp = options.maxSpeedUp ?? 2.5
   const sourceDuration = audioBuffer.duration
   const targetSamples = Math.floor(targetDurationSec * sampleRate)
 
@@ -120,15 +122,9 @@ export async function adjustDuration(
   }
 
   if (sourceDuration > targetDurationSec) {
-    // Audio lebih panjang — speed up dengan pitch preservation
+    // Audio lebih panjang — speed up dengan pitch preservation (TANPA limit)
     const ratio = sourceDuration / targetDurationSec
-    if (ratio <= maxSpeedUp) {
-      return await speedUpAudioPitchPreserved(audioBuffer, ratio, sampleRate)
-    } else {
-      // Edge case: ratio > max. Speed up ke max, lalu truncate sisanya.
-      const spedUp = await speedUpAudioPitchPreserved(audioBuffer, maxSpeedUp, sampleRate)
-      return padWithSilence(spedUp, targetSamples)
-    }
+    return await speedUpAudioPitchPreserved(audioBuffer, ratio, sampleRate)
   } else {
     // Audio lebih pendek — pad silence
     return padWithSilence(toMono(audioBuffer), targetSamples)

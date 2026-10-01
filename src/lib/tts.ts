@@ -221,7 +221,7 @@ export async function narrateEntries(
           ctx.close()
 
           const cueDuration = entry.end - entry.start
-          finalAudio = await adjustDuration(audioBuffer, cueDuration, OUTPUT_SAMPLE_RATE, { maxSpeedUp: 2.5 })
+          finalAudio = await adjustDuration(audioBuffer, cueDuration, OUTPUT_SAMPLE_RATE)
         } else {
           // No sync: resample ke OUTPUT_SAMPLE_RATE
           if (pcmSampleRate !== OUTPUT_SAMPLE_RATE) {
@@ -237,7 +237,7 @@ export async function narrateEntries(
 
         if (opts.respectTiming) {
           const cueDuration = entry.end - entry.start
-          finalAudio = await adjustDuration(audioBuffer, cueDuration, OUTPUT_SAMPLE_RATE, { maxSpeedUp: 2.5 })
+          finalAudio = await adjustDuration(audioBuffer, cueDuration, OUTPUT_SAMPLE_RATE)
         } else {
           // No sync: audio natural utuh
           finalAudio = new Float32Array(audioBuffer.length)
