@@ -39,15 +39,9 @@ import {
 } from './kokoro-tts'
 import {
   decodeAudioBlob,
-  concatenateWithSilence,
   encodeWav,
   downloadBlob as downloadBlobUtil,
 } from './audio-utils'
-import { SoundTouch as _SoundTouch, Stretch as _Stretch, SimpleFilter as _SimpleFilter, WebAudioBufferSource as _WebAudioBufferSource } from 'soundtouchjs'
-import { adjustAudioDuration } from './time-stretch'
-// Force bundle SoundTouchJS — referensi supaya tidak tree-shake
-const _soundtouchRef = { _SoundTouch, _Stretch, _SimpleFilter, _WebAudioBufferSource }
-export { _soundtouchRef }
 
 // Re-export semua yang dibutuhkan UI
 export { EDGE_VOICES, DEFAULT_EDGE_VOICE, type EdgeVoice, getEdgeProxyUrl, setEdgeProxyUrl }
@@ -98,6 +92,14 @@ export interface NarrationResult {
 /**
  * Synthesize text menggunakan provider yang dipilih.
  *
+ * Parameter `rate` (0.5-2.0):
+ * - 1.0 = normal speed
+ * - 2.0 = 2x faster (audio lebih cepat, pitch tetap natural — server-side)
+ * - 0.5 = 0.5x slower (audio lebih lambat, pitch tetap natural)
+ *
+ * Server-side rate change = pitch preservation 100% reliable di semua browser.
+ * Tidak perlu client-side time-stretch (yang bug di Brave dll).
+ *
  * Note: Untuk Kokoro, kita return WAV (PCM Float32) bukan MP3 karena Kokoro
  * native output adalah PCM. NarrateEntries akan handle konversi ke WAV.
  */
@@ -108,7 +110,9 @@ export async function synthesizeText(
     voice: string
     model?: string
     apiKey?: string
-    speed?: number
+    speed?: number // untuk Kokoro (default 1.0)
+    rate?: string // untuk Edge TTS (e.g. '+50%', '-10%')
+    openaiSpeed?: number // untuk OpenAI/OpenRouter (0.25-4.0, default 1.0)
     onModelProgress?: (p: TTSProgress) => void
   },
 ): Promise<{ audioBlob: Blob; mimeType: string; pcm?: Float32Array; sampleRate?: number }> {
@@ -117,27 +121,35 @@ export async function synthesizeText(
   }
 
   switch (opts.provider) {
-    case 'edge':
-      return { audioBlob: await edgeTTS(text, opts.voice), mimeType: 'audio/mp3' }
+    case 'edge': {
+      // Edge TTS rate via SSML prosody rate parameter (server-side pitch preservation)
+      const ratePercent = opts.rate || '+0%'
+      return { audioBlob: await edgeTTS(text, opts.voice, { rate: ratePercent }), mimeType: 'audio/mp3' }
+    }
     case 'kokoro': {
-      // Use static import (already at top of file)
+      // Kokoro speed parameter (server-side)
       await ensureKokoroModel(opts.onModelProgress)
-      const result = await kokoroSynth(text, opts.voice || DEFAULT_KOKORO_VOICE, opts.speed || 1.0)
-      // Return empty Blob (not used) + raw PCM
+      const speed = opts.speed || 1.0
+      const result = await kokoroSynth(text, opts.voice || DEFAULT_KOKORO_VOICE, speed)
       return { audioBlob: new Blob([]), mimeType: 'audio/wav', pcm: result.audio, sampleRate: result.sampleRate }
     }
-    case 'openai':
+    case 'openai': {
       if (!opts.apiKey) throw new Error('OpenAI API key belum diisi')
+      // OpenAI TTS speed parameter (0.25-4.0, server-side pitch preservation)
+      const speed = opts.openaiSpeed || 1.0
       return {
-        audioBlob: await openaiTTS(text, opts.voice, opts.apiKey!),
+        audioBlob: await openaiTTS(text, opts.voice, opts.apiKey!, 'tts-1-hd', speed),
         mimeType: 'audio/mp3',
       }
-    case 'openrouter':
+    }
+    case 'openrouter': {
       if (!opts.apiKey) throw new Error('OpenRouter API key belum diisi')
+      const speed = opts.openaiSpeed || 1.0
       return {
-        audioBlob: await openRouterTTS(text, opts.model || 'openai/tts-1-hd', opts.voice, opts.apiKey!),
+        audioBlob: await openRouterTTS(text, opts.model || 'openai/tts-1-hd', opts.voice, opts.apiKey!, speed),
         mimeType: 'audio/mp3',
       }
+    }
     default:
       throw new Error(`Unknown provider: ${opts.provider}`)
   }
@@ -160,6 +172,62 @@ export async function synthesizeText(
  *
  * Output: WAV 24kHz mono 16-bit PCM, durasi = SRT asli.
  */
+/**
+ * Estimate rate untuk fit text ke cue duration.
+ *
+ * Heuristic: TTS natural speech rate ~13 chars/sec untuk Indonesia/English.
+ * - kalau text 100 chars → natural duration ~7.7s
+ * - kalau cue 5s → rate = 7.7/5 = 1.54x (faster)
+ * - Edge TTS: rate percent = +54%
+ * - OpenAI/Kokoro: speed = 1.54
+ *
+ * Clamp rate ke 0.7-2.5 (terlalu cepat/lambat tidak natural).
+ */
+function estimateRate(text: string, cueDurationSec: number, opts: NarrationOptions): {
+  edgeRate: string
+  openaiSpeed: number
+  kokoroSpeed: number
+} {
+  const charsPerSec = 13 // rata-rata TTS Indonesia/English
+  const naturalDuration = Math.max(text.length / charsPerSec, 0.5)
+  const ratio = naturalDuration / cueDurationSec
+
+  // Clamp 0.7-2.5 (jangan terlalu ekstrem)
+  const clamped = Math.min(Math.max(ratio, 0.7), 2.5)
+
+  // Edge TTS rate sebagai percent string
+  // ratio 1.0 = +0%, ratio 1.5 = +50%, ratio 0.8 = -20%
+  const edgePercent = Math.round((clamped - 1) * 100)
+  const edgeRate = (edgePercent >= 0 ? '+' : '') + edgePercent + '%'
+
+  return {
+    edgeRate,
+    openaiSpeed: clamped, // OpenAI TTS speed (0.25-4.0, 1.0 = normal)
+    kokoroSpeed: clamped, // Kokoro speed (1.0 = normal)
+  }
+}
+
+/**
+ * Generate narration audio for SRT entries, stitched into one WAV.
+ *
+ * STRATEGY (server-side rate, durasi = SRT, pitch natural):
+ * - Estimate rate dari text length vs cue duration (charsPerSec heuristic)
+ * - Request TTS dengan rate parameter (server-side pitch preservation)
+ *   - Edge TTS: SSML prosody rate '+XX%'
+ *   - OpenAI TTS: speed parameter (0.25-4.0)
+ *   - Kokoro: speed parameter
+ * - Audio datang dengan durasi ~cue duration, pitch natural (server handle)
+ * - Position di entry.start (SRT timing WAJIB)
+ * - Total durasi = SRT end time
+ * - Kalau audio masih beda sedikit: pad silence / truncate (pitch sudah natural)
+ *
+ * Aturan:
+ * - Waktu SRT WAJIB (durasi audio = SRT duration)
+ * - Suara natural (server-side pitch preservation, no chipmunk)
+ * - Audio utuh (server-side rate, tidak truncate di kasus normal)
+ *
+ * Output: WAV 24kHz mono 16-bit PCM, durasi = SRT asli.
+ */
 export async function narrateEntries(
   entries: SrtEntry[],
   opts: NarrationOptions,
@@ -168,7 +236,7 @@ export async function narrateEntries(
 
   opts.onStage?.({ stage: 'synthesizing', message: 'Mulai synthesizing…', percent: 0 })
   const total = entries.length
-  // Position-based: tiap segment di-posisikan di entry.start, audio di-time-stretch ke cue duration
+  // Position-based: tiap segment di-posisikan di entry.start, audio di-rate-fit ke cue duration
   const placedSegments: { position: number; audio: Float32Array }[] = []
   let successCount = 0
   let failCount = 0
@@ -192,18 +260,29 @@ export async function narrateEntries(
     })
 
     try {
-      const synth = await synthesizeText(text, opts)
+      // Hitung rate untuk fit audio ke cue duration (server-side pitch preservation)
+      let synthOpts = opts
+      if (opts.respectTiming) {
+        const cueDuration = entry.end - entry.start
+        const rate = estimateRate(text, cueDuration, opts)
+        synthOpts = {
+          ...opts,
+          rate: rate.edgeRate,
+          openaiSpeed: rate.openaiSpeed,
+          speed: rate.kokoroSpeed,
+        }
+      }
+
+      const synth = await synthesizeText(text, synthOpts)
 
       let rawAudio: Float32Array
       let audioSampleRate: number
 
       if (synth.pcm) {
-        // Kokoro: langsung pakai PCM
         if (synth.pcm.length === 0) throw new Error('Empty audio output')
         rawAudio = synth.pcm
         audioSampleRate = synth.sampleRate || OUTPUT_SAMPLE_RATE
       } else {
-        // Edge/OpenAI/OpenRouter: decode MP3
         if (synth.audioBlob.size === 0) throw new Error('Empty audio output')
         const audioBuffer = await decodeAudioBlob(synth.audioBlob, OUTPUT_SAMPLE_RATE)
         audioSampleRate = audioBuffer.sampleRate
@@ -214,17 +293,25 @@ export async function narrateEntries(
       // Resample ke OUTPUT_SAMPLE_RATE jika perlu
       if (audioSampleRate !== OUTPUT_SAMPLE_RATE) {
         rawAudio = linearResample(rawAudio, audioSampleRate, OUTPUT_SAMPLE_RATE)
-        audioSampleRate = OUTPUT_SAMPLE_RATE
       }
 
       let finalAudio: Float32Array
-
       if (opts.respectTiming) {
-        // SYNC KE SRT: time-stretch audio ke cue duration (entry.end - entry.start)
+        // Sync ke SRT: pad/truncate audio ke cue duration (pitch sudah natural via server rate)
         const cueDuration = entry.end - entry.start
-        finalAudio = adjustAudioDuration(rawAudio, audioSampleRate, cueDuration, { maxSpeedUp: 2.5 })
+        const targetSamples = Math.floor(cueDuration * OUTPUT_SAMPLE_RATE)
+        if (rawAudio.length > targetSamples) {
+          // Audio masih sedikit lebih panjang (estimasi tidak perfect) → truncate
+          finalAudio = rawAudio.subarray(0, targetSamples)
+        } else if (rawAudio.length < targetSamples) {
+          // Audio lebih pendek → pad silence
+          finalAudio = new Float32Array(targetSamples)
+          finalAudio.set(rawAudio, 0)
+        } else {
+          finalAudio = rawAudio
+        }
       } else {
-        // No sync: audio natural utuh dengan 300ms gap
+        // No sync: audio natural utuh
         finalAudio = rawAudio
       }
 
@@ -237,7 +324,6 @@ export async function narrateEntries(
       failCount++
       if (!firstError) firstError = (e as Error).message
       console.error('TTS failed for line', i, e)
-      // Skip — tidak ada audio untuk cue ini
     }
   }
 

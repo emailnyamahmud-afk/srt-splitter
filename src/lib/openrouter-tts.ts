@@ -101,6 +101,7 @@ export async function openRouterTTS(
   model: string,
   voice: string,
   apiKey: string,
+  speed: number = 1.0,
 ): Promise<Blob> {
   if (!apiKey.trim()) {
     throw new Error('OpenRouter API key belum diisi. Klik "Set API Key" untuk input.')
@@ -120,6 +121,7 @@ export async function openRouterTTS(
       voice,
       input: text,
       response_format: 'mp3',
+      speed, // Server-side speed change, pitch tetap natural
     }),
   })
 

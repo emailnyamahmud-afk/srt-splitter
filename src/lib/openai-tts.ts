@@ -108,6 +108,7 @@ export async function openaiTTS(
   voice: string = DEFAULT_OPENAI_VOICE,
   apiKey: string,
   model: string = 'tts-1-hd',
+  speed: number = 1.0,
 ): Promise<Blob> {
   if (!apiKey.trim()) {
     throw new Error('OpenAI API key belum diisi. Klik "Set API Key" untuk input.')
@@ -127,7 +128,7 @@ export async function openaiTTS(
       voice,
       input: text,
       response_format: 'mp3',
-      speed: 1.0,
+      speed, // Server-side speed change, pitch tetap natural
     }),
   })
 
