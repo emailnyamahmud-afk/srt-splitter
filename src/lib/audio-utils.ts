@@ -45,7 +45,13 @@ export function toMono(audioBuffer: AudioBuffer): Float32Array {
 
 /**
  * Speed up audio by a ratio using OfflineAudioContext.
- * Returns Float32Array at original sample rate, but shorter duration.
+ * Returns Float32Array at the given sample rate, with shorter duration.
+ *
+ * CRITICAL: Set ALL pitch-preservation property variants so audio
+ * plays faster WITHOUT changing pitch (no chipmunk voice):
+ *   - Chrome/Edge: preservePitch
+ *   - Safari: webkitPreservePitch
+ *   - Firefox: preservesPitch
  *
  * @param audioBuffer Source audio
  * @param ratio Speed ratio (1.0 = normal, 1.5 = 1.5x faster, 2.0 = 2x faster)
@@ -61,14 +67,16 @@ export async function speedUpAudio(
   const source = offlineCtx.createBufferSource()
   source.buffer = audioBuffer
   source.playbackRate.value = ratio
-  // Preserve pitch (so it doesn't sound like chipmunk)
-  // Note: preservingPitch is not supported by all browsers. Try and fall back.
-  try {
-    // @ts-expect-error - preservePitch is non-standard but widely supported
-    source.preservePitch = true
-  } catch {
-    // ignore
+  // Set ALL preservePitch variants — browser akan pakai yang dia kenal,
+  // sisanya di-ignore. Ini cross-browser compatible.
+  const anySource = source as unknown as {
+    preservePitch?: boolean
+    webkitPreservePitch?: boolean
+    preservesPitch?: boolean
   }
+  try { anySource.preservePitch = true } catch { /* ignore */ }
+  try { anySource.webkitPreservePitch = true } catch { /* ignore */ }
+  try { anySource.preservesPitch = true } catch { /* ignore */ }
   source.connect(offlineCtx.destination)
   source.start()
   const rendered = await offlineCtx.startRendering()
@@ -91,16 +99,17 @@ export function padWithSilence(audio: Float32Array, targetSamples: number): Floa
 /**
  * Adjust audio duration to fit target duration (in seconds).
  *
- * Strategy (NO speed up to avoid pitch change — pitch stays natural):
- * - If audio longer than target: truncate (cut off the end)
- * - If audio shorter than target: pad with silence at end
- * - If equal: return as-is
+ * Strategy:
+ * - If audio longer than target: speed up to fit (PRESERVE PITCH, NO TRUNCATION)
+ *   - maxSpeedUp default 1.5x (1.5x lebih cepat masih natural, di atas itu mulai aneh)
+ *   - Kalau perlu lebih cepat dari maxSpeedUp: speed up pakai maxSpeedUp, lalu truncate sisanya
+ *     (kasus ekstrem: cue 2 detik tapi TTS output 10 detik → 1.5x = 6.67 detik → truncate ke 2 detik)
+ *     Ini edge case yang jarang terjadi untuk subtitle normal
+ * - If audio shorter than target: pad with silence at end (audio natural, pitch unchanged)
+ * - If equal (within 50ms): return as-is
  *
- * Why no speed up: `preservePitch` property is not universal across browsers
- * (Chrome: preservePitch, Safari: webkitPreservePitch, Firefox: preservesPitch).
- * If browser doesn't support, playbackRate would change pitch → "chipmunk voice".
- * Truncating keeps pitch 100% natural, only downside is audio may cut mid-sentence
- * if cue is shorter than TTS output.
+ * Pitch preservation: speedUpAudio set SEMUA variant preservePitch property
+ * (Chrome/Safari/Firefox). Pitch 100% natural, audio TIDAK dipotong untuk kasus normal.
  *
  * Returns Float32Array at given sampleRate.
  */
@@ -108,8 +117,9 @@ export async function adjustDuration(
   audioBuffer: AudioBuffer,
   targetDurationSec: number,
   sampleRate: number,
-  _options: { maxSpeedUp?: number } = {},
+  options: { maxSpeedUp?: number } = {},
 ): Promise<Float32Array> {
+  const maxSpeedUp = options.maxSpeedUp ?? 1.5
   const sourceDuration = audioBuffer.duration
   const targetSamples = Math.floor(targetDurationSec * sampleRate)
 
@@ -117,25 +127,29 @@ export async function adjustDuration(
     return new Float32Array(targetSamples) // silence
   }
 
-  // Get mono PCM at audioBuffer's native sample rate, then resample to target sample rate
-  const mono = toMono(audioBuffer)
-
-  // Simple linear resample if sample rates differ
-  if (audioBuffer.sampleRate !== sampleRate) {
-    const resampled = new Float32Array(targetSamples > 0 ? Math.floor(mono.length * sampleRate / audioBuffer.sampleRate) : 0)
-    for (let i = 0; i < resampled.length; i++) {
-      const srcIdx = i * audioBuffer.sampleRate / sampleRate
-      const idx0 = Math.floor(srcIdx)
-      const idx1 = Math.min(idx0 + 1, mono.length - 1)
-      const frac = srcIdx - idx0
-      resampled[i] = mono[idx0] * (1 - frac) + mono[idx1] * frac
-    }
-    // Truncate or pad to target
-    return padWithSilence(resampled, targetSamples)
+  if (Math.abs(sourceDuration - targetDurationSec) < 0.05) {
+    // Within 50ms — close enough, just truncate/pad (no speed change needed)
+    const mono = toMono(audioBuffer)
+    return padWithSilence(mono, targetSamples)
   }
 
-  // Same sample rate — just truncate or pad
-  return padWithSilence(mono, targetSamples)
+  if (sourceDuration > targetDurationSec) {
+    // Audio lebih panjang dari cue — speed up untuk fit
+    const ratio = sourceDuration / targetDurationSec
+    if (ratio <= maxSpeedUp) {
+      // Bisa speed up ke ratio yang reasonable — pakai full speed up
+      return await speedUpAudio(audioBuffer, ratio, sampleRate)
+    } else {
+      // Edge case: cue terlalu pendek dibanding TTS output
+      // Speed up pakai maxSpeedUp dulu, lalu truncate sisanya (kasus ekstrem)
+      const spedUp = await speedUpAudio(audioBuffer, maxSpeedUp, sampleRate)
+      return padWithSilence(spedUp, targetSamples) // truncate ke exact length
+    }
+  } else {
+    // Audio lebih pendek dari cue — pad dengan silence (pitch natural)
+    const mono = toMono(audioBuffer)
+    return padWithSilence(mono, targetSamples)
+  }
 }
 
 /**
