@@ -62,13 +62,16 @@ export function setEdgeProxyUrl(url: string): void {
 /**
  * Synthesize text via Edge TTS proxy.
  * Returns MP3 Blob (24kHz mono, 48kbps).
+ *
+ * @param opts.targetDuration Kalau diisi (detik), server akan time-stretch audio
+ *   ke target duration dengan FFmpeg atempo (pitch natural, no chipmunk).
  */
 export async function edgeTTS(
   text: string,
   voice: string = DEFAULT_EDGE_VOICE,
-  opts: { rate?: string; volume?: string; pitch?: string } = {},
+  opts: { rate?: string; volume?: string; pitch?: string; targetDuration?: number } = {},
 ): Promise<Blob> {
-  const { rate = '+0%', volume = '+0%', pitch = '+0Hz' } = opts
+  const { rate = '+0%', volume = '+0%', pitch = '+0Hz', targetDuration } = opts
   if (!text.trim()) {
     return new Blob([])
   }
@@ -77,7 +80,7 @@ export async function edgeTTS(
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, voice, rate, volume, pitch }),
+    body: JSON.stringify({ text, voice, rate, volume, pitch, targetDuration }),
   })
 
   if (!response.ok) {

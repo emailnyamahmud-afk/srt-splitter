@@ -1,15 +1,31 @@
-// Vercel Serverless Function: Edge TTS Proxy
+// Vercel Serverless Function: Edge TTS Proxy + FFmpeg audio sync
 //
 // Browser JavaScript cannot set the `Origin` header to chrome-extension://...
 // (browser security restriction). Microsoft Edge TTS endpoint requires this
 // specific Origin header, so we use this proxy to forward the request.
 //
+// Selain itu, server-side kita bisa pakai FFmpeg untuk time-stretch audio
+// dengan pitch preservation (librubberband). Ini cara yang sama dengan
+// Voicertool.com — audio fit ke cue duration, pitch natural, no chipmunk.
+//
 // POST /api/edge-tts
-// Body: { "text": "Halo", "voice": "id-ID-GadisNeural", "rate": "+0%" }
-// Response: audio/mp3 binary
+// Body: {
+//   "text": "Halo",
+//   "voice": "id-ID-GadisNeural",
+//   "rate": "+0%",          // Edge TTS prosody rate (server-side)
+//   "targetDuration": 5.0    // Target duration in seconds (FFmpeg atempo akan fit audio)
+// }
+// Response: audio/mp3 binary (duration = targetDuration, pitch natural)
 
 import WebSocket from 'ws';
 import crypto from 'crypto';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import { tmpdir } from 'os';
+import { join } from 'path';
+import { writeFileSync, readFileSync, unlinkSync, existsSync } from 'fs';
+
+const execAsync = promisify(exec);
 
 const TRUSTED_CLIENT_TOKEN = '6A5AA1D4EAFF4E9FB37E23D68491D6F4';
 const BASE_URL = 'speech.platform.bing.com/consumer/speech/synthesize/readaloud';
@@ -62,14 +78,11 @@ function edgeTTS(text, voice = 'id-ID-GadisNeural', rate = '+0%', volume = '+0%'
 
     ws.on('open', () => {
       const isoDate = new Date().toISOString().split('.')[0] + 'Z';
-
-      // speech.config message
       const configMsg = `X-Timestamp:${isoDate}\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n` + JSON.stringify({
         context: { synthesis: { audio: { metadataoptions: { sentenceBoundaryEnabled: 'false', wordBoundaryEnabled: 'false' }, outputFormat: OUTPUT_FORMAT } } }
       });
       ws.send(configMsg);
 
-      // SSML message (after 100ms to ensure config is processed first)
       setTimeout(() => {
         const ssml = `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'><voice name='${voice}'><prosody pitch='${pitch}' rate='${rate}' volume='${volume}'>${escapeXml(text)}</prosody></voice></speak>`;
         const ssmlMsg = `X-RequestId:${requestId}\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:${isoDate}\r\nPath:ssml\r\n\r\n${ssml}`;
@@ -79,16 +92,11 @@ function edgeTTS(text, voice = 'id-ID-GadisNeural', rate = '+0%', volume = '+0%'
 
     ws.on('message', (data, isBinary) => {
       if (isBinary) {
-        // Binary message format:
-        //   <header_len: 2 bytes big-endian><header>\r\n<audio bytes>
-        // Header uses \r\n line separators, ends with \r\n then audio data.
         if (data.length < 2) return;
         const headerLen = data.readUInt16BE(0);
         if (headerLen <= 0 || headerLen > data.length) return;
         const header = data.slice(2, 2 + headerLen).toString('utf-8');
         if (header.includes('Path:audio')) {
-          // Audio starts immediately after the 2-byte length + header bytes.
-          // The header itself ends with \r\n (already part of the header length).
           const audioStart = 2 + headerLen;
           if (audioStart < data.length) {
             chunks.push(data.slice(audioStart));
@@ -113,8 +121,79 @@ function edgeTTS(text, voice = 'id-ID-GadisNeural', rate = '+0%', volume = '+0%'
   });
 }
 
+/**
+ * Time-stretch audio ke target duration dengan FFmpeg atempo filter.
+ * Pitch tetap natural (librubberband via atempo filter).
+ *
+ * @param {Buffer} mp3Buffer Source audio MP3
+ * @param {number} targetDurationSec Target duration in seconds
+ * @returns {Promise<Buffer>} MP3 audio dengan duration = targetDurationSec
+ */
+async function timeStretchAudio(mp3Buffer, targetDurationSec) {
+  // Simpan ke file sementara
+  const inFile = join(tmpdir(), `tts_in_${Date.now()}_${noDashUuid()}.mp3`);
+  const outFile = join(tmpdir(), `tts_out_${Date.now()}_${noDashUuid()}.mp3`);
+
+  try {
+    writeFileSync(inFile, mp3Buffer);
+
+    // Dapatkan durasi asli dengan ffprobe
+    const { stdout: probeOut } = await execAsync(`ffprobe -v error -show_entries format=duration -of csv=p=0 "${inFile}"`);
+    const sourceDuration = parseFloat(probeOut.trim());
+
+    if (isNaN(sourceDuration) || sourceDuration <= 0) {
+      return mp3Buffer; // Tidak bisa probe, return asli
+    }
+
+    // Kalau source duration sudah dekat target (±5%), return asli
+    if (Math.abs(sourceDuration - targetDurationSec) < 0.05) {
+      return mp3Buffer;
+    }
+
+    // Hitung atempo ratio
+    // atempo range: 0.5-100.0 (tapi >2.0 mulai aneh, chain untuk >2.0)
+    let ratio = sourceDuration / targetDurationSec;
+
+    // Untuk ratio > 2.0, chain multiple atempo filters
+    // e.g. ratio 4.0 → atempo=2.0,atempo=2.0
+    let atempoChain = '';
+    let remainingRatio = ratio;
+    while (remainingRatio > 2.0) {
+      atempoChain += 'atempo=2.0,';
+      remainingRatio /= 2.0;
+    }
+    atempoChain += `atempo=${remainingRatio.toFixed(6)}`;
+
+    // Untuk ratio < 0.5 (sangat lambat), juga chain
+    while (remainingRatio < 0.5) {
+      atempoChain = `atempo=0.5,` + atempoChain;
+      remainingRatio /= 0.5;
+    }
+
+    // Run FFmpeg dengan atempo filter
+    // -y: overwrite output
+    // -i: input
+    // -filter:a: audio filter (atempo = time-stretch with pitch preservation)
+    // -b:a: bitrate
+    const cmd = `ffmpeg -y -i "${inFile}" -filter:a "${atempoChain}" -b:a 48k -ar 24000 -ac 1 "${outFile}"`;
+    await execAsync(cmd, { timeout: 30000 });
+
+    if (!existsSync(outFile)) {
+      return mp3Buffer; // FFmpeg gagal, return asli
+    }
+
+    const result = readFileSync(outFile);
+    return result;
+  } catch (e) {
+    console.error('FFmpeg error:', e.message);
+    return mp3Buffer; // Fallback: return audio asli
+  } finally {
+    try { unlinkSync(inFile); } catch {}
+    try { unlinkSync(outFile); } catch {}
+  }
+}
+
 export default async function handler(req, res) {
-  // CORS for browser clients
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -127,7 +206,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed, use POST' });
   }
 
-  const { text, voice, rate, volume, pitch } = req.body || {};
+  const { text, voice, rate, volume, pitch, targetDuration } = req.body || {};
 
   if (!text || typeof text !== 'string') {
     return res.status(400).json({ error: 'Field "text" is required' });
@@ -138,11 +217,19 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Step 1: Generate audio dari Edge TTS dengan rate natural
     const audio = await edgeTTS(text, voice || 'id-ID-GadisNeural', rate, volume, pitch);
+
+    // Step 2: Kalau ada targetDuration, time-stretch dengan FFmpeg atempo
+    let finalAudio = audio;
+    if (targetDuration && typeof targetDuration === 'number' && targetDuration > 0) {
+      finalAudio = await timeStretchAudio(audio, targetDuration);
+    }
+
     res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Content-Length', audio.length);
+    res.setHeader('Content-Length', finalAudio.length);
     res.setHeader('Cache-Control', 'no-cache, no-store');
-    res.status(200).send(audio);
+    res.status(200).send(finalAudio);
   } catch (e) {
     console.error('Edge TTS error:', e.message);
     res.status(502).json({ error: 'Edge TTS failed: ' + e.message });

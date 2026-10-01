@@ -94,7 +94,8 @@ export interface NarrationResult {
 }
 
 /**
- * Synthesize text. Server-side rate untuk fit ke cue (kalau ada rate param).
+ * Synthesize text. Untuk Edge TTS, kirim targetDuration agar server time-stretch
+ * dengan FFmpeg atempo (pitch natural, no chipmunk, audio fit ke cue).
  */
 export async function synthesizeText(
   text: string,
@@ -106,6 +107,7 @@ export async function synthesizeText(
     speed?: number           // Kokoro speed (default 1.0)
     rate?: string             // Edge TTS prosody rate (e.g. '+50%')
     openaiSpeed?: number      // OpenAI/OpenRouter speed (0.25-4.0)
+    targetDuration?: number   // Target duration in seconds (Edge TTS: server time-stretch via FFmpeg)
     onModelProgress?: (p: TTSProgress) => void
   },
 ): Promise<{ audioBlob: Blob; mimeType: string; pcm?: Float32Array; sampleRate?: number }> {
@@ -115,14 +117,16 @@ export async function synthesizeText(
 
   switch (opts.provider) {
     case 'edge':
-      // Edge TTS: rate via SSML prosody rate (server-side pitch preservation)
+      // Edge TTS: kirim targetDuration agar server FFmpeg time-stretch (pitch natural)
       return {
-        audioBlob: await edgeTTS(text, opts.voice, { rate: opts.rate || '+0%' }),
+        audioBlob: await edgeTTS(text, opts.voice, {
+          rate: opts.rate || '+0%',
+          targetDuration: opts.targetDuration,
+        }),
         mimeType: 'audio/mp3',
       }
     case 'kokoro': {
       await ensureKokoroModel(opts.onModelProgress)
-      // Kokoro speed (1.0 = normal, server-side)
       const speed = opts.speed || 1.0
       const result = await kokoroSynth(text, opts.voice || DEFAULT_KOKORO_VOICE, speed)
       return { audioBlob: new Blob([]), mimeType: 'audio/wav', pcm: result.audio, sampleRate: result.sampleRate }
@@ -238,17 +242,22 @@ export async function narrateEntries(
       let finalAudio: Float32Array
 
       if (opts.respectTiming) {
-        // === ON MODE: server-side rate, sync ke SRT ===
+        // === ON MODE: server-side FFmpeg time-stretch (Edge TTS), server-side rate (OpenAI/Kokoro) ===
         const cueDuration = entry.end - entry.start
+
+        // Untuk Edge TTS: kirim targetDuration, server akan FFmpeg atempo time-stretch
+        //   (pitch natural, audio fit ke cue, no chipmunk, no truncation)
+        // Untuk OpenAI/OpenRouter: kirim speed ratio (server-side pitch preservation)
+        // Untuk Kokoro: kirim speed ratio (server-side)
         const ratio = estimateRateRatio(text, cueDuration)
         const edgeRate = formatEdgeRate(ratio)
 
-        // Generate dengan server-side rate (pitch natural di server)
         synth = await synthesizeText(text, {
           ...opts,
-          rate: edgeRate,        // Edge TTS prosody rate
-          openaiSpeed: ratio,    // OpenAI/OpenRouter speed
-          speed: ratio,          // Kokoro speed
+          rate: edgeRate,
+          openaiSpeed: ratio,
+          speed: ratio,
+          targetDuration: opts.provider === 'edge' ? cueDuration : undefined,
         })
 
         // Decode ke PCM
@@ -264,14 +273,11 @@ export async function narrateEntries(
           audioBuffer.copyFromChannel(finalAudio, 0)
         }
 
-        // Fit ke cue duration: truncate kalau lebih panjang, pad kalau lebih pendek
-        // (estimasi rate tidak perfect — sisa kecil yang di-truncate bisa diterima)
+        // Fit ke cue duration: truncate/pad (sisa kecil, server FFmpeg sudah fit dekat)
         const cueSamples = Math.floor(cueDuration * OUTPUT_SAMPLE_RATE)
         if (finalAudio.length > cueSamples) {
-          // Lebih panjang sedikit → truncate ke cue (sisa kecil, kata terakhir mungkin potong sedikit)
           finalAudio = finalAudio.subarray(0, cueSamples)
         } else if (finalAudio.length < cueSamples) {
-          // Lebih pendek → pad silence ke cue
           const padded = new Float32Array(cueSamples)
           padded.set(finalAudio, 0)
           finalAudio = padded
