@@ -89,18 +89,18 @@ def split_and_write(entries, output_dir: Path, prefix: str, max_minutes: int = 6
     def write_part(part_entries, part_idx, part_start):
         out_path = output_dir / f"{prefix}-{part_idx:02d}.srt"
         with out_path.open("w", encoding="utf-8") as f:
+            # KEEP ORIGINAL timestamps (do not reset to 00:00:00)
             for i, (start, end, text_lines) in enumerate(part_entries, 1):
-                new_start = start - part_start
-                new_end = end - part_start
-                if new_start < 0:
-                    new_start = 0
                 f.write(f"{i}\n")
-                f.write(f"{format_time(new_start)} --> {format_time(new_end)}\n")
+                f.write(f"{format_time(start)} --> {format_time(end)}\n")
                 for tl in text_lines:
                     f.write(tl + "\n")
                 f.write("\n")
+        first_ts = part_entries[0][0]
+        last_ts = part_entries[-1][1]
         print(f"Wrote {out_path} ({len(part_entries)} entries, "
-              f"duration {format_time(part_entries[-1][1] - part_start)})")
+              f"original range {format_time(first_ts)} → {format_time(last_ts)}, "
+              f"duration {format_time(last_ts - first_ts)})")
 
     for start, end, text_lines in entries:
         # If this entry starts at or after next_part_start and we already have
