@@ -33,14 +33,19 @@ async function getTransformers() {
   return _transformersPromise
 }
 
-// MMS-TTS-Ind — Meta's Massively Multilingual Speech, Indonesian voice.
-// VITS architecture, supported by transformers.js v3+ out of the box.
-// Pre-converted to ONNX by souba67 for in-browser usage.
-const MODEL_ID = 'souba67/mms-tts-ind-ONNX'
+// MMS-TTS via Transformers.js. We use Xenova/mms-tts-eng (English) which is
+// the most stable and most-tested VITS conversion available for browser usage.
+// Text Indonesia akan terbaca dengan accent English, tapi setidaknya ADA SUARA
+// (yang sebelumnya silent WAV).
+//
+// Bahasa Indonesia native (souba67/mms-tts-ind-ONNX) tidak stabil di transformers.js
+// v3.7 / v4.3.0 — error "Tensor shape.Size() must be >= 0" di ONNX runtime.
+// Kalau ada model Indonesia yang stabil nanti, ganti satu baris di bawah.
+const MODEL_ID = 'Xenova/mms-tts-eng'
 
 // MMS-TTS-Ind has a single default voice. We expose one option for clarity.
 export const VOICES = [
-  { id: 'default', label: 'Indonesia (MMS default voice)', lang: 'id-ID' },
+  { id: 'default', label: 'English VITS (untuk text Indonesia, accent English)', lang: 'en' },
 ] as const
 
 export const DEFAULT_VOICE = 'default'
@@ -74,10 +79,10 @@ export async function ensureTTSModel(onProgress?: ProgressCallback): Promise<Tex
 
     onProgress?.({
       stage: 'loading',
-      message: 'Downloading MMS-TTS-Indonesia model (~100 MB, first time only)…',
+      message: 'Downloading MMS-TTS-Eng model (~70 MB, first time only)…',
       percent: 0,
       modelBytesLoaded: 0,
-      modelBytesTotal: 100 * 1024 * 1024,
+      modelBytesTotal: 70 * 1024 * 1024,
     })
 
     const progress_callback = (data: unknown) => {
@@ -85,7 +90,7 @@ export async function ensureTTSModel(onProgress?: ProgressCallback): Promise<Tex
       const status = d.status as string
       if (status === 'progress') {
         const loaded = (d.loaded as number) || 0
-        const total = (d.total as number) || 100 * 1024 * 1024
+        const total = (d.total as number) || 70 * 1024 * 1024
         const percent = total > 0 ? (loaded / total) * 100 : 0
         onProgress?.({
           stage: 'loading',
@@ -110,11 +115,23 @@ export async function ensureTTSModel(onProgress?: ProgressCallback): Promise<Tex
     }
 
     onProgress?.({ stage: 'loading', message: 'Initializing TTS pipeline…' })
-    const pipe = (await pipeline('text-to-speech', MODEL_ID, {
-      dtype: 'fp32',
-      device: 'wasm',
-      progress_callback,
-    } as never)) as unknown as TextToSpeechPipeline
+    // Try quantized (q8) first - more stable in browser WASM, smaller download.
+    // Fallback to fp32 if q8 fails.
+    let pipe: TextToSpeechPipeline
+    try {
+      pipe = (await pipeline('text-to-speech', MODEL_ID, {
+        dtype: 'q8',
+        device: 'wasm',
+        progress_callback,
+      } as never)) as unknown as TextToSpeechPipeline
+    } catch (e) {
+      console.warn('q8 model load failed, trying fp32:', (e as Error).message)
+      pipe = (await pipeline('text-to-speech', MODEL_ID, {
+        dtype: 'fp32',
+        device: 'wasm',
+        progress_callback,
+      } as never)) as unknown as TextToSpeechPipeline
+    }
 
     onProgress?.({ stage: 'idle', message: 'Model ready', percent: 100 })
     return pipe
@@ -124,15 +141,48 @@ export async function ensureTTSModel(onProgress?: ProgressCallback): Promise<Tex
 }
 
 /**
+ * Preprocess text for VITS TTS — improve success rate.
+ * - Lowercase
+ * - Keep only basic Latin alphanumeric + common punctuation
+ * - Strip emojis and special unicode (VITS tokenizer can't handle them)
+ * - Collapse whitespace
+ * - Ensure minimum length (VITS needs at least ~5 chars)
+ */
+function preprocessText(text: string): string {
+  if (!text) return ''
+  let cleaned = text
+    // Lowercase
+    .toLowerCase()
+    // Remove emoji and unicode symbols (VITS tokenizer can't handle them)
+    .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{1F100}-\u{1F1FF}\u{FE00}-\u{FE0F}]/gu, '')
+    // Keep only Latin letters, digits, basic punctuation, and spaces
+    .replace(/[^a-z0-9\s.,!?;:'"()-]/g, ' ')
+    // Collapse whitespace
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  // If too short, pad with a neutral filler to avoid VITS shape error
+  if (cleaned.length < 5) {
+    cleaned = (cleaned + ' ').padEnd(8, 'a')
+  }
+  return cleaned
+}
+
+/**
  * Synthesize a single text chunk to audio.
  * Returns Float32Array PCM samples (mono) + sample rate.
+ * Uses the configured MODEL_ID (default: Xenova/mms-tts-eng).
  */
 export async function synthesizeText(
   text: string,
   _voice?: string,
 ): Promise<{ audio: Float32Array; sampleRate: number }> {
+  const cleanText = preprocessText(text)
   const pipe = await ensureTTSModel()
-  const out = await pipe({ text })
+  const out = await pipe({ text: cleanText })
+  if (!out.audio || out.audio.length === 0) {
+    throw new Error('Model returned empty audio (text might be too short or contain only unknown characters)')
+  }
   return { audio: out.audio, sampleRate: out.sampling_rate }
 }
 
@@ -236,6 +286,9 @@ export interface NarrationResult {
  * Generate narration audio for a list of SRT entries, stitched into one WAV.
  * Each line is synthesized separately, with silence padding to align to
  * the original SRT timing.
+ *
+ * IMPORTANT: If ALL lines fail to synthesize, throws Error so caller can
+ * show a clear message instead of producing a silent WAV.
  */
 export async function narrateEntries(
   entries: SrtEntry[],
@@ -248,6 +301,9 @@ export async function narrateEntries(
   let sampleRate = 22050
   const segments: { audio: Float32Array }[] = []
   const silenceBefore: number[] = []
+  let successCount = 0
+  let failCount = 0
+  let firstError = ''
 
   for (let i = 0; i < entries.length; i++) {
     const entry = entries[i]
@@ -268,8 +324,12 @@ export async function narrateEntries(
 
     try {
       const out = await synthesizeText(text, opts.voice)
+      if (!out.audio || out.audio.length === 0) {
+        throw new Error('Empty audio output from model')
+      }
       sampleRate = out.sampleRate
       segments.push({ audio: out.audio })
+      successCount++
       if (opts.respectTiming) {
         const prevEnd = i > 0 ? entries[i - 1].end : 0
         const gap = Math.max(0, entry.start - prevEnd)
@@ -278,10 +338,27 @@ export async function narrateEntries(
         silenceBefore.push(0.3) // 300ms gap between lines
       }
     } catch (e) {
+      failCount++
+      if (!firstError) firstError = (e as Error).message
       console.error('TTS failed for line', i, e)
+      // Push empty segment + maintain timing (gap = full duration of this cue)
       segments.push({ audio: new Float32Array(0) })
       silenceBefore.push(0)
     }
+  }
+
+  // SAFETY CHECK: If ALL lines failed, throw error instead of producing silence.
+  if (successCount === 0) {
+    throw new Error(
+      `TTS gagal untuk semua ${total} baris. Model tidak bisa menghasilkan audio. ` +
+      `Error pertama: ${firstError || 'unknown'}. ` +
+      `Coba refresh halaman dan reload model, atau gunakan subtitle dengan text lebih panjang.`,
+    )
+  }
+
+  // If some lines failed, log warning
+  if (failCount > 0) {
+    console.warn(`TTS: ${successCount}/${total} baris berhasil, ${failCount} gagal. Audio hasil akan ada bagian yang hilang.`)
   }
 
   opts.onStage?.({ stage: 'stitching', message: 'Stitching audio…', percent: 90 })
@@ -290,6 +367,22 @@ export async function narrateEntries(
     silenceBefore,
     sampleRate,
   )
+
+  // Check that we actually have audio data, not just silence padding
+  let maxAmplitude = 0
+  for (let i = 0; i < allAudio.length; i++) {
+    const abs = Math.abs(allAudio[i])
+    if (abs > maxAmplitude) maxAmplitude = abs
+  }
+
+  if (maxAmplitude < 0.001) {
+    // Audio is essentially silent
+    throw new Error(
+      `TTS menghasilkan audio yang hampir senyap (max amplitude: ${maxAmplitude}). ` +
+      `Kemungkinan model gagal untuk semua baris subtitle. ` +
+      `Coba refresh halaman, atau gunakan subtitle dengan text Indonesia yang lebih panjang.`,
+    )
+  }
 
   // If respectTiming, pad final audio to match total SRT duration
   if (opts.respectTiming) {
@@ -384,6 +477,152 @@ export function formatBytes(bytes: number): string {
   const units = ['B', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return `${(bytes / Math.pow(k, i)).toFixed(1)} ${units[i]}`
+}
+
+/**
+ * Browser SpeechSynthesis API — untuk PREVIEW (dengar langsung).
+ * Gratis, instant, tidak butuh download model. Di macOS ada voice
+ * Indonesia "Damayanti" yang kualitas OK. Di Windows/Linux tergantung OS.
+ *
+ * Note: SpeechSynthesis TIDAK bisa di-capture ke file audio di kebanyakan
+ * browser (security restriction). Untuk export ke file, gunakan VITS model.
+ */
+export interface BrowserVoice {
+  voiceURI: string
+  name: string
+  lang: string
+  localService: boolean
+  default: boolean
+}
+
+export function getIndonesianBrowserVoices(): BrowserVoice[] {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return []
+  const all = window.speechSynthesis.getVoices()
+  return all
+    .filter((v) => v.lang.toLowerCase().startsWith('id'))
+    .map((v) => ({
+      voiceURI: v.voiceURI,
+      name: v.name,
+      lang: v.lang,
+      localService: v.localService,
+      default: v.default,
+    }))
+}
+
+export function getAllBrowserVoices(): BrowserVoice[] {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return []
+  return window.speechSynthesis.getVoices().map((v) => ({
+    voiceURI: v.voiceURI,
+    name: v.name,
+    lang: v.lang,
+    localService: v.localService,
+    default: v.default,
+  }))
+}
+
+/**
+ * Preview a subtitle line using browser SpeechSynthesis.
+ * Returns a promise that resolves when the speech finishes.
+ */
+export function previewWithBrowserTTS(
+  text: string,
+  voiceURI?: string,
+  rate = 1.0,
+  pitch = 1.0,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      reject(new Error('Browser tidak mendukung SpeechSynthesis API'))
+      return
+    }
+    // Cancel any pending speech
+    window.speechSynthesis.cancel()
+
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.rate = rate
+    utterance.pitch = pitch
+    utterance.lang = 'id-ID' // default to Indonesian
+
+    // Find voice by URI, or default to Indonesian voice
+    const allVoices = window.speechSynthesis.getVoices()
+    let chosen: SpeechSynthesisVoice | undefined
+    if (voiceURI) {
+      chosen = allVoices.find((v) => v.voiceURI === voiceURI)
+    }
+    if (!chosen) {
+      // Try Indonesian first
+      chosen = allVoices.find((v) => v.lang.toLowerCase().startsWith('id'))
+    }
+    if (chosen) {
+      utterance.voice = chosen
+      utterance.lang = chosen.lang
+    }
+
+    utterance.onend = () => resolve()
+    utterance.onerror = (e) => reject(new Error('SpeechSynthesis error: ' + e.error))
+    window.speechSynthesis.speak(utterance)
+  })
+}
+
+export function stopBrowserTTS() {
+  if (typeof window !== 'undefined' && window.speechSynthesis) {
+    window.speechSynthesis.cancel()
+  }
+}
+
+/**
+ * Check if browser has Indonesian voice available.
+ */
+export function hasIndonesianBrowserVoice(): boolean {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return false
+  const voices = window.speechSynthesis.getVoices()
+  return voices.some((v) => v.lang.toLowerCase().startsWith('id'))
+}
+
+/**
+ * Some browsers (especially Chrome on first load) need a "voices changed"
+ * event before voices are available. This function ensures voices are loaded.
+ */
+export function ensureBrowserVoicesLoaded(): Promise<BrowserVoice[]> {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      resolve([])
+      return
+    }
+    let voices = window.speechSynthesis.getVoices()
+    if (voices.length > 0) {
+      resolve(voices.map((v) => ({
+        voiceURI: v.voiceURI,
+        name: v.name,
+        lang: v.lang,
+        localService: v.localService,
+        default: v.default,
+      })))
+      return
+    }
+    // Wait for voiceschanged event
+    window.speechSynthesis.onvoiceschanged = () => {
+      voices = window.speechSynthesis.getVoices()
+      resolve(voices.map((v) => ({
+        voiceURI: v.voiceURI,
+        name: v.name,
+        lang: v.lang,
+        localService: v.localService,
+        default: v.default,
+      })))
+    }
+    // Fallback timeout
+    setTimeout(() => {
+      voices = window.speechSynthesis.getVoices()
+      resolve(voices.map((v) => ({
+        voiceURI: v.voiceURI,
+        name: v.name,
+        lang: v.lang,
+        localService: v.localService,
+        default: v.default,
+      })))
+    }, 1000)
+  })
 }
 
 // Re-export for compile-time check

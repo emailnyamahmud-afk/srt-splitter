@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import {
   AudioLines,
   Download,
@@ -8,6 +8,8 @@ import {
   AlertCircle,
   Volume2,
   VolumeX,
+  Play,
+  Square,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,6 +27,10 @@ import {
   formatBytes,
   VOICES,
   DEFAULT_VOICE,
+  previewWithBrowserTTS,
+  stopBrowserTTS,
+  ensureBrowserVoicesLoaded,
+  hasIndonesianBrowserVoice,
   type TTSProgress,
   type SplitResult,
 } from '@/lib/tts'
@@ -45,10 +51,60 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
   const [audioCache, setAudioCache] = useState<Record<number, { blob: Blob; durationSec: number; sampleRate: number }>>({})
   const [fullAudio, setFullAudio] = useState<{ blob: Blob; durationSec: number } | null>(null)
 
+  // Preview mode (Browser SpeechSynthesis) — gratis, instant, no download
+  const [browserVoiceURI, setBrowserVoiceURI] = useState<string>('')
+  const [isPreviewing, setIsPreviewing] = useState(false)
+  const [browserVoices, setBrowserVoices] = useState<{ voiceURI: string; name: string; lang: string }[]>([])
+  const [previewRate, setPreviewRate] = useState(1.0)
+  const [previewingLineIdx, setPreviewingLineIdx] = useState<number | null>(null)
+
+  // Load browser voices on mount
+  useEffect(() => {
+    let mounted = true
+    ensureBrowserVoicesLoaded().then((voices) => {
+      if (!mounted) return
+      setBrowserVoices(voices)
+      // Default to Indonesian voice if available
+      const indoVoice = voices.find((v) => v.lang.toLowerCase().startsWith('id'))
+      if (indoVoice) {
+        setBrowserVoiceURI(indoVoice.voiceURI)
+      } else if (voices.length > 0) {
+        setBrowserVoiceURI(voices[0].voiceURI)
+      }
+    })
+    return () => {
+      mounted = false
+      stopBrowserTTS()
+    }
+  }, [])
+
+  const previewLine = useCallback(
+    async (text: string, lineIdx?: number) => {
+      if (!text.trim()) return
+      try {
+        setIsPreviewing(true)
+        setPreviewingLineIdx(lineIdx ?? null)
+        await previewWithBrowserTTS(text, browserVoiceURI, previewRate)
+      } catch (e) {
+        toast.error('Preview gagal: ' + (e as Error).message)
+      } finally {
+        setIsPreviewing(false)
+        setPreviewingLineIdx(null)
+      }
+    },
+    [browserVoiceURI, previewRate],
+  )
+
+  const stopPreview = useCallback(() => {
+    stopBrowserTTS()
+    setIsPreviewing(false)
+    setPreviewingLineIdx(null)
+  }, [])
+
   const loadModel = useCallback(async () => {
     if (loadingModel || modelReady) return
     setLoadingModel(true)
-    const tid = toast.loading('Downloading TTS model (~100 MB, one-time only)…')
+    const tid = toast.loading('Downloading TTS model (~70 MB, one-time only)…')
     try {
       await ensureTTSModel((p) => {
         setProgress(p)
@@ -199,7 +255,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
               Generate Audio (TTS)
             </CardTitle>
             <CardDescription className="mt-1">
-              Konversi subtitle ke audio narasi bahasa Indonesia. Model MMS-TTS (VITS, Meta) dijalankan di browser — 100% offline setelah download.
+              Konversi subtitle ke audio narasi. Pakai model MMS-TTS English (VITS, Meta) — text Indonesia akan terbaca dengan accent English. 100% offline setelah download.
             </CardDescription>
           </div>
           {modelReady && (
@@ -210,14 +266,93 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
-        {/* Model load section */}
+        {/* Preview Mode - Browser SpeechSynthesis */}
+        <div className="rounded-lg border border-emerald-200 dark:border-emerald-800/50 p-4 bg-emerald-50/30 dark:bg-emerald-950/10">
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex-1">
+              <h4 className="font-medium text-sm mb-1 flex items-center gap-1.5">
+                <Play className="size-3.5 text-emerald-600" />
+                Preview Mode (Instant, Gratis)
+              </h4>
+              <p className="text-xs text-muted-foreground">
+                Dengar langsung pakai voice browser. Di macOS ada voice Indonesia "Damayanti". Tidak bisa export ke file — untuk export pakai mode di bawah.
+              </p>
+            </div>
+            {isPreviewing && (
+              <Button size="sm" variant="outline" onClick={stopPreview}>
+                <Square className="size-3.5 mr-1" /> Stop
+              </Button>
+            )}
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <Label htmlFor="browser-voice" className="text-xs">Voice browser</Label>
+              <select
+                id="browser-voice"
+                value={browserVoiceURI}
+                onChange={(e) => setBrowserVoiceURI(e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
+              >
+                {browserVoices.length === 0 && <option>Loading voices…</option>}
+                {browserVoices.map((v) => (
+                  <option key={v.voiceURI} value={v.voiceURI}>
+                    {v.name} ({v.lang}){v.lang.toLowerCase().startsWith('id') ? ' ★' : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <Label htmlFor="preview-rate" className="text-xs">Speed: {previewRate.toFixed(1)}x</Label>
+              <input
+                id="preview-rate"
+                type="range"
+                min={0.5}
+                max={2}
+                step={0.1}
+                value={previewRate}
+                onChange={(e) => setPreviewRate(Number(e.target.value))}
+                className="w-full mt-2"
+              />
+            </div>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {splitResult.parts[0]?.entries.slice(0, 5).map((entry, i) => {
+              const text = entry.textLines.join(' ').trim()
+              if (!text) return null
+              return (
+                <Button
+                  key={i}
+                  size="sm"
+                  variant="outline"
+                  disabled={isPreviewing}
+                  onClick={() => previewLine(text, i)}
+                  className="h-7 text-xs"
+                >
+                  {isPreviewing && previewingLineIdx === i ? (
+                    <Loader2 className="size-3 mr-1 animate-spin" />
+                  ) : (
+                    <Play className="size-3 mr-1" />
+                  )}
+                  Baris {i + 1}
+                </Button>
+              )
+            })}
+            {splitResult.parts[0] && splitResult.parts[0].entries.length > 5 && (
+              <span className="text-xs text-muted-foreground self-center">
+                +{splitResult.parts[0].entries.length - 5} baris lainnya (lihat di Per Split File)
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Model load section - Export mode */}
         {!modelReady && (
           <div className="rounded-lg border border-purple-200 dark:border-purple-800 p-4 bg-white/50 dark:bg-slate-900/50">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1">
-                <h4 className="font-medium text-sm mb-1">Step 1: Download Model</h4>
+                <h4 className="font-medium text-sm mb-1">Step 1: Download Model (untuk Export)</h4>
                 <p className="text-xs text-muted-foreground">
-                  One-time download (~100 MB) — model MMS-TTS Indonesia (VITS, Meta). Setelah itu tersimpan di browser, jadi offline selamanya.
+                  One-time download (~70 MB) — model MMS-TTS English (VITS, Meta). Text Indonesia akan terbaca dengan accent English. Setelah download tersimpan di browser, offline selamanya.
                 </p>
               </div>
               <Button size="sm" onClick={loadModel} disabled={isLoading}>
