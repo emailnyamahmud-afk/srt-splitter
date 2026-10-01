@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { toast } from 'sonner'
+import { TtsPanel } from '@/components/tts-panel'
 import {
   parseSrt,
   splitEntries,
@@ -414,6 +415,9 @@ export default function Home() {
                 </CardContent>
               </Card>
             )}
+
+            {/* TTS Panel - convert subtitles to audio */}
+            <TtsPanel splitResult={splitResult} prefix={prefix} />
           </>
         )}
 
