@@ -1,15 +1,30 @@
 // Time-stretch audio tanpa ubah pitch, pakai SoundTouchJS.
 //
-// SoundTouchJS adalah port JavaScript dari library SoundTouch C++ yang
-// specifically dirancang untuk time-stretching (ubah durasi) tanpa ubah pitch.
-// Pure JS, cross-browser, tidak bergantung pada preservePitch property
-// (yang tidak reliable di OfflineAudioContext).
+// API SoundTouchJS yang benar:
+// - Stretch: pipe yang prosess audio dengan tempo change tanpa pitch change
+// - SimpleFilter: filter yang wrap pipe + source audio, handle buffering
+// - WebAudioBufferSource: wrap AudioBuffer-like untuk jadi source
 //
-// Use case: Audio TTS 8 detik, cue SRT 5 detik.
-// Time-stretch 8/5 = 1.6x lebih cepat, pitch tetap natural.
-// Audio fit ke cue duration, tidak dipotong, pitch natural di semua browser.
+// Penting: Stretch butuh sampleRate parameter di setParameters() untuk
+// kalkulasi window size yang optimal. Default 44100, harus diset ke sample rate asli.
 
-import { SoundTouch, SimpleFilter, WebAudioBufferSource } from 'soundtouchjs'
+import { Stretch, SimpleFilter, WebAudioBufferSource } from 'soundtouchjs'
+
+interface AudioBufferLike {
+  numberOfChannels: number
+  sampleRate: number
+  length: number
+  getChannelData(channel: number): Float32Array
+}
+
+function makeAudioBufferLike(audio: Float32Array, sampleRate: number): AudioBufferLike {
+  return {
+    numberOfChannels: 1,
+    sampleRate,
+    length: audio.length,
+    getChannelData: () => audio,
+  }
+}
 
 /**
  * Time-stretch Float32Array audio untuk fit target duration.
@@ -30,36 +45,30 @@ export function timeStretchAudio(
 
   const sourceDuration = audio.length / sourceSampleRate
   if (Math.abs(sourceDuration - targetDurationSec) < 0.05) {
-    // Within 50ms — no stretch needed, just pad/truncate
     return padOrTruncate(audio, Math.floor(targetDurationSec * sourceSampleRate))
   }
 
   // Calculate tempo ratio (1.0 = normal, >1.0 = faster/shorter, <1.0 = slower/longer)
   const tempo = sourceDuration / targetDurationSec
 
-  // Setup SoundTouch
-  const soundTouch = new SoundTouch()
-  soundTouch.tempo = tempo
-  soundTouch.pitchSemitones = 0 // No pitch change
-  soundTouch.rate = 1.0 // No sample rate change
+  // Setup Stretch (pipe) — ini yang process tempo change tanpa pitch change
+  const stretch = new Stretch(false)
+  stretch.setParameters(sourceSampleRate, 0, 0, 0) // default sequence/seekwindow/overlap
+  stretch.tempo = tempo
 
-  // Source: Float32Array → WebAudioBufferSource
-  const source = new WebAudioBufferSource(audio, audio.length)
+  // Wrap Float32Array jadi AudioBuffer-like untuk WebAudioBufferSource
+  const audioBufferLike = makeAudioBufferLike(audio, sourceSampleRate)
+  const source = new WebAudioBufferSource(audioBufferLike)
 
-  // Filter untuk process audio
-  const filter = new SimpleFilter(soundTouch, source)
+  // SimpleFilter wrap pipe + source, handle buffering
+  const filter = new SimpleFilter(source, stretch)
 
   // Calculate output length
   const targetSamples = Math.floor(targetDurationSec * sourceSampleRate)
   const output = new Float32Array(targetSamples)
 
-  // Extract samples (SoundTouchJS akan process dan fill output)
-  const samplesExtracted = filter.extract(output, targetSamples)
-
-  // Kalau SoundTouchJS extract kurang dari target, pad dengan silence
-  if (samplesExtracted < targetSamples) {
-    // output sudah otomatis zero-filled oleh Float32Array constructor
-  }
+  // Extract samples (SimpleFilter akan process dan fill output)
+  filter.extract(output, targetSamples)
 
   return output
 }
@@ -79,7 +88,7 @@ function padOrTruncate(audio: Float32Array, targetLength: number): Float32Array 
 
 /**
  * Adjust audio duration to fit target duration.
- * - If audio longer: time-stretch (faster, pitch preserved)
+ * - If audio longer: time-stretch (faster, pitch preserved via SoundTouchJS)
  * - If audio shorter: pad with silence
  * - If equal: return as-is
  *
@@ -91,7 +100,7 @@ export function adjustAudioDuration(
   targetDurationSec: number,
   options: { maxSpeedUp?: number } = {},
 ): Float32Array {
-  const maxSpeedUp = options.maxSpeedUp ?? 2.5 // Allow up to 2.5x speed up
+  const maxSpeedUp = options.maxSpeedUp ?? 2.5
   const sourceDuration = audio.length / sourceSampleRate
   const targetSamples = Math.floor(targetDurationSec * sourceSampleRate)
 
@@ -104,20 +113,15 @@ export function adjustAudioDuration(
   }
 
   if (sourceDuration > targetDurationSec) {
-    // Audio lebih panjang — time-stretch untuk fit
     const ratio = sourceDuration / targetDurationSec
     if (ratio <= maxSpeedUp) {
-      // Time-stretch ke target duration
       return timeStretchAudio(audio, sourceSampleRate, targetDurationSec)
     } else {
-      // Edge case: ratio > maxSpeedUp. Time-stretch ke maxSpeedUp, lalu truncate sisanya.
-      // Misal: audio 10 detik, cue 2 detik, maxSpeedUp 2.5x → 4 detik. Truncate ke 2 detik.
       const stretchedDuration = sourceDuration / maxSpeedUp
       const stretched = timeStretchAudio(audio, sourceSampleRate, stretchedDuration)
       return padOrTruncate(stretched, targetSamples)
     }
   } else {
-    // Audio lebih pendek — pad dengan silence
     return padOrTruncate(audio, targetSamples)
   }
 }

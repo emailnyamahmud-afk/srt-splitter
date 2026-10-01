@@ -43,7 +43,11 @@ import {
   encodeWav,
   downloadBlob as downloadBlobUtil,
 } from './audio-utils'
+import { SoundTouch as _SoundTouch, Stretch as _Stretch, SimpleFilter as _SimpleFilter, WebAudioBufferSource as _WebAudioBufferSource } from 'soundtouchjs'
 import { adjustAudioDuration } from './time-stretch'
+// Force bundle SoundTouchJS — referensi supaya tidak tree-shake
+const _soundtouchRef = { _SoundTouch, _Stretch, _SimpleFilter, _WebAudioBufferSource }
+export { _soundtouchRef }
 
 // Re-export semua yang dibutuhkan UI
 export { EDGE_VOICES, DEFAULT_EDGE_VOICE, type EdgeVoice, getEdgeProxyUrl, setEdgeProxyUrl }
