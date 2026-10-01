@@ -468,8 +468,8 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
                 <div>
                   <Label htmlFor="timing" className="text-xs">Sync timing ke SRT</Label>
                   <p className="text-xs text-muted-foreground mt-1">
-                    ON: audio di-rate-fit ke cue (durasi = SRT, server-side rate, pitch natural).
-                    OFF: audio natural utuh (durasi bisa beda dari SRT).
+                    <strong>ON:</strong> audio fit ke cue (server-side rate, suara natural, durasi = SRT). Boleh jadi cepat, tapi tidak bocil.<br/>
+                    <strong>OFF:</strong> audio natural alami, utuh tanpa potongan. Durasi bisa beda dari SRT.
                   </p>
                 </div>
                 <Switch id="timing" checked={respectTiming} onCheckedChange={setRespectTiming} />
@@ -579,7 +579,8 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
             <br />
             <strong>OpenRouter TTS:</strong> Gateway ke banyak model (OpenAI, ElevenLabs, MiniMax). API key dari openrouter.ai/keys.
             <br />
-            <strong>Timing sync:</strong> Audio di-rate-fit ke cue duration pakai server-side rate (Edge TTS prosody rate / OpenAI speed / Kokoro speed). Pitch tetap natural — tidak chipmunk. Durasi audio = durasi SRT (WAJIB). Estimasi rate berdasarkan text length vs cue duration.
+            <strong>ON (sync ke SRT):</strong> Audio di-rate-fit ke cue pakai server-side rate (Edge TTS prosody rate / OpenAI speed / Kokoro speed). Pitch natural di server — tidak bocil. Durasi audio = SRT. Bisa cepat tapi tidak bocil. Estimasi rate dari text length vs cue duration (charsPerSec=11).<br/>
+            <strong>OFF (natural alami):</strong> Audio natural utuh tanpa potongan. Sequential playback (satu demi satu). Durasi total = sum semua audio, tidak dibatasi SRT.
           </span>
         </div>
       </CardContent>

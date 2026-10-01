@@ -16,8 +16,6 @@
 import type { SrtEntry, SrtPart } from './srt'
 import {
   decodeAudioBlob,
-  adjustDuration,
-  concatenateWithSilence,
   encodeWav,
   downloadBlob as downloadBlobUtil,
 } from './audio-utils'
@@ -258,7 +256,19 @@ export async function narrateEntries(
   }
 
   opts.onStage?.({ stage: 'stitching', message: 'Menjahit audio…', percent: 90 })
-  const allAudio = concatenateWithSilence(segments, silenceBefore, OUTPUT_SAMPLE_RATE)
+
+  // Inline concatenate (semua segments dengan silenceBefore)
+  let totalLen = 0
+  for (let i = 0; i < segments.length; i++) {
+    totalLen += (silenceBefore[i] || 0) + segments[i].length
+  }
+  const allAudio = new Float32Array(totalLen)
+  let offset = 0
+  for (let i = 0; i < segments.length; i++) {
+    offset += silenceBefore[i] || 0
+    allAudio.set(segments[i], offset)
+    offset += segments[i].length
+  }
 
   if (opts.respectTiming) {
     const targetEnd = entries[entries.length - 1].end
@@ -311,4 +321,3 @@ export function formatBytes(bytes: number): string {
 
 // Suppress unused warning
 export const _decodeAudioBlob = decodeAudioBlob
-export const _adjustDuration = adjustDuration
