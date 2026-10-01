@@ -7,9 +7,10 @@ import {
   Loader2,
   AlertCircle,
   Volume2,
-  VolumeX,
   Play,
   Square,
+  Wifi,
+  WifiOff,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -19,21 +20,18 @@ import { Progress } from '@/components/ui/progress'
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import {
-  ensureTTSModel,
   narratePart,
-  narrateAllParts,
   downloadBlob,
   formatDuration,
-  formatBytes,
-  VOICES,
-  DEFAULT_VOICE,
+  EDGE_VOICES,
+  DEFAULT_EDGE_VOICE,
   previewWithBrowserTTS,
   stopBrowserTTS,
   ensureBrowserVoicesLoaded,
-  hasIndonesianBrowserVoice,
   type TTSProgress,
   type SplitResult,
 } from '@/lib/tts'
+import JSZip from 'jszip'
 
 interface TtsPanelProps {
   splitResult: SplitResult
@@ -41,36 +39,42 @@ interface TtsPanelProps {
 }
 
 export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
-  const [voice, setVoice] = useState<string>(DEFAULT_VOICE)
+  const [voice, setVoice] = useState<string>(DEFAULT_EDGE_VOICE)
   const [respectTiming, setRespectTiming] = useState(true)
-  const [modelReady, setModelReady] = useState(false)
-  const [loadingModel, setLoadingModel] = useState(false)
   const [progress, setProgress] = useState<TTSProgress>({ stage: 'idle' })
   const [lineProgress, setLineProgress] = useState<{ current: number; total: number; text: string } | null>(null)
   const [activePart, setActivePart] = useState<number | null>(null)
   const [audioCache, setAudioCache] = useState<Record<number, { blob: Blob; durationSec: number; sampleRate: number }>>({})
-  const [fullAudio, setFullAudio] = useState<{ blob: Blob; durationSec: number } | null>(null)
+  const [isOnline, setIsOnline] = useState(true)
 
-  // Preview mode (Browser SpeechSynthesis) — gratis, instant, no download
+  // Preview mode (Browser SpeechSynthesis) — instant, no internet
   const [browserVoiceURI, setBrowserVoiceURI] = useState<string>('')
   const [isPreviewing, setIsPreviewing] = useState(false)
   const [browserVoices, setBrowserVoices] = useState<{ voiceURI: string; name: string; lang: string }[]>([])
   const [previewRate, setPreviewRate] = useState(1.0)
   const [previewingLineIdx, setPreviewingLineIdx] = useState<number | null>(null)
 
-  // Load browser voices on mount
+  // Track online status (Edge TTS needs internet)
+  useEffect(() => {
+    const updateOnline = () => setIsOnline(navigator.onLine)
+    updateOnline()
+    window.addEventListener('online', updateOnline)
+    window.addEventListener('offline', updateOnline)
+    return () => {
+      window.removeEventListener('online', updateOnline)
+      window.removeEventListener('offline', updateOnline)
+    }
+  }, [])
+
+  // Load browser voices for Preview Mode
   useEffect(() => {
     let mounted = true
     ensureBrowserVoicesLoaded().then((voices) => {
       if (!mounted) return
       setBrowserVoices(voices)
-      // Default to Indonesian voice if available
       const indoVoice = voices.find((v) => v.lang.toLowerCase().startsWith('id'))
-      if (indoVoice) {
-        setBrowserVoiceURI(indoVoice.voiceURI)
-      } else if (voices.length > 0) {
-        setBrowserVoiceURI(voices[0].voiceURI)
-      }
+      if (indoVoice) setBrowserVoiceURI(indoVoice.voiceURI)
+      else if (voices.length > 0) setBrowserVoiceURI(voices[0].voiceURI)
     })
     return () => {
       mounted = false
@@ -101,49 +105,24 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
     setPreviewingLineIdx(null)
   }, [])
 
-  const loadModel = useCallback(async () => {
-    if (loadingModel || modelReady) return
-    setLoadingModel(true)
-    const tid = toast.loading('Downloading TTS model (~70 MB, one-time only)…')
-    try {
-      await ensureTTSModel((p) => {
-        setProgress(p)
-        if (p.stage === 'loading' && p.percent !== undefined) {
-          toast.loading(`Downloading model… ${p.percent.toFixed(0)}%`, { id: tid })
-        }
-      })
-      setModelReady(true)
-      toast.success('TTS model ready! Will load instantly next time.', { id: tid })
-    } catch (e) {
-      console.error(e)
-      toast.error('Failed to load TTS model: ' + (e as Error).message, { id: tid })
-    } finally {
-      setLoadingModel(false)
-    }
-  }, [loadingModel, modelReady])
-
   const generatePart = useCallback(
     async (partIndex: number) => {
       const part = splitResult.parts[partIndex - 1]
       if (!part) return
-      if (!modelReady) {
-        toast.error('Please load the TTS model first.')
+      if (!isOnline) {
+        toast.error('Edge TTS butuh internet. Cek koneksi kamu.')
         return
       }
       setActivePart(partIndex)
       setLineProgress(null)
       setProgress({ stage: 'synthesizing', message: `Generating part ${partIndex}…`, percent: 0 })
-      const tid = toast.loading(`Generating audio for ${prefix}-${String(partIndex).padStart(2, '0')}.srt…`)
+      const tid = toast.loading(`Generating audio untuk ${prefix}-${String(partIndex).padStart(2, '0')}.srt…`)
       try {
         const result = await narratePart(part, {
           voice,
           respectTiming,
-          onLineProgress: (current, total, text) => {
-            setLineProgress({ current, total, text })
-          },
-          onStage: (p) => {
-            setProgress(p)
-          },
+          onLineProgress: (current, total, text) => setLineProgress({ current, total, text }),
+          onStage: (p) => setProgress(p),
         })
         setAudioCache((prev) => ({
           ...prev,
@@ -156,22 +135,22 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
         toast.success(`Part ${partIndex} audio ready (${formatDuration(result.durationSec)})`, { id: tid })
       } catch (e) {
         console.error(e)
-        toast.error('TTS failed: ' + (e as Error).message, { id: tid })
+        toast.error('TTS gagal: ' + (e as Error).message, { id: tid })
       } finally {
         setActivePart(null)
         setLineProgress(null)
       }
     },
-    [splitResult, modelReady, voice, respectTiming, prefix],
+    [splitResult, voice, respectTiming, prefix, isOnline],
   )
 
   const generateAll = useCallback(async () => {
-    if (!modelReady) {
-      toast.error('Please load the TTS model first.')
+    if (!isOnline) {
+      toast.error('Edge TTS butuh internet. Cek koneksi kamu.')
       return
     }
     if (splitResult.parts.length === 0) return
-    setProgress({ stage: 'synthesizing', message: 'Starting full narration…', percent: 0 })
+    setProgress({ stage: 'synthesizing', message: 'Mulai full narration…', percent: 0 })
     setLineProgress(null)
     const tid = toast.loading(`Generating full audio (${splitResult.parts.length} parts)…`)
     try {
@@ -181,9 +160,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
         const result = await narratePart(splitResult.parts[i], {
           voice,
           respectTiming,
-          onLineProgress: (current, total, text) => {
-            setLineProgress({ current, total, text })
-          },
+          onLineProgress: (current, total, text) => setLineProgress({ current, total, text }),
           onStage: (p) => setProgress(p),
         })
         results.push({
@@ -201,10 +178,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
         }))
         toast.loading(`Part ${i + 1}/${splitResult.parts.length} done`, { id: tid })
       }
-      // Concatenate all parts into one big WAV
-      // (simple: just download each separately — concatenation requires decode which is heavier)
-      // For "full audio" we offer ZIP of all parts:
-      const JSZip = (await import('jszip')).default
+      // Bundle all parts into ZIP
       const zip = new JSZip()
       let totalDuration = 0
       for (let i = 0; i < results.length; i++) {
@@ -214,16 +188,16 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
         totalDuration += results[i].durationSec
       }
       const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'STORE' })
-      setFullAudio({ blob: zipBlob, durationSec: totalDuration })
-      toast.success(`Full narration ready (${formatDuration(totalDuration)} total)`, { id: tid })
+      downloadBlob(`${prefix}-audio.zip`, zipBlob)
+      toast.success(`Full narration (${formatDuration(totalDuration)}) — ZIP downloaded`, { id: tid })
     } catch (e) {
       console.error(e)
-      toast.error('Full narration failed: ' + (e as Error).message, { id: tid })
+      toast.error('Full narration gagal: ' + (e as Error).message, { id: tid })
     } finally {
       setActivePart(null)
       setLineProgress(null)
     }
-  }, [splitResult, modelReady, voice, respectTiming, prefix])
+  }, [splitResult, voice, respectTiming, prefix, isOnline])
 
   const downloadPartAudio = useCallback(
     (partIndex: number) => {
@@ -231,18 +205,30 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
       if (!cached) return
       const filename = `${prefix}-${String(partIndex).padStart(2, '0')}.wav`
       downloadBlob(filename, cached.blob)
-      toast.success(`Downloading ${filename}`)
+      toast.success(`Mengunduh ${filename}`)
     },
     [audioCache, prefix],
   )
 
-  const downloadFullAudio = useCallback(() => {
-    if (!fullAudio) return
-    downloadBlob(`${prefix}-audio.zip`, fullAudio.blob)
-    toast.success(`Downloading ${prefix}-audio.zip`)
-  }, [fullAudio, prefix])
+  const downloadAllAsZip = useCallback(async () => {
+    if (Object.keys(audioCache).length === 0) {
+      toast.error('Belum ada audio yang di-generate. Klik generate dulu.')
+      return
+    }
+    const zip = new JSZip()
+    let totalDuration = 0
+    for (const [idxStr, data] of Object.entries(audioCache)) {
+      const idx = Number(idxStr)
+      const filename = `${prefix}-${String(idx).padStart(2, '0')}.wav`
+      const buf = await data.blob.arrayBuffer()
+      zip.file(filename, buf)
+      totalDuration += data.durationSec
+    }
+    const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'STORE' })
+    downloadBlob(`${prefix}-audio.zip`, zipBlob)
+    toast.success(`Downloaded ZIP (${Object.keys(audioCache).length} files, ${formatDuration(totalDuration)})`)
+  }, [audioCache, prefix])
 
-  const isLoading = loadingModel || (progress.stage === 'loading' && progress.percent !== undefined && progress.percent < 100)
   const isSynthesizing = progress.stage === 'synthesizing' || progress.stage === 'stitching'
 
   return (
@@ -255,14 +241,20 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
               Generate Audio (TTS)
             </CardTitle>
             <CardDescription className="mt-1">
-              Konversi subtitle ke audio narasi. Pakai model MMS-TTS English (VITS, Meta) — text Indonesia akan terbaca dengan accent English. 100% offline setelah download.
+              Konversi subtitle ke audio. Pakai Microsoft Edge TTS (neural voices, gratis, native Indonesia). Audio timing di-sync ke SRT.
             </CardDescription>
           </div>
-          {modelReady && (
-            <Badge variant="secondary" className="shrink-0">
-              <Volume2 className="size-3 mr-1" /> Model Ready
-            </Badge>
-          )}
+          <Badge variant={isOnline ? 'secondary' : 'destructive'} className="shrink-0">
+            {isOnline ? (
+              <>
+                <Wifi className="size-3 mr-1" /> Online
+              </>
+            ) : (
+              <>
+                <WifiOff className="size-3 mr-1" /> Offline
+              </>
+            )}
+          </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -272,10 +264,10 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
             <div className="flex-1">
               <h4 className="font-medium text-sm mb-1 flex items-center gap-1.5">
                 <Play className="size-3.5 text-emerald-600" />
-                Preview Mode (Instant, Gratis)
+                Preview Mode (Instant, Offline)
               </h4>
               <p className="text-xs text-muted-foreground">
-                Dengar langsung pakai voice browser. Di macOS ada voice Indonesia "Damayanti". Tidak bisa export ke file — untuk export pakai mode di bawah.
+                Dengar langsung pakai voice browser (di macOS: Damayanti Indonesia native). Tidak butuh internet, tidak bisa export ke file.
               </p>
             </div>
             {isPreviewing && (
@@ -339,125 +331,88 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
             })}
             {splitResult.parts[0] && splitResult.parts[0].entries.length > 5 && (
               <span className="text-xs text-muted-foreground self-center">
-                +{splitResult.parts[0].entries.length - 5} baris lainnya (lihat di Per Split File)
+                +{splitResult.parts[0].entries.length - 5} baris lainnya
               </span>
             )}
           </div>
         </div>
 
-        {/* Model load section - Export mode */}
-        {!modelReady && (
-          <div className="rounded-lg border border-purple-200 dark:border-purple-800 p-4 bg-white/50 dark:bg-slate-900/50">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1">
-                <h4 className="font-medium text-sm mb-1">Step 1: Download Model (untuk Export)</h4>
-                <p className="text-xs text-muted-foreground">
-                  One-time download (~70 MB) — model MMS-TTS English (VITS, Meta). Text Indonesia akan terbaca dengan accent English. Setelah download tersimpan di browser, offline selamanya.
-                </p>
-              </div>
-              <Button size="sm" onClick={loadModel} disabled={isLoading}>
-                {loadingModel ? (
-                  <>
-                    <Loader2 className="size-3.5 mr-1 animate-spin" /> Loading…
-                  </>
-                ) : (
-                  <>
-                    <Download className="size-3.5 mr-1" /> Download Model
-                  </>
-                )}
-              </Button>
+        {/* Export Mode - Edge TTS */}
+        <div className="rounded-lg border border-purple-200 dark:border-purple-800 p-4 bg-white/50 dark:bg-slate-900/50">
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex-1">
+              <h4 className="font-medium text-sm mb-1 flex items-center gap-1.5">
+                <Volume2 className="size-3.5 text-purple-600" />
+                Export Mode (Edge TTS, native Indonesia)
+              </h4>
+              <p className="text-xs text-muted-foreground">
+                Microsoft Edge TTS neural voices (id-ID-Gadis/Ardi) — kualitas cloud, gratis. Audio timing di-sync ke SRT. Butuh internet.
+              </p>
             </div>
-            {loadingModel && progress.percent !== undefined && progress.percent < 100 && (
-              <div className="mt-3">
-                <Progress value={progress.percent} className="h-2" />
-                <p className="text-xs text-muted-foreground mt-1.5">
-                  {progress.message ?? 'Loading…'}{' '}
-                  {progress.modelBytesLoaded && progress.modelBytesTotal
-                    ? `${formatBytes(progress.modelBytesLoaded)} / ${formatBytes(progress.modelBytesTotal)}`
-                    : `${progress.percent.toFixed(0)}%`}
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 mb-3">
+            <div>
+              <Label htmlFor="edge-voice" className="text-xs">Voice Edge TTS</Label>
+              <select
+                id="edge-voice"
+                value={voice}
+                onChange={(e) => setVoice(e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
+              >
+                {EDGE_VOICES.map((v) => (
+                  <option key={v.name} value={v.name}>
+                    {v.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <Label htmlFor="timing" className="text-xs">Sync timing ke SRT</Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  ON: audio dipas/dipercepat sesuai cue. OFF: baris dibaca back-to-back.
                 </p>
               </div>
+              <Switch id="timing" checked={respectTiming} onCheckedChange={setRespectTiming} />
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex flex-wrap gap-2 mb-3">
+            <Button onClick={generateAll} disabled={isSynthesizing || !isOnline} size="sm">
+              {isSynthesizing ? (
+                <>
+                  <Loader2 className="size-3.5 mr-1 animate-spin" /> Generating…
+                </>
+              ) : (
+                <>
+                  <AudioLines className="size-3.5 mr-1" /> Generate & Download ZIP ({splitResult.parts.length} parts)
+                </>
+              )}
+            </Button>
+            {Object.keys(audioCache).length > 0 && (
+              <Button onClick={downloadAllAsZip} variant="outline" size="sm">
+                <Download className="size-3.5 mr-1" /> Download ZIP ({Object.keys(audioCache).length} files)
+              </Button>
             )}
           </div>
-        )}
 
-        {/* TTS settings (only when model ready) */}
-        {modelReady && (
-          <>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="voice" className="text-sm font-medium">
-                  Voice
-                </Label>
-                <select
-                  id="voice"
-                  value={voice}
-                  onChange={(e) => setVoice(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                >
-                  {VOICES.map((v) => (
-                    <option key={v.id} value={v.id}>
-                      {v.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-end justify-between gap-3">
-                <div>
-                  <Label htmlFor="timing" className="text-sm font-medium">
-                    Sinkron dengan timing SRT
-                  </Label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    ON: audio dipadding sesuai waktu mulai/akhir tiap baris.
-                    OFF: baris-baris dibaca berurutan tanpa jeda.
-                  </p>
-                </div>
-                <Switch id="timing" checked={respectTiming} onCheckedChange={setRespectTiming} />
-              </div>
-            </div>
-
-            {/* Action buttons */}
-            <div className="flex flex-wrap gap-2">
-              <Button onClick={generateAll} disabled={isSynthesizing} size="sm">
-                {isSynthesizing ? (
-                  <>
-                    <Loader2 className="size-3.5 mr-1 animate-spin" /> Generating…
-                  </>
-                ) : (
-                  <>
-                    <AudioLines className="size-3.5 mr-1" /> Generate Full Audio ({splitResult.parts.length} parts)
-                  </>
-                )}
-              </Button>
-              {fullAudio && (
-                <Button onClick={downloadFullAudio} variant="outline" size="sm">
-                  <Download className="size-3.5 mr-1" /> Download ZIP ({formatDuration(fullAudio.durationSec)})
-                </Button>
+          {/* Progress */}
+          {(isSynthesizing || lineProgress) && (
+            <div className="rounded-md border bg-white/50 dark:bg-slate-900/50 p-3 space-y-2">
+              {progress.message && <p className="text-sm font-medium">{progress.message}</p>}
+              {progress.percent !== undefined && <Progress value={progress.percent} className="h-2" />}
+              {lineProgress && (
+                <p className="text-xs text-muted-foreground">
+                  Baris {lineProgress.current}/{lineProgress.total}: "{lineProgress.text.slice(0, 60)}{lineProgress.text.length > 60 ? '…' : ''}"
+                </p>
               )}
             </div>
+          )}
 
-            {/* Progress display */}
-            {(isSynthesizing || lineProgress) && (
-              <div className="rounded-md border bg-white/50 dark:bg-slate-900/50 p-3 space-y-2">
-                {progress.message && (
-                  <p className="text-sm font-medium">{progress.message}</p>
-                )}
-                {progress.percent !== undefined && (
-                  <Progress value={progress.percent} className="h-2" />
-                )}
-                {lineProgress && (
-                  <p className="text-xs text-muted-foreground">
-                    Line {lineProgress.current}/{lineProgress.total}: "{lineProgress.text.slice(0, 60)}{lineProgress.text.length > 60 ? '…' : ''}"
-                  </p>
-                )}
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Per-part list */}
-        {modelReady && splitResult.parts.length > 0 && (
-          <div className="space-y-2">
+          {/* Per-part list */}
+          <div className="space-y-2 mt-3">
             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Per Split File
             </h4>
@@ -488,7 +443,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
                     <Button
                       size="sm"
                       variant="outline"
-                      disabled={isSynthesizing}
+                      disabled={isSynthesizing || !isOnline}
                       onClick={() => generatePart(idx)}
                       className="h-8"
                     >
@@ -513,21 +468,20 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
               })}
             </div>
           </div>
-        )}
+        </div>
 
         {/* Notice */}
         <div className="text-xs text-muted-foreground flex items-start gap-2 pt-1">
           <AlertCircle className="size-3.5 mt-0.5 shrink-0" />
           <span>
-            TTS berjalan 100% di browser. Untuk durasi panjang (3-4 jam),
-            biarkan tab terbuka. Mac dengan CPU idle dapat memproses ~30-60 detik
-            audio per menit, jadi 3 jam subtitle butuh ~3-6 menit untuk selesai.
+            <strong>Timing sync:</strong> Audio tiap baris akan dipercepat (max 1.5x) kalau lebih panjang dari cue, atau diberi silence kalau lebih pendek. Hasil audio = pas dengan timing SRT asli.
+            <br />
+            <strong>Internet:</strong> Edge TTS butuh internet (cloud-based). Preview Mode bisa offline.
+            <br />
+            <strong>Durasi panjang (3-4 jam):</strong> Bisa generate full durasi. Mac idle bisa proses ~30-60 detik audio per menit.
           </span>
         </div>
       </CardContent>
     </Card>
   )
 }
-
-// Suppress unused warning for VolumeX import (kept for future mute toggle)
-export const _VolumeX = VolumeX

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Upload,
   FileText,
@@ -36,7 +36,11 @@ import {
 } from '@/lib/srt'
 
 export default function Home() {
+  // Persist state to localStorage so refresh doesn't reset upload
+  const STORAGE_KEY = 'srt-splitter-state-v1'
+
   const [file, setFile] = useState<File | null>(null)
+  const [fileContent, setFileContent] = useState<string>('') // SRT text persisted
   const [entries, setEntries] = useState<SrtEntry[]>([])
   const [fileName, setFileName] = useState<string>('')
   const [maxMinutes, setMaxMinutes] = useState<number>(30)
@@ -45,6 +49,58 @@ export default function Home() {
   const [isDragging, setIsDragging] = useState<boolean>(false)
   const [isZipping, setIsZipping] = useState<boolean>(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Restore state from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (!saved) return
+      const data = JSON.parse(saved) as {
+        fileName?: string
+        fileContent?: string
+        maxMinutes?: number
+        prefix?: string
+        resetTimestamps?: boolean
+      }
+      if (data.fileContent && data.fileName) {
+        const parsed = parseSrt(data.fileContent)
+        if (parsed.length > 0) {
+          setEntries(parsed)
+          setFileName(data.fileName)
+          setFileContent(data.fileContent)
+          // Reconstruct a pseudo-File object so UI shows file as loaded
+          try {
+            const restoredFile = new File([data.fileContent], data.fileName, { type: 'application/x-subrip' })
+            setFile(restoredFile)
+          } catch {
+            // File constructor might fail in some environments; entries+fileName is enough
+          }
+          if (data.maxMinutes) setMaxMinutes(data.maxMinutes)
+          if (data.prefix) setPrefix(data.prefix)
+          if (typeof data.resetTimestamps === 'boolean') setResetTimestamps(data.resetTimestamps)
+          toast.info(`Restored ${parsed.length} subtitle dari sesi sebelumnya.`)
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to restore state from localStorage:', e)
+    }
+  }, [])
+
+  // Save state to localStorage whenever relevant state changes
+  useEffect(() => {
+    if (!fileContent || !fileName) {
+      // Clear storage if no file
+      localStorage.removeItem(STORAGE_KEY)
+      return
+    }
+    try {
+      const data = { fileName, fileContent, maxMinutes, prefix, resetTimestamps }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    } catch (e) {
+      console.warn('Failed to save state to localStorage:', e)
+      // localStorage might be full (large SRT files)
+    }
+  }, [fileName, fileContent, maxMinutes, prefix, resetTimestamps])
 
   const splitResult: SplitResult | null = useMemo(() => {
     if (entries.length === 0) return null
@@ -70,6 +126,7 @@ export default function Home() {
       }
       setFile(f)
       setEntries(parsed)
+      setFileContent(text) // persist to localStorage
       // Auto-fill prefix from filename if it looks like a season code
       const baseName = f.name.replace(/\.srt$/i, '').replace(/\[.*?\]/g, '').trim()
       setPrefix(baseName.slice(0, 6) || 'S6')
@@ -118,6 +175,7 @@ export default function Home() {
     setFile(null)
     setEntries([])
     setFileName('')
+    setFileContent('') // triggers localStorage clear via useEffect
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
