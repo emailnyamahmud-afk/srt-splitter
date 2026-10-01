@@ -29,7 +29,7 @@ import {
   splitEntries,
   serializePart,
   downloadTextFile,
-  downloadAllParts,
+  downloadAllPartsAsZip,
   type SrtEntry,
   type SplitResult,
 } from '@/lib/srt'
@@ -42,6 +42,7 @@ export default function Home() {
   const [prefix, setPrefix] = useState<string>('S6')
   const [resetTimestamps, setResetTimestamps] = useState<boolean>(false)
   const [isDragging, setIsDragging] = useState<boolean>(false)
+  const [isZipping, setIsZipping] = useState<boolean>(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const splitResult: SplitResult | null = useMemo(() => {
@@ -314,12 +315,37 @@ export default function Home() {
                   </div>
                   <Button
                     size="sm"
-                    onClick={() => {
-                      downloadAllParts(splitResult.parts, prefix, resetTimestamps)
-                      toast.success('Mengunduh semua file…')
+                    disabled={isZipping}
+                    onClick={async () => {
+                      if (!splitResult) return
+                      setIsZipping(true)
+                      const tid = toast.loading('Membuat ZIP…')
+                      try {
+                        await downloadAllPartsAsZip(
+                          splitResult.parts,
+                          prefix,
+                          resetTimestamps,
+                        )
+                        toast.success(`Mengunduh ${prefix}-split.zip`, {
+                          id: tid,
+                        })
+                      } catch (e) {
+                        console.error(e)
+                        toast.error('Gagal membuat ZIP', { id: tid })
+                      } finally {
+                        setIsZipping(false)
+                      }
                     }}
                   >
-                    <Download className="size-4 mr-1" /> Unduh Semua
+                    {isZipping ? (
+                      <>
+                        <RefreshCw className="size-4 mr-1 animate-spin" /> Mengemas…
+                      </>
+                    ) : (
+                      <>
+                        <Download className="size-4 mr-1" /> Unduh ZIP
+                      </>
+                    )}
                   </Button>
                 </div>
               </CardHeader>
@@ -402,8 +428,8 @@ export default function Home() {
                     <strong className="text-foreground">Cara pakai:</strong>{' '}
                     Seret file SRT ke area di atas atau klik untuk pilih file.
                     Atur durasi per file (default 30 menit), pilih apakah timestamp
-                    direset ke 00:00:00 atau dipertahankan, lalu unduh satu-satu atau
-                    sekaligus.
+                    direset ke 00:00:00 atau dipertahankan, lalu unduh per-file
+                    atau semua sebagai satu file ZIP.
                   </p>
                   <p>
                     <strong className="text-foreground">Privacy:</strong> Aplikasi ini
@@ -420,6 +446,39 @@ export default function Home() {
             </CardContent>
           </Card>
         )}
+
+        {/* Source code download */}
+        <Card className="border-amber-200 dark:border-amber-900/50 bg-amber-50/30 dark:bg-amber-950/10">
+          <CardContent className="pt-6 pb-6">
+            <div className="flex items-start gap-3">
+              <Download className="size-5 text-amber-600 mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <h3 className="font-semibold mb-1">Unduh Source Code</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Ingin menjalankan offline di MacBook atau deploy ke GitHub Pages?
+                  Unduh source code lengkap (termasuk README & GitHub Actions workflow).
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href="srt-splitter-source.zip"
+                    download
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md bg-amber-600 hover:bg-amber-700 text-white transition-colors"
+                  >
+                    <Download className="size-3.5" /> srt-splitter-source.zip
+                  </a>
+                  <a
+                    href="https://github.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border hover:bg-muted transition-colors"
+                  >
+                    GitHub Pages Guide →
+                  </a>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </main>
 
       <footer className="border-t bg-white/60 dark:bg-slate-900/60 mt-auto">

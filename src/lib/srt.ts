@@ -191,6 +191,13 @@ export function downloadTextFile(
   mime = "application/x-subrip;charset=utf-8",
 ) {
   const blob = new Blob([content], { type: mime });
+  triggerBlobDownload(filename, blob);
+}
+
+/**
+ * Trigger a browser download from a Blob.
+ */
+export function triggerBlobDownload(filename: string, blob: Blob) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -202,18 +209,53 @@ export function downloadTextFile(
 }
 
 /**
- * Trigger a zip-style download of all parts by emitting files one by one.
- * Note: browsers may block multiple downloads; user might need to allow.
+ * Build a single ZIP file containing all SRT parts and trigger a download.
+ * Uses JSZip to bundle everything into one .zip archive in the browser.
  */
-export function downloadAllParts(
+export async function downloadAllPartsAsZip(
   parts: SrtPart[],
   prefix: string,
   resetTimestamps: boolean,
+  zipName?: string,
 ) {
-  parts.forEach((part, i) => {
+  // Lazy import to keep initial bundle smaller
+  const JSZip = (await import("jszip")).default;
+  const zip = new JSZip();
+
+  for (const part of parts) {
     const filename = `${prefix}-${String(part.index).padStart(2, "0")}.srt`;
     const content = serializePart(part, resetTimestamps);
-    // Stagger downloads slightly to avoid browser blocking
-    setTimeout(() => downloadTextFile(filename, content), i * 200);
+    zip.file(filename, content);
+  }
+
+  // Add a small index file summarizing the parts
+  const indexLines: string[] = [
+    `${prefix}-split.txt`,
+    "",
+    `Total parts: ${parts.length}`,
+    "",
+    "File | Start | End | Duration | Entries",
+    "-----|-------|-----|----------|--------",
+  ];
+  for (const part of parts) {
+    indexLines.push(
+      [
+        `${prefix}-${String(part.index).padStart(2, "0")}.srt`,
+        formatTime(part.startSec),
+        formatTime(part.endSec),
+        formatTime(part.durationSec),
+        String(part.entryCount),
+      ].join(" | "),
+    );
+  }
+  zip.file(`${prefix}-split.txt`, indexLines.join("\n"));
+
+  const blob = await zip.generateAsync({
+    type: "blob",
+    compression: "DEFLATE",
+    compressionOptions: { level: 6 },
   });
+
+  const finalName = zipName ?? `${prefix}-split.zip`;
+  triggerBlobDownload(finalName, blob);
 }
