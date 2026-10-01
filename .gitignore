@@ -36,7 +36,6 @@ yarn-error.log*
 # vercel
 .vercel
 
-
 # typescript
 *.tsbuildinfo
 next-env.d.ts
@@ -50,5 +49,22 @@ test
 prompt
 
 server.log
-# Skills directory
+
+# Skills directory (internal, not part of this app)
 /skills/
+/.zscripts/
+/examples/
+/mini-services/
+/tests/
+/agent-ctx/
+
+# Prisma / DB (we don't use it)
+/prisma/
+/db/
+
+# User-private files (NOT to be committed)
+/upload/      # user-uploaded SRT files
+/download/    # generated split SRT outputs
+
+# Build artifacts that aren't needed in repo
+Caddyfile
