@@ -127,9 +127,11 @@ function edgeTTS(text, voice = 'id-ID-GadisNeural', rate = '+0%', volume = '+0%'
  *
  * @param {Buffer} mp3Buffer Source audio MP3
  * @param {number} targetDurationSec Target duration in seconds
+ * @param {boolean} allowSlowDown Kalau true: slow down kalau audio < target.
+ *   Kalau false: return asli (no slow down, hanya speed up).
  * @returns {Promise<Buffer>} MP3 audio dengan duration = targetDurationSec
  */
-async function timeStretchAudio(mp3Buffer, targetDurationSec) {
+async function timeStretchAudio(mp3Buffer, targetDurationSec, allowSlowDown = true) {
   // Simpan ke file sementara
   const inFile = join(tmpdir(), `tts_in_${Date.now()}_${noDashUuid()}.mp3`);
   const outFile = join(tmpdir(), `tts_out_${Date.now()}_${noDashUuid()}.mp3`);
@@ -150,8 +152,14 @@ async function timeStretchAudio(mp3Buffer, targetDurationSec) {
       return mp3Buffer;
     }
 
+    // Kalau source < target dan tidak allowSlowDown, return asli (no slow down)
+    if (sourceDuration < targetDurationSec && !allowSlowDown) {
+      return mp3Buffer;
+    }
+
     // Hitung atempo ratio
-    // atempo range: 0.5-100.0 (tapi >2.0 mulai aneh, chain untuk >2.0)
+    // ratio > 1.0 = speed up (audio lebih cepat, lebih pendek)
+    // ratio < 1.0 = slow down (audio lebih lambat, lebih panjang)
     let ratio = sourceDuration / targetDurationSec;
 
     // Untuk ratio > 2.0, chain multiple atempo filters
@@ -206,7 +214,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed, use POST' });
   }
 
-  const { text, voice, rate, volume, pitch, targetDuration } = req.body || {};
+  const { text, voice, rate, volume, pitch, targetDuration, allowSlowDown } = req.body || {};
 
   if (!text || typeof text !== 'string') {
     return res.status(400).json({ error: 'Field "text" is required' });
@@ -223,7 +231,7 @@ export default async function handler(req, res) {
     // Step 2: Kalau ada targetDuration, time-stretch dengan FFmpeg atempo
     let finalAudio = audio;
     if (targetDuration && typeof targetDuration === 'number' && targetDuration > 0) {
-      finalAudio = await timeStretchAudio(audio, targetDuration);
+      finalAudio = await timeStretchAudio(audio, targetDuration, allowSlowDown !== false);
     }
 
     res.setHeader('Content-Type', 'audio/mpeg');

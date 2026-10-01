@@ -81,6 +81,7 @@ export interface NarrationOptions {
   apiKey?: string
   speed?: number // untuk Kokoro (default 1.0, hanya dipakai kalau respectTiming=false)
   respectTiming: boolean
+  speedMode?: 'speedup-only' | 'speedup-slowdown' // ON mode: speed up only, atau speed up + slow down
   onModelProgress?: (p: TTSProgress) => void
   onLineProgress?: (current: number, total: number, text: string) => void
   onStage?: ProgressCallback
@@ -108,6 +109,7 @@ export async function synthesizeText(
     rate?: string             // Edge TTS prosody rate (e.g. '+50%')
     openaiSpeed?: number      // OpenAI/OpenRouter speed (0.25-4.0)
     targetDuration?: number   // Target duration in seconds (Edge TTS: server time-stretch via FFmpeg)
+    allowSlowDown?: boolean    // Edge TTS: true = slow down kalau audio < target, false = return asli
     onModelProgress?: (p: TTSProgress) => void
   },
 ): Promise<{ audioBlob: Blob; mimeType: string; pcm?: Float32Array; sampleRate?: number }> {
@@ -117,11 +119,12 @@ export async function synthesizeText(
 
   switch (opts.provider) {
     case 'edge':
-      // Edge TTS: kirim targetDuration agar server FFmpeg time-stretch (pitch natural)
+      // Edge TTS: kirim targetDuration + allowSlowDown agar server FFmpeg time-stretch (pitch natural)
       return {
         audioBlob: await edgeTTS(text, opts.voice, {
           rate: opts.rate || '+0%',
           targetDuration: opts.targetDuration,
+          allowSlowDown: opts.allowSlowDown,
         }),
         mimeType: 'audio/mp3',
       }
@@ -251,6 +254,7 @@ export async function narrateEntries(
         // Untuk Kokoro: kirim speed ratio (server-side)
         const ratio = estimateRateRatio(text, cueDuration)
         const edgeRate = formatEdgeRate(ratio)
+        const allowSlowDown = opts.speedMode === 'speedup-slowdown'
 
         synth = await synthesizeText(text, {
           ...opts,
@@ -258,6 +262,7 @@ export async function narrateEntries(
           openaiSpeed: ratio,
           speed: ratio,
           targetDuration: opts.provider === 'edge' ? cueDuration : undefined,
+          allowSlowDown: opts.provider === 'edge' ? allowSlowDown : undefined,
         })
 
         // Decode ke PCM

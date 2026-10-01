@@ -64,6 +64,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
   const [openrouterVoice, setOpenrouterVoice] = useState<string>('alloy')
 
   const [respectTiming, setRespectTiming] = useState(true)
+  const [speedMode, setSpeedMode] = useState<'speedup-only' | 'speedup-slowdown'>('speedup-slowdown')
   const [progress, setProgress] = useState<TTSProgress>({ stage: 'idle' })
   const [lineProgress, setLineProgress] = useState<{ current: number; total: number; text: string } | null>(null)
   const [activePart, setActivePart] = useState<number | null>(null)
@@ -155,6 +156,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
           apiKey,
           speed: provider === 'kokoro' ? kokoroSpeed : undefined,
           respectTiming,
+          speedMode,
           onModelProgress: provider === 'kokoro' ? (p) => setProgress(p) : undefined,
           onLineProgress: (current, total, text) => setLineProgress({ current, total, text }),
           onStage: (p) => setProgress(p),
@@ -172,7 +174,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
         setLineProgress(null)
       }
     },
-    [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, respectTiming, prefix, audioCache],
+    [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, respectTiming, speedMode, prefix, audioCache],
   )
 
   const generateAll = useCallback(async () => {
@@ -203,6 +205,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
           apiKey,
           speed: provider === 'kokoro' ? kokoroSpeed : undefined,
           respectTiming,
+          speedMode,
           onModelProgress: provider === 'kokoro' ? (p) => setProgress(p) : undefined,
           onLineProgress: (current, total, text) => setLineProgress({ current, total, text }),
           onStage: (p) => setProgress(p),
@@ -229,7 +232,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
       setActivePart(null)
       setLineProgress(null)
     }
-  }, [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, respectTiming, prefix, audioCache])
+  }, [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, respectTiming, speedMode, prefix, audioCache])
 
   const downloadPartAudio = useCallback(
     (partIndex: number) => {
@@ -468,12 +471,27 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
                 <div>
                   <Label htmlFor="timing" className="text-xs">Sync timing ke SRT</Label>
                   <p className="text-xs text-muted-foreground mt-1">
-                    <strong>ON:</strong> audio fit ke cue (server-side rate, suara natural, durasi = SRT). Boleh jadi cepat, tapi tidak bocil.<br/>
+                    <strong>ON:</strong> audio fit ke cue (server-side FFmpeg atempo, suara natural, durasi = SRT). Boleh jadi cepat, tapi tidak bocil.<br/>
                     <strong>OFF:</strong> audio natural alami, utuh tanpa potongan. Durasi bisa beda dari SRT.
                   </p>
                 </div>
                 <Switch id="timing" checked={respectTiming} onCheckedChange={setRespectTiming} />
               </div>
+              {respectTiming && (
+                <div className="mt-2">
+                  <Label htmlFor="speed-mode" className="text-xs">Speed mode (seperti Voicertool)</Label>
+                  <select
+                    id="speed-mode"
+                    value={speedMode}
+                    onChange={(e) => setSpeedMode(e.target.value as 'speedup-only' | 'speedup-slowdown')}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
+                  >
+                    <option value="speedup-slowdown">Speed up and slow down — audio selalu fit ke cue (speed up kalau lebih panjang, slow down kalau lebih pendek)</option>
+                    <option value="speedup-only">Speed up only — speed up kalau lebih panjang, biarkan silence kalau lebih pendek</option>
+                  </select>
+                </div>
+              )}
+
             </div>
 
             {/* Action buttons */}
