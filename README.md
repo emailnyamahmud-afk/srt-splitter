@@ -15,11 +15,14 @@ Aplikasi web untuk memecah file SRT (subtitle) menjadi beberapa bagian dengan du
 - Untuk film panjang (3-4 jam), pilih preset **4j** atau **5j** agar tidak di-split
 
 ### 🔊 TTS (Text-to-Speech) — Audio Narasi
-- **Microsoft Edge TTS** — neural voices Indonesia native (`id-ID-Gadis` perempuan, `id-ID-Ardi` laki-laki)
-  - Kualitas setara Azure Cloud TTS berbayar, tapi **gratis** (pakai Edge browser's free endpoint)
-  - Voice tambahan: English, Mandarin, Japanese, Korean
+- **OpenAI TTS** — neural voices multilingual (Indonesia natural)
+  - Voices: `nova` (default, female natural), `shimmer`, `alloy`, `echo`, `fable`, `onyx`
+  - Model `tts-1-hd` (premium) — text Indonesia dibaca dengan accent natural
+  - Butuh OpenAI API key (gratis $5 credit saat signup di platform.openai.com)
+  - API key disimpan di localStorage browser, tidak pernah dikirim ke server kita
+  - Cost: $0.015/1k chars = ~$1 per 10 menit audio
 - **Audio timing di-sync ke SRT** — kalau audio lebih panjang dari cue, di-speed-up (max 1.5x, preserve pitch); kalau lebih pendek, di-pad silence. Hasil audio pas dengan durasi SRT asli
-- **Preview Mode** (Browser SpeechSynthesis) — dengar langsung pakai voice browser (di macOS: Damayanti Indonesia native). Tidak butuh internet, tidak bisa export ke file
+- **Audio preview** — setelah generate, HTML5 audio player muncul inline. Dengar dulu sebelum download, tidak perlu download file untuk cek hasil
 - Output: WAV 24kHz mono, 16-bit PCM — siap di-mux ke video asli
 
 ### 💾 Persistence
@@ -294,12 +297,12 @@ srt-splitter/
 │   │   └── globals.css         # Styling global + Tailwind
 │   ├── lib/
 │   │   ├── srt.ts              # Parser, splitter, serializer SRT (client-side)
-│   │   ├── edge-tts.ts         # Microsoft Edge TTS WebSocket client (Indonesia native)
+│   │   ├── openai-tts.ts       # OpenAI TTS REST API client (CORS-enabled, Indonesia natural)
 │   │   ├── audio-utils.ts      # Decode MP3, speed-up, pad silence, encode WAV, timing sync
-│   │   ├── tts.ts              # High-level TTS engine: combine edge-tts + audio-utils
+│   │   ├── tts.ts              # High-level TTS engine: combine openai-tts + audio-utils
 │   │   └── utils.ts            # Helpers shadcn (cn)
 │   └── components/
-│       ├── tts-panel.tsx       # UI panel TTS (Preview + Export mode)
+│       ├── tts-panel.tsx       # UI panel TTS (API key input, voice select, audio preview)
 │       ├── coi-script.tsx      # Inject coi-serviceworker
 │       └── ui/                 # Komponen shadcn/ui (Card, Button, dll)
 ├── .gitignore
@@ -324,29 +327,34 @@ srt-splitter/
 6. Klik **Unduh ZIP** untuk download semua, atau expand "Hasil Pemecahan" untuk download per-file
 
 ### Untuk TTS (Konversi Subtitle ke Audio)
-1. Setelah upload SRT, scroll ke bawah sampai panel ungu "Generate Audio (TTS)"
-2. **Preview Mode** (hijau, atas) — untuk dengar cepat:
-   - Pilih voice browser (di macOS: Damayanti Indonesia native)
-   - Klik "Baris 1", "Baris 2", dst — dengar langsung, tidak bisa export
-3. **Export Mode** (ungu, bawah) — untuk download audio file:
-   - Pilih voice Edge TTS (default: 🇮🇩 Indonesia — Gadis)
+1. Setelah upload SRT, scroll ke panel ungu "Generate Audio (TTS)"
+2. **Setup API Key** (sekali saja):
+   - Dapatkan free API key di https://platform.openai.com/api-keys (free $5 credit)
+   - Klik section amber "OpenAI API Key"
+   - Paste key (mulai dengan `sk-...`) ke input
+   - Klik **Test & Save** untuk verifikasi
+3. Setelah key valid:
+   - Pilih voice (default: **Nova** — female natural untuk Indonesia)
    - Toggle "Sync timing ke SRT" (default ON — audio di-adjust ke durasi cue asli)
    - Klik **Generate & Download ZIP** untuk download semua, atau generate per-split
-4. Audio output: WAV 24kHz mono, 16-bit PCM, durasi sama dengan SRT asli
+4. **Audio preview** — setelah generate, audio player muncul inline di bawah tombol. Klik play untuk dengar sebelum download
+5. Audio output: WAV 24kHz mono, 16-bit PCM, durasi sama dengan SRT asli
 
 ### Tips
 - **Refresh halaman tidak reset** — file SRT dan setting tersimpan di localStorage
+- **API key aman** — disimpan di browser kamu, tidak pernah dikirim ke server mana pun selain OpenAI
 - **Film panjang**: pilih preset `4j`/`5j` di split, lalu "Generate Full Audio" — tunggu ~10-20 menit di Mac idle untuk 3-4 jam subtitle
-- **Edge TTS butuh internet** (cloud-based). Preview Mode bisa offline. Badge "Online/Offline" menunjukkan status
+- **OpenAI TTS butuh internet** (cloud-based). Badge "API Key Set" menunjukkan status
+- **Cost estimate**: 3 jam subtitle ≈ 200-300 baris × 50 chars = ~15k chars ≈ $0.22 (tts-1-hd)
 
 ## 🔒 Privacy
 
 - **Tidak ada upload SRT ke server.** Semua parsing, splitting, dan ZIP generation terjadi di browser
 - File `.srt` kamu tidak pernah dikirim ke mana pun
-- Edge TTS mengirim **hanya teks subtitle** ke `speech.platform.bing.com` (untuk dijadikan audio) — teks dikirim per baris, tidak disimpan di app
+- OpenAI TTS mengirim **hanya teks subtitle** ke `api.openai.com` (untuk dijadikan audio) — teks dikirim per baris, tidak disimpan di app
+- **API key OpenAI** disimpan di localStorage browser kamu, tidak pernah dikirim ke server mana pun selain OpenAI
 - Tidak ada analytics, tidak ada tracking
 - Aman untuk file subtitle pribadi atau sensitif
-- **Untuk privacy maksimal** (offline total): pakai Preview Mode (Browser SpeechSynthesis)
 
 ## 🛠️ Development Notes
 
