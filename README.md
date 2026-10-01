@@ -2,7 +2,9 @@
 
 Aplikasi web untuk memecah file SRT (subtitle) menjadi beberapa bagian dengan durasi yang dapat diatur. **100% berjalan di browser** — tidak ada server, tidak ada upload file ke mana pun. Aman dipakai di rumah untuk file pribadi.
 
-> ✅ **Status deploy:** Siap untuk GitHub Pages. Workflow GitHub Actions sudah include. Konfigurasi `basePath` auto-detect dari environment.
+> ✅ **Status deploy:** Siap untuk GitHub Pages. Source code, build config, dan workflow file sudah lengkap di repo. Konfigurasi `basePath` auto-detect dari environment.
+>
+> ⚠️ **Catatan penting:** Workflow file `.github/workflows/deploy.yml` ada di source code tetapi **belum ter-commit ke remote** karena keterbatasan scope token PAT saat push awal. Lihat **Langkah 2 — Tambahkan Workflow** di bawah untuk mengaktifkannya (cukup sekali, ~2 menit).
 
 ## Fitur
 
@@ -77,8 +79,8 @@ bunx serve
 
 ## 🌐 Deploy ke GitHub Pages
 
-Repo ini sudah siap deploy. Workflow `.github/workflows/deploy.yml` akan auto-build
-dan publish ke GitHub Pages setiap kali push ke branch `main`.
+Repo ini sudah siap deploy. Setelah workflow aktif, setiap push ke branch `main`
+akan auto-build dan publish ke GitHub Pages.
 
 ### Langkah 1 — Push ke GitHub
 
@@ -98,25 +100,52 @@ git remote set-url origin https://github.com/USERNAME/srt-splitter.git
 git push -u origin main
 ```
 
-### Langkah 2 — Aktifkan GitHub Pages
+> **Tip:** Kalau kamu pakai token PAT sendiri untuk push, pastikan token punya scope `repo` **dan** `workflow`. Tanpa scope `workflow`, push yang menyertakan file `.github/workflows/*.yml` akan ditolak.
+
+### Langkah 2 — Tambahkan Workflow ke Repo (sekali saja)
+
+File `.github/workflows/deploy.yml` sudah tersedia di source code lokal,
+tetapi **tidak ter-push** lewat PAT awal karena token tersebut tidak punya scope
+`workflow`. Untuk mengaktifkannya, lakukan salah satu dari:
+
+#### Opsi A — Lewat GitHub UI (paling mudah, ~2 menit)
+
+1. Buka https://github.com/emailnyamahmud-afk/srt-splitter/actions/new
+2. Klik link **"set up a workflow yourself →"**
+3. Hapus template default, lalu **copy-paste** isi file `.github/workflows/deploy.yml`
+   dari source code lokal ke editor GitHub
+4. Klik **Start commit** → **Commit new file**
+
+#### Opsi B — Lewat git dengan token ber-scope `workflow`
+
+```bash
+# Buat PAT baru di https://github.com/settings/tokens
+# dengan scope: repo + workflow
+git add .github/workflows/deploy.yml
+git commit -m "Add GitHub Pages workflow"
+git push origin main
+```
+
+### Langkah 3 — Aktifkan GitHub Pages
 
 1. Buka repo di GitHub → **Settings** → **Pages**
 2. **Source:** pilih **GitHub Actions** (bukan "Deploy from a branch")
 3. Save
 
-### Langkah 3 — Tunggu Deploy
+### Langkah 4 — Tunggu Deploy Pertama
 
-- Setiap push ke `main` akan trigger workflow `.github/workflows/deploy.yml`
+- Setelah workflow file ter-commit, push ke `main` akan trigger workflow
 - Lihat progress: tab **Actions** di repo GitHub
 - Setelah selesai (~1-2 menit), buka:
   ```
   https://USERNAME.github.io/srt-splitter/
   ```
 
-### Cara Kerja Workflow
+### Isi Workflow File (untuk copy-paste lewat UI GitHub)
 
 ```yaml
-# .github/workflows/deploy.yml
+name: Deploy to GitHub Pages
+
 on:
   push:
     branches: [main]
@@ -126,7 +155,40 @@ permissions:
   contents: read
   pages: write
   id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install
+      - run: bun run build
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_ACTIONS: "true"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
 ```
+
+### Cara Kerja Workflow
 
 Workflow akan:
 1. Checkout repo
@@ -158,10 +220,11 @@ const nextConfig = {
 
 | Masalah | Solusi |
 |---------|--------|
+| Workflow tidak ada di tab Actions | Belum menyelesaikan Langkah 2 — tambahkan workflow file dulu (UI GitHub atau push dengan token ber-scope `workflow`) |
 | Halaman blank / asset 404 | Pastikan Pages Source = "GitHub Actions", bukan "Deploy from a branch" |
 | Asset URL masih `/...` tanpa prefix | Re-run workflow — env `GITHUB_ACTIONS` mungkin tidak ke-set |
-| Workflow tidak jalan | Cek tab Actions → klik workflow → lihat log error |
-| "Refusing to allow PAT to create workflow file" | Token PAT-mu butuh scope `workflow` untuk commit file `.github/`. Buat token baru atau commit workflow lewat UI GitHub |
+| Workflow gagal jalan | Cek tab Actions → klik workflow → lihat log error |
+| "Refusing to allow PAT to create workflow file" | Token PAT-mu butuh scope `workflow` untuk commit file `.github/`. Buat token baru atau commit workflow lewat UI GitHub (Opsi A di atas) |
 | Build gagal di `bun install` | Cek `package-lock` atau `bun.lock` tidak corrupt. Coba `rm -rf node_modules bun.lock && bun install` |
 | 404 di `/srt-splitter/` tapi `/srt-splitter/index.html` ada | Tunggu 1-2 menit setelah workflow selesai, atau hard-refresh browser |
 
