@@ -30,7 +30,6 @@ import {
   testApiKey as testOpenRouterKey,
   type OpenRouterModel,
 } from './openrouter-tts'
-// Static import Kokoro for proper bundling
 import {
   ensureKokoroModel,
   synthesizeText as kokoroSynth,
@@ -40,11 +39,11 @@ import {
 } from './kokoro-tts'
 import {
   decodeAudioBlob,
-  adjustDuration,
   concatenateWithSilence,
   encodeWav,
   downloadBlob as downloadBlobUtil,
 } from './audio-utils'
+import { adjustAudioDuration } from './time-stretch'
 
 // Re-export semua yang dibutuhkan UI
 export { EDGE_VOICES, DEFAULT_EDGE_VOICE, type EdgeVoice, getEdgeProxyUrl, setEdgeProxyUrl }
@@ -143,17 +142,19 @@ export async function synthesizeText(
 /**
  * Generate narration audio for SRT entries, stitched into one WAV.
  *
- * STRATEGY (audio natural, utuh, TIDAK diubah):
- * - Audio TTS tetap utuh 100% — tidak dipotong, tidak di-speed up, pitch natural
- * - Position pakai SRT timing (entry.start)
- * - Kalau audio cue lebih panjang dari cue duration → "push back" cue berikutnya
- *   (cue berikutnya mulai setelah audio sebelumnya selesai, bukan overlap)
- * - Kalau audio cue lebih pendek dari cue duration → biarkan ada silence di akhir cue
- *   (audio tetap natural, hanya posisi tidak overlap)
+ * STRATEGY (audio fit ke cue, pitch natural, durasi = SRT):
+ * - Setiap audio TTS di-time-stretch untuk FIT ke cue duration (entry.end - entry.start)
+ * - Time-stretch pakai SoundTouchJS — ubah durasi TANPA ubah pitch
+ *   Audio 8 detik → fit ke cue 5 detik → audio 5 detik (pitch tetap natural)
+ * - Audio diposisikan di entry.start (SRT timing WAJIB)
+ * - Total durasi = SRT end time (terpaksa, tidak ada push-back)
  *
- * Hasil: audio 100% natural, sinkron dengan SRT start time, tidak ada chipmunk.
+ * Aturan:
+ * - Waktu SRT WAJIB (audio = SRT duration)
+ * - Suara natural (pitch tidak berubah, no chipmunk)
+ * - Audio utuh (SoundTouchJS time-stretch, tidak truncate di kasus normal)
  *
- * Output: WAV 24kHz mono 16-bit PCM.
+ * Output: WAV 24kHz mono 16-bit PCM, durasi = SRT asli.
  */
 export async function narrateEntries(
   entries: SrtEntry[],
@@ -163,9 +164,8 @@ export async function narrateEntries(
 
   opts.onStage?.({ stage: 'synthesizing', message: 'Mulai synthesizing…', percent: 0 })
   const total = entries.length
-  // Position-based approach: tiap segment punya (position, audio) absolut
+  // Position-based: tiap segment di-posisikan di entry.start, audio di-time-stretch ke cue duration
   const placedSegments: { position: number; audio: Float32Array }[] = []
-  let cursor = 0 // cursor sample position untuk push-back (audio berikutnya mulai setelah ini)
   let successCount = 0
   let failCount = 0
   let firstError = ''
@@ -175,12 +175,7 @@ export async function narrateEntries(
     const text = entry.textLines.join(' ').trim()
 
     if (!text) {
-      // Empty cue: just advance cursor to cue.end (no audio)
-      if (opts.respectTiming) {
-        cursor = Math.max(cursor, Math.floor(entry.end * OUTPUT_SAMPLE_RATE))
-      } else {
-        cursor += Math.floor(0.3 * OUTPUT_SAMPLE_RATE) // 300ms gap
-      }
+      // Empty cue: no audio, position advance to entry.end
       opts.onLineProgress?.(i + 1, total, '(empty)')
       continue
     }
@@ -195,47 +190,50 @@ export async function narrateEntries(
     try {
       const synth = await synthesizeText(text, opts)
 
-      let audio: Float32Array
+      let rawAudio: Float32Array
+      let audioSampleRate: number
 
       if (synth.pcm) {
-        // Kokoro: langsung pakai PCM Float32Array
+        // Kokoro: langsung pakai PCM
         if (synth.pcm.length === 0) throw new Error('Empty audio output')
-        audio = synth.pcm
+        rawAudio = synth.pcm
+        audioSampleRate = synth.sampleRate || OUTPUT_SAMPLE_RATE
       } else {
-        // Edge/OpenAI/OpenRouter: decode MP3 ke PCM
+        // Edge/OpenAI/OpenRouter: decode MP3
         if (synth.audioBlob.size === 0) throw new Error('Empty audio output')
         const audioBuffer = await decodeAudioBlob(synth.audioBlob, OUTPUT_SAMPLE_RATE)
-        audio = new Float32Array(audioBuffer.length)
-        audioBuffer.copyFromChannel(audio, 0)
+        audioSampleRate = audioBuffer.sampleRate
+        rawAudio = new Float32Array(audioBuffer.length)
+        audioBuffer.copyFromChannel(rawAudio, 0)
       }
 
-      // Tentukan position berdasarkan mode
-      let position: number
+      // Resample ke OUTPUT_SAMPLE_RATE jika perlu
+      if (audioSampleRate !== OUTPUT_SAMPLE_RATE) {
+        rawAudio = linearResample(rawAudio, audioSampleRate, OUTPUT_SAMPLE_RATE)
+        audioSampleRate = OUTPUT_SAMPLE_RATE
+      }
+
+      let finalAudio: Float32Array
+
       if (opts.respectTiming) {
-        // Sync ke SRT: position = entry.start, tapi tidak overlap dengan audio sebelumnya
-        const cueStartSamples = Math.floor(entry.start * OUTPUT_SAMPLE_RATE)
-        position = Math.max(cueStartSamples, cursor) // push-back kalau overlap
+        // SYNC KE SRT: time-stretch audio ke cue duration (entry.end - entry.start)
+        const cueDuration = entry.end - entry.start
+        finalAudio = adjustAudioDuration(rawAudio, audioSampleRate, cueDuration, { maxSpeedUp: 2.5 })
       } else {
-        // No sync: audio berurutan dengan 300ms gap
-        position = cursor
+        // No sync: audio natural utuh dengan 300ms gap
+        finalAudio = rawAudio
       }
 
-      placedSegments.push({ position, audio })
-
-      // Update cursor (audio berikutnya mulai setelah audio ini selesai)
-      cursor = position + audio.length
+      // Position di entry.start (SRT timing WAJIB)
+      const position = Math.floor(entry.start * OUTPUT_SAMPLE_RATE)
+      placedSegments.push({ position, audio: finalAudio })
 
       successCount++
     } catch (e) {
       failCount++
       if (!firstError) firstError = (e as Error).message
       console.error('TTS failed for line', i, e)
-      // Kalau gagal, advance cursor sesuai mode
-      if (opts.respectTiming) {
-        cursor = Math.max(cursor, Math.floor(entry.end * OUTPUT_SAMPLE_RATE))
-      } else {
-        cursor += Math.floor(0.3 * OUTPUT_SAMPLE_RATE)
-      }
+      // Skip — tidak ada audio untuk cue ini
     }
   }
 
@@ -254,14 +252,14 @@ export async function narrateEntries(
 
   opts.onStage?.({ stage: 'stitching', message: 'Menjahit audio…', percent: 90 })
 
-  // Hitung total length: maksimum dari (cursor akhir) dan (SRT end time)
+  // Total durasi = SRT end time (WAJIB, tidak boleh lebih)
   const srtEnd = entries[entries.length - 1].end
-  const totalSamples = Math.max(cursor, Math.floor(srtEnd * OUTPUT_SAMPLE_RATE))
+  const totalSamples = Math.floor(srtEnd * OUTPUT_SAMPLE_RATE)
 
   // Build output Float32Array dengan audio di posisi absolut
   const allAudio = new Float32Array(totalSamples)
   for (const seg of placedSegments) {
-    // Copy audio ke posisi (kalau melebihi totalSamples, truncate sesuai)
+    // Copy audio ke posisi (truncate kalau melebihi totalSamples)
     const endPos = Math.min(seg.position + seg.audio.length, totalSamples)
     const copyLength = endPos - seg.position
     if (copyLength > 0) {
@@ -269,15 +267,28 @@ export async function narrateEntries(
     }
   }
 
-  // Kalau respectTiming dan total audio < SRT end, pad silence ke SRT end
-  if (opts.respectTiming && cursor < srtEnd * OUTPUT_SAMPLE_RATE) {
-    // totalSamples sudah = srtEnd, jadi no need pad lagi
-  }
-
   const blob = encodeWav(allAudio, OUTPUT_SAMPLE_RATE)
   const durationSec = allAudio.length / OUTPUT_SAMPLE_RATE
   opts.onStage?.({ stage: 'done', message: 'Narration selesai', percent: 100 })
   return { blob, sampleRate: OUTPUT_SAMPLE_RATE, durationSec, previewUrl: URL.createObjectURL(blob) }
+}
+
+/**
+ * Linear resample Float32Array dari sample rate asal ke target.
+ */
+function linearResample(audio: Float32Array, fromRate: number, toRate: number): Float32Array {
+  if (fromRate === toRate) return audio
+  const ratio = toRate / fromRate
+  const targetLength = Math.floor(audio.length * ratio)
+  const result = new Float32Array(targetLength)
+  for (let i = 0; i < targetLength; i++) {
+    const srcIdx = i / ratio
+    const idx0 = Math.floor(srcIdx)
+    const idx1 = Math.min(idx0 + 1, audio.length - 1)
+    const frac = srcIdx - idx0
+    result[i] = audio[idx0] * (1 - frac) + audio[idx1] * frac
+  }
+  return result
 }
 
 export async function narratePart(part: SrtPart, opts: NarrationOptions): Promise<NarrationResult> {
