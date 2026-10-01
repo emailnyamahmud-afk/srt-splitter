@@ -541,21 +541,22 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
           </div>
         )}
 
-        {/* Edge proxy URL config (only when on Edge provider + non-Vercel deployment) */}
+        {/* Edge proxy URL config (only when on Edge provider + GitHub Pages deployment) */}
         {provider === 'edge' && typeof window !== 'undefined' && !window.location.origin.includes('vercel.app') && !window.location.origin.includes('localhost') && (
           <div className="rounded-lg border border-blue-200 dark:border-blue-800 p-3 bg-blue-50/30 dark:bg-blue-950/10">
             <Label htmlFor="edge-proxy" className="text-xs font-medium">
-              Edge TTS Proxy URL (untuk GitHub Pages)
+              Edge TTS Proxy URL (khusus GitHub Pages)
             </Label>
             <p className="text-xs text-muted-foreground mt-1 mb-2">
-              Browser tidak bisa langsung ke Microsoft Edge TTS (Origin check). Deploy proxy ke Vercel dulu, lalu paste URL di sini.
-              Panduan deploy proxy: ada di file <code>api/edge-tts.js</code> di repo.
+              ⚠️ Kalau pakai app dari GitHub Pages, Edge TTS butuh proxy (browser tidak bisa langsung ke Microsoft).
+              <strong> Solusi: deploy ke Vercel</strong> → Edge TTS langsung jalan tanpa proxy.
+              Atau paste URL Vercel proxy di sini.
             </p>
             <Input
               id="edge-proxy"
               type="text"
               defaultValue={typeof window !== 'undefined' ? getEdgeProxyUrl() : ''}
-              placeholder="https://your-vercel-app.vercel.app/api/edge-tts"
+              placeholder="https://srt-splitter.vercel.app/api/edge-tts"
               className="text-xs"
               onBlur={(e) => {
                 setEdgeProxyUrl(e.target.value)

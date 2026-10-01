@@ -8,13 +8,13 @@
 
 /**
  * Decode an MP3 Blob to an AudioBuffer using Web Audio API.
- * Note: Don't override sampleRate — let browser use default (44100Hz) for max compatibility.
- * Edge TTS MP3 is 24kHz but browser will resample automatically.
+ * Use sampleRate 24000 to match Edge TTS output (24kHz MP3).
+ * Without this, browser default (44100Hz) would resample and cause
+ * pitch/speed mismatch when re-encoding to WAV.
  */
-export async function decodeAudioBlob(blob: Blob): Promise<AudioBuffer> {
+export async function decodeAudioBlob(blob: Blob, sampleRate: number = 24000): Promise<AudioBuffer> {
   const arrayBuffer = await blob.arrayBuffer()
-  // Use default sampleRate for decode compatibility across browsers
-  const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+  const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)({ sampleRate })
   try {
     const audioBuffer = await ctx.decodeAudioData(arrayBuffer)
     return audioBuffer

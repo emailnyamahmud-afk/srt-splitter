@@ -206,14 +206,17 @@ export async function narrateEntries(
       } else {
         // Edge/OpenAI/OpenRouter: decode MP3 ke PCM
         if (synth.audioBlob.size === 0) throw new Error('Empty audio output')
-        const audioBuffer = await decodeAudioBlob(synth.audioBlob)
+        // Decode dengan sample rate yang sama dengan output (24000Hz untuk Edge TTS)
+        const audioBuffer = await decodeAudioBlob(synth.audioBlob, OUTPUT_SAMPLE_RATE)
+        // Pakai sample rate dari audio buffer (konsisten dengan encode)
+        const sr = audioBuffer.sampleRate
         if (opts.respectTiming) {
           const cueDuration = entry.end - entry.start
           const prevEnd = i > 0 ? entries[i - 1].end : 0
-          silenceBefore.push(Math.floor(Math.max(0, entry.start - prevEnd) * OUTPUT_SAMPLE_RATE))
-          adjusted = await adjustDuration(audioBuffer, cueDuration, OUTPUT_SAMPLE_RATE, { maxSpeedUp: 1.5 })
+          silenceBefore.push(Math.floor(Math.max(0, entry.start - prevEnd) * sr))
+          adjusted = await adjustDuration(audioBuffer, cueDuration, sr, { maxSpeedUp: 1.5 })
         } else {
-          silenceBefore.push(Math.floor(0.3 * OUTPUT_SAMPLE_RATE))
+          silenceBefore.push(Math.floor(0.3 * sr))
           const mono = new Float32Array(audioBuffer.length)
           audioBuffer.copyFromChannel(mono, 0)
           adjusted = mono
