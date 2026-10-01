@@ -30,6 +30,14 @@ import {
   testApiKey as testOpenRouterKey,
   type OpenRouterModel,
 } from './openrouter-tts'
+// Static import Kokoro for proper bundling
+import {
+  ensureKokoroModel,
+  synthesizeText as kokoroSynth,
+  DEFAULT_KOKORO_VOICE,
+  KOKORO_VOICES,
+  type KokoroVoice,
+} from './kokoro-tts'
 import {
   decodeAudioBlob,
   adjustDuration,
@@ -42,6 +50,7 @@ import {
 export { EDGE_VOICES, DEFAULT_EDGE_VOICE, type EdgeVoice, getEdgeProxyUrl, setEdgeProxyUrl }
 export { OPENAI_VOICES, DEFAULT_OPENAI_VOICE, type OpenAIVoice }
 export { OPENROUTER_MODELS, DEFAULT_OPENROUTER_MODEL, type OpenRouterModel }
+export { KOKORO_VOICES, DEFAULT_KOKORO_VOICE, type KokoroVoice }
 export { OPENAI_VOICES as OPENAI_VOICE_OPTIONS }
 export {
   getOpenAIKey,
@@ -52,7 +61,7 @@ export {
   testOpenRouterKey,
 }
 
-export type Provider = 'edge' | 'openai' | 'openrouter'
+export type Provider = 'edge' | 'kokoro' | 'openai' | 'openrouter'
 
 const OUTPUT_SAMPLE_RATE = 24000
 
@@ -68,8 +77,10 @@ export interface NarrationOptions {
   provider: Provider
   voice: string
   model?: string // untuk OpenRouter
-  apiKey?: string // untuk OpenAI/OpenRouter (Edge tidak butuh)
+  apiKey?: string // untuk OpenAI/OpenRouter (Edge dan Kokoro tidak butuh)
+  speed?: number // untuk Kokoro (default 1.0)
   respectTiming: boolean
+  onModelProgress?: (p: TTSProgress) => void // untuk Kokoro download model progress
   onLineProgress?: (current: number, total: number, text: string) => void
   onStage?: ProgressCallback
 }
@@ -83,11 +94,21 @@ export interface NarrationResult {
 
 /**
  * Synthesize text menggunakan provider yang dipilih.
+ *
+ * Note: Untuk Kokoro, kita return WAV (PCM Float32) bukan MP3 karena Kokoro
+ * native output adalah PCM. NarrateEntries akan handle konversi ke WAV.
  */
 export async function synthesizeText(
   text: string,
-  opts: { provider: Provider; voice: string; model?: string; apiKey?: string },
-): Promise<{ audioBlob: Blob; mimeType: string }> {
+  opts: {
+    provider: Provider
+    voice: string
+    model?: string
+    apiKey?: string
+    speed?: number
+    onModelProgress?: (p: TTSProgress) => void
+  },
+): Promise<{ audioBlob: Blob; mimeType: string; pcm?: Float32Array; sampleRate?: number }> {
   if (!text.trim()) {
     return { audioBlob: new Blob([]), mimeType: 'audio/mp3' }
   }
@@ -95,6 +116,13 @@ export async function synthesizeText(
   switch (opts.provider) {
     case 'edge':
       return { audioBlob: await edgeTTS(text, opts.voice), mimeType: 'audio/mp3' }
+    case 'kokoro': {
+      // Use static import (already at top of file)
+      await ensureKokoroModel(opts.onModelProgress)
+      const result = await kokoroSynth(text, opts.voice || DEFAULT_KOKORO_VOICE, opts.speed || 1.0)
+      // Return empty Blob (not used) + raw PCM
+      return { audioBlob: new Blob([]), mimeType: 'audio/wav', pcm: result.audio, sampleRate: result.sampleRate }
+    }
     case 'openai':
       if (!opts.apiKey) throw new Error('OpenAI API key belum diisi')
       return {
@@ -150,22 +178,46 @@ export async function narrateEntries(
     })
 
     try {
-      const { audioBlob } = await synthesizeText(text, opts)
-      if (audioBlob.size === 0) throw new Error('Empty audio output')
-
-      const audioBuffer = await decodeAudioBlob(audioBlob)
+      const synth = await synthesizeText(text, opts)
 
       let adjusted: Float32Array
-      if (opts.respectTiming) {
-        const cueDuration = entry.end - entry.start
-        const prevEnd = i > 0 ? entries[i - 1].end : 0
-        silenceBefore.push(Math.floor(Math.max(0, entry.start - prevEnd) * OUTPUT_SAMPLE_RATE))
-        adjusted = await adjustDuration(audioBuffer, cueDuration, OUTPUT_SAMPLE_RATE, { maxSpeedUp: 1.5 })
+
+      if (synth.pcm) {
+        // Kokoro: langsung pakai PCM Float32Array, tidak perlu decode
+        if (synth.pcm.length === 0) throw new Error('Empty audio output')
+        const sampleRate = synth.sampleRate || OUTPUT_SAMPLE_RATE
+        if (opts.respectTiming) {
+          const cueDuration = entry.end - entry.start
+          const prevEnd = i > 0 ? entries[i - 1].end : 0
+          silenceBefore.push(Math.floor(Math.max(0, entry.start - prevEnd) * sampleRate))
+          const targetSamples = Math.floor(cueDuration * sampleRate)
+          if (synth.pcm.length > targetSamples) {
+            adjusted = synth.pcm.slice(0, targetSamples)
+          } else if (synth.pcm.length < targetSamples) {
+            adjusted = new Float32Array(targetSamples)
+            adjusted.set(synth.pcm, 0)
+          } else {
+            adjusted = synth.pcm
+          }
+        } else {
+          silenceBefore.push(Math.floor(0.3 * sampleRate))
+          adjusted = synth.pcm
+        }
       } else {
-        silenceBefore.push(Math.floor(0.3 * OUTPUT_SAMPLE_RATE))
-        const mono = new Float32Array(audioBuffer.length)
-        audioBuffer.copyFromChannel(mono, 0)
-        adjusted = mono
+        // Edge/OpenAI/OpenRouter: decode MP3 ke PCM
+        if (synth.audioBlob.size === 0) throw new Error('Empty audio output')
+        const audioBuffer = await decodeAudioBlob(synth.audioBlob)
+        if (opts.respectTiming) {
+          const cueDuration = entry.end - entry.start
+          const prevEnd = i > 0 ? entries[i - 1].end : 0
+          silenceBefore.push(Math.floor(Math.max(0, entry.start - prevEnd) * OUTPUT_SAMPLE_RATE))
+          adjusted = await adjustDuration(audioBuffer, cueDuration, OUTPUT_SAMPLE_RATE, { maxSpeedUp: 1.5 })
+        } else {
+          silenceBefore.push(Math.floor(0.3 * OUTPUT_SAMPLE_RATE))
+          const mono = new Float32Array(audioBuffer.length)
+          audioBuffer.copyFromChannel(mono, 0)
+          adjusted = mono
+        }
       }
 
       segments.push(adjusted)

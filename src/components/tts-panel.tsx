@@ -57,6 +57,8 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
 
   // Voice/model per provider
   const [edgeVoice, setEdgeVoice] = useState<string>(DEFAULT_EDGE_VOICE)
+  const [kokoroVoice, setKokoroVoice] = useState<string>('pf_dora')
+  const [kokoroSpeed, setKokoroSpeed] = useState<number>(1.0)
   const [openaiVoice, setOpenaiVoice] = useState<string>(DEFAULT_OPENAI_VOICE)
   const [openrouterModel, setOpenrouterModel] = useState<string>(DEFAULT_OPENROUTER_MODEL)
   const [openrouterVoice, setOpenrouterVoice] = useState<string>('alloy')
@@ -145,13 +147,15 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
       setProgress({ stage: 'synthesizing', message: `Generating part ${partIndex}…`, percent: 0 })
       const tid = toast.loading(`Generating audio untuk ${prefix}-${String(partIndex).padStart(2, '0')}.srt…`)
       try {
-        const voice = provider === 'edge' ? edgeVoice : provider === 'openai' ? openaiVoice : openrouterVoice
+        const voice = provider === 'edge' ? edgeVoice : provider === 'kokoro' ? kokoroVoice : provider === 'openai' ? openaiVoice : openrouterVoice
         const result = await narratePart(part, {
           provider,
           voice,
           model: provider === 'openrouter' ? openrouterModel : undefined,
           apiKey,
+          speed: provider === 'kokoro' ? kokoroSpeed : undefined,
           respectTiming,
+          onModelProgress: provider === 'kokoro' ? (p) => setProgress(p) : undefined,
           onLineProgress: (current, total, text) => setLineProgress({ current, total, text }),
           onStage: (p) => setProgress(p),
         })
@@ -189,7 +193,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
     const tid = toast.loading(`Generating full audio (${splitResult.parts.length} parts)…`)
     try {
       const results: { blob: Blob; durationSec: number; previewUrl: string }[] = []
-      const voice = provider === 'edge' ? edgeVoice : provider === 'openai' ? openaiVoice : openrouterVoice
+      const voice = provider === 'edge' ? edgeVoice : provider === 'kokoro' ? kokoroVoice : provider === 'openai' ? openaiVoice : openrouterVoice
       for (let i = 0; i < splitResult.parts.length; i++) {
         setActivePart(i + 1)
         const result = await narratePart(splitResult.parts[i], {
@@ -197,7 +201,9 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
           voice,
           model: provider === 'openrouter' ? openrouterModel : undefined,
           apiKey,
+          speed: provider === 'kokoro' ? kokoroSpeed : undefined,
           respectTiming,
+          onModelProgress: provider === 'kokoro' ? (p) => setProgress(p) : undefined,
           onLineProgress: (current, total, text) => setLineProgress({ current, total, text }),
           onStage: (p) => setProgress(p),
         })
@@ -236,11 +242,12 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
   )
 
   const isSynthesizing = progress.stage === 'synthesizing' || progress.stage === 'stitching'
-  const needsApiKey = provider !== 'edge'
-  const hasApiKey = provider === 'edge' ? true : provider === 'openai' ? Boolean(openaiKey) : Boolean(openrouterKey)
+  const needsApiKey = provider !== 'edge' && provider !== 'kokoro'
+  const hasApiKey = provider === 'edge' || provider === 'kokoro' ? true : provider === 'openai' ? Boolean(openaiKey) : Boolean(openrouterKey)
 
   const providerInfo: Record<Provider, { name: string; cost: string; indonesia: string; keyUrl?: string; hasKey: boolean }> = {
     edge: { name: 'Edge TTS (Microsoft)', cost: 'GRATIS', indonesia: 'Native (Gadis/Ardi)', hasKey: true },
+    kokoro: { name: 'Kokoro-82M (Offline)', cost: 'GRATIS (80MB model)', indonesia: 'Multilingual (acc pt/es/en)', hasKey: true },
     openai: { name: 'OpenAI TTS', cost: '$0.015/1k chars', indonesia: 'Natural (multilingual)', keyUrl: 'https://platform.openai.com/api-keys', hasKey: Boolean(openaiKey) },
     openrouter: { name: 'OpenRouter TTS', cost: 'Pay-per-use', indonesia: 'Bergantung model', keyUrl: 'https://openrouter.ai/keys', hasKey: Boolean(openrouterKey) },
   }
@@ -375,6 +382,57 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
                   <select id="edge-voice" value={edgeVoice} onChange={(e) => setEdgeVoice(e.target.value)} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1">
                     {EDGE_VOICES.map((v) => <option key={v.name} value={v.name}>{v.label}</option>)}
                   </select>
+                </div>
+              )}
+              {provider === 'kokoro' && (
+                <div className="col-span-2 space-y-3 rounded-md border border-purple-200 dark:border-purple-800 p-3 bg-purple-50/30 dark:bg-purple-950/10">
+                  <div>
+                    <Label htmlFor="kokoro-voice" className="text-xs">Voice Kokoro (54 voices, multilingual)</Label>
+                    <select id="kokoro-voice" value={kokoroVoice} onChange={(e) => setKokoroVoice(e.target.value)} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1">
+                      <optgroup label="🇧🇷 Portugal (accent mirip Indonesia)">
+                        <option value="pf_dora">Dora (female, natural) — paling cocok untuk Indonesia</option>
+                      </optgroup>
+                      <optgroup label="🇪🇸 Spanyol (accent mirip Indonesia)">
+                        <option value="ef_dora">Dora (female)</option>
+                      </optgroup>
+                      <optgroup label="🇺🇸 English US">
+                        <option value="af_heart">Heart (female, natural)</option>
+                        <option value="af_bella">Bella (female, natural)</option>
+                        <option value="af_nova">Nova (female)</option>
+                        <option value="am_michael">Michael (male)</option>
+                        <option value="am_adam">Adam (male)</option>
+                      </optgroup>
+                      <optgroup label="🇬🇧 English UK">
+                        <option value="bf_emma">Emma (female)</option>
+                        <option value="bm_george">George (male)</option>
+                      </optgroup>
+                      <optgroup label="🇫🇷 French">
+                        <option value="ff_siwis">Siwis (female)</option>
+                      </optgroup>
+                      <optgroup label="🇨🇳 Mandarin">
+                        <option value="zf_xiaoxiao">Xiaoxiao (female)</option>
+                      </optgroup>
+                      <optgroup label="🇯🇵 Japanese">
+                        <option value="jf_alpha">Alpha (female)</option>
+                      </optgroup>
+                    </select>
+                  </div>
+                  <div>
+                    <Label htmlFor="kokoro-speed" className="text-xs">Speed: {kokoroSpeed.toFixed(1)}x</Label>
+                    <input
+                      id="kokoro-speed"
+                      type="range"
+                      min={0.5}
+                      max={2}
+                      step={0.1}
+                      value={kokoroSpeed}
+                      onChange={(e) => setKokoroSpeed(Number(e.target.value))}
+                      className="w-full mt-1"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    <strong>Note:</strong> Kokoro tidak punya voice Indonesia native, tapi text Indonesia akan dibaca dengan accent dari voice yang dipilih. Pilih <strong>Dora (Portuguese)</strong> untuk accent paling mirip Indonesia.
+                  </p>
                 </div>
               )}
               {provider === 'openai' && (
