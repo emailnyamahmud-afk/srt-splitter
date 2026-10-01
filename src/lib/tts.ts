@@ -1,25 +1,35 @@
-// TTS engine using OpenAI TTS API + audio timing sync.
+// TTS engine dengan multiple provider support + audio timing sync.
 //
-// All TTS happens via REST API to OpenAI (CORS-enabled, works from any browser).
-// Audio timing is synced to SRT: speed up if too long, pad silence if too short.
+// Provider:
+//   1. Edge TTS (default, gratis, native Indonesia: Gadis/Ardi)
+//   2. OpenAI TTS (premium, API key, Indonesia natural)
+//   3. OpenRouter TTS (gateway ke banyak model: OpenAI, ElevenLabs, MiniMax, dll)
 //
-// Voices: alloy, echo, fable, onyx, nova, shimmer (multilingual, Indonesia natural)
-// Output: WAV 24kHz mono, 16-bit PCM, durasi sync ke SRT asli.
-//
-// API key: user-provided, disimpan di localStorage, tidak pernah dikirim ke server kita.
+// All TTS happens client-side. Edge TTS pakai WebSocket, OpenAI/OpenRouter pakai REST.
+// Audio timing di-sync ke SRT: speed up if too long, pad silence if too short.
 
 'use client'
 
 import type { SrtEntry, SrtPart } from './srt'
+import { edgeTTS, EDGE_VOICES, DEFAULT_EDGE_VOICE, type EdgeVoice } from './edge-tts'
 import {
   openaiTTS,
   OPENAI_VOICES,
   DEFAULT_OPENAI_VOICE,
-  getApiKey,
-  setApiKey as setApiKeyUtil,
-  testApiKey,
+  getApiKey as getOpenAIKey,
+  setApiKey as setOpenAIKey,
+  testApiKey as testOpenAIKey,
   type OpenAIVoice,
 } from './openai-tts'
+import {
+  openRouterTTS,
+  OPENROUTER_MODELS,
+  DEFAULT_OPENROUTER_MODEL,
+  getApiKey as getOpenRouterKey,
+  setApiKey as setOpenRouterKey,
+  testApiKey as testOpenRouterKey,
+  type OpenRouterModel,
+} from './openrouter-tts'
 import {
   decodeAudioBlob,
   adjustDuration,
@@ -28,22 +38,37 @@ import {
   downloadBlob as downloadBlobUtil,
 } from './audio-utils'
 
+// Re-export semua yang dibutuhkan UI
+export { EDGE_VOICES, DEFAULT_EDGE_VOICE, type EdgeVoice }
 export { OPENAI_VOICES, DEFAULT_OPENAI_VOICE, type OpenAIVoice }
-export { getApiKey, setApiKeyUtil as setApiKey, testApiKey }
+export { OPENROUTER_MODELS, DEFAULT_OPENROUTER_MODEL, type OpenRouterModel }
+export { OPENAI_VOICES as OPENAI_VOICE_OPTIONS }
+export {
+  getOpenAIKey,
+  setOpenAIKey,
+  testOpenAIKey,
+  getOpenRouterKey,
+  setOpenRouterKey,
+  testOpenRouterKey,
+}
+
+export type Provider = 'edge' | 'openai' | 'openrouter'
 
 const OUTPUT_SAMPLE_RATE = 24000
 
 export interface TTSProgress {
   stage: 'idle' | 'synthesizing' | 'stitching' | 'done' | 'error'
   message?: string
-  percent?: number // 0-100
+  percent?: number
 }
 
 export type ProgressCallback = (p: TTSProgress) => void
 
 export interface NarrationOptions {
+  provider: Provider
   voice: string
-  apiKey: string
+  model?: string // untuk OpenRouter
+  apiKey?: string // untuk OpenAI/OpenRouter (Edge tidak butuh)
   respectTiming: boolean
   onLineProgress?: (current: number, total: number, text: string) => void
   onStage?: ProgressCallback
@@ -53,28 +78,40 @@ export interface NarrationResult {
   blob: Blob
   sampleRate: number
   durationSec: number
-  previewUrl: string // Object URL for HTML5 audio preview
+  previewUrl: string
 }
 
 /**
- * Synthesize a single text chunk to MP3 via OpenAI TTS.
+ * Synthesize text menggunakan provider yang dipilih.
  */
 export async function synthesizeText(
   text: string,
-  voice: string,
-  apiKey: string,
+  opts: { provider: Provider; voice: string; model?: string; apiKey?: string },
 ): Promise<{ audioBlob: Blob; mimeType: string }> {
   if (!text.trim()) {
     return { audioBlob: new Blob([]), mimeType: 'audio/mp3' }
   }
-  const blob = await openaiTTS(text, voice, apiKey)
-  return { audioBlob: blob, mimeType: 'audio/mp3' }
+
+  switch (opts.provider) {
+    case 'edge':
+      return { audioBlob: await edgeTTS(text, opts.voice), mimeType: 'audio/mp3' }
+    case 'openai':
+      if (!opts.apiKey) throw new Error('OpenAI API key belum diisi')
+      return {
+        audioBlob: await openaiTTS(text, opts.voice, opts.apiKey!),
+        mimeType: 'audio/mp3',
+      }
+    case 'openrouter':
+      if (!opts.apiKey) throw new Error('OpenRouter API key belum diisi')
+      return {
+        audioBlob: await openRouterTTS(text, opts.model || 'openai/tts-1-hd', opts.voice, opts.apiKey!),
+        mimeType: 'audio/mp3',
+      }
+    default:
+      throw new Error(`Unknown provider: ${opts.provider}`)
+  }
 }
 
-/**
- * Generate narration audio for a list of SRT entries, stitched into one WAV.
- * Returns blob + previewUrl (Object URL for HTML5 audio preview).
- */
 export async function narrateEntries(
   entries: SrtEntry[],
   opts: NarrationOptions,
@@ -95,8 +132,7 @@ export async function narrateEntries(
 
     if (!text) {
       if (opts.respectTiming) {
-        const cueDuration = entry.end - entry.start
-        segments.push(new Float32Array(Math.floor(cueDuration * OUTPUT_SAMPLE_RATE)))
+        segments.push(new Float32Array(Math.floor((entry.end - entry.start) * OUTPUT_SAMPLE_RATE)))
         silenceBefore.push(0)
       } else {
         segments.push(new Float32Array(0))
@@ -114,22 +150,16 @@ export async function narrateEntries(
     })
 
     try {
-      // 1. Synthesize to MP3 via OpenAI
-      const { audioBlob } = await synthesizeText(text, opts.voice, opts.apiKey)
-      if (audioBlob.size === 0) {
-        throw new Error('Empty audio output')
-      }
+      const { audioBlob } = await synthesizeText(text, opts)
+      if (audioBlob.size === 0) throw new Error('Empty audio output')
 
-      // 2. Decode MP3 → AudioBuffer
       const audioBuffer = await decodeAudioBlob(audioBlob)
 
-      // 3. Adjust duration to fit cue
       let adjusted: Float32Array
       if (opts.respectTiming) {
         const cueDuration = entry.end - entry.start
         const prevEnd = i > 0 ? entries[i - 1].end : 0
-        const gapBefore = Math.max(0, entry.start - prevEnd)
-        silenceBefore.push(Math.floor(gapBefore * OUTPUT_SAMPLE_RATE))
+        silenceBefore.push(Math.floor(Math.max(0, entry.start - prevEnd) * OUTPUT_SAMPLE_RATE))
         adjusted = await adjustDuration(audioBuffer, cueDuration, OUTPUT_SAMPLE_RATE, { maxSpeedUp: 1.5 })
       } else {
         silenceBefore.push(Math.floor(0.3 * OUTPUT_SAMPLE_RATE))
@@ -145,8 +175,7 @@ export async function narrateEntries(
       if (!firstError) firstError = (e as Error).message
       console.error('TTS failed for line', i, e)
       if (opts.respectTiming) {
-        const cueDuration = entry.end - entry.start
-        segments.push(new Float32Array(Math.floor(cueDuration * OUTPUT_SAMPLE_RATE)))
+        segments.push(new Float32Array(Math.floor((entry.end - entry.start) * OUTPUT_SAMPLE_RATE)))
       } else {
         segments.push(new Float32Array(0))
       }
@@ -156,8 +185,10 @@ export async function narrateEntries(
 
   if (successCount === 0) {
     throw new Error(
-      `TTS gagal untuk semua ${total} baris. Error pertama: ${firstError || 'unknown'}. ` +
-      `Cek API key OpenAI kamu atau koneksi internet.`,
+      `TTS gagal untuk semua ${total} baris. Error: ${firstError || 'unknown'}. ` +
+      (opts.provider === 'edge'
+        ? 'Coba ganti ke provider OpenAI atau OpenRouter.'
+        : 'Cek API key atau koneksi internet.'),
     )
   }
 
@@ -177,16 +208,14 @@ export async function narrateEntries(
       padded.set(allAudio, 0)
       opts.onStage?.({ stage: 'stitching', message: `Padding ke ${targetEnd.toFixed(1)}s`, percent: 95 })
       const blob = encodeWav(padded, OUTPUT_SAMPLE_RATE)
-      const previewUrl = URL.createObjectURL(blob)
-      return { blob, sampleRate: OUTPUT_SAMPLE_RATE, durationSec: targetEnd, previewUrl }
+      return { blob, sampleRate: OUTPUT_SAMPLE_RATE, durationSec: targetEnd, previewUrl: URL.createObjectURL(blob) }
     }
   }
 
   const blob = encodeWav(allAudio, OUTPUT_SAMPLE_RATE)
   const durationSec = allAudio.length / OUTPUT_SAMPLE_RATE
-  const previewUrl = URL.createObjectURL(blob)
   opts.onStage?.({ stage: 'done', message: 'Narration selesai', percent: 100 })
-  return { blob, sampleRate: OUTPUT_SAMPLE_RATE, durationSec, previewUrl }
+  return { blob, sampleRate: OUTPUT_SAMPLE_RATE, durationSec, previewUrl: URL.createObjectURL(blob) }
 }
 
 export async function narratePart(part: SrtPart, opts: NarrationOptions): Promise<NarrationResult> {
@@ -197,9 +226,6 @@ export function downloadBlob(filename: string, blob: Blob) {
   downloadBlobUtil(filename, blob)
 }
 
-/**
- * Revoke an Object URL (cleanup memory after audio is no longer needed).
- */
 export function revokePreviewUrl(url: string) {
   try {
     URL.revokeObjectURL(url)

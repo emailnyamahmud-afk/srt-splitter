@@ -14,15 +14,31 @@ Aplikasi web untuk memecah file SRT (subtitle) menjadi beberapa bagian dengan du
 - Unduh hasil split sebagai satu file ZIP (via JSZip)
 - Untuk film panjang (3-4 jam), pilih preset **4j** atau **5j** agar tidak di-split
 
-### 🔊 TTS (Text-to-Speech) — Audio Narasi
-- **OpenAI TTS** — neural voices multilingual (Indonesia natural)
-  - Voices: `nova` (default, female natural), `shimmer`, `alloy`, `echo`, `fable`, `onyx`
-  - Model `tts-1-hd` (premium) — text Indonesia dibaca dengan accent natural
-  - Butuh OpenAI API key (gratis $5 credit saat signup di platform.openai.com)
-  - API key disimpan di localStorage browser, tidak pernah dikirim ke server kita
-  - Cost: $0.015/1k chars = ~$1 per 10 menit audio
-- **Audio timing di-sync ke SRT** — kalau audio lebih panjang dari cue, di-speed-up (max 1.5x, preserve pitch); kalau lebih pendek, di-pad silence. Hasil audio pas dengan durasi SRT asli
-- **Audio preview** — setelah generate, HTML5 audio player muncul inline. Dengar dulu sebelum download, tidak perlu download file untuk cek hasil
+### 🔊 TTS (Text-to-Speech) — Audio Narasi dengan 3 Provider
+Pilih provider sesuai kebutuhan:
+
+#### 1. Edge TTS (DEFAULT, GRATIS)
+- **Microsoft Edge TTS** — neural voices Indonesia native (`id-ID-Gadis` perempuan, `id-ID-Ardi` laki-laki)
+- **GRATIS** — tidak butuh API key, tidak ada limit
+- Voice tambahan: English, Mandarin, Japanese, Korean
+- Butuh internet (WebSocket ke `speech.platform.bing.com`)
+
+#### 2. OpenAI TTS (Premium)
+- Voices: `nova` (default, female natural untuk Indonesia), `shimmer`, `alloy`, `echo`, `fable`, `onyx`
+- Model `tts-1-hd` (premium) — multilingual, Indonesia natural
+- Butuh OpenAI API key (gratis $5 credit saat signup di platform.openai.com)
+- API key disimpan di localStorage browser, tidak pernah dikirim ke server kita
+- Cost: $0.015/1k chars = ~$1 per 10 menit audio
+
+#### 3. OpenRouter TTS (Banyak Model)
+- Gateway ke berbagai TTS model dengan satu API key
+- Models: `openai/tts-1-hd`, `minimax/speech-01-turbo`, `elevenlabs/eleven-turbo-v2-5`, dll
+- Butuh OpenRouter API key (gratis $1 credit saat signup di openrouter.ai/keys)
+- Cost: pay-per-use, tergantung model yang dipilih
+
+### Fitur TTS Lainnya
+- **Audio timing di-sync ke SRT** — kalau audio lebih panjang dari cue, di-speed-up (max 1.5x, preserve pitch); kalau lebih pendek, di-pad silence
+- **Audio preview** — setelah generate, HTML5 audio player muncul inline. Dengar dulu sebelum download
 - Output: WAV 24kHz mono, 16-bit PCM — siap di-mux ke video asli
 
 ### 💾 Persistence
