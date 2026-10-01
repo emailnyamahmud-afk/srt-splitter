@@ -44,17 +44,22 @@ export function toMono(audioBuffer: AudioBuffer): Float32Array {
 }
 
 /**
- * Speed up audio dengan pitch preservation via detune compensation.
+ * Speed up audio dengan pitch preservation.
  *
- * Cara kerja:
- * - playbackRate = ratio → audio 1.5x lebih cepat, pitch naik ~7 semitones
- * - detune = -1200 * log2(ratio) cents → pitch turun ~7 semitones balik
- * - Net: audio 1.5x lebih cepat, pitch natural
+ * Pakai playbackRate + preservePitch property (semua varian cross-browser).
+ * TIDAK pakai detune — karena detune juga affect speed (membatalkan speed up).
  *
- * Tested di Chrome, Safari, Firefox, Brave, Edge (OfflineAudioContext support detune).
+ * effective rate = playbackRate × 2^(detune/1200)
+ * Kalau detune = -1200*log2(ratio), effective rate = 1.0 = normal speed
+ * → audio TIDAK di-speed up, hanya di-truncate = BUG!
+ *
+ * Fix: pakai playbackRate saja + preservePitch = true.
+ * - playbackRate = ratio → speed = ratio (lebih cepat)
+ * - preservePitch = true → pitch tetap natural (browser handle)
+ * - Tidak ada detune → speed tidak dibatalkan
  *
  * @param audioBuffer Source audio
- * @param ratio Speed ratio (1.0 = normal, 1.5 = 1.5x faster, 2.0 = 2x faster)
+ * @param ratio Speed ratio (1.0 = normal, 1.5 = 1.5x faster)
  * @param sampleRate Output sample rate
  * @returns Float32Array at sampleRate, duration = source.duration / ratio
  */
@@ -68,11 +73,16 @@ export async function speedUpAudioPitchPreserved(
   const source = offlineCtx.createBufferSource()
   source.buffer = audioBuffer
   source.playbackRate.value = ratio
-  // Detune compensation: -1200 * log2(ratio) cents
-  // ratio 1.5 → log2(1.5) ≈ 0.585 → -702 cents (turunkan ~7 semitones)
-  // ratio 2.0 → log2(2.0) = 1.0 → -1200 cents (turunkan 1 octave)
-  const detuneCents = -1200 * Math.log2(ratio)
-  source.detune.value = detuneCents
+  // Set SEMUA preservePitch variants — browser pakai yang dia kenal
+  const anySource = source as unknown as {
+    preservePitch?: boolean
+    webkitPreservePitch?: boolean
+    preservesPitch?: boolean
+  }
+  try { anySource.preservePitch = true } catch { /* ignore */ }
+  try { anySource.webkitPreservePitch = true } catch { /* ignore */ }
+  try { anySource.preservesPitch = true } catch { /* ignore */ }
+  // TIDAK pakai detune — detune membatalkan speed up!
   source.connect(offlineCtx.destination)
   source.start()
   const rendered = await offlineCtx.startRendering()
