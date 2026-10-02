@@ -1,0 +1,631 @@
+     1→'use client'
+     2→
+     3→import { useState, useCallback, useEffect } from 'react'
+     4→import {
+     5→  AudioLines,
+     6→  Download,
+     7→  Loader2,
+     8→  AlertCircle,
+     9→  Volume2,
+    10→  Play,
+    11→  Key,
+    12→  ExternalLink,
+    13→  CheckCircle2,
+    14→  XCircle,
+    15→} from 'lucide-react'
+    16→import { Button } from '@/components/ui/button'
+    17→import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+    18→import { Label } from '@/components/ui/label'
+    19→import { Badge } from '@/components/ui/badge'
+    20→import { Progress } from '@/components/ui/progress'
+    21→import { Switch } from '@/components/ui/switch'
+    22→import { Input } from '@/components/ui/input'
+    23→import { toast } from 'sonner'
+    24→import {
+    25→  narratePart,
+    26→  downloadBlob,
+    27→  formatDuration,
+    28→  revokePreviewUrl,
+    29→  EDGE_VOICES,
+    30→  DEFAULT_EDGE_VOICE,
+    31→  OPENAI_VOICES,
+    32→  DEFAULT_OPENAI_VOICE,
+    33→  OPENROUTER_MODELS,
+    34→  DEFAULT_OPENROUTER_MODEL,
+    35→  getOpenAIKey,
+    36→  setOpenAIKey,
+    37→  testOpenAIKey,
+    38→  getOpenRouterKey,
+    39→  setOpenRouterKey,
+    40→  testOpenRouterKey,
+    41→  getEdgeProxyUrl,
+    42→  setEdgeProxyUrl,
+    43→  type TTSProgress,
+    44→  type SplitResult,
+    45→  type Provider,
+    46→} from '@/lib/tts'
+    47→import JSZip from 'jszip'
+    48→
+    49→interface TtsPanelProps {
+    50→  splitResult: SplitResult
+    51→  prefix: string
+    52→}
+    53→
+    54→export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
+    55→  // Provider selection
+    56→  const [provider, setProvider] = useState<Provider>('edge')
+    57→
+    58→  // Voice/model per provider
+    59→  const [edgeVoice, setEdgeVoice] = useState<string>(DEFAULT_EDGE_VOICE)
+    60→  const [kokoroVoice, setKokoroVoice] = useState<string>('pf_dora')
+    61→  const [kokoroSpeed, setKokoroSpeed] = useState<number>(1.0)
+    62→  const [openaiVoice, setOpenaiVoice] = useState<string>(DEFAULT_OPENAI_VOICE)
+    63→  const [openrouterModel, setOpenrouterModel] = useState<string>(DEFAULT_OPENROUTER_MODEL)
+    64→  const [openrouterVoice, setOpenrouterVoice] = useState<string>('alloy')
+    65→
+    66→  const [respectTiming, setRespectTiming] = useState(true)
+    67→  const [speedMode, setSpeedMode] = useState<'speedup-only' | 'speedup-slowdown'>('speedup-slowdown')
+    68→  const [offSpeed, setOffSpeed] = useState<number>(1.0)
+    69→  const [progress, setProgress] = useState<TTSProgress>({ stage: 'idle' })
+    70→  const [lineProgress, setLineProgress] = useState<{ current: number; total: number; text: string } | null>(null)
+    71→  const [activePart, setActivePart] = useState<number | null>(null)
+    72→  const [audioCache, setAudioCache] = useState<Record<number, { blob: Blob; durationSec: number; previewUrl: string }>>({})
+    73→
+    74→  // API key states
+    75→  const [openaiKey, setOpenaiKey] = useState<string>('')
+    76→  const [openrouterKey, setOpenrouterKey] = useState<string>('')
+    77→  const [showOpenAIInput, setShowOpenAIInput] = useState<boolean>(false)
+    78→  const [showOpenRouterInput, setShowOpenRouterInput] = useState<boolean>(false)
+    79→  const [openaiDraft, setOpenaiDraft] = useState<string>('')
+    80→  const [openrouterDraft, setOpenrouterDraft] = useState<string>('')
+    81→  const [isTestingOpenAI, setIsTestingOpenAI] = useState<boolean>(false)
+    82→  const [isTestingOpenRouter, setIsTestingOpenRouter] = useState<boolean>(false)
+    83→
+    84→  useEffect(() => {
+    85→    const savedOpenAI = getOpenAIKey()
+    86→    if (savedOpenAI) setOpenaiKey(savedOpenAI)
+    87→    const savedOR = getOpenRouterKey()
+    88→    if (savedOR) setOpenrouterKey(savedOR)
+    89→  }, [])
+    90→
+    91→  const saveOpenAIKey = useCallback(async (key: string, testIt: boolean = true) => {
+    92→    if (!key.trim()) {
+    93→      toast.error('API key tidak boleh kosong')
+    94→      return
+    95→    }
+    96→    if (testIt) {
+    97→      setIsTestingOpenAI(true)
+    98→      const tid = toast.loading('Test OpenAI key…')
+    99→      const result = await testOpenAIKey(key)
+   100→      setIsTestingOpenAI(false)
+   101→      if (!result.valid) {
+   102→        toast.error(`Gagal: ${result.error}`, { id: tid })
+   103→        return
+   104→      }
+   105→      toast.success('OpenAI key valid!', { id: tid })
+   106→    }
+   107→    setOpenAIKey(key.trim())
+   108→    setOpenAIKey(key.trim())
+   109→    setShowOpenAIInput(false)
+   110→  }, [])
+   111→
+   112→  const saveOpenRouterKey = useCallback(async (key: string, testIt: boolean = true) => {
+   113→    if (!key.trim()) {
+   114→      toast.error('API key tidak boleh kosong')
+   115→      return
+   116→    }
+   117→    if (testIt) {
+   118→      setIsTestingOpenRouter(true)
+   119→      const tid = toast.loading('Test OpenRouter key…')
+   120→      const result = await testOpenRouterKey(key)
+   121→      setIsTestingOpenRouter(false)
+   122→      if (!result.valid) {
+   123→        toast.error(`Gagal: ${result.error}`, { id: tid })
+   124→        return
+   125→      }
+   126→      toast.success('OpenRouter key valid!', { id: tid })
+   127→    }
+   128→    setOpenRouterKey(key.trim())
+   129→    setOpenrouterKey(key.trim())
+   130→    setShowOpenRouterInput(false)
+   131→  }, [])
+   132→
+   133→  const generatePart = useCallback(
+   134→    async (partIndex: number) => {
+   135→      const part = splitResult.parts[partIndex - 1]
+   136→      if (!part) return
+   137→      const apiKey = provider === 'openai' ? openaiKey : provider === 'openrouter' ? openrouterKey : undefined
+   138→      if (provider !== 'edge' && !apiKey) {
+   139→        toast.error(`Set API key ${provider} dulu`)
+   140→        if (provider === 'openai') setShowOpenAIInput(true)
+   141→        else setShowOpenRouterInput(true)
+   142→        return
+   143→      }
+   144→      const prev = audioCache[partIndex]
+   145→      if (prev?.previewUrl) revokePreviewUrl(prev.previewUrl)
+   146→
+   147→      setActivePart(partIndex)
+   148→      setLineProgress(null)
+   149→      setProgress({ stage: 'synthesizing', message: `Generating part ${partIndex}…`, percent: 0 })
+   150→      const tid = toast.loading(`Generating audio untuk ${prefix}-${String(partIndex).padStart(2, '0')}.srt…`)
+   151→      try {
+   152→        const voice = provider === 'edge' ? edgeVoice : provider === 'kokoro' ? kokoroVoice : provider === 'openai' ? openaiVoice : openrouterVoice
+   153→        const result = await narratePart(part, {
+   154→          provider,
+   155→          voice,
+   156→          model: provider === 'openrouter' ? openrouterModel : undefined,
+   157→          apiKey,
+   158→          speed: provider === 'kokoro' ? kokoroSpeed : undefined,
+   159→          respectTiming,
+   160→          speedMode,
+   161→          offSpeed,
+   162→          onModelProgress: provider === 'kokoro' ? (p) => setProgress(p) : undefined,
+   163→          onLineProgress: (current, total, text) => setLineProgress({ current, total, text }),
+   164→          onStage: (p) => setProgress(p),
+   165→        })
+   166→        setAudioCache((prev) => ({
+   167→          ...prev,
+   168→          [partIndex]: { blob: result.blob, durationSec: result.durationSec, previewUrl: result.previewUrl },
+   169→        }))
+   170→        toast.success(`Part ${partIndex} audio ready (${formatDuration(result.durationSec)}) — bisa preview di bawah`, { id: tid })
+   171→      } catch (e) {
+   172→        console.error(e)
+   173→        toast.error('TTS gagal: ' + (e as Error).message, { id: tid })
+   174→      } finally {
+   175→        setActivePart(null)
+   176→        setLineProgress(null)
+   177→      }
+   178→    },
+   179→    [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, respectTiming, speedMode, offSpeed, prefix, audioCache],
+   180→  )
+   181→
+   182→  const generateAll = useCallback(async () => {
+   183→    const apiKey = provider === 'openai' ? openaiKey : provider === 'openrouter' ? openrouterKey : undefined
+   184→    if (provider !== 'edge' && !apiKey) {
+   185→      toast.error(`Set API key ${provider} dulu`)
+   186→      if (provider === 'openai') setShowOpenAIInput(true)
+   187→      else setShowOpenRouterInput(true)
+   188→      return
+   189→    }
+   190→    if (splitResult.parts.length === 0) return
+   191→
+   192→    Object.values(audioCache).forEach((c) => c.previewUrl && revokePreviewUrl(c.previewUrl))
+   193→    setAudioCache({})
+   194→
+   195→    setProgress({ stage: 'synthesizing', message: 'Mulai full narration…', percent: 0 })
+   196→    setLineProgress(null)
+   197→    const tid = toast.loading(`Generating full audio (${splitResult.parts.length} parts)…`)
+   198→    try {
+   199→      const results: { blob: Blob; durationSec: number; previewUrl: string }[] = []
+   200→      const voice = provider === 'edge' ? edgeVoice : provider === 'kokoro' ? kokoroVoice : provider === 'openai' ? openaiVoice : openrouterVoice
+   201→      for (let i = 0; i < splitResult.parts.length; i++) {
+   202→        setActivePart(i + 1)
+   203→        const result = await narratePart(splitResult.parts[i], {
+   204→          provider,
+   205→          voice,
+   206→          model: provider === 'openrouter' ? openrouterModel : undefined,
+   207→          apiKey,
+   208→          speed: provider === 'kokoro' ? kokoroSpeed : undefined,
+   209→          respectTiming,
+   210→          speedMode,
+   211→          offSpeed,
+   212→          onModelProgress: provider === 'kokoro' ? (p) => setProgress(p) : undefined,
+   213→          onLineProgress: (current, total, text) => setLineProgress({ current, total, text }),
+   214→          onStage: (p) => setProgress(p),
+   215→        })
+   216→        results.push({ blob: result.blob, durationSec: result.durationSec, previewUrl: result.previewUrl })
+   217→        setAudioCache((prev) => ({
+   218→          ...prev,
+   219→          [i + 1]: { blob: result.blob, durationSec: result.durationSec, previewUrl: result.previewUrl },
+   220→        }))
+   221→        toast.loading(`Part ${i + 1}/${splitResult.parts.length} done`, { id: tid })
+   222→      }
+   223→      const zip = new JSZip()
+   224→      let totalDuration = 0
+   225→      for (let i = 0; i < results.length; i++) {
+   226→        zip.file(`${prefix}-${String(i + 1).padStart(2, '0')}.wav`, await results[i].blob.arrayBuffer())
+   227→        totalDuration += results[i].durationSec
+   228→      }
+   229→      downloadBlob(`${prefix}-audio.zip`, await zip.generateAsync({ type: 'blob', compression: 'STORE' }))
+   230→      toast.success(`Full narration (${formatDuration(totalDuration)}) — ZIP downloaded`, { id: tid })
+   231→    } catch (e) {
+   232→      console.error(e)
+   233→      toast.error('Full narration gagal: ' + (e as Error).message, { id: tid })
+   234→    } finally {
+   235→      setActivePart(null)
+   236→      setLineProgress(null)
+   237→    }
+   238→  }, [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, respectTiming, speedMode, offSpeed, prefix, audioCache])
+   239→
+   240→  const downloadPartAudio = useCallback(
+   241→    (partIndex: number) => {
+   242→      const cached = audioCache[partIndex]
+   243→      if (!cached) return
+   244→      downloadBlob(`${prefix}-${String(partIndex).padStart(2, '0')}.wav`, cached.blob)
+   245→      toast.success(`Mengunduh ${prefix}-${String(partIndex).padStart(2, '0')}.wav`)
+   246→    },
+   247→    [audioCache, prefix],
+   248→  )
+   249→
+   250→  const isSynthesizing = progress.stage === 'synthesizing' || progress.stage === 'stitching'
+   251→  const needsApiKey = provider !== 'edge' && provider !== 'kokoro'
+   252→  const hasApiKey = provider === 'edge' || provider === 'kokoro' ? true : provider === 'openai' ? Boolean(openaiKey) : Boolean(openrouterKey)
+   253→
+   254→  const providerInfo: Record<Provider, { name: string; cost: string; indonesia: string; keyUrl?: string; hasKey: boolean }> = {
+   255→    edge: { name: 'Edge TTS (Microsoft)', cost: 'GRATIS', indonesia: 'Native (Gadis/Ardi)', hasKey: true },
+   256→    kokoro: { name: 'Kokoro-82M (Offline)', cost: 'GRATIS (80MB model)', indonesia: 'Multilingual (acc pt/es/en)', hasKey: true },
+   257→    openai: { name: 'OpenAI TTS', cost: '$0.015/1k chars', indonesia: 'Natural (multilingual)', keyUrl: 'https://platform.openai.com/api-keys', hasKey: Boolean(openaiKey) },
+   258→    openrouter: { name: 'OpenRouter TTS', cost: 'Pay-per-use', indonesia: 'Bergantung model', keyUrl: 'https://openrouter.ai/keys', hasKey: Boolean(openrouterKey) },
+   259→  }
+   260→
+   261→  return (
+   262→    <Card className="border-purple-200 dark:border-purple-900/50 bg-purple-50/30 dark:bg-purple-950/10">
+   263→      <CardHeader>
+   264→        <div className="flex items-start justify-between gap-3">
+   265→          <div>
+   266→            <CardTitle className="text-lg flex items-center gap-2">
+   267→              <AudioLines className="size-5 text-purple-600" />
+   268→              Generate Audio (TTS)
+   269→            </CardTitle>
+   270→            <CardDescription className="mt-1">
+   271→              Konversi subtitle ke audio narasi. Pilih provider: Edge (gratis, native Indonesia), OpenAI, atau OpenRouter (banyak model). Audio timing di-sync ke SRT. Preview audio sebelum download.
+   272→            </CardDescription>
+   273→          </div>
+   274→          <Badge variant={hasApiKey ? 'secondary' : 'destructive'} className="shrink-0">
+   275→            {hasApiKey ? (
+   276→              <>
+   277→                <CheckCircle2 className="size-3 mr-1" /> Ready
+   278→              </>
+   279→            ) : (
+   280→              <>
+   281→                <Key className="size-3 mr-1" /> No API Key
+   282→              </>
+   283→            )}
+   284→          </Badge>
+   285→        </div>
+   286→      </CardHeader>
+   287→      <CardContent className="space-y-5">
+   288→        {/* Provider Selector */}
+   289→        <div>
+   290→          <Label className="text-sm font-medium">TTS Provider</Label>
+   291→          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
+   292→            {(Object.keys(providerInfo) as Provider[]).map((p) => {
+   293→              const info = providerInfo[p]
+   294→              const selected = provider === p
+   295→              return (
+   296→                <button
+   297→                  key={p}
+   298→                  type="button"
+   299→                  onClick={() => setProvider(p)}
+   300→                  className={`text-left p-3 rounded-md border-2 transition-all ${selected ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/30' : 'border-border hover:border-purple-300'}`}
+   301→                >
+   302→                  <div className="font-medium text-sm flex items-center gap-1.5">
+   303→                    {selected && <CheckCircle2 className="size-3.5 text-purple-600" />}
+   304→                    {info.name}
+   305→                  </div>
+   306→                  <div className="text-xs text-muted-foreground mt-1">
+   307→                    <div><strong>Cost:</strong> {info.cost}</div>
+   308→                    <div><strong>Indonesia:</strong> {info.indonesia}</div>
+   309→                  </div>
+   310→                </button>
+   311→              )
+   312→            })}
+   313→          </div>
+   314→        </div>
+   315→
+   316→        {/* API Key section (only for OpenAI / OpenRouter) */}
+   317→        {provider === 'openai' && (
+   318→          <div className="rounded-lg border border-amber-200 dark:border-amber-800 p-4 bg-amber-50/30 dark:bg-amber-950/10">
+   319→            <div className="flex items-start justify-between gap-3 mb-2">
+   320→              <div className="flex-1">
+   321→                <h4 className="font-medium text-sm mb-1 flex items-center gap-1.5">
+   322→                  <Key className="size-3.5 text-amber-600" />
+   323→                  OpenAI API Key
+   324→                </h4>
+   325→                <p className="text-xs text-muted-foreground">
+   326→                  Get free $5 credit di{' '}
+   327→                  <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" className="text-amber-700 dark:text-amber-400 underline inline-flex items-center gap-0.5">
+   328→                    platform.openai.com <ExternalLink className="size-3" />
+   329→                  </a>. Disimpan di browser (localStorage).
+   330→                </p>
+   331→              </div>
+   332→              {openaiKey && (
+   333→                <Button size="sm" variant="outline" onClick={() => { setShowOpenAIInput(!showOpenAIInput); setOpenaiDraft(openaiKey) }} className="h-7 text-xs">
+   334→                  {showOpenAIInput ? 'Tutup' : 'Ganti'}
+   335→                </Button>
+   336→              )}
+   337→            </div>
+   338→            {(!openaiKey || showOpenAIInput) && (
+   339→              <div className="mt-3 space-y-2">
+   340→                <Input type="password" value={openaiDraft} onChange={(e) => setOpenaiDraft(e.target.value)} placeholder="sk-..." className="font-mono text-sm" />
+   341→                <Button size="sm" onClick={() => saveOpenAIKey(openaiDraft, true)} disabled={isTestingOpenAI || !openaiDraft.trim()}>
+   342→                  {isTestingOpenAI ? <><Loader2 className="size-3.5 mr-1 animate-spin" /> Testing…</> : <><CheckCircle2 className="size-3.5 mr-1" /> Test & Save</>}
+   343→                </Button>
+   344→              </div>
+   345→            )}
+   346→          </div>
+   347→        )}
+   348→
+   349→        {provider === 'openrouter' && (
+   350→          <div className="rounded-lg border border-amber-200 dark:border-amber-800 p-4 bg-amber-50/30 dark:bg-amber-950/10">
+   351→            <div className="flex items-start justify-between gap-3 mb-2">
+   352→              <div className="flex-1">
+   353→                <h4 className="font-medium text-sm mb-1 flex items-center gap-1.5">
+   354→                  <Key className="size-3.5 text-amber-600" />
+   355→                  OpenRouter API Key
+   356→                </h4>
+   357→                <p className="text-xs text-muted-foreground">
+   358→                  Get free $1 credit di{' '}
+   359→                  <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer" className="text-amber-700 dark:text-amber-400 underline inline-flex items-center gap-0.5">
+   360→                    openrouter.ai/keys <ExternalLink className="size-3" />
+   361→                  </a>. Satu key untuk akses OpenAI, ElevenLabs, MiniMax, dll.
+   362→                </p>
+   363→              </div>
+   364→              {openrouterKey && (
+   365→                <Button size="sm" variant="outline" onClick={() => { setShowOpenRouterInput(!showOpenRouterInput); setOpenrouterDraft(openrouterKey) }} className="h-7 text-xs">
+   366→                  {showOpenRouterInput ? 'Tutup' : 'Ganti'}
+   367→                </Button>
+   368→              )}
+   369→            </div>
+   370→            {(!openrouterKey || showOpenRouterInput) && (
+   371→              <div className="mt-3 space-y-2">
+   372→                <Input type="password" value={openrouterDraft} onChange={(e) => setOpenrouterDraft(e.target.value)} placeholder="sk-or-..." className="font-mono text-sm" />
+   373→                <Button size="sm" onClick={() => saveOpenRouterKey(openrouterDraft, true)} disabled={isTestingOpenRouter || !openrouterDraft.trim()}>
+   374→                  {isTestingOpenRouter ? <><Loader2 className="size-3.5 mr-1 animate-spin" /> Testing…</> : <><CheckCircle2 className="size-3.5 mr-1" /> Test & Save</>}
+   375→                </Button>
+   376→              </div>
+   377→            )}
+   378→          </div>
+   379→        )}
+   380→
+   381→        {/* Voice/Model selector + timing toggle */}
+   382→        {hasApiKey && (
+   383→          <>
+   384→            <div className="grid gap-3 sm:grid-cols-2">
+   385→              {provider === 'edge' && (
+   386→                <div>
+   387→                  <Label htmlFor="edge-voice" className="text-xs">Voice Edge TTS</Label>
+   388→                  <select id="edge-voice" value={edgeVoice} onChange={(e) => setEdgeVoice(e.target.value)} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1">
+   389→                    {EDGE_VOICES.map((v) => <option key={v.name} value={v.name}>{v.label}</option>)}
+   390→                  </select>
+   391→                </div>
+   392→              )}
+   393→              {provider === 'kokoro' && (
+   394→                <div className="col-span-2 space-y-3 rounded-md border border-purple-200 dark:border-purple-800 p-3 bg-purple-50/30 dark:bg-purple-950/10">
+   395→                  <div>
+   396→                    <Label htmlFor="kokoro-voice" className="text-xs">Voice Kokoro (54 voices, multilingual)</Label>
+   397→                    <select id="kokoro-voice" value={kokoroVoice} onChange={(e) => setKokoroVoice(e.target.value)} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1">
+   398→                      <optgroup label="🇧🇷 Portugal (accent mirip Indonesia)">
+   399→                        <option value="pf_dora">Dora (female, natural) — paling cocok untuk Indonesia</option>
+   400→                      </optgroup>
+   401→                      <optgroup label="🇪🇸 Spanyol (accent mirip Indonesia)">
+   402→                        <option value="ef_dora">Dora (female)</option>
+   403→                      </optgroup>
+   404→                      <optgroup label="🇺🇸 English US">
+   405→                        <option value="af_heart">Heart (female, natural)</option>
+   406→                        <option value="af_bella">Bella (female, natural)</option>
+   407→                        <option value="af_nova">Nova (female)</option>
+   408→                        <option value="am_michael">Michael (male)</option>
+   409→                        <option value="am_adam">Adam (male)</option>
+   410→                      </optgroup>
+   411→                      <optgroup label="🇬🇧 English UK">
+   412→                        <option value="bf_emma">Emma (female)</option>
+   413→                        <option value="bm_george">George (male)</option>
+   414→                      </optgroup>
+   415→                      <optgroup label="🇫🇷 French">
+   416→                        <option value="ff_siwis">Siwis (female)</option>
+   417→                      </optgroup>
+   418→                      <optgroup label="🇨🇳 Mandarin">
+   419→                        <option value="zf_xiaoxiao">Xiaoxiao (female)</option>
+   420→                      </optgroup>
+   421→                      <optgroup label="🇯🇵 Japanese">
+   422→                        <option value="jf_alpha">Alpha (female)</option>
+   423→                      </optgroup>
+   424→                    </select>
+   425→                  </div>
+   426→                  <div>
+   427→                    <Label htmlFor="kokoro-speed" className="text-xs">Speed: {kokoroSpeed.toFixed(1)}x</Label>
+   428→                    <input
+   429→                      id="kokoro-speed"
+   430→                      type="range"
+   431→                      min={0.5}
+   432→                      max={2}
+   433→                      step={0.1}
+   434→                      value={kokoroSpeed}
+   435→                      onChange={(e) => setKokoroSpeed(Number(e.target.value))}
+   436→                      className="w-full mt-1"
+   437→                    />
+   438→                  </div>
+   439→                  <p className="text-xs text-muted-foreground">
+   440→                    <strong>Note:</strong> Kokoro tidak punya voice Indonesia native, tapi text Indonesia akan dibaca dengan accent dari voice yang dipilih. Pilih <strong>Dora (Portuguese)</strong> untuk accent paling mirip Indonesia.
+   441→                  </p>
+   442→                </div>
+   443→              )}
+   444→              {provider === 'openai' && (
+   445→                <div>
+   446→                  <Label htmlFor="openai-voice" className="text-xs">Voice OpenAI</Label>
+   447→                  <select id="openai-voice" value={openaiVoice} onChange={(e) => setOpenaiVoice(e.target.value)} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1">
+   448→                    {OPENAI_VOICES.map((v) => <option key={v.id} value={v.id}>{v.label}</option>)}
+   449→                  </select>
+   450→                </div>
+   451→              )}
+   452→              {provider === 'openrouter' && (
+   453→                <>
+   454→                  <div>
+   455→                    <Label htmlFor="or-model" className="text-xs">Model OpenRouter</Label>
+   456→                    <select id="or-model" value={openrouterModel} onChange={(e) => setOpenrouterModel(e.target.value)} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1">
+   457→                      {OPENROUTER_MODELS.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+   458→                    </select>
+   459→                  </div>
+   460→                  <div>
+   461→                    <Label htmlFor="or-voice" className="text-xs">Voice (tergantung model)</Label>
+   462→                    <select id="or-voice" value={openrouterVoice} onChange={(e) => setOpenrouterVoice(e.target.value)} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1">
+   463→                      <option value="alloy">Alloy (neutral)</option>
+   464→                      <option value="nova">Nova (female natural)</option>
+   465→                      <option value="shimmer">Shimmer (female clear)</option>
+   466→                      <option value="echo">Echo (male warm)</option>
+   467→                      <option value="fable">Fable (male narrative)</option>
+   468→                      <option value="onyx">Onyx (male deep)</option>
+   469→                    </select>
+   470→                  </div>
+   471→                </>
+   472→              )}
+   473→              <div className="flex items-end justify-between gap-3">
+   474→                <div>
+   475→                  <Label htmlFor="timing" className="text-xs">Sync timing ke SRT</Label>
+   476→                  <p className="text-xs text-muted-foreground mt-1">
+   477→                    <strong>ON:</strong> audio fit ke cue (server-side FFmpeg atempo, suara natural, durasi = SRT). Boleh jadi cepat, tapi tidak bocil.<br/>
+   478→                    <strong>OFF:</strong> audio natural alami, utuh tanpa potongan. Durasi bisa beda dari SRT.
+   479→                  </p>
+   480→                </div>
+   481→                <Switch id="timing" checked={respectTiming} onCheckedChange={setRespectTiming} />
+   482→              </div>
+   483→              {respectTiming && (
+   484→                <div className="mt-2">
+   485→                  <Label htmlFor="speed-mode" className="text-xs">Speed mode (seperti Voicertool)</Label>
+   486→                  <select
+   487→                    id="speed-mode"
+   488→                    value={speedMode}
+   489→                    onChange={(e) => setSpeedMode(e.target.value as 'speedup-only' | 'speedup-slowdown')}
+   490→                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
+   491→                  >
+   492→                    <option value="speedup-slowdown">Speed up and slow down — audio selalu fit ke cue (speed up kalau lebih panjang, slow down kalau lebih pendek)</option>
+   493→                    <option value="speedup-only">Speed up only — speed up kalau lebih panjang, biarkan silence kalau lebih pendek</option>
+   494→                  </select>
+   495→                </div>
+   496→              )}
+   497→
+   498→              {!respectTiming && (
+   499→                <div className="mt-2">
+   500→                  <Label htmlFor="off-speed" className="text-xs">Kecepatan (OFF mode)</Label>
+   501→                  <select
+   502→                    id="off-speed"
+   503→                    value={offSpeed}
+   504→                    onChange={(e) => setOffSpeed(Number(e.target.value))}
+   505→                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
+   506→                  >
+   507→                    <option value={1.0}>1.0x — Natural (kecepatan normal)</option>
+   508→                    <option value={1.25}>1.25x — 25% lebih cepat</option>
+   509→                    <option value={1.5}>1.5x — 50% lebih cepat</option>
+   510→                    <option value={2.0}>2.0x — 2x lebih cepat</option>
+   511→                  </select>
+   512→                  <p className="text-xs text-muted-foreground mt-1">
+   513→                    Audio natural alami (pitch tidak berubah, server-side rate). Sequential playback, tidak sync ke SRT.
+   514→                  </p>
+   515→                </div>
+   516→              )}
+   517→
+   518→            </div>
+   519→
+   520→            {/* Action buttons */}
+   521→            <div className="flex flex-wrap gap-2">
+   522→              <Button onClick={generateAll} disabled={isSynthesizing} size="sm">
+   523→                {isSynthesizing ? <><Loader2 className="size-3.5 mr-1 animate-spin" /> Generating…</> : <><AudioLines className="size-3.5 mr-1" /> Generate & Download ZIP ({splitResult.parts.length} parts)</>}
+   524→              </Button>
+   525→            </div>
+   526→
+   527→            {/* Progress */}
+   528→            {(isSynthesizing || lineProgress) && (
+   529→              <div className="rounded-md border bg-white/50 dark:bg-slate-900/50 p-3 space-y-2">
+   530→                {progress.message && <p className="text-sm font-medium">{progress.message}</p>}
+   531→                {progress.percent !== undefined && <Progress value={progress.percent} className="h-2" />}
+   532→                {lineProgress && (
+   533→                  <p className="text-xs text-muted-foreground">Baris {lineProgress.current}/{lineProgress.total}: "{lineProgress.text.slice(0, 60)}{lineProgress.text.length > 60 ? '…' : ''}"</p>
+   534→                )}
+   535→              </div>
+   536→            )}
+   537→          </>
+   538→        )}
+   539→
+   540→        {/* Per-part list with audio preview */}
+   541→        {hasApiKey && splitResult.parts.length > 0 && (
+   542→          <div className="space-y-2">
+   543→            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+   544→              Per Split File — Generate, Preview, Download
+   545→            </h4>
+   546→            <div className="space-y-3">
+   547→              {splitResult.parts.map((part) => {
+   548→                const idx = part.index
+   549→                const isGenerating = activePart === idx
+   550→                const cached = audioCache[idx]
+   551→                return (
+   552→                  <div key={idx} className="rounded-md border bg-card p-3 space-y-2">
+   553→                    <div className="flex items-center gap-2">
+   554→                      <div className="size-8 rounded-md bg-purple-100 dark:bg-purple-950/40 flex items-center justify-center shrink-0">
+   555→                        <span className="text-xs font-bold text-purple-700 dark:text-purple-400">{String(idx).padStart(2, '0')}</span>
+   556→                      </div>
+   557→                      <div className="min-w-0 flex-1">
+   558→                        <div className="text-sm font-medium truncate">{prefix}-{String(idx).padStart(2, '0')}.wav</div>
+   559→                        <div className="text-xs text-muted-foreground">
+   560→                          {part.entryCount} baris • {formatDuration(part.endSec - part.startSec)}
+   561→                          {cached && <span className="ml-2 text-purple-600">✓ {formatDuration(cached.durationSec)} audio</span>}
+   562→                        </div>
+   563→                      </div>
+   564→                      <Button size="sm" variant="outline" disabled={isSynthesizing} onClick={() => generatePart(idx)} className="h-8">
+   565→                        {isGenerating ? <Loader2 className="size-3 animate-spin" /> : <AudioLines className="size-3" />}
+   566→                      </Button>
+   567→                      {cached && (
+   568→                        <Button size="sm" variant="ghost" onClick={() => downloadPartAudio(idx)} className="h-8">
+   569→                          <Download className="size-3" />
+   570→                        </Button>
+   571→                      )}
+   572→                    </div>
+   573→                    {cached && (
+   574→                      <div className="mt-2 rounded-md bg-emerald-50/50 dark:bg-emerald-950/20 p-2">
+   575→                        <div className="flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400 mb-1.5">
+   576→                          <Play className="size-3" /> Preview audio (dengar sebelum download)
+   577→                        </div>
+   578→                        <audio controls preload="metadata" src={cached.previewUrl} className="w-full h-9" />
+   579→                      </div>
+   580→                    )}
+   581→                  </div>
+   582→                )
+   583→              })}
+   584→            </div>
+   585→          </div>
+   586→        )}
+   587→
+   588→        {/* Edge proxy URL config (only when on Edge provider + GitHub Pages deployment) */}
+   589→        {provider === 'edge' && typeof window !== 'undefined' && !window.location.origin.includes('vercel.app') && !window.location.origin.includes('localhost') && (
+   590→          <div className="rounded-lg border border-blue-200 dark:border-blue-800 p-3 bg-blue-50/30 dark:bg-blue-950/10">
+   591→            <Label htmlFor="edge-proxy" className="text-xs font-medium">
+   592→              Edge TTS Proxy URL (khusus GitHub Pages)
+   593→            </Label>
+   594→            <p className="text-xs text-muted-foreground mt-1 mb-2">
+   595→              ⚠️ Kalau pakai app dari GitHub Pages, Edge TTS butuh proxy (browser tidak bisa langsung ke Microsoft).
+   596→              <strong> Solusi: deploy ke Vercel</strong> → Edge TTS langsung jalan tanpa proxy.
+   597→              Atau paste URL Vercel proxy di sini.
+   598→            </p>
+   599→            <Input
+   600→              id="edge-proxy"
+   601→              type="text"
+   602→              defaultValue={typeof window !== 'undefined' ? getEdgeProxyUrl() : ''}
+   603→              placeholder="https://srt-splitter.vercel.app/api/edge-tts"
+   604→              className="text-xs"
+   605→              onBlur={(e) => {
+   606→                setEdgeProxyUrl(e.target.value)
+   607→                toast.success('Edge proxy URL disimpan')
+   608→              }}
+   609→            />
+   610→          </div>
+   611→        )}
+   612→
+   613→        {/* Notice */}
+   614→        <div className="text-xs text-muted-foreground flex items-start gap-2 pt-1">
+   615→          <AlertCircle className="size-3.5 mt-0.5 shrink-0" />
+   616→          <span>
+   617→            <strong>Edge TTS (default):</strong> Gratis, native Indonesia (Gadis/Ardi). Pakai Vercel proxy (butuh internet).
+   618→            <br />
+   619→            <strong>OpenAI TTS:</strong> Premium, $0.015/1k chars. API key dari platform.openai.com.
+   620→            <br />
+   621→            <strong>OpenRouter TTS:</strong> Gateway ke banyak model (OpenAI, ElevenLabs, MiniMax). API key dari openrouter.ai/keys.
+   622→            <br />
+   623→            <strong>ON (sync ke SRT):</strong> Audio di-rate-fit ke cue pakai server-side rate (Edge TTS prosody rate / OpenAI speed / Kokoro speed). Pitch natural di server — tidak bocil. Durasi audio = SRT. Bisa cepat tapi tidak bocil. Estimasi rate dari text length vs cue duration (charsPerSec=11).<br/>
+   624→            <strong>OFF (natural alami):</strong> Audio natural utuh tanpa potongan. Sequential playback (satu demi satu). Durasi total = sum semua audio, tidak dibatasi SRT.
+   625→          </span>
+   626→        </div>
+   627→      </CardContent>
+   628→    </Card>
+   629→  )
+   630→}
+   631→

@@ -184,10 +184,17 @@ function formatEdgeRate(ratio: number): string {
 /**
  * Generate narration audio for SRT entries, stitched into one WAV.
  *
- * DUA MODE:
+ * DUA MODE (filosofi Voicertool.com/subs):
  *
  * ON (respectTiming=true): audio fit ke cue duration, durasi = SRT
- * - TWO-PASS Edge TTS: generate natural → ukur → re-generate dengan rate
+ * - TWO-PASS Edge TTS: generate natural → ukur → re-generate dengan rate kalau perlu
+ * - Speed mode (opts.speedMode):
+ *   • "speedup-only": speed up kalau audio lebih panjang dari cue,
+ *     biarkan silence di akhir cue kalau lebih pendek (natural hening).
+ *   • "speedup-slowdown" (DEFAULT — filosofi Voicertool kombinasi):
+ *     speed up kalau lebih panjang, SLOW DOWN kalau lebih pendek —
+ *     cue selalu terisi penuh, tidak ada silence.
+ * - Clamp slowdown: minimum 0.7x (Edge rate -30%) supaya audio tidak kedengaran aneh.
  * - Audio DIPERTAHANKAN UTUH — TIDAK ADA TRUNCATION
  * - Kalau audio cue lebih panjang dari cue → tumpuk dengan CROSSFADE:
  *   cue N fade out di region overlap, cue N+1 fade in di region overlap
@@ -269,20 +276,65 @@ export async function narrateEntries(
 
         const actualDuration = audioBuffer1.duration
 
-        // SKEMA 1: NATURAL-FIRST
-        // Kalau audio natural muat di ruang yang tersedia (entry.start → next cue start),
-        // pakai natural — TIDAK perlu speed up. Silence di akhir cue = natural (hening).
-        // Ini membuat audio terdengar natural, tidak terburu-buru.
-        if (actualDuration <= availableDuration) {
-          // Audio muat tanpa speed up → pakai natural
-          finalAudio = toMono(audioBuffer1)
-          if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
-            finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
+        // SKEMA 1: NATURAL-FIRST (untuk speedup-only)
+        // Mode "speedup-only" (seperti Voicertool): biarkan silence di akhir cue kalau audio lebih pendek.
+        // Mode "speedup-slowdown" (seperti Voicertool): kalau audio lebih pendek dari cue, SLOW DOWN supaya fit penuh.
+        const speedMode = opts.speedMode || 'speedup-slowdown' // default = filosofi Voicertool kombinasi
+        const MIN_SLOWDOWN_RATIO = 0.7 // batas bawah: audio tidak boleh lebih lambat dari 0.7x (kedengaran aneh kalau terlalu lambat)
+
+        if (actualDuration <= cueDuration) {
+          // Audio muat di cue (entry.start → entry.end)
+          if (speedMode === 'speedup-slowdown' && actualDuration < cueDuration * 0.95) {
+            // Mode Voicertool "speed up and slow down": SLOW DOWN untuk isi cue penuh (hilangkan silence)
+            // Ratio: actualDuration / cueDuration (e.g., 0.7 → Edge rate = -30%)
+            // Clamp ke MIN_SLOWDOWN_RATIO supaya tidak terlalu lambat
+            const rawRatio = actualDuration / cueDuration
+            const slowRatio = Math.max(rawRatio, MIN_SLOWDOWN_RATIO)
+            // Edge TTS rate: ratio 0.7 → -30%, ratio 1.0 → +0%
+            const edgeRate = formatEdgeRate(slowRatio)
+
+            if (opts.provider === 'edge' && slowRatio < 0.97) {
+              // Re-generate dengan Edge TTS server-side rate (pitch dipertahankan di server)
+              const synthSlow = await synthesizeText(text, {
+                ...opts,
+                rate: edgeRate,
+                openaiSpeed: slowRatio,
+                speed: slowRatio,
+              })
+              let audioBufferSlow: AudioBuffer
+              if (synthSlow.pcm) {
+                const pcmSampleRate = synthSlow.sampleRate || OUTPUT_SAMPLE_RATE
+                const ctx = new AudioContext({ sampleRate: pcmSampleRate })
+                audioBufferSlow = ctx.createBuffer(1, synthSlow.pcm.length, pcmSampleRate)
+                audioBufferSlow.copyToChannel(synthSlow.pcm, 0)
+                ctx.close()
+              } else {
+                if (synthSlow.audioBlob.size === 0) throw new Error('Empty audio output (slowdown pass)')
+                audioBufferSlow = await decodeAudioBlob(synthSlow.audioBlob, OUTPUT_SAMPLE_RATE)
+              }
+              finalAudio = toMono(audioBufferSlow)
+              if (audioBufferSlow.sampleRate !== OUTPUT_SAMPLE_RATE) {
+                finalAudio = linearResample(finalAudio, audioBufferSlow.sampleRate, OUTPUT_SAMPLE_RATE)
+              }
+            } else {
+              // Provider non-Edge atau ratio sudah dekat 1.0 → pakai natural (tidak ada silence yang signifikan)
+              finalAudio = toMono(audioBuffer1)
+              if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
+                finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
+              }
+            }
+          } else {
+            // speedup-only: biarkan silence di akhir cue (natural)
+            finalAudio = toMono(audioBuffer1)
+            if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
+              finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
+            }
           }
         }
-        // SKEMA 2: SPEED UP (kalau audio TIDAK muat di ruang tersedia)
+        // SKEMA 2: SPEED UP (kalau audio TIDAK muat di cue)
         else if (opts.provider === 'edge') {
-          // Hitung ratio berdasarkan ruang tersedia, BUKAN cue duration
+          // Hitung ratio berdasarkan ruang tersedia, BUKAN cue duration saja.
+          // Ruang = dari entry.start sampai cue berikutnya mulai (atau cue.end kalau terakhir).
           // Kalau ruang = 7s, audio = 10s → ratio = 10/7 = 1.43x
           // Kalau ruang = cue = 5s, audio = 10s → ratio = 10/5 = 2.0x
           const targetDuration = Math.max(cueDuration, availableDuration)
@@ -297,7 +349,7 @@ export async function narrateEntries(
               finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
             }
           } else {
-            // Speed up needed — re-generate dengan rate
+            // Speed up needed — re-generate dengan Edge TTS server-side rate (pitch preserved)
             const synth2 = await synthesizeText(text, {
               ...opts,
               rate: edgeRate,
