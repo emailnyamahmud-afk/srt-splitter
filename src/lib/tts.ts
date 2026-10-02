@@ -78,11 +78,12 @@ export type ProgressCallback = (p: TTSProgress) => void
 export interface NarrationOptions {
   provider: Provider
   voice: string
-  model?: string // untuk OpenRouter
+  model?: string
   apiKey?: string
-  speed?: number // untuk Kokoro (default 1.0, hanya dipakai kalau respectTiming=false)
+  speed?: number
   respectTiming: boolean
-  speedMode?: 'speedup-only' | 'speedup-slowdown' // ON mode: speed up only, atau speed up + slow down
+  speedMode?: 'speedup-only' | 'speedup-slowdown'
+  offSpeed?: number // OFF mode: kecepatan multiplier (1.0 = natural, 1.25, 1.5, 2.0)
   onModelProgress?: (p: TTSProgress) => void
   onLineProgress?: (current: number, total: number, text: string) => void
   onStage?: ProgressCallback
@@ -348,8 +349,27 @@ export async function narrateEntries(
         position = Math.floor(entry.start * OUTPUT_SAMPLE_RATE)
         cursor = position + finalAudio.length
       } else {
-        // === OFF MODE: natural audio, sequential playback ===
-        const synth = await synthesizeText(text, opts)
+        // === OFF MODE: natural audio dengan optional speed multiplier ===
+        // offSpeed: 1.0 = natural, 1.25 = 25% lebih cepat, 2.0 = 2x lebih cepat
+        // Edge TTS: kirim rate sebagai prosody rate (server-side pitch preservation)
+        // OpenAI: kirim speed parameter
+        // Kokoro: kirim speed parameter
+        const offSpeed = opts.offSpeed || 1.0
+        let offRate = '+0%'
+        let offOpenaiSpeed = 1.0
+        let offKokoroSpeed = 1.0
+        if (offSpeed !== 1.0) {
+          offRate = formatEdgeRate(offSpeed)
+          offOpenaiSpeed = offSpeed
+          offKokoroSpeed = offSpeed
+        }
+
+        const synth = await synthesizeText(text, {
+          ...opts,
+          rate: offRate,
+          openaiSpeed: offOpenaiSpeed,
+          speed: offKokoroSpeed,
+        })
 
         let audioBuffer: AudioBuffer
         if (synth.pcm) {

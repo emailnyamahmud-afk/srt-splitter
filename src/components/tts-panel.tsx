@@ -65,6 +65,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
 
   const [respectTiming, setRespectTiming] = useState(true)
   const [speedMode, setSpeedMode] = useState<'speedup-only' | 'speedup-slowdown'>('speedup-slowdown')
+  const [offSpeed, setOffSpeed] = useState<number>(1.0)
   const [progress, setProgress] = useState<TTSProgress>({ stage: 'idle' })
   const [lineProgress, setLineProgress] = useState<{ current: number; total: number; text: string } | null>(null)
   const [activePart, setActivePart] = useState<number | null>(null)
@@ -157,6 +158,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
           speed: provider === 'kokoro' ? kokoroSpeed : undefined,
           respectTiming,
           speedMode,
+          offSpeed,
           onModelProgress: provider === 'kokoro' ? (p) => setProgress(p) : undefined,
           onLineProgress: (current, total, text) => setLineProgress({ current, total, text }),
           onStage: (p) => setProgress(p),
@@ -174,7 +176,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
         setLineProgress(null)
       }
     },
-    [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, respectTiming, speedMode, prefix, audioCache],
+    [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, respectTiming, speedMode, offSpeed, prefix, audioCache],
   )
 
   const generateAll = useCallback(async () => {
@@ -206,6 +208,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
           speed: provider === 'kokoro' ? kokoroSpeed : undefined,
           respectTiming,
           speedMode,
+          offSpeed,
           onModelProgress: provider === 'kokoro' ? (p) => setProgress(p) : undefined,
           onLineProgress: (current, total, text) => setLineProgress({ current, total, text }),
           onStage: (p) => setProgress(p),
@@ -232,7 +235,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
       setActivePart(null)
       setLineProgress(null)
     }
-  }, [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, respectTiming, speedMode, prefix, audioCache])
+  }, [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, respectTiming, speedMode, offSpeed, prefix, audioCache])
 
   const downloadPartAudio = useCallback(
     (partIndex: number) => {
@@ -489,6 +492,26 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
                     <option value="speedup-slowdown">Speed up and slow down — audio selalu fit ke cue (speed up kalau lebih panjang, slow down kalau lebih pendek)</option>
                     <option value="speedup-only">Speed up only — speed up kalau lebih panjang, biarkan silence kalau lebih pendek</option>
                   </select>
+                </div>
+              )}
+
+              {!respectTiming && (
+                <div className="mt-2">
+                  <Label htmlFor="off-speed" className="text-xs">Kecepatan (OFF mode)</Label>
+                  <select
+                    id="off-speed"
+                    value={offSpeed}
+                    onChange={(e) => setOffSpeed(Number(e.target.value))}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
+                  >
+                    <option value={1.0}>1.0x — Natural (kecepatan normal)</option>
+                    <option value={1.25}>1.25x — 25% lebih cepat</option>
+                    <option value={1.5}>1.5x — 50% lebih cepat</option>
+                    <option value={2.0}>2.0x — 2x lebih cepat</option>
+                  </select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Audio natural alami (pitch tidak berubah, server-side rate). Sequential playback, tidak sync ke SRT.
+                  </p>
                 </div>
               )}
 

@@ -46,6 +46,8 @@ export default function Home() {
   const [entries, setEntries] = useState<SrtEntry[]>([])
   const [fileName, setFileName] = useState<string>('')
   const [maxMinutes, setMaxMinutes] = useState<number>(30)
+  const [splitMode, setSplitMode] = useState<'duration' | 'chars'>('duration')
+  const [maxChars, setMaxChars] = useState<number>(4500)
   const [prefix, setPrefix] = useState<string>('S6')
   const [resetTimestamps, setResetTimestamps] = useState<boolean>(false)
   const [isDragging, setIsDragging] = useState<boolean>(false)
@@ -113,8 +115,9 @@ export default function Home() {
       prefix,
       resetTimestamps,
       splitOnBoundary: true,
+      splitByChars: splitMode === 'chars' ? maxChars : undefined,
     })
-  }, [entries, maxMinutes, prefix, resetTimestamps])
+  }, [entries, maxMinutes, prefix, resetTimestamps, splitMode, maxChars])
 
   const handleFile = useCallback(async (f: File) => {
     if (!f.name.toLowerCase().endsWith('.srt')) {
@@ -292,7 +295,31 @@ export default function Home() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Duration slider */}
+                {/* Split mode selector */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Mode split</Label>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant={splitMode === 'duration' ? 'default' : 'outline'}
+                      onClick={() => setSplitMode('duration')}
+                      className="h-8"
+                    >
+                      By Durasi
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={splitMode === 'chars' ? 'default' : 'outline'}
+                      onClick={() => setSplitMode('chars')}
+                      className="h-8"
+                    >
+                      By Karakter
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Duration slider (only if splitMode = 'duration') */}
+                {splitMode === 'duration' && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label className="text-sm font-medium">Durasi maksimal per file</Label>
@@ -314,7 +341,6 @@ export default function Home() {
                     5 menit → 5 jam. Untuk film 3-4 jam, pilih 240m (4j) atau 300m (5j) agar tidak di-split.
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {/* Minutes presets */}
                     {[10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 300].map((m) => {
                       const label = m >= 60
                         ? (m % 60 === 0 ? `${m / 60}j` : `${Math.floor(m / 60)}j${m % 60}m`)
@@ -333,6 +359,43 @@ export default function Home() {
                     })}
                   </div>
                 </div>
+                )}
+
+                {/* Character count (only if splitMode = 'chars') */}
+                {splitMode === 'chars' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">Maksimal karakter per file</Label>
+                    <Badge variant="outline" className="font-mono">
+                      {maxChars} karakter
+                    </Badge>
+                  </div>
+                  <Slider
+                    value={[maxChars]}
+                    onValueChange={(v) => setMaxChars(v[0])}
+                    min={1000}
+                    max={5000}
+                    step={500}
+                    className="w-full"
+                  />
+                  <div className="text-xs text-muted-foreground text-center">
+                    Cocok untuk Edge TTS (limit 5000 karakter per request). 4500 karakter ≈ 3-5 menit audio.
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {[2000, 3000, 4500, 5000].map((c) => (
+                      <Button
+                        key={c}
+                        size="sm"
+                        variant={maxChars === c ? 'default' : 'outline'}
+                        onClick={() => setMaxChars(c)}
+                        className="h-7 px-2 text-xs"
+                      >
+                        {c} chars
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                )}
 
                 <Separator />
 

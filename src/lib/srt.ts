@@ -94,8 +94,9 @@ export function parseSrt(content: string): SrtEntry[] {
 export interface SplitOptions {
   maxMinutes: number;
   prefix: string;
-  resetTimestamps: boolean; // if false, keep original timestamps
-  splitOnBoundary: boolean; // if true, only split at subtitle boundaries (never cut mid-subtitle)
+  resetTimestamps: boolean;
+  splitOnBoundary: boolean;
+  splitByChars?: number;
 }
 
 /**
@@ -108,12 +109,18 @@ export function splitEntries(
   entries: SrtEntry[],
   opts: SplitOptions,
 ): SplitResult {
-  const maxSeconds = opts.maxMinutes * 60;
   if (entries.length === 0) {
     return { totalEntries: 0, totalDurationSec: 0, parts: [] };
   }
   const totalDurationSec = entries[entries.length - 1].end;
 
+  // Mode: split by character count
+  if (opts.splitByChars && opts.splitByChars > 0) {
+    return splitByCharCount(entries, opts.splitByChars);
+  }
+
+  // Mode: split by duration (default)
+  const maxSeconds = opts.maxMinutes * 60;
   const parts: SrtPart[] = [];
   let currentEntries: SrtEntry[] = [];
   let partStartSec = 0;
@@ -121,8 +128,6 @@ export function splitEntries(
   let partIdx = 1;
 
   for (const entry of entries) {
-    // If this entry's start is at/after nextBoundary and we have entries collected,
-    // flush current part.
     if (currentEntries.length > 0 && entry.start >= nextBoundary) {
       parts.push(buildPart(partIdx, currentEntries, partStartSec));
       partIdx++;
@@ -141,6 +146,33 @@ export function splitEntries(
     totalDurationSec,
     parts,
   };
+}
+
+function splitByCharCount(
+  entries: SrtEntry[],
+  maxChars: number,
+): SplitResult {
+  const totalDurationSec = entries[entries.length - 1].end;
+  const parts: SrtPart[] = [];
+  let currentEntries: SrtEntry[] = [];
+  let currentChars = 0;
+  let partIdx = 1;
+
+  for (const entry of entries) {
+    const entryChars = entry.textLines.join(' ').length;
+    if (currentEntries.length > 0 && currentChars + entryChars > maxChars) {
+      parts.push(buildPart(partIdx, currentEntries, 0));
+      partIdx++;
+      currentEntries = [];
+      currentChars = 0;
+    }
+    currentEntries.push(entry);
+    currentChars += entryChars;
+  }
+  if (currentEntries.length > 0) {
+    parts.push(buildPart(partIdx, currentEntries, 0));
+  }
+  return { totalEntries: entries.length, totalDurationSec, parts };
 }
 
 function buildPart(
