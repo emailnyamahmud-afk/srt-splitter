@@ -268,21 +268,15 @@ export async function narrateEntries(
           }
         } else if (opts.provider === 'edge') {
           // PASS 2: Re-generate dengan exact rate (server-side pitch preservation)
-          // ratio = actual / cue → kalau actual 8s, cue 5s → ratio 1.6 → rate '+60%'
           const ratio = actualDuration / cueDuration
           const edgeRate = formatEdgeRate(ratio)
 
           // Kalau audio lebih pendek dan mode 'speedup-only', tidak perlu pass 2
           if (ratio < 1.0 && opts.speedMode === 'speedup-only') {
-            // Pakai audio dari pass 1, pad silence ke cue
             finalAudio = toMono(audioBuffer1)
             if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
               finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
             }
-            const cueSamples = Math.floor(cueDuration * OUTPUT_SAMPLE_RATE)
-            const padded = new Float32Array(cueSamples)
-            padded.set(finalAudio, 0)
-            finalAudio = padded
           } else {
             // Re-generate dengan rate
             const synth2 = await synthesizeText(text, {
@@ -308,33 +302,15 @@ export async function narrateEntries(
             if (audioBuffer2.sampleRate !== OUTPUT_SAMPLE_RATE) {
               finalAudio = linearResample(finalAudio, audioBuffer2.sampleRate, OUTPUT_SAMPLE_RATE)
             }
-
-            // Pad/truncate ke cue (sisa kecil — Edge TTS rate tidak perfect linear)
-            const cueSamples = Math.floor(cueDuration * OUTPUT_SAMPLE_RATE)
-            if (finalAudio.length > cueSamples) {
-              finalAudio = finalAudio.subarray(0, cueSamples)
-            } else if (finalAudio.length < cueSamples) {
-              const padded = new Float32Array(cueSamples)
-              padded.set(finalAudio, 0)
-              finalAudio = padded
-            }
+            // TIDAK ADA TRUNCATION — audio utuh 100%
           }
         } else {
-          // OpenAI/OpenRouter/Kokoro: pakai server-side speed dari pass 1 (sudah dikirim)
-          // Atau re-generate dengan exact speed
+          // OpenAI/OpenRouter/Kokoro: pakai audio dari pass 1 (sudah natural)
           finalAudio = toMono(audioBuffer1)
           if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
             finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
           }
-          // Truncate/pad ke cue
-          const cueSamples = Math.floor(cueDuration * OUTPUT_SAMPLE_RATE)
-          if (finalAudio.length > cueSamples) {
-            finalAudio = finalAudio.subarray(0, cueSamples)
-          } else if (finalAudio.length < cueSamples) {
-            const padded = new Float32Array(cueSamples)
-            padded.set(finalAudio, 0)
-            finalAudio = padded
-          }
+          // TIDAK ADA TRUNCATION — audio utuh 100%
         }
 
         position = Math.floor(entry.start * OUTPUT_SAMPLE_RATE)
@@ -389,7 +365,13 @@ export async function narrateEntries(
 
   let totalSamples: number
   if (opts.respectTiming) {
-    totalSamples = Math.floor(entries[entries.length - 1].end * OUTPUT_SAMPLE_RATE)
+    // ON: total = max(SRT end, max segment end) — audio utuh, tidak dipotong
+    const srtEndSamples = Math.floor(entries[entries.length - 1].end * OUTPUT_SAMPLE_RATE)
+    let maxEnd = 0
+    for (const seg of placedSegments) {
+      maxEnd = Math.max(maxEnd, seg.position + seg.audio.length)
+    }
+    totalSamples = Math.max(srtEndSamples, maxEnd)
   } else {
     let maxEnd = 0
     for (const seg of placedSegments) {
