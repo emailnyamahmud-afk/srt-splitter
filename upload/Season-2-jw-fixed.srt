@@ -185,7 +185,7 @@ Dheweke ora bisa nahan manèh
 
 47
 00:01:36,233 --> 00:01:37,000
-lan njupuk nyawane dhèwèk
+lan njupuk nyawane dhewe
 
 48
 00:01:37,166 --> 00:01:38,500
@@ -242,7 +242,7 @@ Banjur gawanen Kepala Klan mrene
 
 61
 00:01:59,266 --> 00:02:00,633
-Ayo dhèwèké ngomong dhèwèk
+Ayo dhèwèké ngomong dhewe
 
 62
 00:02:02,933 --> 00:02:04,233
@@ -290,7 +290,7 @@ Qin Hongying, apa sampeyan mbrontak?
 
 73
 00:02:51,100 --> 00:02:53,700
-Pakdhe, panjenengan ngira-ngira awake dhèwèké kakehan.
+Pakdhe, panjenengan ngira-ngira awake dhewe kakehan.
 
 74
 00:02:53,900 --> 00:02:55,466
@@ -298,7 +298,7 @@ Kowé nganggep Klan Qin kaya kraton kekaisaran.
 
 75
 00:02:55,600 --> 00:02:56,566
-Lan awakmu dhèwèké kaya Kaisar
+Lan awakmu dhewe kaya Kaisar
 
 76
 00:02:59,200 --> 00:03:00,866
@@ -326,7 +326,7 @@ Yuan Hao tumindak salah,
 
 82
 00:03:10,500 --> 00:03:11,633
-lan Aku dhèwèké sing bakal ngukum dhèwèké.
+lan Aku dhewe sing bakal ngukum dhèwèké.
 
 83
 00:03:11,866 --> 00:03:13,800
@@ -338,7 +338,7 @@ Dhèwèké uga wong Qin.
 
 85
 00:03:15,400 --> 00:03:17,466
-Klan Qin bakal ngurus urusane dhèwèké.
+Klan Qin bakal ngurus urusane dhewe.
 
 86
 00:03:17,600 --> 00:03:19,100
@@ -882,7 +882,7 @@ Kita nyewa wong akeh banget wektu iki
 
 221
 00:07:57,700 --> 00:07:58,733
-Ditambah wong-wong kita dhèwèk
+Ditambah wong-wong kita dhewe
 
 222
 00:07:58,766 --> 00:07:59,733
@@ -1225,7 +1225,7 @@ kaya-kaya njaga desa
 
 306
 00:10:51,300 --> 00:10:52,500
-wis dadi pawon dhèwèk,
+wis dadi pawon dhewe,
 
 307
 00:10:52,533 --> 00:10:54,033
@@ -1274,7 +1274,7 @@ Desa para petani
 
 318
 00:11:16,033 --> 00:11:17,500
-sejatine ngerti milisi dhèwèk
+sejatine ngerti milisi dhewe
 
 319
 00:11:17,533 --> 00:11:19,400
@@ -1514,7 +1514,7 @@ wis wiwit nuduhake
 
 378
 00:13:17,200 --> 00:13:19,133
-pratandha-pratandha yen wis bisa ngadeg dhèwèké.
+pratandha-pratandha yen wis bisa ngadeg dhewe.
 
 379
 00:13:19,900 --> 00:13:21,200
@@ -1606,7 +1606,7 @@ ora ana cara
 
 401
 00:13:54,966 --> 00:13:57,033
-Kepala Desa Zhou ngrancang iki dhèwèké.
+Kepala Desa Zhou ngrancang iki dhewe.
 
 402
 00:13:57,066 --> 00:13:57,533
@@ -1718,19 +1718,19 @@ Desa Qinghe iki wis
 
 429
 00:15:07,033 --> 00:15:08,433
-wiwit duwe urip lan pati dhèwèk
+wiwit duwe urip lan pati dhewe
 
 430
 00:15:08,966 --> 00:15:10,300
-Panggonan kanthi urip lan pati dhèwèk,
+Panggonan kanthi urip lan pati dhewe,
 
 431
 00:15:10,333 --> 00:15:11,300
-aturane dhèwèk,
+aturane dhewe,
 
 432
 00:15:11,333 --> 00:15:13,166
-lan kuburane dhèwèk,
+lan kuburane dhewe,
 
 433
 00:15:13,366 --> 00:15:14,366
@@ -1746,7 +1746,7 @@ Iku wis saya tambah gedhé
 
 436
 00:15:17,533 --> 00:15:18,433
-sawijining kekuwatan dhèwèké.
+sawijining kekuwatan dhewe.
 
 437
 00:15:18,766 --> 00:15:20,100
@@ -1887,7 +1887,7 @@ Aku nggawe sawetara
 
 471
 00:16:15,400 --> 00:16:16,433
-piranti bela diriku dhèwèk, apa kuwi ora diidinake?
+piranti bela diriku dhewe, apa kuwi ora diidinake?
 
 472
 00:16:24,900 --> 00:16:26,666
@@ -1919,7 +1919,7 @@ Para prajurit ora bisa nglindhungi kita,
 
 479
 00:16:36,433 --> 00:16:38,033
-dadi kenapa kowé ora nglilani aku nglindhungi awake dhèwèk?
+dadi kenapa kowé ora nglilani aku nglindhungi awake dhewe?
 
 480
 00:16:38,066 --> 00:16:38,266
@@ -1927,7 +1927,7 @@ Tengen
 
 481
 00:16:38,300 --> 00:16:39,266
-Aku slamet dhèwèké.
+Aku slamet dhewe.
 
 482
 00:16:39,300 --> 00:16:40,133
@@ -2063,7 +2063,7 @@ Pasukan kekaisaranmu ora bisa nglindhungi kita.
 
 515
 00:17:32,833 --> 00:17:33,933
-Apa aku ora isa nglindhungi awake dhèwèk?
+Apa aku ora isa nglindhungi awake dhewe?
 
 516
 00:17:34,066 --> 00:17:35,133
@@ -2127,7 +2127,7 @@ Wiwit kowé wis
 
 531
 00:18:02,666 --> 00:18:03,933
-wis siyap nglindhungi awakmu dhèwèk
+wis siyap nglindhungi awakmu dhewe
 
 532
 00:18:04,133 --> 00:18:05,200
@@ -2167,7 +2167,7 @@ Lali waé.
 
 541
 00:18:15,666 --> 00:18:16,800
-Mandheg isin awakmu dhèwèké ing kéné.
+Mandheg isin awakmu dhewe ing kéné.
 
 542
 00:18:20,766 --> 00:18:22,066
@@ -2327,7 +2327,7 @@ Aku pancen nggumuni kowé saka jero atiku.
 
 581
 00:19:36,666 --> 00:19:37,866
-Mesthi waé, aku péngin ndeleng dhèwèk
+Mesthi waé, aku péngin ndeleng dhewe
 
 582
 00:19:37,900 --> 00:19:39,566
@@ -2837,7 +2837,7 @@ Xie Changfeng isih kelingan karo dhèwèké
 
 708
 00:23:26,966 --> 00:23:28,100
-lan maca sakarepe dhèwèk,
+lan maca sakarepe dhewe,
 
 709
 00:23:28,200 --> 00:23:29,233
@@ -2977,7 +2977,7 @@ Wong-wong saka Desa Qinghe kuwi
 
 743
 00:24:17,766 --> 00:24:19,033
-Sanajan saben wong nduweni bakat dhèwèk-dhèwèk
+Sanajan saben wong nduweni bakat dhewe-dhewe
 
 744
 00:24:19,066 --> 00:24:20,000
@@ -3013,7 +3013,7 @@ kanggo mbantu aku ngungkapake kanthi ora langsung
 
 752
 00:24:33,500 --> 00:24:35,033
-Yen kita bisa nggawe Changfeng nglamar awake dhèwèk,
+Yen kita bisa nggawe Changfeng nglamar awake dhewe,
 
 753
 00:24:35,066 --> 00:24:35,933
@@ -3642,7 +3642,7 @@ wis mapan kaya wis mapan
 
 909
 00:29:20,700 --> 00:29:22,233
-Anggere wong loro mau gelem dhèwèk
+Anggere wong loro mau gelem dhewe
 
 910
 00:29:22,433 --> 00:29:23,500
@@ -3702,7 +3702,7 @@ Ing pungkasan, isih gumantung marang
 
 924
 00:29:43,800 --> 00:29:44,833
-Kekarepane Changfeng dhèwèk
+Kekarepane Changfeng dhewe
 
 925
 00:29:45,200 --> 00:29:45,533
@@ -4433,7 +4433,7 @@ Kuwi ora nggebug mungsuh
 
 1106
 00:33:45,400 --> 00:33:47,033
-Kuwi njeblugke kabèh kru artileri kita dhèwèk
+Kuwi njeblugke kabèh kru artileri kita dhewe
 
 1107
 00:33:48,133 --> 00:33:48,566
@@ -4658,7 +4658,7 @@ Panah Qinghe
 
 1162
 00:34:45,600 --> 00:34:47,166
-Yen kita pancen nggawe jeneng kanggo awake dhèwèk,
+Yen kita pancen nggawe jeneng kanggo awake dhewe,
 
 1163
 00:34:47,333 --> 00:34:48,533
@@ -4746,7 +4746,7 @@ kita kudu ngandelake
 
 1184
 00:35:17,833 --> 00:35:19,033
-senjata sing kita gawe dhèwèké.
+senjata sing kita gawe dhewe.
 
 1185
 00:35:19,400 --> 00:35:20,200
@@ -5062,19 +5062,19 @@ Dadi wiwit saiki
 
 1263
 00:36:30,500 --> 00:36:31,433
-Kita nggawe senjata dhèwèk
+Kita nggawe senjata dhewe
 
 1264
 00:36:31,466 --> 00:36:32,300
-Latih wong-wong kita dhèwèké.
+Latih wong-wong kita dhewe.
 
 1265
 00:36:32,466 --> 00:36:33,333
-Golek intelmu dhèwèké.
+Golek intelmu dhewe.
 
 1266
 00:36:33,500 --> 00:36:34,466
-Simpen dalan kanggo awakmu dhèwèké.
+Simpen dalan kanggo awakmu dhewe.
 
 1267
 00:36:35,100 --> 00:36:36,633
@@ -5240,7 +5240,7 @@ Kaya sing wis disepakati wingi bengi,
 
 1307
 00:37:38,566 --> 00:37:39,400
-ayo saben wong nindakake bageane dhèwèk-dhèwèké.
+ayo saben wong nindakake bageane dhewe-dhewe.
 
 1308
 00:37:39,500 --> 00:37:39,800
@@ -5659,7 +5659,7 @@ Wong-wong ing pinggir kali saiki
 
 1411
 00:41:07,566 --> 00:41:09,000
-meh ora bisa ngurus sawah dhèwèk
+meh ora bisa ngurus sawah dhewe
 
 1412
 00:41:09,100 --> 00:41:09,866
@@ -6425,7 +6425,7 @@ kanggo ngrampungake panen
 
 1601
 00:45:50,700 --> 00:45:51,700
-gandum saka sawahe dhèwèk
+gandum saka sawahe dhewe
 
 1602
 00:45:51,733 --> 00:45:52,466
@@ -8007,7 +8007,7 @@ Aku ora njaluk kowé ngirim wong-wongku mati tanpa alesan.
 
 1994
 00:54:49,700 --> 00:54:50,533
-Desa Qinghe nduweni milisi dhèwèk
+Desa Qinghe nduweni milisi dhewe
 
 1995
 00:54:50,633 --> 00:54:51,133
@@ -8203,7 +8203,7 @@ Mubengi benteng lan kelangan rong tembakan
 
 2043
 00:55:51,633 --> 00:55:53,200
-Wong-wong ing njero bakal buyar dhèwèk-dhèwèké.
+Wong-wong ing njero bakal buyar dhewe-dhewe.
 
 2044
 00:55:53,600 --> 00:55:54,866
@@ -8941,7 +8941,7 @@ Mulané awaké dhéwé ora perlu nglawan wong liya kanggo ngrebut iku.
 
 2227
 01:06:17,066 --> 01:06:18,533
-Mbak Chen Su nggawe dhèwèk,
+Mbak Chen Su nggawe dhewe,
 
 2228
 01:06:18,566 --> 01:06:20,400
@@ -9620,7 +9620,7 @@ prentahe Komisaris Militer
 
 2396
 01:11:16,600 --> 01:11:17,800
-lan ora bakal wani tumindak dhèwèk
+lan ora bakal wani tumindak dhewe
 
 2397
 01:11:18,333 --> 01:11:19,400
@@ -10057,7 +10057,7 @@ pancen ora bisa dibandhingake karo penunggang jaran biasa.
 
 2505
 01:14:38,800 --> 01:14:40,866
-Para warga lan milisi padha perang kanthi kekuwatane dhèwèk-dhèwèké.
+Para warga lan milisi padha perang kanthi kekuwatane dhewe-dhewe.
 
 2506
 01:14:41,400 --> 01:14:42,700
@@ -10143,7 +10143,7 @@ Desa Qinghe sejatine wis lestari.
 
 2526
 01:15:14,200 --> 01:15:15,433
-Aku lunga mrana dhèwèké.
+Aku lunga mrana dhewe.
 
 2527
 01:15:15,500 --> 01:15:16,666
@@ -10167,7 +10167,7 @@ Mung nalika semana dhèwèké ngerti perang iki
 
 2532
 01:15:23,133 --> 01:15:24,366
-ora mung dadi desa sing njaga awake dhèwèk
+ora mung dadi desa sing njaga awake dhewe
 
 2533
 01:15:24,500 --> 01:15:26,133
@@ -10920,7 +10920,7 @@ Jeneng-jenengmu
 
 2718
 01:21:09,733 --> 01:21:11,466
-ora kena dikurung ing omahmu dhèwèk
+ora kena dikurung ing omahmu dhewe
 
 2719
 01:21:11,500 --> 01:21:12,266
@@ -11045,7 +11045,7 @@ Pengadilan ora ngerti.
 
 2749
 01:22:00,833 --> 01:22:01,766
-Swarga dhèwèké ora bakal ngidinke.
+Swarga dhewe ora bakal ngidinke.
 
 2750
 01:22:01,900 --> 01:22:02,933
@@ -11109,7 +11109,7 @@ Yagéné wong-wong desa iki padha
 
 2765
 01:22:36,566 --> 01:22:38,633
-ngadeg dhèwèké nglawan pedhang mungsuh
+ngadeg dhewe nglawan pedhang mungsuh
 
 2766
 01:22:38,666 --> 01:22:39,533
@@ -11303,7 +11303,7 @@ Geni-geni suar wis diobong
 
 2813
 01:23:46,333 --> 01:23:48,166
-Aku dhèwèké banjur cepet-cepet menyang kabupatén kanggo njaluk bantuan.
+Aku dhewe banjur cepet-cepet menyang kabupatén kanggo njaluk bantuan.
 
 2814
 01:23:48,200 --> 01:23:49,466
@@ -11407,7 +11407,7 @@ Kowé nggunakaké kabèh uripé wong désa
 
 2839
 01:24:21,833 --> 01:24:23,100
-kanggo nylametake kulitmu dhèwèk
+kanggo nylametake kulitmu dhewe
 
 2840
 01:24:23,300 --> 01:24:24,200
@@ -11539,7 +11539,7 @@ Kuwi wis entheng.
 
 2871
 01:25:11,700 --> 01:25:12,866
-Pejabat sing andhap asor iki ora wani mbela awake dhèwèké.
+Pejabat sing andhap asor iki ora wani mbela awake dhewe.
 
 2872
 01:25:12,966 --> 01:25:14,033
@@ -12324,7 +12324,7 @@ Kuwi jenenge katrampilan, lur.
 
 3065
 01:30:29,866 --> 01:30:31,033
-Yen kowé duwe katrampilan, coba ngapusi wong liya dhèwèké.
+Yen kowé duwe katrampilan, coba ngapusi wong liya dhewe.
 
 3066
 01:30:31,066 --> 01:30:31,233
@@ -12348,7 +12348,7 @@ Wiwit dina iki,
 
 3071
 01:30:43,233 --> 01:30:44,500
-Desa Qinghe bakal nyedhiyakake pertahanan dhèwèké.
+Desa Qinghe bakal nyedhiyakake pertahanan dhewe.
 
 3072
 01:30:44,533 --> 01:30:45,266
@@ -12852,7 +12852,7 @@ Wang Haochuan
 
 3196
 01:33:42,800 --> 01:33:43,666
-mbedakake awake dhèwèké ing perang
+mbedakake awake dhewe ing perang
 
 3197
 01:33:43,833 --> 01:33:44,533
@@ -12876,7 +12876,7 @@ Diwenehi gelar Sarjana sing Setia lan Saleh
 
 3202
 01:33:49,433 --> 01:33:50,133
-Ditulis dhèwèké dening Komandan Zhong
+Ditulis dhewe dening Komandan Zhong
 
 3203
 01:33:50,166 --> 01:33:51,066
@@ -13097,7 +13097,7 @@ Kita wis berjuang bareng ing kéné sajrone wektu iki
 
 3257
 01:34:58,466 --> 01:34:59,600
-Apa saiki awake dhèwèké pancen arep pisah dalane dhèwèk-dhèwèk?
+Apa saiki awake dhewe pancen arep pisah dalane dhewe-dhewe?
 
 3258
 01:35:00,566 --> 01:35:01,266
@@ -13105,7 +13105,7 @@ Ora bubar
 
 3259
 01:35:01,300 --> 01:35:01,966
-Iki babagan mlaku dhèwèk-dhèwèké.
+Iki babagan mlaku dhewe-dhewe.
 
 3260
 01:35:02,433 --> 01:35:03,666
@@ -13237,7 +13237,7 @@ Saiki banjur,
 
 3292
 01:35:39,866 --> 01:35:41,233
-ayo padha ngrembug babagan dalane dhèwèk-dhèwèké maju.
+ayo padha ngrembug babagan dalane dhewe-dhewe maju.
 
 3293
 01:35:43,400 --> 01:35:44,233
@@ -13749,7 +13749,7 @@ Kok aku ora kepikiran bab iku
 
 3420
 01:38:33,500 --> 01:38:34,600
-Kita bisa nggawe properti dhèwèk
+Kita bisa nggawe properti dhewe
 
 3421
 01:38:36,000 --> 01:38:38,000
@@ -13977,7 +13977,7 @@ Apa sing diwenehake pengadilan marang individu
 
 3477
 01:39:53,000 --> 01:39:53,966
-Simpenen kanggo awakmu dhèwèké.
+Simpenen kanggo awakmu dhewe.
 
 3478
 01:39:54,000 --> 01:39:55,266
@@ -14554,7 +14554,7 @@ Mesthi waé iku bener.
 
 3621
 01:42:16,300 --> 01:42:18,233
-Supervisor Lin dhèwèké sing mutusaké iki.
+Supervisor Lin dhewe sing mutusaké iki.
 
 3622
 01:42:18,266 --> 01:42:19,233
@@ -14855,7 +14855,7 @@ Nanging wong-wong kudu terus maju.
 
 3696
 01:44:02,600 --> 01:44:04,433
-Wiwit saiki, anggep aku kaya adhimu dhèwèké.
+Wiwit saiki, anggep aku kaya adhimu dhewe.
 
 3697
 01:44:06,733 --> 01:44:07,933
@@ -15201,7 +15201,7 @@ Klinik iki ana ing tanggung jawabmu.
 
 3782
 01:46:22,200 --> 01:46:24,100
-Saben uwong nduweni dalane dhèwèk-dhèwèké kanggo mlaku.
+Saben uwong nduweni dalane dhewe-dhewe kanggo mlaku.
 
 3783
 01:46:24,700 --> 01:46:26,166
@@ -15217,7 +15217,7 @@ Wang Haochuan duwé dalané dhéwé.
 
 3786
 01:46:30,233 --> 01:46:31,500
-Aku uga duwe dalanku dhèwèké.
+Aku uga duwe dalanku dhewe.
 
 3787
 01:46:34,866 --> 01:46:35,366
@@ -15461,7 +15461,7 @@ Apa kudu mbayar kanggo mlebu desa?
 
 3847
 01:47:49,166 --> 01:47:49,966
-Cocokake awakmu dhèwèké.
+Cocokake awakmu dhewe.
 
 3848
 01:47:50,066 --> 01:47:50,900
@@ -15605,7 +15605,7 @@ Aku ora bisa turu ing wayah wengi
 
 3883
 01:49:40,800 --> 01:49:41,966
-Mangga dideleng dhèwèk
+Mangga dideleng dhewe
 
 3884
 01:49:44,966 --> 01:49:45,733
@@ -15757,7 +15757,7 @@ Gambar tali kasebut
 
 3921
 01:50:51,633 --> 01:50:52,600
-Saben menyang dhèwèk-dhèwèk
+Saben menyang dhewe-dhewe
 
 3922
 01:50:52,733 --> 01:50:53,866
@@ -16636,7 +16636,7 @@ Kesasar saiki
 
 4139
 01:57:36,466 --> 01:57:38,333
-Utawa kowé péngin aku ngusir kowé dhèwèk?
+Utawa kowé péngin aku ngusir kowé dhewe?
 
 4140
 01:57:48,700 --> 01:57:49,933
@@ -17054,7 +17054,7 @@ Priksa Liu Houfu sesuk
 
 4242
 02:00:56,900 --> 02:00:58,000
-lan kita mbokmenawa bakal entuk jawaban kita dhèwèké.
+lan kita mbokmenawa bakal entuk jawaban kita dhewe.
 
 4243
 02:00:58,033 --> 02:00:59,266
@@ -17755,7 +17755,7 @@ Aku ora duwe pilihan liya
 
 4415
 02:06:54,566 --> 02:06:55,400
-nanging kanggo mbela awake dhèwèk
+nanging kanggo mbela awake dhewe
 
 4416
 02:06:57,300 --> 02:06:58,100
@@ -18162,7 +18162,7 @@ Ing pangecualian urip lan pati iki
 
 4516
 02:10:02,133 --> 02:10:03,300
-Ditulis nganggo tangane Lu Huaian dhèwèk
+Ditulis nganggo tangane Lu Huaian dhewe
 
 4517
 02:10:03,533 --> 02:10:04,166
@@ -18191,7 +18191,7 @@ kenapa dhèwèké bakal semangat banget
 
 4523
 02:10:12,200 --> 02:10:13,400
-ngethok kekuwatane dhèwèké kanthi cepet-cepet?
+ngethok kekuwatane dhewe kanthi cepet-cepet?
 
 4524
 02:10:16,166 --> 02:10:16,933
@@ -18396,7 +18396,7 @@ Komandan Jianya, yakin.
 
 4574
 02:11:48,766 --> 02:11:49,966
-Anggere iku duweke awake dhèwèk
+Anggere iku duweke awake dhewe
 
 4575
 02:11:50,266 --> 02:11:51,066
@@ -18656,7 +18656,7 @@ Para prajurit sing wis dilatih
 
 4639
 02:13:40,933 --> 02:13:41,900
-Lumrahe, dhèwèké luwih trampil perang tinimbang awake dhèwèké.
+Lumrahe, dhèwèké luwih trampil perang tinimbang awake dhewe.
 
 4640
 02:13:43,466 --> 02:13:44,600
@@ -19022,7 +19022,7 @@ Terusake.
 
 4730
 02:16:14,533 --> 02:16:16,633
-Kaisar dhèwèké maringi pakurmatan
+Kaisar dhewe maringi pakurmatan
 iki marang Desa Qinghe
 
 4731
@@ -19039,7 +19039,7 @@ Iku pancen goresan kuas kekaisaran.
 
 4734
 02:16:20,933 --> 02:16:21,700
-Ditulis dening Kaisar dhèwèk
+Ditulis dening Kaisar dhewe
 
 4735
 02:16:22,000 --> 02:16:24,166
@@ -19161,7 +19161,7 @@ Wedi nglawan
 
 4764
 02:17:10,400 --> 02:17:11,466
-Dosa kulawarga kandunge dhèwèk
+Dosa kulawarga kandunge dhewe
 
 4765
 02:17:11,900 --> 02:17:13,533
@@ -20051,7 +20051,7 @@ Kabeh tatu mung tatu daging.
 
 4984
 02:22:30,500 --> 02:22:31,233
-Aku isa mbungkus dhèwèké.
+Aku isa mbungkus dhewe.
 
 4985
 02:22:31,433 --> 02:22:32,733
@@ -20135,7 +20135,7 @@ Nanging kanggo perawatan saben dina,
 
 5005
 02:23:12,133 --> 02:23:13,266
-pungkasané kudu ngurus awakmu dhèwèké.
+pungkasané kudu ngurus awakmu dhewe.
 
 5006
 02:23:13,533 --> 02:23:15,000
@@ -20446,7 +20446,7 @@ Tentara Xiang butuh
 
 5082
 02:24:53,833 --> 02:24:55,233
-korps medis dhèwèké sing tepat.
+korps medis dhewe sing tepat.
 
 5083
 02:24:55,733 --> 02:24:57,133
@@ -20992,7 +20992,7 @@ Lan amarga Batalyon Katelu ngalami kerugian gedhé,
 
 5218
 02:28:17,933 --> 02:28:18,900
-kita kudu ndeleng dhèwèk
+kita kudu ndeleng dhewe
 
 5219
 02:28:19,100 --> 02:28:20,200
@@ -21008,7 +21008,7 @@ Sesuk aku bakal nggawa Changfeng, Li Kui, lan sèket
 
 5222
 02:28:22,466 --> 02:28:23,600
-anggota pasukan khusus nganggo senjata dhèwèk-dhèwèk
+anggota pasukan khusus nganggo senjata dhewe-dhewe
 
 5223
 02:28:23,833 --> 02:28:25,033
