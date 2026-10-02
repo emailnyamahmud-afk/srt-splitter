@@ -313,7 +313,7 @@ export async function narrateEntries(
           // TIDAK ADA TRUNCATION — audio utuh 100%
         }
 
-        position = Math.max(Math.floor(entry.start * OUTPUT_SAMPLE_RATE), cursor)
+        position = Math.floor(entry.start * OUTPUT_SAMPLE_RATE)
         cursor = position + finalAudio.length
       } else {
         // === OFF MODE: natural audio, sequential playback ===
@@ -366,13 +366,8 @@ export async function narrateEntries(
 
   let totalSamples: number
   if (opts.respectTiming) {
-    // ON: total = max(SRT end, max segment end) — audio utuh, tidak dipotong
-    const srtEndSamples = Math.floor(entries[entries.length - 1].end * OUTPUT_SAMPLE_RATE)
-    let maxEnd = 0
-    for (const seg of placedSegments) {
-      maxEnd = Math.max(maxEnd, seg.position + seg.audio.length)
-    }
-    totalSamples = Math.max(srtEndSamples, maxEnd)
+    // ON: total = SRT end (durasi WAJIB = SRT)
+    totalSamples = Math.floor(entries[entries.length - 1].end * OUTPUT_SAMPLE_RATE)
   } else {
     let maxEnd = 0
     for (const seg of placedSegments) {
