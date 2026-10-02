@@ -241,10 +241,15 @@ export async function narrateEntries(
       let position: number
 
       if (opts.respectTiming) {
-        // === ON MODE: TWO-PASS Edge TTS + CROSSFADE (NO TRUNCATION) ===
+        // === ON MODE: NATURAL-FIRST + speed up only kalau tabrakan ===
         const cueDuration = entry.end - entry.start
         const cueStartSamples = Math.floor(entry.start * OUTPUT_SAMPLE_RATE)
         const cueEndSamples = Math.floor(entry.end * OUTPUT_SAMPLE_RATE)
+
+        // Hitung ruang yang tersedia: dari entry.start sampai cue berikutnya mulai
+        // Kalau ini cue terakhir, ruang = cue end (SRT duration)
+        const nextEntryStart = (i + 1 < entries.length) ? entries[i + 1].start : entry.end
+        const availableDuration = nextEntryStart - entry.start
 
         // PASS 1: Generate natural audio untuk ukur actual duration
         const synth1 = await synthesizeText(text, { ...opts, rate: '+0%', openaiSpeed: 1.0, speed: 1.0 })
@@ -264,25 +269,35 @@ export async function narrateEntries(
 
         const actualDuration = audioBuffer1.duration
 
-        // Kalau actual duration dekat cue (±5%), pakai asli — no need pass 2
-        if (Math.abs(actualDuration - cueDuration) < 0.05) {
+        // SKEMA 1: NATURAL-FIRST
+        // Kalau audio natural muat di ruang yang tersedia (entry.start → next cue start),
+        // pakai natural — TIDAK perlu speed up. Silence di akhir cue = natural (hening).
+        // Ini membuat audio terdengar natural, tidak terburu-buru.
+        if (actualDuration <= availableDuration) {
+          // Audio muat tanpa speed up → pakai natural
           finalAudio = toMono(audioBuffer1)
           if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
             finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
           }
-        } else if (opts.provider === 'edge') {
-          // PASS 2: Re-generate dengan exact rate (server-side pitch preservation)
-          const ratio = actualDuration / cueDuration
+        }
+        // SKEMA 2: SPEED UP (kalau audio TIDAK muat di ruang tersedia)
+        else if (opts.provider === 'edge') {
+          // Hitung ratio berdasarkan ruang tersedia, BUKAN cue duration
+          // Kalau ruang = 7s, audio = 10s → ratio = 10/7 = 1.43x
+          // Kalau ruang = cue = 5s, audio = 10s → ratio = 10/5 = 2.0x
+          const targetDuration = Math.max(cueDuration, availableDuration)
+          const ratio = actualDuration / targetDuration
           const edgeRate = formatEdgeRate(ratio)
 
-          // Kalau audio lebih pendek dan mode 'speedup-only', tidak perlu pass 2
-          if (ratio < 1.0 && opts.speedMode === 'speedup-only') {
+          // Kalau ratio kecil (audio sedikit lebih panjang dari ruang), pakai natural + crossfade
+          if (ratio <= 1.1) {
+            // Audio hanya sedikit lebih panjang — pakai natural, crossfade handle
             finalAudio = toMono(audioBuffer1)
             if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
               finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
             }
           } else {
-            // Re-generate dengan rate
+            // Speed up needed — re-generate dengan rate
             const synth2 = await synthesizeText(text, {
               ...opts,
               rate: edgeRate,
@@ -306,7 +321,6 @@ export async function narrateEntries(
             if (audioBuffer2.sampleRate !== OUTPUT_SAMPLE_RATE) {
               finalAudio = linearResample(finalAudio, audioBuffer2.sampleRate, OUTPUT_SAMPLE_RATE)
             }
-            // TIDAK ADA TRUNCATION — audio utuh, crossfade akan handle overlap
           }
         } else {
           // OpenAI/OpenRouter/Kokoro: pakai audio dari pass 1 (sudah natural)
@@ -314,7 +328,6 @@ export async function narrateEntries(
           if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
             finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
           }
-          // TIDAK ADA TRUNCATION
         }
 
         position = cueStartSamples
