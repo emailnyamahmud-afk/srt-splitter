@@ -27,6 +27,7 @@ import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { toast } from 'sonner'
 import { TtsPanel } from '@/components/tts-panel'
+import { TtsTextPanel } from '@/components/tts-text-panel'
 import { TranslatePanel } from '@/components/translate-panel'
 import {
   parseSrt,
@@ -602,6 +603,9 @@ export default function Home() {
             <TtsPanel splitResult={splitResult} prefix={prefix} />
           </>
         )}
+
+        {/* TTS Text Panel — selalu tampil (tidak perlu upload SRT) */}
+        <TtsTextPanel />
 
         {/* Info section */}
         {!file && (
