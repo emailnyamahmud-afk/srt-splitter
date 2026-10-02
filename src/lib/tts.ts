@@ -313,7 +313,8 @@ export async function narrateEntries(
           // TIDAK ADA TRUNCATION — audio utuh 100%
         }
 
-        position = Math.floor(entry.start * OUTPUT_SAMPLE_RATE)
+        position = Math.max(Math.floor(entry.start * OUTPUT_SAMPLE_RATE), cursor)
+        cursor = position + finalAudio.length
       } else {
         // === OFF MODE: natural audio, sequential playback ===
         const synth = await synthesizeText(text, opts)
