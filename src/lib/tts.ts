@@ -266,6 +266,15 @@ export async function narrateEntries(
           if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
             finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
           }
+          // Pad/truncate ke cue (WAJIB untuk durasi = SRT)
+          const cueSamples = Math.floor(cueDuration * OUTPUT_SAMPLE_RATE)
+          if (finalAudio.length > cueSamples) {
+            finalAudio = finalAudio.subarray(0, cueSamples)
+          } else if (finalAudio.length < cueSamples) {
+            const padded = new Float32Array(cueSamples)
+            padded.set(finalAudio, 0)
+            finalAudio = padded
+          }
         } else if (opts.provider === 'edge') {
           // PASS 2: Re-generate dengan exact rate (server-side pitch preservation)
           const ratio = actualDuration / cueDuration
@@ -277,6 +286,11 @@ export async function narrateEntries(
             if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
               finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
             }
+            // Pad silence ke cue (speedup-only tidak slow down)
+            const cueSamples = Math.floor(cueDuration * OUTPUT_SAMPLE_RATE)
+            const padded = new Float32Array(cueSamples)
+            padded.set(finalAudio, 0)
+            finalAudio = padded
           } else {
             // Re-generate dengan rate
             const synth2 = await synthesizeText(text, {
@@ -302,7 +316,17 @@ export async function narrateEntries(
             if (audioBuffer2.sampleRate !== OUTPUT_SAMPLE_RATE) {
               finalAudio = linearResample(finalAudio, audioBuffer2.sampleRate, OUTPUT_SAMPLE_RATE)
             }
-            // TIDAK ADA TRUNCATION — audio utuh 100%
+            // Truncate/pad ke cue (WAJIB untuk durasi = SRT)
+            // Sisa sangat kecil (≤5%) — Edge TTS rate dibulatkan ke integer percent
+            // Truncate hanya silence di akhir, bukan kata
+            const cueSamples = Math.floor(cueDuration * OUTPUT_SAMPLE_RATE)
+            if (finalAudio.length > cueSamples) {
+              finalAudio = finalAudio.subarray(0, cueSamples)
+            } else if (finalAudio.length < cueSamples) {
+              const padded = new Float32Array(cueSamples)
+              padded.set(finalAudio, 0)
+              finalAudio = padded
+            }
           }
         } else {
           // OpenAI/OpenRouter/Kokoro: pakai audio dari pass 1 (sudah natural)
@@ -310,7 +334,15 @@ export async function narrateEntries(
           if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
             finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
           }
-          // TIDAK ADA TRUNCATION — audio utuh 100%
+          // Truncate/pad ke cue (WAJIB untuk durasi = SRT)
+          const cueSamples = Math.floor(cueDuration * OUTPUT_SAMPLE_RATE)
+          if (finalAudio.length > cueSamples) {
+            finalAudio = finalAudio.subarray(0, cueSamples)
+          } else if (finalAudio.length < cueSamples) {
+            const padded = new Float32Array(cueSamples)
+            padded.set(finalAudio, 0)
+            finalAudio = padded
+          }
         }
 
         position = Math.floor(entry.start * OUTPUT_SAMPLE_RATE)
