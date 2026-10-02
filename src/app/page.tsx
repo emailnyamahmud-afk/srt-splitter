@@ -27,6 +27,7 @@ import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { toast } from 'sonner'
 import { TtsPanel } from '@/components/tts-panel'
+import { TranslatePanel } from '@/components/translate-panel'
 import {
   parseSrt,
   splitEntries,
@@ -587,6 +588,15 @@ export default function Home() {
                 )}
               </Card>
             )}
+
+            {/* Translate Panel */}
+            <TranslatePanel
+              entries={entries}
+              onTranslated={(translatedEntries, fromLang, toLang) => {
+                setEntries(translatedEntries)
+                toast.success(`Subtitle di-translate. Sekarang bisa split + download atau generate TTS.`)
+              }}
+            />
 
             {/* TTS Panel - convert subtitles to audio */}
             <TtsPanel splitResult={splitResult} prefix={prefix} />
