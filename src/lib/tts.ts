@@ -46,6 +46,9 @@ import {
   toMono,
   encodeWav,
   downloadBlob as downloadBlobUtil,
+  mixAudioInto,
+  applyFadeOut,
+  applyFadeIn,
 } from './audio-utils'
 
 // Re-export semua yang dibutuhkan UI
@@ -183,19 +186,16 @@ function formatEdgeRate(ratio: number): string {
  *
  * DUA MODE:
  *
- * ON (respectTiming=true): audio fit ke cue duration (durasi = SRT)
- * - TWO-PASS Edge TTS server-side rate (pitch natural di server, 100% reliable):
- *   Pass 1: Generate natural audio, ukur actual duration
- *   Pass 2: Re-generate dengan exact rate = actual_duration / cue_duration
+ * ON (respectTiming=true): audio fit ke cue duration, durasi = SRT
+ * - TWO-PASS Edge TTS: generate natural → ukur → re-generate dengan rate
+ * - Audio DIPERTAHANKAN UTUH — TIDAK ADA TRUNCATION
+ * - Kalau audio cue lebih panjang dari cue → tumpuk dengan CROSSFADE:
+ *   cue N fade out di region overlap, cue N+1 fade in di region overlap
  * - Position = entry.start (SRT timing WAJIB)
- * - Pad silence kalau masih sedikit lebih pendek (Edge TTS rate tidak perfect linear)
- * - Truncate kalau masih sedikit lebih panjang (sisa kecil, minimal)
  * - Total durasi = SRT end time
  *
  * OFF (respectTiming=false): audio natural alami (TANPA POTONGAN)
- * - Generate TTS natural (no rate change)
- * - Sequential playback (position = cursor, satu demi satu)
- * - Audio utuh 100% (no truncate, no pad)
+ * - Sequential playback, audio utuh 100%
  * - Total durasi = sum semua audio
  *
  * Output: WAV 24kHz mono 16-bit PCM.
@@ -208,7 +208,8 @@ export async function narrateEntries(
 
   opts.onStage?.({ stage: 'synthesizing', message: 'Mulai synthesizing…', percent: 0 })
   const total = entries.length
-  const placedSegments: { position: number; audio: Float32Array }[] = []
+  // Tiap segment: { position, audio, cueStart, cueEnd }
+  const placedSegments: { position: number; audio: Float32Array; cueStart: number; cueEnd: number }[] = []
   let cursor = 0
   let successCount = 0
   let failCount = 0
@@ -240,8 +241,10 @@ export async function narrateEntries(
       let position: number
 
       if (opts.respectTiming) {
-        // === ON MODE: TWO-PASS Edge TTS server-side rate ===
+        // === ON MODE: TWO-PASS Edge TTS + CROSSFADE (NO TRUNCATION) ===
         const cueDuration = entry.end - entry.start
+        const cueStartSamples = Math.floor(entry.start * OUTPUT_SAMPLE_RATE)
+        const cueEndSamples = Math.floor(entry.end * OUTPUT_SAMPLE_RATE)
 
         // PASS 1: Generate natural audio untuk ukur actual duration
         const synth1 = await synthesizeText(text, { ...opts, rate: '+0%', openaiSpeed: 1.0, speed: 1.0 })
@@ -267,15 +270,6 @@ export async function narrateEntries(
           if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
             finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
           }
-          // Pad/truncate ke cue (WAJIB untuk durasi = SRT)
-          const cueSamples = Math.floor(cueDuration * OUTPUT_SAMPLE_RATE)
-          if (finalAudio.length > cueSamples) {
-            finalAudio = finalAudio.subarray(0, cueSamples)
-          } else if (finalAudio.length < cueSamples) {
-            const padded = new Float32Array(cueSamples)
-            padded.set(finalAudio, 0)
-            finalAudio = padded
-          }
         } else if (opts.provider === 'edge') {
           // PASS 2: Re-generate dengan exact rate (server-side pitch preservation)
           const ratio = actualDuration / cueDuration
@@ -287,11 +281,6 @@ export async function narrateEntries(
             if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
               finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
             }
-            // Pad silence ke cue (speedup-only tidak slow down)
-            const cueSamples = Math.floor(cueDuration * OUTPUT_SAMPLE_RATE)
-            const padded = new Float32Array(cueSamples)
-            padded.set(finalAudio, 0)
-            finalAudio = padded
           } else {
             // Re-generate dengan rate
             const synth2 = await synthesizeText(text, {
@@ -317,17 +306,7 @@ export async function narrateEntries(
             if (audioBuffer2.sampleRate !== OUTPUT_SAMPLE_RATE) {
               finalAudio = linearResample(finalAudio, audioBuffer2.sampleRate, OUTPUT_SAMPLE_RATE)
             }
-            // Truncate/pad ke cue (WAJIB untuk durasi = SRT)
-            // Sisa sangat kecil (≤5%) — Edge TTS rate dibulatkan ke integer percent
-            // Truncate hanya silence di akhir, bukan kata
-            const cueSamples = Math.floor(cueDuration * OUTPUT_SAMPLE_RATE)
-            if (finalAudio.length > cueSamples) {
-              finalAudio = finalAudio.subarray(0, cueSamples)
-            } else if (finalAudio.length < cueSamples) {
-              const padded = new Float32Array(cueSamples)
-              padded.set(finalAudio, 0)
-              finalAudio = padded
-            }
+            // TIDAK ADA TRUNCATION — audio utuh, crossfade akan handle overlap
           }
         } else {
           // OpenAI/OpenRouter/Kokoro: pakai audio dari pass 1 (sudah natural)
@@ -335,25 +314,13 @@ export async function narrateEntries(
           if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
             finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
           }
-          // Truncate/pad ke cue (WAJIB untuk durasi = SRT)
-          const cueSamples = Math.floor(cueDuration * OUTPUT_SAMPLE_RATE)
-          if (finalAudio.length > cueSamples) {
-            finalAudio = finalAudio.subarray(0, cueSamples)
-          } else if (finalAudio.length < cueSamples) {
-            const padded = new Float32Array(cueSamples)
-            padded.set(finalAudio, 0)
-            finalAudio = padded
-          }
+          // TIDAK ADA TRUNCATION
         }
 
-        position = Math.floor(entry.start * OUTPUT_SAMPLE_RATE)
+        position = cueStartSamples
         cursor = position + finalAudio.length
       } else {
         // === OFF MODE: natural audio dengan optional speed multiplier ===
-        // offSpeed: 1.0 = natural, 1.25 = 25% lebih cepat, 2.0 = 2x lebih cepat
-        // Edge TTS: kirim rate sebagai prosody rate (server-side pitch preservation)
-        // OpenAI: kirim speed parameter
-        // Kokoro: kirim speed parameter
         const offSpeed = opts.offSpeed || 1.0
         let offRate = '+0%'
         let offOpenaiSpeed = 1.0
@@ -392,7 +359,12 @@ export async function narrateEntries(
         cursor = position + finalAudio.length
       }
 
-      placedSegments.push({ position, audio: finalAudio })
+      placedSegments.push({
+        position,
+        audio: finalAudio,
+        cueStart: Math.floor(entry.start * OUTPUT_SAMPLE_RATE),
+        cueEnd: Math.floor(entry.end * OUTPUT_SAMPLE_RATE),
+      })
       successCount++
     } catch (e) {
       failCount++
@@ -414,11 +386,11 @@ export async function narrateEntries(
     console.warn(`TTS: ${successCount}/${total} berhasil, ${failCount} gagal.`)
   }
 
-  opts.onStage?.({ stage: 'stitching', message: 'Menjahit audio…', percent: 90 })
+  opts.onStage?.({ stage: 'stitching', message: 'Menjahit audio + crossfade…', percent: 90 })
 
+  // Hitung total samples
   let totalSamples: number
   if (opts.respectTiming) {
-    // ON: total = SRT end (durasi WAJIB = SRT)
     totalSamples = Math.floor(entries[entries.length - 1].end * OUTPUT_SAMPLE_RATE)
   } else {
     let maxEnd = 0
@@ -428,13 +400,40 @@ export async function narrateEntries(
     totalSamples = maxEnd
   }
 
+  // Build output dengan CROSSFADE
   const allAudio = new Float32Array(totalSamples)
-  for (const seg of placedSegments) {
-    const endPos = Math.min(seg.position + seg.audio.length, totalSamples)
-    const copyLength = endPos - seg.position
-    if (copyLength > 0) {
-      allAudio.set(seg.audio.subarray(0, copyLength), seg.position)
+
+  for (let i = 0; i < placedSegments.length; i++) {
+    const seg = placedSegments[i]
+
+    // Kalau ON mode dan audio extends beyond cueEnd (overlap dengan cue berikutnya)
+    if (opts.respectTiming && seg.cueEnd > 0) {
+      // Cek apakah ada cue berikutnya yang overlap
+      const nextSeg = placedSegments[i + 1]
+      if (nextSeg) {
+        const overlapStart = seg.cueEnd // cue end = next cue start
+        const overlapEnd = Math.min(seg.position + seg.audio.length, nextSeg.position + 100) // overlap region
+
+        if (overlapEnd > overlapStart && seg.position + seg.audio.length > overlapStart) {
+          // Ada overlap — apply fade out ke akhir cue ini
+          const fadeStart = overlapStart - seg.position
+          const fadeEnd = Math.min(seg.audio.length, overlapEnd - seg.position)
+          if (fadeEnd > fadeStart) {
+            applyFadeOut(seg.audio, fadeStart, fadeEnd)
+          }
+
+          // Apply fade in ke awal cue berikutnya
+          const fadeInStart = 0
+          const fadeInEnd = Math.min(nextSeg.audio.length, fadeEnd - fadeStart)
+          if (fadeInEnd > fadeInStart) {
+            applyFadeIn(nextSeg.audio, fadeInStart, fadeInEnd)
+          }
+        }
+      }
     }
+
+    // MIX audio ke buffer (ADD, bukan overwrite)
+    mixAudioInto(allAudio, seg.audio, seg.position)
   }
 
   const blob = encodeWav(allAudio, OUTPUT_SAMPLE_RATE)

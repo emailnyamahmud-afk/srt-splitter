@@ -1,8 +1,6 @@
 // Audio processing utilities.
 //
-// Sekarang hanya untuk decode MP3 + encode WAV + download.
-// Time-stretch tidak lagi di-handle client-side (bug di OfflineAudioContext).
-// ON mode pakai server-side rate (Edge TTS prosody / OpenAI speed / Kokoro speed).
+// Decode MP3 + encode WAV + crossfade mixing + download.
 
 /**
  * Decode MP3 Blob ke AudioBuffer.
@@ -38,6 +36,51 @@ export function toMono(audioBuffer: AudioBuffer): Float32Array {
     }
   }
   return result
+}
+
+/**
+ * Apply linear fade out to the end of audio.
+ * @param audio Audio samples
+ * @param fadeStart Index where fade starts
+ * @param fadeEnd Index where fade ends (volume = 0)
+ */
+export function applyFadeOut(audio: Float32Array, fadeStart: number, fadeEnd: number): void {
+  const len = Math.min(fadeEnd, audio.length)
+  for (let i = fadeStart; i < len; i++) {
+    const t = (i - fadeStart) / (fadeEnd - fadeStart)
+    audio[i] *= 1 - t
+  }
+}
+
+/**
+ * Apply linear fade in to the start of audio.
+ * @param audio Audio samples
+ * @param fadeStart Index where fade starts (volume = 0)
+ * @param fadeEnd Index where fade ends (volume = 1)
+ */
+export function applyFadeIn(audio: Float32Array, fadeStart: number, fadeEnd: number): void {
+  const len = Math.min(fadeEnd, audio.length)
+  for (let i = fadeStart; i < len; i++) {
+    const t = (i - fadeStart) / (fadeEnd - fadeStart)
+    audio[i] *= t
+  }
+}
+
+/**
+ * Mix (overlay) audio segment into a buffer at a given position.
+ * Samples are ADDED (not overwritten) — this allows crossfade overlap.
+ *
+ * @param buffer Target buffer (will be modified in-place)
+ * @param audio Source audio to mix in
+ * @param position Start position in target buffer (in samples)
+ */
+export function mixAudioInto(buffer: Float32Array, audio: Float32Array, position: number): void {
+  const endPos = Math.min(position + audio.length, buffer.length)
+  const copyLength = endPos - position
+  if (copyLength <= 0) return
+  for (let i = 0; i < copyLength; i++) {
+    buffer[position + i] += audio[i]
+  }
 }
 
 /**
