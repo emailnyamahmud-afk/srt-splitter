@@ -630,7 +630,7 @@ export async function narrateDubbingMode(
     })
 
     try {
-      const synth = await synthesizeText({
+      const synth = await synthesizeText(text, {
         provider: opts.provider,
         voice: opts.voice,
         model: opts.model,
