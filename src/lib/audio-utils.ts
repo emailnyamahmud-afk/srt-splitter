@@ -84,6 +84,92 @@ export function mixAudioInto(buffer: Float32Array, audio: Float32Array, position
 }
 
 /**
+ * Detect leading silence — find index of first non-silent sample.
+ * Port dari pydub.detect_leading_silence (ThioJoe audio_builder.py).
+ *
+ * Sample dianggap silent kalau |amplitude| < threshold.
+ * Threshold default -30dB → amplitude 0.0316.
+ *
+ * @param audio Audio samples (Float32Array, -1.0 to 1.0)
+ * @param thresholdDb Threshold dalam dB (default -30dB)
+ * @param chunkSizeMs Chunk size untuk scan (default 10ms)
+ * @param sampleRate Sample rate (default 24000)
+ * @returns Index sample pertama yang non-silent (atau audio.length kalau all silent)
+ */
+export function detectLeadingSilence(
+  audio: Float32Array,
+  thresholdDb: number = -30,
+  chunkSizeMs: number = 10,
+  sampleRate: number = 24000,
+): number {
+  const threshold = Math.pow(10, thresholdDb / 20) // -30dB → 0.0316
+  const chunkSize = Math.floor(sampleRate * chunkSizeMs / 1000) // 10ms chunks
+
+  for (let i = 0; i < audio.length; i += chunkSize) {
+    const end = Math.min(i + chunkSize, audio.length)
+    // Cek apakah ada sample di chunk ini yang melebihi threshold
+    for (let j = i; j < end; j++) {
+      if (Math.abs(audio[j]) > threshold) {
+        return i // Awal chunk ini = awal non-silent
+      }
+    }
+  }
+  return audio.length // All silent
+}
+
+/**
+ * Trim leading & trailing silence dari audio.
+ * Port dari ThioJoe trim_clip (audio_builder.py).
+ *
+ * @param audio Audio samples (Float32Array)
+ * @param thresholdDb Threshold dB (default -30dB)
+ * @param sampleRate Sample rate (default 24000)
+ * @param paddingMs Padding hening minimal di awal/akhir (default 50ms — natural pause)
+ * @returns Trimmed Float32Array (slice dari audio)
+ */
+export function trimSilence(
+  audio: Float32Array,
+  thresholdDb: number = -30,
+  sampleRate: number = 24000,
+  paddingMs: number = 50,
+): Float32Array {
+  if (audio.length === 0) return audio
+
+  // Trim leading silence
+  const start = detectLeadingSilence(audio, thresholdDb, 10, sampleRate)
+
+  // Trim trailing silence: scan dari belakang
+  const threshold = Math.pow(10, thresholdDb / 20)
+  const chunkSize = Math.floor(sampleRate * 10 / 1000) // 10ms
+  let end = audio.length
+  for (let i = audio.length; i > 0; i -= chunkSize) {
+    const chunkStart = Math.max(0, i - chunkSize)
+    let found = false
+    for (let j = chunkStart; j < i; j++) {
+      if (Math.abs(audio[j]) > threshold) {
+        end = i
+        found = true
+        break
+      }
+    }
+    if (found) break
+  }
+
+  // Kalau semua silent, return 50ms hening (avoid empty)
+  if (start >= end) {
+    return audio.slice(0, Math.min(audio.length, Math.floor(sampleRate * 0.05)))
+  }
+
+  // Tambahkan padding (50ms) di awal/akhir supaya tidak abrupt
+  const paddingSamples = Math.floor(sampleRate * paddingMs / 1000)
+  const paddedStart = Math.max(0, start - paddingSamples)
+  const paddedEnd = Math.min(audio.length, end + paddingSamples)
+
+  return audio.slice(paddedStart, paddedEnd)
+}
+
+
+/**
  * Encode Float32Array PCM ke 16-bit WAV Blob (mono).
  */
 export function encodeWav(samples: Float32Array, sampleRate: number): Blob {

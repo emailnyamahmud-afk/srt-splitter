@@ -49,6 +49,7 @@ import {
   mixAudioInto,
   applyFadeOut,
   applyFadeIn,
+  trimSilence,
 } from './audio-utils'
 
 // Re-export semua yang dibutuhkan UI
@@ -151,6 +152,56 @@ export async function synthesizeText(
 }
 
 /**
+ * Decode synth result + convert ke mono + resample + TRIM SILENCE.
+ *
+ * Port dari ThioJoe trim_clip (audio_builder.py):
+ * - detect_leading_silence → trim awal
+ * - reverse → detect_leading_silence → trim akhir
+ * - + 50ms padding di awal/akhir supaya tidak abrupt
+ *
+ * Returns Float32Array (resampled ke OUTPUT_SAMPLE_RATE, trimmed).
+ */
+async function decodeMonoTrimResample(
+  synth: { audioBlob: Blob; mimeType: string; pcm?: Float32Array; sampleRate?: number },
+  sampleRate: number = OUTPUT_SAMPLE_RATE,
+  trimSilenceEnabled: boolean = true,
+): Promise<{ audio: Float32Array; durationSec: number; rawDurationSec: number; trimmedDurationSec: number }> {
+  let audioBuffer: AudioBuffer
+  if (synth.pcm) {
+    if (synth.pcm.length === 0) throw new Error('Empty audio output')
+    const pcmSampleRate = synth.sampleRate || sampleRate
+    const ctx = new AudioContext({ sampleRate: pcmSampleRate })
+    audioBuffer = ctx.createBuffer(1, synth.pcm.length, pcmSampleRate)
+    audioBuffer.copyToChannel(synth.pcm, 0)
+    ctx.close()
+  } else {
+    if (synth.audioBlob.size === 0) throw new Error('Empty audio output')
+    audioBuffer = await decodeAudioBlob(synth.audioBlob, sampleRate)
+  }
+
+  const rawDurationSec = audioBuffer.duration
+  let mono = toMono(audioBuffer)
+  if (audioBuffer.sampleRate !== sampleRate) {
+    mono = linearResample(mono, audioBuffer.sampleRate, sampleRate)
+  }
+
+  let trimmed: Float32Array
+  if (trimSilenceEnabled && mono.length > 0) {
+    trimmed = trimSilence(mono, -30, sampleRate, 50)
+  } else {
+    trimmed = mono
+  }
+  const trimmedDurationSec = trimmed.length / sampleRate
+
+  return {
+    audio: trimmed,
+    durationSec: trimmedDurationSec,
+    rawDurationSec,
+    trimmedDurationSec,
+  }
+}
+
+/**
  * Speed up atau slow down TIDAK di client — OfflineAudioContext + preservePitch
  * TIDAK berfungsi di Brave. Return audio asli.
  *
@@ -248,7 +299,13 @@ export async function narrateEntries(
       let position: number
 
       if (opts.respectTiming) {
-        // === ON MODE: NATURAL-FIRST + speed up only kalau tabrakan ===
+        // === ON MODE: TRIM SILENCE → NATURAL-FIRST + speed up only kalau tabrakan ===
+        // Port dari ThioJoe audio_builder.py:
+        // 1. Generate TTS natural
+        // 2. TRIM SILENCE di awal/akhir (detect_leading_silence -30dB + 50ms padding)
+        // 3. Hitung ratio berdasarkan TRIMMED duration (bukan raw TTS output)
+        // 4. Kalau trimmed ≤ cue → pakai natural (tanpa speed up, tanpa silence buatan)
+        // 5. Kalau trimmed > cue → speed up via Edge TTS server-side rate
         const cueDuration = entry.end - entry.start
         const cueStartSamples = Math.floor(entry.start * OUTPUT_SAMPLE_RATE)
         const cueEndSamples = Math.floor(entry.end * OUTPUT_SAMPLE_RATE)
@@ -261,20 +318,9 @@ export async function narrateEntries(
         // PASS 1: Generate natural audio untuk ukur actual duration
         const synth1 = await synthesizeText(text, { ...opts, rate: '+0%', openaiSpeed: 1.0, speed: 1.0 })
 
-        let audioBuffer1: AudioBuffer
-        if (synth1.pcm) {
-          if (synth1.pcm.length === 0) throw new Error('Empty audio output')
-          const pcmSampleRate = synth1.sampleRate || OUTPUT_SAMPLE_RATE
-          const ctx = new AudioContext({ sampleRate: pcmSampleRate })
-          audioBuffer1 = ctx.createBuffer(1, synth1.pcm.length, pcmSampleRate)
-          audioBuffer1.copyToChannel(synth1.pcm, 0)
-          ctx.close()
-        } else {
-          if (synth1.audioBlob.size === 0) throw new Error('Empty audio output')
-          audioBuffer1 = await decodeAudioBlob(synth1.audioBlob, OUTPUT_SAMPLE_RATE)
-        }
-
-        const actualDuration = audioBuffer1.duration
+        // Decode + mono + resample + TRIM SILENCE
+        const pass1 = await decodeMonoTrimResample(synth1, OUTPUT_SAMPLE_RATE, true)
+        const actualDuration = pass1.durationSec // TRIMMED duration (bukan raw TTS)
 
         // SKEMA 1: NATURAL-FIRST (untuk speedup-only)
         // Mode "speedup-only" (seperti Voicertool): biarkan silence di akhir cue kalau audio lebih pendek.
@@ -301,34 +347,17 @@ export async function narrateEntries(
                 openaiSpeed: slowRatio,
                 speed: slowRatio,
               })
-              let audioBufferSlow: AudioBuffer
-              if (synthSlow.pcm) {
-                const pcmSampleRate = synthSlow.sampleRate || OUTPUT_SAMPLE_RATE
-                const ctx = new AudioContext({ sampleRate: pcmSampleRate })
-                audioBufferSlow = ctx.createBuffer(1, synthSlow.pcm.length, pcmSampleRate)
-                audioBufferSlow.copyToChannel(synthSlow.pcm, 0)
-                ctx.close()
-              } else {
-                if (synthSlow.audioBlob.size === 0) throw new Error('Empty audio output (slowdown pass)')
-                audioBufferSlow = await decodeAudioBlob(synthSlow.audioBlob, OUTPUT_SAMPLE_RATE)
-              }
-              finalAudio = toMono(audioBufferSlow)
-              if (audioBufferSlow.sampleRate !== OUTPUT_SAMPLE_RATE) {
-                finalAudio = linearResample(finalAudio, audioBufferSlow.sampleRate, OUTPUT_SAMPLE_RATE)
-              }
+              // Pass 2 juga di-trim supaya konsisten
+              const passSlow = await decodeMonoTrimResample(synthSlow, OUTPUT_SAMPLE_RATE, true)
+              finalAudio = passSlow.audio
             } else {
-              // Provider non-Edge atau ratio sudah dekat 1.0 → pakai natural (tidak ada silence yang signifikan)
-              finalAudio = toMono(audioBuffer1)
-              if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
-                finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
-              }
+              // Provider non-Edge atau ratio sudah dekat 1.0 → pakai natural (trimmed pass 1)
+              finalAudio = pass1.audio
             }
           } else {
-            // speedup-only: biarkan silence di akhir cue (natural)
-            finalAudio = toMono(audioBuffer1)
-            if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
-              finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
-            }
+            // speedup-only: pakai natural yang sudah di-trim (hening asli TTS sudah hilang,
+            // tapi kalau trimmed masih lebih pendek dari cue, sisanya tetap hening — itu natural SRT)
+            finalAudio = pass1.audio
           }
         }
         // SKEMA 2: SPEED UP (kalau audio TIDAK muat di cue)
@@ -343,11 +372,8 @@ export async function narrateEntries(
 
           // Kalau ratio kecil (audio sedikit lebih panjang dari ruang), pakai natural + crossfade
           if (ratio <= 1.1) {
-            // Audio hanya sedikit lebih panjang — pakai natural, crossfade handle
-            finalAudio = toMono(audioBuffer1)
-            if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
-              finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
-            }
+            // Audio hanya sedikit lebih panjang — pakai natural (trimmed), crossfade handle
+            finalAudio = pass1.audio
           } else {
             // Speed up needed — re-generate dengan Edge TTS server-side rate (pitch preserved)
             const synth2 = await synthesizeText(text, {
@@ -356,36 +382,19 @@ export async function narrateEntries(
               openaiSpeed: ratio,
               speed: ratio,
             })
-
-            let audioBuffer2: AudioBuffer
-            if (synth2.pcm) {
-              const pcmSampleRate = synth2.sampleRate || OUTPUT_SAMPLE_RATE
-              const ctx = new AudioContext({ sampleRate: pcmSampleRate })
-              audioBuffer2 = ctx.createBuffer(1, synth2.pcm.length, pcmSampleRate)
-              audioBuffer2.copyToChannel(synth2.pcm, 0)
-              ctx.close()
-            } else {
-              if (synth2.audioBlob.size === 0) throw new Error('Empty audio output pass 2')
-              audioBuffer2 = await decodeAudioBlob(synth2.audioBlob, OUTPUT_SAMPLE_RATE)
-            }
-
-            finalAudio = toMono(audioBuffer2)
-            if (audioBuffer2.sampleRate !== OUTPUT_SAMPLE_RATE) {
-              finalAudio = linearResample(finalAudio, audioBuffer2.sampleRate, OUTPUT_SAMPLE_RATE)
-            }
+            // Pass 2 juga di-trim
+            const pass2 = await decodeMonoTrimResample(synth2, OUTPUT_SAMPLE_RATE, true)
+            finalAudio = pass2.audio
           }
         } else {
-          // OpenAI/OpenRouter/Kokoro: pakai audio dari pass 1 (sudah natural)
-          finalAudio = toMono(audioBuffer1)
-          if (audioBuffer1.sampleRate !== OUTPUT_SAMPLE_RATE) {
-            finalAudio = linearResample(finalAudio, audioBuffer1.sampleRate, OUTPUT_SAMPLE_RATE)
-          }
+          // OpenAI/OpenRouter/Kokoro: pakai audio dari pass 1 (sudah natural + trimmed)
+          finalAudio = pass1.audio
         }
 
         position = cueStartSamples
         cursor = position + finalAudio.length
       } else {
-        // === OFF MODE: natural audio dengan optional speed multiplier ===
+        // === OFF MODE: natural audio dengan optional speed multiplier (trim silence juga) ===
         const offSpeed = opts.offSpeed || 1.0
         let offRate = '+0%'
         let offOpenaiSpeed = 1.0
@@ -403,23 +412,9 @@ export async function narrateEntries(
           speed: offKokoroSpeed,
         })
 
-        let audioBuffer: AudioBuffer
-        if (synth.pcm) {
-          if (synth.pcm.length === 0) throw new Error('Empty audio output')
-          const pcmSampleRate = synth.sampleRate || OUTPUT_SAMPLE_RATE
-          const ctx = new AudioContext({ sampleRate: pcmSampleRate })
-          audioBuffer = ctx.createBuffer(1, synth.pcm.length, pcmSampleRate)
-          audioBuffer.copyToChannel(synth.pcm, 0)
-          ctx.close()
-        } else {
-          if (synth.audioBlob.size === 0) throw new Error('Empty audio output')
-          audioBuffer = await decodeAudioBlob(synth.audioBlob, OUTPUT_SAMPLE_RATE)
-        }
-
-        finalAudio = toMono(audioBuffer)
-        if (audioBuffer.sampleRate !== OUTPUT_SAMPLE_RATE) {
-          finalAudio = linearResample(finalAudio, audioBuffer.sampleRate, OUTPUT_SAMPLE_RATE)
-        }
+        // OFF mode juga trim silence supaya audio lebih rapat antar cue (tidak ada hening buatan di awal/akhir)
+        const off = await decodeMonoTrimResample(synth, OUTPUT_SAMPLE_RATE, true)
+        finalAudio = off.audio
         position = cursor
         cursor = position + finalAudio.length
       }
@@ -646,25 +641,12 @@ export async function narrateDubbingMode(
         onModelProgress: opts.onModelProgress,
       })
 
-      let audioBuffer: AudioBuffer
-      if (synth.pcm) {
-        if (synth.pcm.length === 0) throw new Error('Empty audio output')
-        const pcmSampleRate = synth.sampleRate || OUTPUT_SAMPLE_RATE
-        const ctx = new AudioContext({ sampleRate: pcmSampleRate })
-        audioBuffer = ctx.createBuffer(1, synth.pcm.length, pcmSampleRate)
-        audioBuffer.copyToChannel(synth.pcm, 0)
-        ctx.close()
-      } else {
-        if (synth.audioBlob.size === 0) throw new Error('Empty audio output')
-        audioBuffer = await decodeAudioBlob(synth.audioBlob, OUTPUT_SAMPLE_RATE)
-      }
+      // Decode + mono + resample + TRIM SILENCE
+      // Trim penting untuk Dubbing Mode karena SRT baru timing-nya ngikut audio —
+      // kalau ada hening TTS di awal/akhir, SRT baru akan punya cue terlalu panjang.
+      const dub = await decodeMonoTrimResample(synth, OUTPUT_SAMPLE_RATE, true)
 
-      let pcm = toMono(audioBuffer)
-      if (audioBuffer.sampleRate !== OUTPUT_SAMPLE_RATE) {
-        pcm = linearResample(pcm, audioBuffer.sampleRate, OUTPUT_SAMPLE_RATE)
-      }
-
-      cueAudios.push({ pcm, durationSec: audioBuffer.duration, text })
+      cueAudios.push({ pcm: dub.audio, durationSec: dub.durationSec, text })
       successCount++
     } catch (e) {
       failCount++
