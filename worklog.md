@@ -140,5 +140,37 @@ Stage Summary:
 - File berubah: src/lib/audio-utils.ts (+86 baris), src/lib/tts.ts (refactor ON/OFF/Dubbing ke helper)
 - Pending: user test real dengan SRT Jawa, kalau masih robot → next step riset pyVideoTrans Synchronize.md atau stretch fallback
 
+---
+Task ID: 5
+Agent: main
+Task: Investigasi Dubbing Mode gagal saat diklik user. Analisis data SRT user juga untuk validasi apakah trim silence cukup.
+
+Work Log:
+- Analisis data SRT user (Season-1 5100 cue, Season-6 3868 cue):
+  * Density rata-rata 5.03 kata/detik (target natural ≤3.0)
+  * 74.8% cue akan robot dengan natural TTS (ratio > 1.5x)
+  * Setelah trim silence: masih 59.1% cue robot (hanya hemat 15%)
+  * Contoh ekstrem: cue 0.03s dengan 2 kata "Sedulur Lin" → ratio 24x, mustahil natural
+- Kesimpulan: Trim silence kurangi 15% robot, TAPI masalah fundamental = SRT Jawa dipaksa timing Mandarin yang ngomong 5+ kata/detik. Jawa natural 2.5 kata/detik. Fisika bahasa — tidak ada algoritma TTS yang bisa solve tanpa bikin SRT baru.
+- Investigasi bug "Dubbing gagal saat diklik":
+  * Baca `narrateDubbingMode` line 633: `synthesizeText({provider, voice, ...})`
+  * Cek `synthesizeText` signature line 107-118: `synthesizeText(text: string, opts: {...})`
+  * BUG KONFIRMASI: `synthesizeText` dipanggil tanpa `text` sebagai argumen pertama
+  * Akibat: parameter pertama (object) dianggap `text`, `text.trim()` throwing TypeError
+  * Error terjadi SEBELUM generate cue pertama — user lihat "gagal langsung"
+- FIX: `synthesizeText(text, {provider, voice, ...})` — text jadi argumen pertama
+- Penyebab bug: copy-paste dari ON mode tapi lupa adjustment. ON mode pakai `synthesizeText(text, {...opts, rate: '+0%'}` — text eksplisit. Dubbing Mode lupa kasih text.
+- Verifikasi: npx next build → ✓ Compiled successfully in 8.3s
+- Commit 38cd339, push ke GitHub sukses
+
+Stage Summary:
+- Bug Dubbing Mode FIX: 1 baris (synthesizeText(text, opts) bukan synthesizeText(opts))
+- Root cause: signature mismatch — aku lewat object opts sebagai argumen pertama, padahal function expect text string
+- Trim silence tidak solve masalah fundamental (59% cue masih robot) — user benar, harus pakai Dubbing Mode untuk natural
+- Dubbing Mode sekarang harusnya jalan — user test ulang setelah Vercel deploy (1-2 menit)
+- File berubah: src/lib/tts.ts (1 baris, fix signature)
+- Workflow user sudah benar: Dubbing Mode = solusi yang tepat untuk "text keluar dari penjara SRT lama"
+
+
 
 
