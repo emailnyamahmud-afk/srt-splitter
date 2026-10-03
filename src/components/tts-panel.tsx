@@ -72,7 +72,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
   const [speedMode, setSpeedMode] = useState<'speedup-only' | 'speedup-slowdown'>('speedup-slowdown')
   const [offSpeed, setOffSpeed] = useState<number>(1.0)
   // Dubbing mode settings
-  const [dubSpeed, setDubSpeed] = useState<number>(1.25)
+  const [dubSpeed, setDubSpeed] = useState<number>(1.0)
   const [dubMinGap, setDubMinGap] = useState<number>(0.15)
   const [dubbingResult, setDubbingResult] = useState<DubbingResult | null>(null)
   const [isDubbing, setIsDubbing] = useState<boolean>(false)
@@ -648,15 +648,15 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
                 <div className="mt-2 rounded-md border border-amber-200 dark:border-amber-800 p-3 bg-amber-50/30 dark:bg-amber-950/10 space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label htmlFor="dub-speed" className="text-xs">Kecepatan audio (default 1.25x)</Label>
+                      <Label htmlFor="dub-speed" className="text-xs">Kecepatan audio (default 1.0x = natural, 100% no robot)</Label>
                       <select
                         id="dub-speed"
                         value={dubSpeed}
                         onChange={(e) => setDubSpeed(Number(e.target.value))}
                         className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
                       >
-                        <option value={1.0}>1.0x — Natural (paling lambat, video paling banyak slow-mo)</option>
-                        <option value={1.25}>1.25x — Cepat sedikit (rekomendasi, bantu slow-mo video)</option>
+                        <option value={1.0}>1.0x — Natural ★ rekomendasi (paling natural, video paling banyak slow-mo)</option>
+                        <option value={1.25}>1.25x — Cepat sedikit (kurangi slow-mo video)</option>
                         <option value={1.5}>1.5x — Cepat (paling sedikit slow-mo, mungkin terdengar sedikit robot)</option>
                       </select>
                     </div>

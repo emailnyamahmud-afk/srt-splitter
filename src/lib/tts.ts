@@ -598,7 +598,9 @@ export async function narrateDubbingMode(
 ): Promise<DubbingResult> {
   if (entries.length === 0) throw new Error('No subtitles to narrate')
 
-  const speed = opts.speed ?? 1.25
+  // Default speed = 1.0 (NATURAL). User bilang dari awal: mau natural, video slow-mo OK.
+  // Speed 1.25/1.5 hanya kalau user pilih manual di UI untuk kurangi slow-mo video.
+  const speed = opts.speed ?? 1.0
   const minGapSec = opts.minGapSec ?? 0.15
   const total = entries.length
   const concurrency = opts.concurrency ?? 3 // parallel generate untuk speed up
@@ -647,7 +649,8 @@ export async function narrateDubbingMode(
       // VALIDATE durationSec — kalau NaN/Infinity/too big, anggap corrupt, skip
       // Edge case: Edge TTS proxy kadang return MP3 corrupt, audioBuffer.length bisa raksasa
       // → dub.durationSec jadi 3.11e+35 → stitching throw "Invalid typed array length"
-      const MAX_CUE_DURATION_SEC = 60 // max 60 detik per cue (Edge TTS max ~5 detik realistis)
+      // Max cue audio 300 detik (5 menit) — wajar untuk cue Jawa natural di scene panjang
+      const MAX_CUE_DURATION_SEC = 300
       if (!isFinite(dub.durationSec) || dub.durationSec <= 0 || dub.durationSec > MAX_CUE_DURATION_SEC) {
         console.warn(`[Dubbing] cue ${i} skip — invalid durationSec: ${dub.durationSec} (text: "${text.slice(0, 40)}")`)
         failCount++
@@ -735,9 +738,10 @@ export async function narrateDubbingMode(
       // Skip cue kosong, atau duration invalid (NaN/Infinity/0/negatif)
       if (!text || !isFinite(cueAudio.durationSec) || cueAudio.durationSec <= 0) continue
 
-      // Sanity check: cue audio tidak boleh lebih dari 60 detik (realistis max ~5s)
-      if (cueAudio.durationSec > 60) {
-        console.warn(`[Dubbing] Stitching: cue ${i} durationSec ${cueAudio.durationSec}s > 60s, skip (text: "${text.slice(0, 40)}")`)
+      // Sanity check: cue audio tidak boleh lebih dari 300 detik (5 menit)
+      // Realistis max ~30s untuk cue panjang Jawa krama
+      if (cueAudio.durationSec > 300) {
+        console.warn(`[Dubbing] Stitching: cue ${i} durationSec ${cueAudio.durationSec}s > 300s, skip (text: "${text.slice(0, 40)}")`)
         continue
       }
 
@@ -749,10 +753,11 @@ export async function narrateDubbingMode(
         console.warn(`[Dubbing] Stitching: cue ${i} newStart/newEnd not finite: ${newStart}/${newEnd}, skip`)
         continue
       }
-      // HARD CAP: kalau newEnd > 1 jam (3600s), skip cue + RESET offset ke 0
+      // HARD CAP: kalau newEnd > 10 jam (36000s), skip cue + RESET offset ke 0
       // Ini mencegah offset accumulative dari cue corrupt sebelumnya
-      if (newEnd > 3600) {
-        console.warn(`[Dubbing] Stitching: cue ${i} newEnd ${newEnd}s > 3600s (1 jam), skip + reset offset from ${offset} to 0`)
+      // 10 jam = max wajar untuk SRT panjang (movie 3 jam + offset natural)
+      if (newEnd > 36000) {
+        console.warn(`[Dubbing] Stitching: cue ${i} newEnd ${newEnd}s > 36000s (10 jam), skip + reset offset from ${offset} to 0`)
         offset = 0
         continue
       }
@@ -812,16 +817,17 @@ export async function narrateDubbingMode(
     const newDurationSec = indexedNewEntries.length > 0
       ? indexedNewEntries[indexedNewEntries.length - 1].end + 0.5
       : 0
-    // Sanity check: kalau newDurationSec tidak finite atau > 1 jam, throw dengan message jelas
+    // Sanity check: kalau newDurationSec tidak finite atau > 12 jam, throw dengan message jelas
+    // 12 jam = max wajar untuk SRT panjang yang di-dub natural (3 jam MP4 + 4x offset natural)
     if (!isFinite(newDurationSec) || newDurationSec <= 0) {
       throw new Error(`newDurationSec invalid: ${newDurationSec} (indexedNewEntries: ${indexedNewEntries.length}, last.end: ${indexedNewEntries.length > 0 ? indexedNewEntries[indexedNewEntries.length - 1].end : 'n/a'})`)
     }
-    if (newDurationSec > 3600) {
-      throw new Error(`newDurationSec ${newDurationSec}s > 1 jam — kemungkinan ada cue dengan duration raksasa (max 60s per cue)`)
+    if (newDurationSec > 43200) {
+      throw new Error(`newDurationSec ${newDurationSec}s > 12 jam — kemungkinan ada cue dengan duration raksasa (max 300s per cue)`)
     }
     const totalSamples = Math.floor(newDurationSec * OUTPUT_SAMPLE_RATE)
     console.log('[Dubbing] Stitching step 2: allocate buffer...', { newDurationSec, totalSamples, bytesMB: (totalSamples * 4 / 1024 / 1024).toFixed(1) })
-    if (totalSamples <= 0 || !isFinite(totalSamples) || totalSamples > 1000000000) {
+    if (totalSamples <= 0 || !isFinite(totalSamples) || totalSamples > 2000000000) {
       throw new Error(`Invalid totalSamples: ${totalSamples} (newDurationSec=${newDurationSec})`)
     }
     const allAudio = new Float32Array(totalSamples)
