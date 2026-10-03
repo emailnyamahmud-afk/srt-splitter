@@ -65,6 +65,20 @@ server.log
 # User-private files (NOT to be committed)
 /upload/      # user-uploaded SRT files
 /download/    # generated split SRT outputs
+/tool-results/ # debug output from Read tool
 
 # Build artifacts that aren't needed in repo
 Caddyfile
+
+# Scraping / research artifacts (jangan commit ke repo)
+astd-home.json
+*-home.json
+ref-*.json
+pyvt-*.json
+demucs-*.json
+spleeter-*.json
+thiojoe-*.json
+videolingo-*.json
+linly-*.json
+krillin-*.json
+softcat-*.json

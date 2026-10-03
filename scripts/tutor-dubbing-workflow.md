@@ -135,7 +135,7 @@ python3 scripts/separate-audio-sfx.py \
 Audio ori MP4 di-duck (volume turun) saat audio Jawa bicara. Cocok untuk MP4 dengan dialog dominant.
 
 ```bash
-python3 scripts/retime-video-v2.py \
+python3 scripts/retime-video.py \
   --mp4 mandarin.mp4 \
   --srt-mandarin original.srt \
   --srt-jawa subs-jawa-new.srt \
@@ -153,7 +153,7 @@ python3 scripts/retime-video-v2.py \
 ### Mode B: Advanced (dengan SFX separation via Demucs)
 
 ```bash
-python3 scripts/retime-video-v2.py \
+python3 scripts/retime-video.py \
   --mp4 mandarin.mp4 \
   --srt-mandarin original.srt \
   --srt-jawa subs-jawa-new.srt \
@@ -252,7 +252,7 @@ python3 scripts/separate-audio-sfx.py \
   --output-dir output/
 
 # Fase 4: Retime video
-python3 scripts/retime-video-v2.py \
+python3 scripts/retime-video.py \
   --mp4 mandarin.mp4 \
   --srt-mandarin original.srt \
   --srt-jawa subs-jawa-new.srt \
