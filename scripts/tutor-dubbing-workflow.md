@@ -111,6 +111,21 @@ Kalau muncul info help text, **berhasil**.
 > pip3 install demucs --break-system-packages
 > ```
 
+### Step 5: Install questionary (untuk TUI interaktif — REKOMENDASI)
+
+Library Python untuk TUI (Text User Interface) yang interaktif — pilih file pakai arrow keys, tidak perlu ketik command panjang.
+
+```bash
+pip3 install questionary
+```
+
+Cek sukses:
+```bash
+python3 -c "import questionary; print('OK')"
+```
+
+Kalau muncul `OK`, **berhasil**.
+
 ### ✅ Setup Selesai — Test Semua Sudah Jalan
 
 Ketik di Terminal:
@@ -118,6 +133,7 @@ Ketik di Terminal:
 python3 --version
 ffmpeg -version
 demucs --help
+python3 -c "import questionary; print('OK')"
 ```
 
 Kalau semua perintah muncul output (tidak "command not found"), setup berhasil. Lanjut ke Fase 1.
@@ -160,9 +176,10 @@ mandarin.mp4    original.srt
 ### Step 3: Download script Python dari GitHub
 
 ```bash
-# Download retime-video.py dan separate-audio-sfx.py dari repo
+# Download retime-video.py, dubbing-tui.py, dan separate-audio-sfx.py dari repo
 cd ~/Dubbing
 curl -L -o retime-video.py https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/retime-video.py
+curl -L -o dubbing-tui.py https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/dubbing-tui.py
 curl -L -o separate-audio-sfx.py https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/separate-audio-sfx.py
 ```
 
@@ -173,7 +190,7 @@ ls ~/Dubbing
 
 Harus muncul:
 ```
-mandarin.mp4    original.srt    retime-video.py    separate-audio-sfx.py
+mandarin.mp4    original.srt    retime-video.py    dubbing-tui.py    separate-audio-sfx.py
 ```
 
 ---
@@ -230,8 +247,8 @@ ls ~/Dubbing
 
 Harus muncul:
 ```
-mandarin.mp4          original.srt          retime-video.py
-audio-jawa.wav        subs-jawa-new.srt     separate-audio-sfx.py
+mandarin.mp4          original.srt          retime-video.py        separate-audio-sfx.py
+audio-jawa.wav        subs-jawa-new.srt     dubbing-tui.py
 retime-map.json
 ```
 
@@ -239,49 +256,81 @@ retime-map.json
 
 ---
 
-## 🎵 Fase 3: SFX Separation (Opsional, 10-20 Menit)
+## 🎬 Fase 4: Retime Video
 
-**Hanya kalau MP4 punya backsound/music yang ingin dipertahankan.** Kalau MP4 hanya dialog murni, skip ke Fase 4.
+Ada **2 cara** untuk jalankan retime video. Pilih salah satu:
 
-### Kenapa perlu SFX separation?
+### 🎯 Cara 1: Pakai TUI Interaktif (REKOMENDASI PEMULA)
 
-Misal MP4 Mandarin punya:
-- Dialog Mandarin (akan diganti audio Jawa)
-- Backsound music (ingin dipertahankan)
-- SFX seperti ledakan, langkah kaki (ingin dipertahankan)
-
-Demucs akan pisahkan jadi 2 file:
-- `vocals-mandarin.wav` (dibuang)
-- `sfx-backsound.wav` (dipertahankan, di-mix dengan audio Jawa)
-
-### Step 1: Run Demucs
+TUI = Text User Interface. User pilih file pakai arrow keys, tidak perlu ketik command panjang.
 
 ```bash
 cd ~/Dubbing
-python3 separate-audio-sfx.py --mp4 mandarin.mp4 --output-dir output/
+python3 dubbing-tui.py
 ```
 
-Tunggu 10-20 menit (untuk MP4 1 jam, di MacBook M1/M2 CPU).
-
-**Output:**
+Akan muncul menu interaktif:
 ```
-output/vocals-mandarin.wav      ← Dibuang (dialog Mandarin asli)
-output/sfx-backsound.wav        ← Dipertahankan (music + SFX)
+╔══════════════════════════════════════════════════════════════════╗
+║  🎬 Dubbing Mandarin → Jawa (TUI Mode)                          ║
+║  Workflow: MP4 + SRT Mandarin + Audio Jawa → MP4 Final         ║
+╚══════════════════════════════════════════════════════════════════╝
+
+Step 1: Pilih file MP4 Mandarin asli
+┌─────────────────────────────────────────────┐
+│ ❯ mandarin.mp4                              │ ← arrow ↑↓ navigasi
+│   test-mandarin.mp4                         │
+│   ~/Downloads/movie-3jam.mp4                │
+│   [Ketik path manual]                       │
+└─────────────────────────────────────────────┘
+  ↑↓ Navigasi  Enter Konfirmasi
 ```
 
-### ✅ Fase 3 Selesai
+Ikuti 8 step di layar:
+1. Pilih MP4 Mandarin (arrow ↑↓, Enter)
+2. Pilih SRT Mandarin
+3. Pilih SRT Jawa (dari DUB web)
+4. Pilih Audio Jawa WAV (dari DUB web)
+5. Pilih nama output MP4 (default: mp4-jawa.mp4)
+6. Pilih mode SFX:
+   - **Mode A — Basic** (audio ori di-duck) — REKOMENDASI
+   - Mode B — Separate SFX dengan Demucs (lebih bersih)
+   - Mode C — Buang audio ori total
+7. Pilih SFX ducking level (default -12 dB, seimbang)
+8. Pilih action:
+   - **🔍 DRY-RUN** (tes command tanpa proses) — REKOMENDASI PERTAMA KALI
+   - ▶️  RUN (proses beneran)
 
-Sekarang folder `~/Dubbing/output/` berisi SFX yang siap di-mix.
+Setelah semua step, akan muncul:
+```
+╔══════════════════════════════════════════════════════════════════╗
+║  📋 Ringkasan:                                                  ║
+║  MP4      : mandarin.mp4                                       ║
+║  SRT M    : original.srt                                       ║
+║  ...                                                            ║
+║  Action   : DRY-RUN                                            ║
+╚══════════════════════════════════════════════════════════════════╝
 
----
+=== Command yang akan dijalankan ===
+python3 retime-video.py --mp4 mandarin.mp4 --srt-mandarin ...
 
-## 🎬 Fase 4: Retime Video (10-30 Menit)
+Konfirmasi? [Y/n]:
+```
 
-Ini tahap inti: video Mandarin di-retim supaya timing-nya match audio Jawa.
+Tekan Y untuk lanjut, atau n untuk batal.
 
-### Mode A: Basic (tanpa SFX, paling simpel)
+Kalau dry-run sukses, akan muncul:
+```
+✅ SELESAI!
+Dry-run sukses. Command valid dan siap dijalankan.
+Untuk RUN beneran, jalankan ulang TUI dan pilih RUN.
+```
 
-Kalau user TIDAK pakai Fase 3 (skip Demucs), pakai mode ini. Audio ori MP4 akan di-duck (volume turun) saat audio Jawa bicara.
+### 📝 Cara 2: Ketik Command Manual (untuk yang sudah mahir)
+
+Kalau user sudah mahir dan mau cepat (tanpa TUI), ketik langsung:
+
+**Mode A: Basic (tanpa SFX separation, paling simpel)**
 
 ```bash
 cd ~/Dubbing
@@ -293,9 +342,7 @@ python3 retime-video.py \
   --output mp4-jawa.mp4
 ```
 
-### Mode B: Advanced (dengan SFX separation)
-
-Kalau user sudah run Fase 3 (Demucs output ada):
+**Mode B: Advanced (dengan SFX separation via Demucs)**
 
 ```bash
 cd ~/Dubbing
@@ -309,9 +356,9 @@ python3 retime-video.py \
   --sfx-ducking 12
 ```
 
-### Step 1: Dry-run dulu (cek command tanpa eksekusi)
+**Dry-run (tes command tanpa proses):**
 
-Sebelum run beneran, cek command-nya:
+Tambah `--dry-run` di akhir command, contoh:
 ```bash
 python3 retime-video.py \
   --mp4 mandarin.mp4 \
@@ -322,24 +369,14 @@ python3 retime-video.py \
   --dry-run
 ```
 
-Akan muncul command FFmpeg lengkap, tapi tidak jalan. Cek tidak ada error.
+### Estimasi Waktu Fase 4
 
-### Step 2: Run beneran
-
-Hapus `--dry-run` dan run:
-```bash
-python3 retime-video.py \
-  --mp4 mandarin.mp4 \
-  --srt-mandarin original.srt \
-  --srt-jawa subs-jawa-new.srt \
-  --audio-jawa audio-jawa.wav \
-  --output mp4-jawa.mp4
-```
-
-**Estimasi waktu:**
-- MP4 6 menit → 2-5 menit
-- MP4 30 menit → 10-20 menit
-- MP4 1 jam → 30-60 menit
+| Durasi MP4 | Mode A (basic) | Mode B (Demucs + FFmpeg) |
+|---|---|---|
+| 6 menit | 1-2 menit | 5-10 menit |
+| 30 menit | 10-20 menit | 20-40 menit |
+| 1 jam | 30-60 menit | 60-90 menit |
+| 3 jam | 90-180 menit | 180-300 menit |
 
 Tunggu sampai muncul:
 ```
