@@ -76,3 +76,30 @@ Stage Summary:
 - File TIDAK berubah: src/lib/srt.ts, src/lib/edge-tts.ts, src/lib/audio-utils.ts, ON mode logic
 - Pending: user push ke GitHub (sandbox tidak ada credential) — instruksi diberikan di akhir
 
+---
+Task ID: 3
+Agent: main
+Task: Push 5 commit tertunda ke GitHub (sandbox tidak punya credential, user kasih PAT).
+
+Work Log:
+- User berikan GitHub PAT (github_pat_11CCW2LPI...)
+- Set remote URL sementara dengan token: https://emailnyamahmud-afk:<token>@github.com/...
+- Push sukses: 273115b..bd0bad4 main -> main (5 commit terkirim)
+- RESET remote URL ke https://github.com/emailnyamahmud-afk/srt-splitter.git (token dihapus dari git config)
+- Verifikasi: git config --get-regexp remote.origin → tidak ada token
+- Verifikasi: git log origin/main = bd0bad4 (sync dengan lokal)
+
+Stage Summary:
+- 5 commit berhasil di-push ke https://github.com/emailnyamahmud-afk/srt-splitter
+- Token PAT TIDAK disimpan di git config (sudah di-reset)
+- Vercel akan auto-deploy dari push ini (https://srt-splitter.vercel.app/)
+- Lokal dan remote in-sync, siap untuk iterasi berikutnya
+- Commit yang ter-push:
+  * a1caf32 feat: TTS Text ke Audio
+  * 273115b fix: ON mode natural-first
+  * ae30649 (warning no message)
+  * b1b098b (Voicertool speedup-slowdown)
+  * 103cce0 + 5c08e32 (sandbox scrape files)
+  * bd0bad4 feat: Dubbing Mode + Python retime-video.py
+
+
