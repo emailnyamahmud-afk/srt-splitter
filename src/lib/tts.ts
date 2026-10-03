@@ -529,6 +529,299 @@ export async function narratePart(part: SrtPart, opts: NarrationOptions): Promis
   return narrateEntries(part.entries, opts)
 }
 
+// ============================================================
+// DUBBING MODE — SRT Jawa sebagai ground truth
+// ============================================================
+//
+// Filosofi: Audio natural → SRT baru ngikut audio → MP4 ngikut SRT baru.
+//
+// Algoritma:
+// 1. Generate audio natural per cue (Edge TTS rate 1.0x/1.25x/1.5x sesuai pilihan)
+// 2. Bangun SRT baru: cue.start = original.start + accumulated_offset
+//    cue.end = cue.start + audio_duration (audio utuh, tidak dipotong, tidak ditambah silence)
+// 3. Kalau audio overflow ke cue asli berikutnya → offset bertambah
+// 4. Kalau ada gap cukup (zona pemandangan) → offset tidak berubah (natural)
+// 5. Min gap antar cue (default 150ms) — kalau audio cue[n] terlalu deket dengan cue[n+1].start,
+//    push back cue[n+1] supaya ada jeda natural
+//
+// Output: 3 file
+// - audio-jawa.wav (audio utuh natural, 24kHz mono)
+// - subs-jawa-new.srt (SRT BARU dengan timing dari audio)
+// - retime-map.json (peta retim video untuk ffmpeg)
+
+export interface DubbingOptions {
+  provider: Provider
+  voice: string
+  model?: string
+  apiKey?: string
+  speed?: number             // 1.0, 1.25, 1.5 (default 1.25x — bantu slow-mo video)
+  minGapSec?: number         // default 0.15 (150ms)
+  onModelProgress?: (p: TTSProgress) => void
+  onLineProgress?: (current: number, total: number, text: string) => void
+  onStage?: ProgressCallback
+}
+
+export interface DubbingRetimePoint {
+  cueIndex: number           // 0-based
+  originalStart: number      // seconds
+  originalEnd: number        // seconds
+  newStart: number           // seconds (di SRT baru)
+  newEnd: number             // seconds
+  originalDuration: number   // seconds
+  newDuration: number        // seconds
+  factor: number             // newDuration / originalDuration (>1 = slow-mo, <1 = fast-forward)
+  type: 'cue' | 'gap'        // cue = dialog, gap = jeda antar cue
+  text?: string              // untuk cue
+}
+
+export interface DubbingResult {
+  audioBlob: Blob
+  audioDurationSec: number
+  srtContent: string         // SRT baru dengan timing ngikut audio
+  retimeMap: {
+    version: string
+    source: string           // info SRT asli
+    speed: number
+    minGapSec: number
+    totalOffsetSec: number
+    originalDurationSec: number
+    newDurationSec: number
+    points: DubbingRetimePoint[]
+  }
+  retimeMapJson: string      // JSON string siap download
+  newEntries: { start: number; end: number; text: string }[]  // untuk preview UI
+}
+
+/**
+ * Generate audio Jawa natural + bangun SRT baru dengan timing ngikut audio.
+ * Audio utuh 100% (tidak dipotong, tidak ditambah silence).
+ */
+export async function narrateDubbingMode(
+  entries: SrtEntry[],
+  opts: DubbingOptions,
+): Promise<DubbingResult> {
+  if (entries.length === 0) throw new Error('No subtitles to narrate')
+
+  const speed = opts.speed ?? 1.25
+  const minGapSec = opts.minGapSec ?? 0.15
+  const total = entries.length
+
+  // Edge TTS rate: 1.0x = +0%, 1.25x = +25%, 1.5x = +50%
+  const edgeRate = formatEdgeRate(speed)
+
+  opts.onStage?.({ stage: 'synthesizing', message: 'Mulai Dubbing Mode…', percent: 0 })
+
+  // Simpan audio per cue + durasi aktual
+  const cueAudios: { pcm: Float32Array; durationSec: number; text: string }[] = []
+  let successCount = 0
+  let failCount = 0
+  let firstError = ''
+
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i]
+    const text = entry.textLines.join(' ').trim()
+
+    if (!text) {
+      cueAudios.push({ pcm: new Float32Array(0), durationSec: 0, text: '' })
+      opts.onLineProgress?.(i + 1, total, '(empty)')
+      continue
+    }
+
+    opts.onLineProgress?.(i + 1, total, text.slice(0, 60))
+    opts.onStage?.({
+      stage: 'synthesizing',
+      message: `Baris ${i + 1}/${total}: "${text.slice(0, 40)}${text.length > 40 ? '…' : ''}"`,
+      percent: (i / total) * 100,
+    })
+
+    try {
+      const synth = await synthesizeText({
+        provider: opts.provider,
+        voice: opts.voice,
+        model: opts.model,
+        apiKey: opts.apiKey,
+        rate: opts.provider === 'edge' ? edgeRate : undefined,
+        openaiSpeed: opts.provider !== 'edge' ? speed : undefined,
+        speed: opts.provider === 'kokoro' ? speed : undefined,
+        onModelProgress: opts.onModelProgress,
+      })
+
+      let audioBuffer: AudioBuffer
+      if (synth.pcm) {
+        if (synth.pcm.length === 0) throw new Error('Empty audio output')
+        const pcmSampleRate = synth.sampleRate || OUTPUT_SAMPLE_RATE
+        const ctx = new AudioContext({ sampleRate: pcmSampleRate })
+        audioBuffer = ctx.createBuffer(1, synth.pcm.length, pcmSampleRate)
+        audioBuffer.copyToChannel(synth.pcm, 0)
+        ctx.close()
+      } else {
+        if (synth.audioBlob.size === 0) throw new Error('Empty audio output')
+        audioBuffer = await decodeAudioBlob(synth.audioBlob, OUTPUT_SAMPLE_RATE)
+      }
+
+      let pcm = toMono(audioBuffer)
+      if (audioBuffer.sampleRate !== OUTPUT_SAMPLE_RATE) {
+        pcm = linearResample(pcm, audioBuffer.sampleRate, OUTPUT_SAMPLE_RATE)
+      }
+
+      cueAudios.push({ pcm, durationSec: audioBuffer.duration, text })
+      successCount++
+    } catch (e) {
+      failCount++
+      if (!firstError) firstError = (e as Error).message
+      cueAudios.push({ pcm: new Float32Array(0), durationSec: 0, text })
+      console.error('Dubbing TTS failed for line', i, e)
+    }
+  }
+
+  if (successCount === 0) {
+    throw new Error(
+      `TTS gagal untuk semua ${total} baris. Error: ${firstError || 'unknown'}. ` +
+      (opts.provider === 'edge'
+        ? 'Coba ganti ke provider OpenAI atau OpenRouter.'
+        : 'Cek API key atau koneksi internet.'),
+    )
+  }
+
+  opts.onStage?.({ stage: 'stitching', message: 'Bangun SRT baru + stitch audio…', percent: 90 })
+
+  // Bangun SRT baru + retime map + audio buffer
+  let offset = 0 // akumulasi pergeseran timeline (detik)
+  const indexedNewEntries: { start: number; end: number; text: string; cueIndex: number }[] = []
+  const retimePoints: DubbingRetimePoint[] = []
+
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i]
+    const cueAudio = cueAudios[i]
+    const text = entry.textLines.join(' ').trim()
+
+    if (!text || cueAudio.durationSec === 0) continue
+
+    // Cue baru: start = original.start + offset
+    const newStart = entry.start + offset
+    const newEnd = newStart + cueAudio.durationSec
+    indexedNewEntries.push({ start: newStart, end: newEnd, text, cueIndex: i })
+
+    retimePoints.push({
+      cueIndex: i,
+      originalStart: entry.start,
+      originalEnd: entry.end,
+      newStart,
+      newEnd,
+      originalDuration: entry.end - entry.start,
+      newDuration: cueAudio.durationSec,
+      factor: cueAudio.durationSec / Math.max(0.001, entry.end - entry.start),
+      type: 'cue',
+      text,
+    })
+
+    // Cek gap ke cue asli berikutnya
+    const nextEntry = entries[i + 1]
+    if (nextEntry) {
+      const gapToNext = nextEntry.start - newEnd
+
+      if (gapToNext < minGapSec) {
+        // Audio overflow → push back cue berikutnya
+        const pushBack = minGapSec - gapToNext
+        offset += pushBack
+
+        retimePoints.push({
+          cueIndex: i,
+          originalStart: entry.end,
+          originalEnd: nextEntry.start,
+          newStart: newEnd,
+          newEnd: newEnd + (nextEntry.start - entry.end) + pushBack,
+          originalDuration: nextEntry.start - entry.end,
+          newDuration: (nextEntry.start - entry.end) + pushBack,
+          factor: ((nextEntry.start - entry.end) + pushBack) / Math.max(0.001, nextEntry.start - entry.end),
+          type: 'gap',
+        })
+      } else {
+        // Gap cukup → tidak push back, offset tidak berubah
+        retimePoints.push({
+          cueIndex: i,
+          originalStart: entry.end,
+          originalEnd: nextEntry.start,
+          newStart: newEnd,
+          newEnd: newEnd + (nextEntry.start - entry.end),
+          originalDuration: nextEntry.start - entry.end,
+          newDuration: nextEntry.start - entry.end,
+          factor: 1.0,
+          type: 'gap',
+        })
+      }
+    }
+  }
+
+  // Total durasi audio = newEnd cue terakhir + tail 0.5s
+  const newDurationSec = indexedNewEntries.length > 0
+    ? indexedNewEntries[indexedNewEntries.length - 1].end + 0.5
+    : 0
+  const totalSamples = Math.floor(newDurationSec * OUTPUT_SAMPLE_RATE)
+  const allAudio = new Float32Array(totalSamples)
+
+  // Mix audio per cue ke buffer pada posisi newStart
+  for (const newEntry of indexedNewEntries) {
+    const cueAudio = cueAudios[newEntry.cueIndex]
+    const position = Math.floor(newEntry.start * OUTPUT_SAMPLE_RATE)
+    if (cueAudio.pcm.length > 0 && position < totalSamples) {
+      mixAudioInto(allAudio, cueAudio.pcm, position)
+    }
+  }
+
+  // Encode WAV
+  const blob = encodeWav(allAudio, OUTPUT_SAMPLE_RATE)
+  const audioDurationSec = allAudio.length / OUTPUT_SAMPLE_RATE
+
+  // Bangun SRT content string
+  let srtContent = ''
+  for (let i = 0; i < indexedNewEntries.length; i++) {
+    const e = indexedNewEntries[i]
+    srtContent += `${i + 1}\n`
+    srtContent += `${formatTimeSrt(e.start)} --> ${formatTimeSrt(e.end)}\n`
+    srtContent += e.text + '\n\n'
+  }
+
+  // Bangun retime map
+  const retimeMap = {
+    version: '1.0',
+    source: `Original SRT: ${entries.length} cues`,
+    speed,
+    minGapSec,
+    totalOffsetSec: offset,
+    originalDurationSec: entries[entries.length - 1].end,
+    newDurationSec: audioDurationSec,
+    points: retimePoints,
+  }
+
+  opts.onStage?.({ stage: 'done', message: 'Dubbing selesai', percent: 100 })
+
+  return {
+    audioBlob: blob,
+    audioDurationSec,
+    srtContent,
+    retimeMap,
+    retimeMapJson: JSON.stringify(retimeMap, null, 2),
+    newEntries: indexedNewEntries.map(({ start, end, text }) => ({ start, end, text })),
+  }
+}
+
+/**
+ * Format waktu SRT: "HH:MM:SS,mmm"
+ */
+function formatTimeSrt(seconds: number): string {
+  if (seconds < 0) seconds = 0
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = Math.floor(seconds % 60)
+  let ms = Math.round((seconds - Math.floor(seconds)) * 1000)
+  if (ms === 1000) {
+    ms = 0
+  }
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')},${String(ms).padStart(3, '0')}`
+}
+
+
 export function downloadBlob(filename: string, blob: Blob) {
   downloadBlobUtil(filename, blob)
 }

@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import {
   narratePart,
+  narrateDubbingMode,
   downloadBlob,
   formatDuration,
   revokePreviewUrl,
@@ -43,7 +44,9 @@ import {
   type TTSProgress,
   type SplitResult,
   type Provider,
+  type DubbingResult,
 } from '@/lib/tts'
+import type { SrtEntry } from '@/lib/srt'
 import JSZip from 'jszip'
 
 interface TtsPanelProps {
@@ -63,9 +66,16 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
   const [openrouterModel, setOpenrouterModel] = useState<string>(DEFAULT_OPENROUTER_MODEL)
   const [openrouterVoice, setOpenrouterVoice] = useState<string>('alloy')
 
-  const [respectTiming, setRespectTiming] = useState(true)
+  const [mode, setMode] = useState<'on' | 'off' | 'dubbing'>('on')
+  // backwards compat: respectTiming derived dari mode
+  const respectTiming = mode === 'on'
   const [speedMode, setSpeedMode] = useState<'speedup-only' | 'speedup-slowdown'>('speedup-slowdown')
   const [offSpeed, setOffSpeed] = useState<number>(1.0)
+  // Dubbing mode settings
+  const [dubSpeed, setDubSpeed] = useState<number>(1.25)
+  const [dubMinGap, setDubMinGap] = useState<number>(0.15)
+  const [dubbingResult, setDubbingResult] = useState<DubbingResult | null>(null)
+  const [isDubbing, setIsDubbing] = useState<boolean>(false)
   const [progress, setProgress] = useState<TTSProgress>({ stage: 'idle' })
   const [lineProgress, setLineProgress] = useState<{ current: number; total: number; text: string } | null>(null)
   const [activePart, setActivePart] = useState<number | null>(null)
@@ -176,8 +186,73 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
         setLineProgress(null)
       }
     },
-    [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, respectTiming, speedMode, offSpeed, prefix, audioCache],
+    [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, mode, speedMode, offSpeed, prefix, audioCache],
   )
+
+  // === DUBBING MODE: Generate audio natural + SRT baru + retime map (full SRT, all parts) ===
+  const generateDubbing = useCallback(async () => {
+    const apiKey = provider === 'openai' ? openaiKey : provider === 'openrouter' ? openrouterKey : undefined
+    if (provider !== 'edge' && provider !== 'kokoro' && !apiKey) {
+      toast.error(`Set API key ${provider} dulu`)
+      if (provider === 'openai') setShowOpenAIInput(true)
+      else setShowOpenRouterInput(true)
+      return
+    }
+    if (splitResult.parts.length === 0) return
+
+    // Concat semua entries dari semua parts jadi satu array
+    const allEntries: SrtEntry[] = []
+    for (const part of splitResult.parts) {
+      for (const e of part.entries) allEntries.push(e)
+    }
+    if (allEntries.length === 0) {
+      toast.error('SRT kosong')
+      return
+    }
+
+    setIsDubbing(true)
+    setDubbingResult(null)
+    setLineProgress(null)
+    setProgress({ stage: 'synthesizing', message: 'Mulai Dubbing Mode…', percent: 0 })
+    const tid = toast.loading(`Dubbing ${allEntries.length} cues (audio natural + SRT baru)…`)
+
+    try {
+      const voice = provider === 'edge' ? edgeVoice : provider === 'kokoro' ? kokoroVoice : provider === 'openai' ? openaiVoice : openrouterVoice
+      const result = await narrateDubbingMode(allEntries, {
+        provider,
+        voice,
+        model: provider === 'openrouter' ? openrouterModel : undefined,
+        apiKey,
+        speed: dubSpeed,
+        minGapSec: dubMinGap,
+        onModelProgress: provider === 'kokoro' ? (p) => setProgress(p) : undefined,
+        onLineProgress: (current, total, text) => setLineProgress({ current, total, text }),
+        onStage: (p) => setProgress(p),
+      })
+      setDubbingResult(result)
+      toast.success(
+        `Dubbing selesai — Audio ${formatDuration(result.audioDurationSec)}, SRT baru ${result.newEntries.length} cues, offset +${result.retimeMap.totalOffsetSec.toFixed(2)}s`,
+        { id: tid },
+      )
+    } catch (e) {
+      console.error(e)
+      toast.error('Dubbing gagal: ' + (e as Error).message, { id: tid })
+    } finally {
+      setIsDubbing(false)
+      setLineProgress(null)
+    }
+  }, [splitResult, provider, edgeVoice, kokoroVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, dubSpeed, dubMinGap])
+
+  const downloadDubbingFiles = useCallback(() => {
+    if (!dubbingResult) return
+    downloadBlob(`${prefix}-audio-jawa.wav`, dubbingResult.audioBlob)
+    const srtBlob = new Blob([dubbingResult.srtContent], { type: 'application/x-subrip;charset=utf-8' })
+    downloadBlob(`${prefix}-subs-jawa-new.srt`, srtBlob)
+    const jsonBlob = new Blob([dubbingResult.retimeMapJson], { type: 'application/json' })
+    downloadBlob(`${prefix}-retime-map.json`, jsonBlob)
+    toast.success('3 file didownload: audio WAV + SRT baru + retime-map JSON')
+  }, [dubbingResult, prefix])
+
 
   const generateAll = useCallback(async () => {
     const apiKey = provider === 'openai' ? openaiKey : provider === 'openrouter' ? openrouterKey : undefined
@@ -235,7 +310,8 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
       setActivePart(null)
       setLineProgress(null)
     }
-  }, [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, respectTiming, speedMode, offSpeed, prefix, audioCache])
+  }, [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, mode, speedMode, offSpeed, prefix, audioCache],
+  )
 
   const downloadPartAudio = useCallback(
     (partIndex: number) => {
@@ -247,7 +323,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
     [audioCache, prefix],
   )
 
-  const isSynthesizing = progress.stage === 'synthesizing' || progress.stage === 'stitching'
+  const isSynthesizing = progress.stage === 'synthesizing' || progress.stage === 'stitching' || isDubbing
   const needsApiKey = provider !== 'edge' && provider !== 'kokoro'
   const hasApiKey = provider === 'edge' || provider === 'kokoro' ? true : provider === 'openai' ? Boolean(openaiKey) : Boolean(openrouterKey)
 
@@ -470,17 +546,52 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
                   </div>
                 </>
               )}
-              <div className="flex items-end justify-between gap-3">
-                <div>
-                  <Label htmlFor="timing" className="text-xs">Sync timing ke SRT</Label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    <strong>ON:</strong> audio fit ke cue (server-side FFmpeg atempo, suara natural, durasi = SRT). Boleh jadi cepat, tapi tidak bocil.<br/>
-                    <strong>OFF:</strong> audio natural alami, utuh tanpa potongan. Durasi bisa beda dari SRT.
-                  </p>
+              <div className="col-span-2 mt-2">
+                <Label className="text-xs font-medium">Mode generate (filosofi dubbing)</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => setMode('on')}
+                    className={`text-left p-3 rounded-md border-2 transition-all ${mode === 'on' ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/30' : 'border-border hover:border-purple-300'}`}
+                  >
+                    <div className="font-medium text-sm flex items-center gap-1.5">
+                      {mode === 'on' && <CheckCircle2 className="size-3.5 text-purple-600" />}
+                      ON — Sync ke SRT
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Audio fit ke cue Mandarin. Bisa cepat/robot kalau cue pendek. Durasi = SRT asli. Crossfade kalau overlap.
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMode('off')}
+                    className={`text-left p-3 rounded-md border-2 transition-all ${mode === 'off' ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/30' : 'border-border hover:border-purple-300'}`}
+                  >
+                    <div className="font-medium text-sm flex items-center gap-1.5">
+                      {mode === 'off' && <CheckCircle2 className="size-3.5 text-purple-600" />}
+                      OFF — Natural sequential
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Audio utuh natural, sequential (satu demi satu). Durasi = sum semua audio. Bisa beda jauh dari SRT.
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMode('dubbing')}
+                    className={`text-left p-3 rounded-md border-2 transition-all ${mode === 'dubbing' ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30' : 'border-border hover:border-amber-300'}`}
+                  >
+                    <div className="font-medium text-sm flex items-center gap-1.5">
+                      {mode === 'dubbing' && <CheckCircle2 className="size-3.5 text-amber-600" />}
+                      🔴 DUBBING — SRT baru
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Audio natural 1.25x → SRT baru ngikut audio → MP4 ngikut SRT baru. Output: WAV + SRT baru + retime-map JSON. Cocok untuk dub Mandarin → Jawa.
+                    </div>
+                  </button>
                 </div>
-                <Switch id="timing" checked={respectTiming} onCheckedChange={setRespectTiming} />
               </div>
-              {respectTiming && (
+
+              {mode === 'on' && (
                 <div className="mt-2">
                   <Label htmlFor="speed-mode" className="text-xs">Speed mode (seperti Voicertool)</Label>
                   <select
@@ -495,7 +606,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
                 </div>
               )}
 
-              {!respectTiming && (
+              {mode === 'off' && (
                 <div className="mt-2">
                   <Label htmlFor="off-speed" className="text-xs">Kecepatan (OFF mode)</Label>
                   <select
@@ -515,14 +626,88 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
                 </div>
               )}
 
+              {mode === 'dubbing' && (
+                <div className="mt-2 rounded-md border border-amber-200 dark:border-amber-800 p-3 bg-amber-50/30 dark:bg-amber-950/10 space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="dub-speed" className="text-xs">Kecepatan audio (default 1.25x)</Label>
+                      <select
+                        id="dub-speed"
+                        value={dubSpeed}
+                        onChange={(e) => setDubSpeed(Number(e.target.value))}
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
+                      >
+                        <option value={1.0}>1.0x — Natural (paling lambat, video paling banyak slow-mo)</option>
+                        <option value={1.25}>1.25x — Cepat sedikit (rekomendasi, bantu slow-mo video)</option>
+                        <option value={1.5}>1.5x — Cepat (paling sedikit slow-mo, mungkin terdengar sedikit robot)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label htmlFor="dub-mingap" className="text-xs">Min gap antar cue</Label>
+                      <select
+                        id="dub-mingap"
+                        value={dubMinGap}
+                        onChange={(e) => setDubMinGap(Number(e.target.value))}
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
+                      >
+                        <option value={0.1}>100ms — cepat (radio)</option>
+                        <option value={0.15}>150ms — natural percakapan (rekomendasi)</option>
+                        <option value={0.2}>200ms — jeda drama Jawa krama</option>
+                        <option value={0.3}>300ms — jeda teatrikal</option>
+                      </select>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    <strong>Filosofi Dubbing:</strong> Audio natural 1.25x → SRT baru timing ngikut audio → video MP4 nanti di-retim dengan Python (Fase 3).
+                    Setiap cue SRT Jawa = audio utuh (tidak ada hening). Video akan slow-mo di cue dialog pendek — itu wajar, sudah dibantu oleh audio 1.25x.
+                  </p>
+                </div>
+              )}
+
             </div>
 
             {/* Action buttons */}
             <div className="flex flex-wrap gap-2">
-              <Button onClick={generateAll} disabled={isSynthesizing} size="sm">
-                {isSynthesizing ? <><Loader2 className="size-3.5 mr-1 animate-spin" /> Generating…</> : <><AudioLines className="size-3.5 mr-1" /> Generate & Download ZIP ({splitResult.parts.length} parts)</>}
-              </Button>
+              {mode === 'dubbing' ? (
+                <>
+                  <Button onClick={generateDubbing} disabled={isSynthesizing} size="sm" className="bg-amber-600 hover:bg-amber-700">
+                    {isDubbing ? <><Loader2 className="size-3.5 mr-1 animate-spin" /> Dubbing…</> : <><AudioLines className="size-3.5 mr-1" /> Generate Dubbing (SRT baru + Audio)</>}
+                  </Button>
+                  {dubbingResult && (
+                    <Button onClick={downloadDubbingFiles} size="sm" variant="outline" className="border-amber-400">
+                      <><Download className="size-3.5 mr-1" /> Download 3 file (WAV + SRT + JSON)</>
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <Button onClick={generateAll} disabled={isSynthesizing} size="sm">
+                  {isSynthesizing ? <><Loader2 className="size-3.5 mr-1 animate-spin" /> Generating…</> : <><AudioLines className="size-3.5 mr-1" /> Generate & Download ZIP ({splitResult.parts.length} parts)</>}
+                </Button>
+              )}
             </div>
+
+            {/* Dubbing result info */}
+            {mode === 'dubbing' && dubbingResult && (
+              <div className="rounded-md border border-amber-200 dark:border-amber-800 p-3 bg-amber-50/50 dark:bg-amber-950/20 space-y-2">
+                <div className="flex items-center gap-1.5 text-sm font-medium text-amber-800 dark:text-amber-400">
+                  <CheckCircle2 className="size-4" /> Dubbing siap — info retim
+                </div>
+                <div className="text-xs text-muted-foreground grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div><strong>Audio durasi:</strong><br/>{formatDuration(dubbingResult.audioDurationSec)}</div>
+                  <div><strong>SRT asli:</strong><br/>{formatDuration(dubbingResult.retimeMap.originalDurationSec)}</div>
+                  <div><strong>Offset total:</strong><br/>+{dubbingResult.retimeMap.totalOffsetSec.toFixed(2)}s</div>
+                  <div><strong>Cue baru:</strong><br/>{dubbingResult.newEntries.length} cues</div>
+                </div>
+                <div className="text-xs">
+                  <strong>Petunjuk Fase 3 (Python):</strong>
+                  <ol className="list-decimal ml-4 mt-1 space-y-0.5 text-muted-foreground">
+                    <li>Download 3 file (WAV + SRT baru + JSON)</li>
+                    <li>Jalankan <code className="px-1 rounded bg-amber-100 dark:bg-amber-950/40">python scripts/retime-video.py --mp4 mandarin.mp4 --srt-mandarin original.srt --srt-jawa {prefix}-subs-jawa-new.srt --audio-jawa {prefix}-audio-jawa.wav --output mp4-jawa.mp4</code></li>
+                    <li>Output MP4 jawa ready diedit di DaVinci Resolve</li>
+                  </ol>
+                </div>
+              </div>
+            )}
 
             {/* Progress */}
             {(isSynthesizing || lineProgress) && (
