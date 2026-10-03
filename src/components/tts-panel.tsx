@@ -251,12 +251,13 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
         { id: tid },
       )
     } catch (e) {
-      console.error(e)
-      toast.error('Dubbing gagal: ' + (e as Error).message, { id: tid })
+      console.error('[Dubbing] FAILED:', e)
+      // Tetap show progress + error message persistent (jangan auto-dismiss)
+      toast.error('Dubbing gagal: ' + (e as Error).message, { id: tid, duration: 60000 })
     } finally {
       setIsDubbing(false)
-      setLineProgress(null)
-      setDubbingStartTime(null)
+      // JANGAN clear lineProgress — biarkan user lihat di cue mana gagal
+      // JANGAN clear dubbingStartTime — biarkan elapsed time terlihat
     }
   }, [splitResult, provider, edgeVoice, kokoroVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, dubSpeed, dubMinGap])
 

@@ -683,113 +683,135 @@ export async function narrateDubbingMode(
 
   opts.onStage?.({ stage: 'stitching', message: 'Bangun SRT baru + stitch audio…', percent: 95 })
 
-  // Bangun SRT baru + retime map + audio buffer
-  let offset = 0 // akumulasi pergeseran timeline (detik)
-  const indexedNewEntries: { start: number; end: number; text: string; cueIndex: number }[] = []
-  const retimePoints: DubbingRetimePoint[] = []
+  // === STITCHING: bangun SRT baru + mix audio ke buffer + encode WAV ===
+  // Wrap dalam try-catch supaya error message spesifik ke user (tahap mana yang gagal)
+  let indexedNewEntries: { start: number; end: number; text: string; cueIndex: number }[] = []
+  let retimePoints: DubbingRetimePoint[] = []
+  let offset = 0
+  let blob: Blob
+  let audioDurationSec: number
+  let srtContent: string
+  let retimeMap: { version: string; source: string; speed: number; minGapSec: number; totalOffsetSec: number; originalDurationSec: number; newDurationSec: number; points: DubbingRetimePoint[] }
 
-  for (let i = 0; i < entries.length; i++) {
-    const entry = entries[i]
-    const cueAudio = cueAudios[i]
-    const text = entry.textLines.join(' ').trim()
+  try {
+    // Step 1: Bangun timeline baru (cue index, start, end, retime points)
+    console.log('[Dubbing] Stitching step 1: build timeline...', { totalCues: entries.length, successCount })
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i]
+      const cueAudio = cueAudios[i]
+      const text = entry.textLines.join(' ').trim()
 
-    if (!text || cueAudio.durationSec === 0) continue
+      if (!text || cueAudio.durationSec === 0) continue
 
-    // Cue baru: start = original.start + offset
-    const newStart = entry.start + offset
-    const newEnd = newStart + cueAudio.durationSec
-    indexedNewEntries.push({ start: newStart, end: newEnd, text, cueIndex: i })
+      // Cue baru: start = original.start + offset
+      const newStart = entry.start + offset
+      const newEnd = newStart + cueAudio.durationSec
+      indexedNewEntries.push({ start: newStart, end: newEnd, text, cueIndex: i })
 
-    retimePoints.push({
-      cueIndex: i,
-      originalStart: entry.start,
-      originalEnd: entry.end,
-      newStart,
-      newEnd,
-      originalDuration: entry.end - entry.start,
-      newDuration: cueAudio.durationSec,
-      factor: cueAudio.durationSec / Math.max(0.001, entry.end - entry.start),
-      type: 'cue',
-      text,
-    })
+      retimePoints.push({
+        cueIndex: i,
+        originalStart: entry.start,
+        originalEnd: entry.end,
+        newStart,
+        newEnd,
+        originalDuration: entry.end - entry.start,
+        newDuration: cueAudio.durationSec,
+        factor: cueAudio.durationSec / Math.max(0.001, entry.end - entry.start),
+        type: 'cue',
+        text,
+      })
 
-    // Cek gap ke cue asli berikutnya
-    const nextEntry = entries[i + 1]
-    if (nextEntry) {
-      const gapToNext = nextEntry.start - newEnd
+      // Cek gap ke cue asli berikutnya
+      const nextEntry = entries[i + 1]
+      if (nextEntry) {
+        const gapToNext = nextEntry.start - newEnd
 
-      if (gapToNext < minGapSec) {
-        // Audio overflow → push back cue berikutnya
-        const pushBack = minGapSec - gapToNext
-        offset += pushBack
+        if (gapToNext < minGapSec) {
+          const pushBack = minGapSec - gapToNext
+          offset += pushBack
 
-        retimePoints.push({
-          cueIndex: i,
-          originalStart: entry.end,
-          originalEnd: nextEntry.start,
-          newStart: newEnd,
-          newEnd: newEnd + (nextEntry.start - entry.end) + pushBack,
-          originalDuration: nextEntry.start - entry.end,
-          newDuration: (nextEntry.start - entry.end) + pushBack,
-          factor: ((nextEntry.start - entry.end) + pushBack) / Math.max(0.001, nextEntry.start - entry.end),
-          type: 'gap',
-        })
-      } else {
-        // Gap cukup → tidak push back, offset tidak berubah
-        retimePoints.push({
-          cueIndex: i,
-          originalStart: entry.end,
-          originalEnd: nextEntry.start,
-          newStart: newEnd,
-          newEnd: newEnd + (nextEntry.start - entry.end),
-          originalDuration: nextEntry.start - entry.end,
-          newDuration: nextEntry.start - entry.end,
-          factor: 1.0,
-          type: 'gap',
-        })
+          retimePoints.push({
+            cueIndex: i,
+            originalStart: entry.end,
+            originalEnd: nextEntry.start,
+            newStart: newEnd,
+            newEnd: newEnd + (nextEntry.start - entry.end) + pushBack,
+            originalDuration: nextEntry.start - entry.end,
+            newDuration: (nextEntry.start - entry.end) + pushBack,
+            factor: ((nextEntry.start - entry.end) + pushBack) / Math.max(0.001, nextEntry.start - entry.end),
+            type: 'gap',
+          })
+        } else {
+          retimePoints.push({
+            cueIndex: i,
+            originalStart: entry.end,
+            originalEnd: nextEntry.start,
+            newStart: newEnd,
+            newEnd: newEnd + (nextEntry.start - entry.end),
+            originalDuration: nextEntry.start - entry.end,
+            newDuration: nextEntry.start - entry.end,
+            factor: 1.0,
+            type: 'gap',
+          })
+        }
       }
     }
-  }
+    console.log('[Dubbing] Stitching step 1 done:', { indexedNewEntries: indexedNewEntries.length, offsetSec: offset })
 
-  // Total durasi audio = newEnd cue terakhir + tail 0.5s
-  const newDurationSec = indexedNewEntries.length > 0
-    ? indexedNewEntries[indexedNewEntries.length - 1].end + 0.5
-    : 0
-  const totalSamples = Math.floor(newDurationSec * OUTPUT_SAMPLE_RATE)
-  const allAudio = new Float32Array(totalSamples)
-
-  // Mix audio per cue ke buffer pada posisi newStart
-  for (const newEntry of indexedNewEntries) {
-    const cueAudio = cueAudios[newEntry.cueIndex]
-    const position = Math.floor(newEntry.start * OUTPUT_SAMPLE_RATE)
-    if (cueAudio.pcm.length > 0 && position < totalSamples) {
-      mixAudioInto(allAudio, cueAudio.pcm, position)
+    // Step 2: Allocate audio buffer + mix
+    const newDurationSec = indexedNewEntries.length > 0
+      ? indexedNewEntries[indexedNewEntries.length - 1].end + 0.5
+      : 0
+    const totalSamples = Math.floor(newDurationSec * OUTPUT_SAMPLE_RATE)
+    console.log('[Dubbing] Stitching step 2: allocate buffer...', { newDurationSec, totalSamples, bytesMB: (totalSamples * 4 / 1024 / 1024).toFixed(1) })
+    if (totalSamples <= 0 || !isFinite(totalSamples)) {
+      throw new Error(`Invalid totalSamples: ${totalSamples} (newDurationSec=${newDurationSec})`)
     }
-  }
+    const allAudio = new Float32Array(totalSamples)
 
-  // Encode WAV
-  const blob = encodeWav(allAudio, OUTPUT_SAMPLE_RATE)
-  const audioDurationSec = allAudio.length / OUTPUT_SAMPLE_RATE
+    for (const newEntry of indexedNewEntries) {
+      const cueAudio = cueAudios[newEntry.cueIndex]
+      const position = Math.floor(newEntry.start * OUTPUT_SAMPLE_RATE)
+      if (cueAudio.pcm.length > 0 && position < totalSamples) {
+        mixAudioInto(allAudio, cueAudio.pcm, position)
+      }
+    }
+    console.log('[Dubbing] Stitching step 2 done: audio mixed')
 
-  // Bangun SRT content string
-  let srtContent = ''
-  for (let i = 0; i < indexedNewEntries.length; i++) {
-    const e = indexedNewEntries[i]
-    srtContent += `${i + 1}\n`
-    srtContent += `${formatTimeSrt(e.start)} --> ${formatTimeSrt(e.end)}\n`
-    srtContent += e.text + '\n\n'
-  }
+    // Step 3: Encode WAV
+    console.log('[Dubbing] Stitching step 3: encode WAV...')
+    blob = encodeWav(allAudio, OUTPUT_SAMPLE_RATE)
+    audioDurationSec = allAudio.length / OUTPUT_SAMPLE_RATE
+    console.log('[Dubbing] Stitching step 3 done:', { audioDurationSec, blobSize: blob.size })
 
-  // Bangun retime map
-  const retimeMap = {
-    version: '1.0',
-    source: `Original SRT: ${entries.length} cues`,
-    speed,
-    minGapSec,
-    totalOffsetSec: offset,
-    originalDurationSec: entries[entries.length - 1].end,
-    newDurationSec: audioDurationSec,
-    points: retimePoints,
+    // Step 4: Bangun SRT string
+    console.log('[Dubbing] Stitching step 4: build SRT content...')
+    srtContent = ''
+    for (let i = 0; i < indexedNewEntries.length; i++) {
+      const e = indexedNewEntries[i]
+      srtContent += `${i + 1}\n`
+      srtContent += `${formatTimeSrt(e.start)} --> ${formatTimeSrt(e.end)}\n`
+      srtContent += e.text + '\n\n'
+    }
+    console.log('[Dubbing] Stitching step 4 done:', { srtLength: srtContent.length, cueCount: indexedNewEntries.length })
+
+    // Step 5: Bangun retime map
+    console.log('[Dubbing] Stitching step 5: build retime map...')
+    retimeMap = {
+      version: '1.0',
+      source: `Original SRT: ${entries.length} cues`,
+      speed,
+      minGapSec,
+      totalOffsetSec: offset,
+      originalDurationSec: entries[entries.length - 1].end,
+      newDurationSec: audioDurationSec,
+      points: retimePoints,
+    }
+    console.log('[Dubbing] Stitching step 5 done')
+  } catch (stitchError) {
+    const errMsg = `Gagal di tahap stitching (95%): ${(stitchError as Error).message}. Stack: ${(stitchError as Error).stack?.slice(0, 200)}`
+    console.error('[Dubbing] ' + errMsg, stitchError)
+    throw new Error(errMsg)
   }
 
   opts.onStage?.({ stage: 'done', message: 'Dubbing selesai', percent: 100 })
