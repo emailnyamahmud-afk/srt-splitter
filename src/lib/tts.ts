@@ -551,6 +551,7 @@ export interface DubbingOptions {
   apiKey?: string
   speed?: number             // 1.0, 1.25, 1.5 (default 1.25x — bantu slow-mo video)
   minGapSec?: number         // default 0.15 (150ms)
+  concurrency?: number       // default 3 — parallel generate untuk speed up
   onModelProgress?: (p: TTSProgress) => void
   onLineProgress?: (current: number, total: number, text: string) => void
   onStage?: ProgressCallback
@@ -600,34 +601,33 @@ export async function narrateDubbingMode(
   const speed = opts.speed ?? 1.25
   const minGapSec = opts.minGapSec ?? 0.15
   const total = entries.length
+  const concurrency = opts.concurrency ?? 3 // parallel generate untuk speed up
 
   // Edge TTS rate: 1.0x = +0%, 1.25x = +25%, 1.5x = +50%
   const edgeRate = formatEdgeRate(speed)
 
   opts.onStage?.({ stage: 'synthesizing', message: 'Mulai Dubbing Mode…', percent: 0 })
 
-  // Simpan audio per cue + durasi aktual
-  const cueAudios: { pcm: Float32Array; durationSec: number; text: string }[] = []
+  // Simpan audio per cue + durasi aktual (pre-allocate untuk parallel fill)
+  const cueAudios: { pcm: Float32Array; durationSec: number; text: string }[] = new Array(entries.length)
+  for (let i = 0; i < entries.length; i++) {
+    cueAudios[i] = { pcm: new Float32Array(0), durationSec: 0, text: '' }
+  }
   let successCount = 0
   let failCount = 0
   let firstError = ''
+  let doneCount = 0
 
-  for (let i = 0; i < entries.length; i++) {
+  // Helper untuk generate 1 cue
+  const generateOne = async (i: number) => {
     const entry = entries[i]
     const text = entry.textLines.join(' ').trim()
 
     if (!text) {
-      cueAudios.push({ pcm: new Float32Array(0), durationSec: 0, text: '' })
-      opts.onLineProgress?.(i + 1, total, '(empty)')
-      continue
+      doneCount++
+      opts.onLineProgress?.(doneCount, total, '(empty)')
+      return
     }
-
-    opts.onLineProgress?.(i + 1, total, text.slice(0, 60))
-    opts.onStage?.({
-      stage: 'synthesizing',
-      message: `Baris ${i + 1}/${total}: "${text.slice(0, 40)}${text.length > 40 ? '…' : ''}"`,
-      percent: (i / total) * 100,
-    })
 
     try {
       const synth = await synthesizeText(text, {
@@ -642,18 +642,34 @@ export async function narrateDubbingMode(
       })
 
       // Decode + mono + resample + TRIM SILENCE
-      // Trim penting untuk Dubbing Mode karena SRT baru timing-nya ngikut audio —
-      // kalau ada hening TTS di awal/akhir, SRT baru akan punya cue terlalu panjang.
       const dub = await decodeMonoTrimResample(synth, OUTPUT_SAMPLE_RATE, true)
-
-      cueAudios.push({ pcm: dub.audio, durationSec: dub.durationSec, text })
+      cueAudios[i] = { pcm: dub.audio, durationSec: dub.durationSec, text }
       successCount++
     } catch (e) {
       failCount++
       if (!firstError) firstError = (e as Error).message
-      cueAudios.push({ pcm: new Float32Array(0), durationSec: 0, text })
+      cueAudios[i] = { pcm: new Float32Array(0), durationSec: 0, text }
       console.error('Dubbing TTS failed for line', i, e)
+    } finally {
+      doneCount++
+      // Update progress per cue complete (lebih sering dari sebelumnya)
+      opts.onLineProgress?.(doneCount, total, text.slice(0, 60))
+      opts.onStage?.({
+        stage: 'synthesizing',
+        message: `Dubbing ${doneCount}/${total} cues — "${text.slice(0, 40)}${text.length > 40 ? '…' : ''}"`,
+        percent: (doneCount / total) * 90, // max 90% (10% untuk stitching)
+      })
     }
+  }
+
+  // Process in batches of `concurrency` (parallel within batch, sequential across batches)
+  // Edge TTS via Vercel proxy: 3 concurrent aman (Microsoft rate limit ~10 req/sec)
+  for (let i = 0; i < entries.length; i += concurrency) {
+    const batch = []
+    for (let j = i; j < Math.min(i + concurrency, entries.length); j++) {
+      batch.push(generateOne(j))
+    }
+    await Promise.all(batch)
   }
 
   if (successCount === 0) {
@@ -665,7 +681,7 @@ export async function narrateDubbingMode(
     )
   }
 
-  opts.onStage?.({ stage: 'stitching', message: 'Bangun SRT baru + stitch audio…', percent: 90 })
+  opts.onStage?.({ stage: 'stitching', message: 'Bangun SRT baru + stitch audio…', percent: 95 })
 
   // Bangun SRT baru + retime map + audio buffer
   let offset = 0 // akumulasi pergeseran timeline (detik)

@@ -80,6 +80,9 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
   const [lineProgress, setLineProgress] = useState<{ current: number; total: number; text: string } | null>(null)
   const [activePart, setActivePart] = useState<number | null>(null)
   const [audioCache, setAudioCache] = useState<Record<number, { blob: Blob; durationSec: number; previewUrl: string }>>({})
+  // Progress tracking untuk elapsed time + ETA
+  const [dubbingStartTime, setDubbingStartTime] = useState<number | null>(null)
+  const [elapsedSec, setElapsedSec] = useState<number>(0)
 
   // API key states
   const [openaiKey, setOpenaiKey] = useState<string>('')
@@ -97,6 +100,18 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
     const savedOR = getOpenRouterKey()
     if (savedOR) setOpenrouterKey(savedOR)
   }, [])
+
+  // Timer untuk elapsed time saat dubbing/ON/OFF
+  useEffect(() => {
+    if (!dubbingStartTime) {
+      setElapsedSec(0)
+      return
+    }
+    const interval = setInterval(() => {
+      setElapsedSec((Date.now() - dubbingStartTime) / 1000)
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [dubbingStartTime])
 
   const saveOpenAIKey = useCallback(async (key: string, testIt: boolean = true) => {
     if (!key.trim()) {
@@ -214,6 +229,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
     setDubbingResult(null)
     setLineProgress(null)
     setProgress({ stage: 'synthesizing', message: 'Mulai Dubbing Mode…', percent: 0 })
+    setDubbingStartTime(Date.now())
     const tid = toast.loading(`Dubbing ${allEntries.length} cues (audio natural + SRT baru)…`)
 
     try {
@@ -240,6 +256,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
     } finally {
       setIsDubbing(false)
       setLineProgress(null)
+      setDubbingStartTime(null)
     }
   }, [splitResult, provider, edgeVoice, kokoroVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, dubSpeed, dubMinGap])
 
@@ -711,11 +728,42 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
 
             {/* Progress */}
             {(isSynthesizing || lineProgress) && (
-              <div className="rounded-md border bg-white/50 dark:bg-slate-900/50 p-3 space-y-2">
-                {progress.message && <p className="text-sm font-medium">{progress.message}</p>}
-                {progress.percent !== undefined && <Progress value={progress.percent} className="h-2" />}
+              <div className="rounded-md border bg-white/50 dark:bg-slate-900/50 p-4 space-y-3">
+                {/* Big status: cue counter + elapsed time */}
                 {lineProgress && (
-                  <p className="text-xs text-muted-foreground">Baris {lineProgress.current}/{lineProgress.total}: "{lineProgress.text.slice(0, 60)}{lineProgress.text.length > 60 ? '…' : ''}"</p>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-2xl font-bold tabular-nums">
+                      {lineProgress.current}<span className="text-muted-foreground text-base">/{lineProgress.total}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs text-muted-foreground">
+                        {mode === 'dubbing' ? 'Cue di-generate' : 'Baris di-process'}
+                      </div>
+                      <div className="text-sm font-mono tabular-nums">
+                        ⏱ {formatDuration(elapsedSec)}
+                        {lineProgress.current > 0 && lineProgress.current < lineProgress.total && elapsedSec > 1 && (
+                          <> · ETA {formatDuration((elapsedSec / lineProgress.current) * (lineProgress.total - lineProgress.current))}</>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {progress.message && <p className="text-sm font-medium truncate">{progress.message}</p>}
+                {progress.percent !== undefined && (
+                  <div className="space-y-1">
+                    <Progress value={progress.percent} className="h-2" />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>{progress.percent.toFixed(0)}%</span>
+                      {lineProgress && mode === 'dubbing' && (
+                        <span>~3 cue paralel</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {lineProgress && (
+                  <p className="text-xs text-muted-foreground truncate">
+                    Current: "{lineProgress.text.slice(0, 60)}{lineProgress.text.length > 60 ? '…' : ''}"
+                  </p>
                 )}
               </div>
             )}
