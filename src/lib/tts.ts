@@ -777,34 +777,52 @@ export async function narrateDubbingMode(
       })
 
       // Cek gap ke cue asli berikutnya
+      // GAP di SRT baru = (cue[n+1].start di SRT baru) - (cue[n].end di SRT baru)
+      //                = (nextEntry.start + offset) - newEnd
+      //                = nextEntry.start - entry.start - cueAudio.durationSec  ← offset saling cancel
+      // BUG SEBELUMNYA: gapToNext = nextEntry.start - newEnd
+      //   → nextEntry.start (tanpa offset) vs newEnd (dengan offset) → cascade offset raksasa
+      // FIX: hitung gapToNext tanpa offset effect (relative ke cue[n].originalStart)
       const nextEntry = entries[i + 1]
       if (nextEntry) {
-        const gapToNext = nextEntry.start - newEnd
+        // gapToNext = jarak dari cue[n] newEnd ke cue[n+1] newStart di SRT BARU
+        // = (nextEntry.originalStart + offset) - (entry.originalStart + offset + audioDur)
+        // = nextEntry.originalStart - entry.originalStart - audioDur
+        // (offset saling cancel, jadi tidak masalah berapapun offset saat ini)
+        const cueToCueDistance = nextEntry.start - entry.start // jarak dari start cue[n] ke start cue[n+1] di SRT asli
+        const gapToNext = cueToCueDistance - cueAudio.durationSec // sisa setelah audio cue[n]
 
         if (gapToNext < minGapSec) {
+          // Audio overflow → push back cue berikutnya
+          // pushBack = berapa banyak cue[n+1] harus dimajukan ke depan
+          // Kalau gapToNext = -3 (overflow 3s), pushBack = 0.15 - (-3) = 3.15
           const pushBack = minGapSec - gapToNext
           offset += pushBack
 
+          // Gap di retime map: dari newEnd (SRT baru) ke (newEnd + pushBack)
+          // = pushBack detik hening
           retimePoints.push({
             cueIndex: i,
             originalStart: entry.end,
             originalEnd: nextEntry.start,
             newStart: newEnd,
-            newEnd: newEnd + (nextEntry.start - entry.end) + pushBack,
+            newEnd: newEnd + pushBack, // gap duration = pushBack (hening)
             originalDuration: nextEntry.start - entry.end,
-            newDuration: (nextEntry.start - entry.end) + pushBack,
-            factor: ((nextEntry.start - entry.end) + pushBack) / Math.max(0.001, nextEntry.start - entry.end),
+            newDuration: pushBack,
+            factor: pushBack / Math.max(0.001, nextEntry.start - entry.end),
             type: 'gap',
           })
         } else {
+          // Gap cukup → tidak push back, offset tidak berubah
+          // Gap di retime map = sisa gap asli (gapToNext)
           retimePoints.push({
             cueIndex: i,
             originalStart: entry.end,
             originalEnd: nextEntry.start,
             newStart: newEnd,
-            newEnd: newEnd + (nextEntry.start - entry.end),
+            newEnd: newEnd + gapToNext,
             originalDuration: nextEntry.start - entry.end,
-            newDuration: nextEntry.start - entry.end,
+            newDuration: gapToNext,
             factor: 1.0,
             type: 'gap',
           })
