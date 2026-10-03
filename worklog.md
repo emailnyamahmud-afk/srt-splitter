@@ -102,4 +102,43 @@ Stage Summary:
   * 103cce0 + 5c08e32 (sandbox scrape files)
   * bd0bad4 feat: Dubbing Mode + Python retime-video.py
 
+---
+Task ID: 4
+Agent: main
+Task: Adopsi ThioJoe Auto-Synced-Translated-Dubs algoritma — TRIM SILENCE untuk perbaiki MODE ON yang sering robot. Riset 5 referensi: VideoLingo, ThioJoe, KrillinAI, open-dubbing, pyVideoTrans.
+
+Work Log:
+- Riset 5 referensi dubbing open-source via z-ai page_reader (Linly-Dubbing 404)
+- Analisis algoritma ThioJoe audio_builder.py (paling relevan):
+  * detect_leading_silence (-30dB threshold, 10ms chunks) → trim awal
+  * reverse → detect_leading_silence → trim akhir
+  * pyrubberband/ffmpeg atempo untuk stretch fallback (tidak diadopsi — Edge TTS server-side rate sudah cukup)
+  * Canvas overlay approach (sama dengan mixAudioInto kita)
+- Insight: Hening TTS 200-500ms di awal + 100-300ms di akhir bikin actual duration kehitung lebih panjang dari sebenarnya → ratio ke-hitung terlalu tinggi → audio dipaksa speed up lebih dari yang dibutuhkan → ROBOT
+- Implementasi di audio-utils.ts:
+  * +detectLeadingSilence(audio, -30dB, 10ms, sampleRate) → return index awal non-silent
+  * +trimSilence(audio, -30dB, sampleRate, paddingMs=50) → return trimmed Float32Array
+  * Padding 50ms di awal/akhir supaya tidak abrupt (natural pause)
+- Implementasi di tts.ts:
+  * +decodeMonoTrimResample helper (decode + mono + resample + trim)
+  * Refactor ON mode: pakai helper untuk Pass 1 (natural) dan Pass 2 (speedup/slowdown)
+  * actualDuration sekarang = TRIMMED duration, bukan raw TTS output
+  * Refactor OFF mode: pakai helper (audio lebih rapat antar cue)
+  * Refactor Dubbing Mode: pakai helper (SRT baru timing lebih akurat — cue.end = audio trimmed, bukan raw TTS)
+- Verifikasi: npx next build → ✓ Compiled successfully in 7.8s
+- Commit 662b145, push ke GitHub sukses (PAT user dipakai sekali, di-reset setelah push)
+
+Stage Summary:
+- TRIM SILENCE diadopsi dari ThioJoe — sesuai rekomendasi user "perbaiki MODE ON dulu, kalau jalan tidak perlu Dubbing Mode"
+- Helper decodeMonoTrimResample = single source of truth untuk decode+trim di semua 3 mode
+- Efek: banyak cue yang sebelumnya dipaksa speed up (ratio > 1.0), sekarang jadi natural (ratio ≤ 1.0 setelah trim)
+  * Contoh: cue "Kapten" (Mandarin 0.6s) — dulu audio 0.7s → ratio 1.17x speed up. Sekarang trim 0.5s → ratio 0.83x → NATURAL, no speed up
+- Mode ON sekarang: trim silence → hitung ratio → speed up hanya kalau audio trimmed masih > cue
+- Mode OFF sekarang: trim silence → audio lebih rapat antar cue
+- Dubbing Mode sekarang: trim silence → SRT baru timing akurat (cue.end = audio trimmed, bukan raw TTS dengan hening buatan)
+- Yang TIDAK diadopsi dari ThioJoe (kalau perlu nanti): pyrubberband stretch fallback
+- File berubah: src/lib/audio-utils.ts (+86 baris), src/lib/tts.ts (refactor ON/OFF/Dubbing ke helper)
+- Pending: user test real dengan SRT Jawa, kalau masih robot → next step riset pyVideoTrans Synchronize.md atau stretch fallback
+
+
 
