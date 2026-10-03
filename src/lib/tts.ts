@@ -643,6 +643,19 @@ export async function narrateDubbingMode(
 
       // Decode + mono + resample + TRIM SILENCE
       const dub = await decodeMonoTrimResample(synth, OUTPUT_SAMPLE_RATE, true)
+
+      // VALIDATE durationSec — kalau NaN/Infinity/too big, anggap corrupt, skip
+      // Edge case: Edge TTS proxy kadang return MP3 corrupt, audioBuffer.length bisa raksasa
+      // → dub.durationSec jadi 3.11e+35 → stitching throw "Invalid typed array length"
+      const MAX_CUE_DURATION_SEC = 60 // max 60 detik per cue (Edge TTS max ~5 detik realistis)
+      if (!isFinite(dub.durationSec) || dub.durationSec <= 0 || dub.durationSec > MAX_CUE_DURATION_SEC) {
+        console.warn(`[Dubbing] cue ${i} skip — invalid durationSec: ${dub.durationSec} (text: "${text.slice(0, 40)}")`)
+        failCount++
+        if (!firstError) firstError = `cue ${i} durationSec invalid: ${dub.durationSec}`
+        // cueAudios[i] sudah pre-allocated dengan durationSec=0 → akan skip di stitching
+        return
+      }
+
       cueAudios[i] = { pcm: dub.audio, durationSec: dub.durationSec, text }
       successCount++
     } catch (e) {
@@ -701,11 +714,23 @@ export async function narrateDubbingMode(
       const cueAudio = cueAudios[i]
       const text = entry.textLines.join(' ').trim()
 
-      if (!text || cueAudio.durationSec === 0) continue
+      // Skip cue kosong, atau duration invalid (NaN/Infinity/0/negatif)
+      if (!text || !isFinite(cueAudio.durationSec) || cueAudio.durationSec <= 0) continue
+
+      // Sanity check: cue audio tidak boleh lebih dari 60 detik (realistis max ~5s)
+      if (cueAudio.durationSec > 60) {
+        console.warn(`[Dubbing] Stitching: cue ${i} durationSec ${cueAudio.durationSec}s > 60s, skip (text: "${text.slice(0, 40)}")`)
+        continue
+      }
 
       // Cue baru: start = original.start + offset
       const newStart = entry.start + offset
       const newEnd = newStart + cueAudio.durationSec
+      // Safety: kalau newEnd tidak finite, skip cue ini
+      if (!isFinite(newEnd) || !isFinite(newStart)) {
+        console.warn(`[Dubbing] Stitching: cue ${i} newStart/newEnd not finite: ${newStart}/${newEnd}, skip`)
+        continue
+      }
       indexedNewEntries.push({ start: newStart, end: newEnd, text, cueIndex: i })
 
       retimePoints.push({
@@ -762,9 +787,16 @@ export async function narrateDubbingMode(
     const newDurationSec = indexedNewEntries.length > 0
       ? indexedNewEntries[indexedNewEntries.length - 1].end + 0.5
       : 0
+    // Sanity check: kalau newDurationSec tidak finite atau > 1 jam, throw dengan message jelas
+    if (!isFinite(newDurationSec) || newDurationSec <= 0) {
+      throw new Error(`newDurationSec invalid: ${newDurationSec} (indexedNewEntries: ${indexedNewEntries.length}, last.end: ${indexedNewEntries.length > 0 ? indexedNewEntries[indexedNewEntries.length - 1].end : 'n/a'})`)
+    }
+    if (newDurationSec > 3600) {
+      throw new Error(`newDurationSec ${newDurationSec}s > 1 jam — kemungkinan ada cue dengan duration raksasa (max 60s per cue)`)
+    }
     const totalSamples = Math.floor(newDurationSec * OUTPUT_SAMPLE_RATE)
     console.log('[Dubbing] Stitching step 2: allocate buffer...', { newDurationSec, totalSamples, bytesMB: (totalSamples * 4 / 1024 / 1024).toFixed(1) })
-    if (totalSamples <= 0 || !isFinite(totalSamples)) {
+    if (totalSamples <= 0 || !isFinite(totalSamples) || totalSamples > 1000000000) {
       throw new Error(`Invalid totalSamples: ${totalSamples} (newDurationSec=${newDurationSec})`)
     }
     const allAudio = new Float32Array(totalSamples)
