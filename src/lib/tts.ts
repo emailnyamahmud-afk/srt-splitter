@@ -696,6 +696,24 @@ export async function narrateDubbingMode(
 
   opts.onStage?.({ stage: 'stitching', message: 'Bangun SRT baru + stitch audio…', percent: 95 })
 
+  // === DEBUG: log cueAudios summary sebelum stitching ===
+  // Untuk pin-point cue mana yang punya duration raksasa yang lolos dari Layer 1
+  const cueAudiosSummary = cueAudios.map((c, i) => ({
+    i,
+    dur: c.durationSec,
+    pcmLen: c.pcm.length,
+    textLen: c.text.length,
+  })).filter(c => !isFinite(c.dur) || c.dur > 60 || c.dur < 0)
+  console.log('[Dubbing] Pre-stitching audit:', {
+    totalCues: entries.length,
+    successCount,
+    failCount,
+    suspiciousCues: cueAudiosSummary, // cue yang punya duration invalid
+  })
+  if (cueAudiosSummary.length > 0) {
+    console.warn('[Dubbing] WARNING: ada cue dengan duration invalid yang akan di-skip di stitching')
+  }
+
   // === STITCHING: bangun SRT baru + mix audio ke buffer + encode WAV ===
   // Wrap dalam try-catch supaya error message spesifik ke user (tahap mana yang gagal)
   let indexedNewEntries: { start: number; end: number; text: string; cueIndex: number }[] = []
@@ -729,6 +747,13 @@ export async function narrateDubbingMode(
       // Safety: kalau newEnd tidak finite, skip cue ini
       if (!isFinite(newEnd) || !isFinite(newStart)) {
         console.warn(`[Dubbing] Stitching: cue ${i} newStart/newEnd not finite: ${newStart}/${newEnd}, skip`)
+        continue
+      }
+      // HARD CAP: kalau newEnd > 1 jam (3600s), skip cue + RESET offset ke 0
+      // Ini mencegah offset accumulative dari cue corrupt sebelumnya
+      if (newEnd > 3600) {
+        console.warn(`[Dubbing] Stitching: cue ${i} newEnd ${newEnd}s > 3600s (1 jam), skip + reset offset from ${offset} to 0`)
+        offset = 0
         continue
       }
       indexedNewEntries.push({ start: newStart, end: newEnd, text, cueIndex: i })
