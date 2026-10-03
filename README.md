@@ -5,6 +5,8 @@ Aplikasi web untuk split SRT, translate subtitle, dan **dubbing Mandarin → Jaw
 **Live:** https://srt-splitter.vercel.app/
 **Source:** https://github.com/emailnyamahmud-afk/srt-splitter
 
+> **📖 Visi Project:** Bukan cuma dubbing Mandarin → Jawa. Ini prototype untuk **digitalisasi bahasa daerah Indonesia di era AI** (700 bahasa, 169 terancam punah). Lihat [`docs/PROJECT_VISION.md`](docs/PROJECT_VISION.md) untuk konteks lengkap + roadmap 2 tahun.
+
 ---
 
 ## Fitur Utama
@@ -116,7 +118,8 @@ srt-splitter/
 │   ├── edge-tts.js              # Edge TTS proxy (Microsoft)
 │   ├── translate.js              # Google Translate proxy
 │   └── health.js                 # Health check
-├── docs/                        # Dokumentasi teknis
+├── docs/                        # Dokumentasi teknis + visi
+│   ├── PROJECT_VISION.md         # 📖 Visi digitalisasi bahasa + roadmap 2 tahun
 │   └── EDGE_TTS_PROXY.md         # Cara kerja Edge TTS proxy
 ├── scripts/                     # Python scripts (lokal)
 │   ├── README.md                 # Index script Python

@@ -174,3 +174,53 @@ Stage Summary:
 
 
 
+
+---
+Task ID: 6
+Agent: main
+Task: Update dokumentasi dengan visi besar "digitalisasi bahasa di era AI" setelah diskusi mendalam dengan user. Capture konteks penuh project supaya AI yang baca besok bisa paham.
+
+Work Log:
+- Diskusi panjang dengan user (sore-malam 3 Oktober 2026) tentang:
+  1. Python itu command line (bukan GUI), JSON dibaca otomatis
+  2. TUI interaktif dengan questionary (pilih file pakai arrow keys)
+  3. Training TTS Jawa custom (Coqui TTS, VITS, F5-TTS, XTTS-v2)
+  4. Dataset yang user punya: 260 jam studio-grade (37 video Zoom H6 + 110 podcast)
+  5. Zoom H6 stereo split (channel 1 vocal, channel 2 backsound) = EMAS untuk training
+  6. Akses komunitas Permadani (100 siswa/tahun sebagai validator transkripsi)
+  7. Bahasa Kawi (Negarakertagama UNESCO 2013) belum ada TTS-nya
+  8. Indonesia 700 bahasa, 169 terancam punah
+- Realisasi: workflow dubbing Mandarin → Jawa = prototype untuk digitalisasi bahasa daerah
+- Bikin dokumen baru: docs/PROJECT_VISION.md (~330 baris) yang capture:
+  * Ringkasan eksekutif (dari iseng ke visi)
+  * Asal mula project + evolution minggu per minggu
+  * Konteks Indonesia 700 bahasa + Negarakertagama UNESCO
+  * 6 aset user yang tidak tergantikan
+  * Roadmap 2 tahun (Track A-E, bulan per bulan)
+  * Stack teknis lengkap
+  * Workflow 5 fase
+  * Perspektif akademik/komunitas/komersial/global
+  * Yang bisa user lakuin hari ini (15 menit setup)
+- Update README.md: tambah banner PROJECT_VISION di atas, link ke docs
+- Update struktur folder di README: tambah PROJECT_VISION.md di docs/
+
+Stage Summary:
+- docs/PROJECT_VISION.md: dokumen baru 330 baris, capture konteks penuh + roadmap
+- README.md: tambah banner visi di atas + link ke PROJECT_VISION
+- worklog.md: catat diskusi malam + realisasi visi besar
+- AI yang baca dokumentasi besok bisa paham konteks:
+  1. Project ini bukan cuma web app split SRT
+  2. Bukan cuma dubbing Mandarin → Jawa
+  3. Tapi prototype digitalisasi bahasa daerah Indonesia
+  4. User punya 260 jam dataset studio-grade yang langka
+  5. User punya komunitas Permadani (100 validator)
+  6. User punya sustainable funding (live streaming)
+  7. Roadmap 2 tahun: workflow → dataset → training TTS → vision → open source
+  8. Scale: 700 bahasa Indonesia, 169 terancam punah
+- Dokumentasi rapi + persistent di GitHub repo
+- User akan tidur, lanjut besok pagi: install setup + test dubbing-tui.py dengan audio 6 menit
+
+Pesan closing dari user:
+"ada uang atau tidak ada uang, tetap akan user kerjakan, tapi step by step.
+dan semua terdokumentasi rapi. yg bahkan diawali dengan iseng dub dracin ke jawa
+dan jangan lupa, indonesia punya 700 bahasa."
