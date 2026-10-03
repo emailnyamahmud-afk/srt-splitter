@@ -1,289 +1,538 @@
-# Tutor: Workflow Dubbing Mandarin → Jawa (Fase 1-4)
+# Tutor Lengkap Dubbing Mandarin → Jawa (Untuk Pemula)
 
-Panduan lengkap untuk dub video Mandarin ke Jawa dengan audio natural, SFX preserve, dan video slow-mo otomatis.
+Panduan step-by-step untuk dub video Mandarin ke Jawa. Cocok untuk yang **belum pernah pakai Python** atau command line. Aku tulis dengan asumsi user cuma biasa pakai browser dan klik-klik aplikasi.
 
-## Arsitektur Workflow
+**Total waktu setup:** 15 menit (sekali pakai)
+**Total waktu per video 1 jam:** ~30 menit (setelah setup)
 
+---
+
+## 📌 Penjelasan Singkat (Baca Dulu 2 Menit)
+
+### Python itu bukan aplikasi klik-klik
+
+Python itu bahasa pemrograman. Script yang aku buat (`retime-video.py`, `separate-audio-sfx.py`) jalan di **Terminal** Mac — layar hitam dengan text, ketik command, tekan Enter.
+
+Tenang, ini cuma untuk **produksi final** (Fase 4). Untuk translate + generate audio (Fase 2), user tetap pakai web app biasa di browser.
+
+### Apa itu file JSON yang di-download dari DUB?
+
+Dari web app Dubbing Mode, user download 3 file:
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│ Fase 1: Persiapan bahan                                         │
-│   MP4 Mandarin + SRT Mandarin (sumber)                          │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ Fase 2: Web app (https://srt-splitter.vercel.app/)              │
-│   - Translate SRT Mandarin → Jawa                                │
-│   - Rapikan tatabahasa Jawa (script Python)                      │
-│   - Dubbing Mode: audio natural → SRT baru → retime-map JSON    │
-│   Output: audio-jawa.wav + subs-jawa-new.srt + retime-map.json  │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ Fase 3 (opsional): SFX Separation dengan Demucs                 │
-│   - Input: MP4 Mandarin                                         │
-│   - Output: vocals-mandarin.wav (dibuang) + sfx-backsound.wav   │
-│   - Berguna kalau MP4 punya backsound yang ingin dipertahankan  │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ Fase 4: Retime Video dengan FFmpeg (Python lokal)              │
-│   - Input: MP4 + SRT Mandarin + SRT Jawa + audio Jawa (+ SFX)  │
-│   - Output: mp4-jawa.mp4 (video slow-mo + audio Jawa + SFX)    │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│ Fase 5: Edit final di DaVinci Resolve (manual)                  │
-│   - Tambah musik, efek, color grade                             │
-│   - Export final video                                          │
-└─────────────────────────────────────────────────────────────────┘
+audio-jawa.wav          ← Audio Jawa natural (diputar di video final)
+subs-jawa-new.srt       ← Subtitle Jawa dengan timing baru
+retime-map.json         ← PETUNJUK untuk FFmpeg: timing cue Jawa mana ↔ cue Mandarin mana
 ```
 
-## Prerequisite
+**JSON tidak user buka manual.** Itu dibaca otomatis oleh Python script `retime-video.py`. User cukup taruh di folder yang sama dengan file lainnya, lalu jalankan command — JSON akan dipakai otomatis.
 
-### Untuk Fase 2 (Web app)
-- Browser modern (Chrome, Firefox, Safari, Edge)
-- Internet connection (Edge TTS butuh proxy Vercel)
-- Tidak perlu install apapun
+### Apa itu FFmpeg dan Demucs?
 
-### Untuk Fase 3-4 (Python lokal)
-- Python 3.8+
-- ffmpeg (`brew install ffmpeg` di Mac, `sudo apt install ffmpeg` di Linux)
-- Demucs (opsional, untuk SFX separation): `pip install demucs`
+- **FFmpeg** = alat gratis untuk memproses video/audio (cut, slow-mo, mix). Wajib install.
+- **Demucs** = alat AI dari Meta untuk memisahkan suara dialog dari backsound. Opsional (cuma kalau MP4 punya backsound yang mau dipertahankan).
 
-Cek install:
+---
+
+## 🛠️ Setup Sekali Pakai (15 Menit)
+
+### Step 1: Buka Terminal Mac
+
+- Tekan `Cmd + Spasi` → ketik "Terminal" → Enter
+- Akan muncul layar hitam dengan tulisan: `user@MacBook ~ %`
+- Itu disebut "prompt" — tempat user ketik command
+
+### Step 2: Cek Python (biasanya sudah ada)
+
+Ketik di Terminal, lalu Enter:
+```bash
+python3 --version
+```
+
+**Hasil yang diharapkan:**
+```
+Python 3.10.x
+```
+
+Kalau muncul `Python 2.7.x` atau versi lebih rendah dari 3.10, install ulang:
+- Buka https://www.python.org/downloads/mac-osx/
+- Download "macOS 64-bit universal2 installer"
+- Double-click install
+
+Kalau muncul `command not found: python3`, install via Homebrew:
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install python@3.10
+```
+
+### Step 3: Install FFmpeg (wajib)
+
+FFmpeg = alat untuk proses video. Wajib install.
+
+```bash
+# Install Homebrew dulu kalau belum ada (kopi paste semua 1 baris):
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+Tunggu 2-5 menit sampai selesai. Lalu ketik:
+```bash
+# Install FFmpeg:
+brew install ffmpeg
+```
+
+Tunggu 3-10 menit (download ~50MB).
+
+Cek sukses:
+```bash
+ffmpeg -version
+```
+
+Kalau muncul banyak text mulai dengan `ffmpeg version 7.x.x`, **berhasil**.
+
+### Step 4: Install Demucs (opsional, tapi recommended)
+
+Demucs = alat AI untuk pisahkan suara dialog dari backsound. Opsional, tapi berguna kalau MP4 punya music/SFX yang ingin dipertahankan.
+
+```bash
+pip3 install demucs
+```
+
+Tunggu 3-5 menit (download model ~80MB pertama kali dipakai).
+
+Cek sukses:
+```bash
+demucs --help
+```
+
+Kalau muncul info help text, **berhasil**.
+
+> **Catatan:** Demucs butuh Python 3.10+. Kalau install gagal, coba:
+> ```bash
+> pip3 install --upgrade pip
+> pip3 install demucs --break-system-packages
+> ```
+
+### ✅ Setup Selesai — Test Semua Sudah Jalan
+
+Ketik di Terminal:
 ```bash
 python3 --version
 ffmpeg -version
-ffprobe -version
-demucs --help  # opsional
+demucs --help
 ```
 
-## Fase 1: Persiapan Bahan
+Kalau semua perintah muncul output (tidak "command not found"), setup berhasil. Lanjut ke Fase 1.
 
-Siapkan:
-- `mandarin.mp4` — video Mandarin asli
-- `original.srt` — subtitle Mandarin (dari sumber, atau generate dengan Whisper)
+---
 
-Untuk generate SRT dari MP4 (kalau belum punya):
+## 📁 Fase 1: Siapkan Folder Kerja (5 Menit)
+
+### Step 1: Buat folder khusus untuk dubbing
+
+Buka Terminal, ketik (copy-paste):
 ```bash
-# Pakai OpenAI Whisper (local)
-pip install openai-whisper
-whisper mandarin.mp4 --model medium --language zh --output_format srt
-
-# Output: mandarin.srt
+mkdir -p ~/Dubbing
+cd ~/Dubbing
 ```
 
-## Fase 2: Web App (https://srt-splitter.vercel.app/)
+Artinya: bikin folder bernama "Dubbing" di home directory, lalu masuk ke folder itu.
 
-### Step 2.1: Translate Mandarin → Jawa
+### Step 2: Copy file sumber ke folder Dubbing
+
+Copy dari folder asli user:
+```bash
+# Ganti ~/Downloads/mandarin.mp4 dengan lokasi file MP4 user
+cp ~/Downloads/mandarin.mp4 ~/Dubbing/
+
+# Ganti ~/Downloads/original.srt dengan lokasi SRT Mandarin
+cp ~/Downloads/original.srt ~/Dubbing/
+```
+
+Cek isi folder:
+```bash
+ls ~/Dubbing
+```
+
+Harus muncul:
+```
+mandarin.mp4    original.srt
+```
+
+### Step 3: Download script Python dari GitHub
+
+```bash
+# Download retime-video.py dan separate-audio-sfx.py dari repo
+cd ~/Dubbing
+curl -L -o retime-video.py https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/retime-video.py
+curl -L -o separate-audio-sfx.py https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/separate-audio-sfx.py
+```
+
+Cek:
+```bash
+ls ~/Dubbing
+```
+
+Harus muncul:
+```
+mandarin.mp4    original.srt    retime-video.py    separate-audio-sfx.py
+```
+
+---
+
+## 🌐 Fase 2: Web App (Sudah User Pahami)
+
+### Step 1: Translate Mandarin → Jawa
+
 1. Buka https://srt-splitter.vercel.app/
 2. Upload `original.srt`
 3. Di panel Translate, pilih source `Chinese` → target `Jawa`
-4. Klik Translate
-5. Download hasil translate
+4. Klik Translate, tunggu 1-2 menit
+5. Download hasil → simpan sebagai `subs-jawa.srt` di folder `~/Dubbing/`
 
-### Step 2.2: Rapikan tatabahasa Jawa (opsional)
-- Pakai script `rapikan-jawa.py` lokal
-- Lihat dokumentasi di `scripts/tutor-python-lokal.md`
-
-### Step 2.3: Dubbing Mode
-1. Upload SRT Jawa yang sudah diterjemahkan + dirapikan
-2. Di panel TTS, pilih mode **🔴 DUBBING**
-3. Pilih voice (default: `id-ID-GadisNeural` untuk perempuan, `id-ID-ArdiNeural` untuk laki-laki)
-4. Pilih speed:
-   - **1.0x Natural** — paling natural, video paling banyak slow-mo (rekomendasi untuk hasil terbaik)
-   - **1.25x** — kompromi, kurangi slow-mo
-   - **1.5x** — paling sedikit slow-mo, mungkin agak robot
-5. Pilih min gap (default 150ms — natural percakapan)
-6. Klik **Generate Dubbing**
-7. Setelah selesai, klik **Download 3 file (WAV + SRT + JSON)**
-8. Akan dapat:
-   - `{prefix}-audio-jawa.wav` → rename jadi `audio-jawa.wav`
-   - `{prefix}-subs-jawa-new.srt` → rename jadi `subs-jawa-new.srt`
-   - `{prefix}-retime-map.json` → rename jadi `retime-map.json`
-
-## Fase 3: SFX Separation (Opsional, untuk preserve backsound)
-
-Pisahkan audio MP4 menjadi vocals (dibuang) + SFX (dipertahankan).
+### Step 2: Rapikan tatabahasa Jawa (opsional)
 
 ```bash
-# Install Demucs (sekali saja)
-pip install demucs
+cd ~/Dubbing
+python3 retime-video.py --help  # skip kalau mau langsung
+# Atau pakai script rapikan-jawa.py dari repo
+```
 
-# Run separation
-python3 scripts/separate-audio-sfx.py \
+### Step 3: Dubbing Mode di Web App
+
+1. Upload `subs-jawa.srt` ke web app
+2. Pilih mode **🔴 DUBBING**
+3. Pilih voice: `id-ID-GadisNeural` (perempuan) atau `id-ID-ArdiNeural` (laki-laki)
+4. Pilih speed:
+   - **1.0x Natural** → paling natural, video slow-mo paling banyak (rekomendasi awal)
+   - **1.25x** → kompromi (audio masih natural, video slow-mo kurang)
+   - **1.5x** → paling sedikit slow-mo (audio agak cepat, masih jelas)
+5. Klik **Generate Dubbing**, tunggu 1-3 menit per 5 menit SRT
+6. Setelah selesai, klik **Download 3 file (WAV + SRT + JSON)**
+7. Akan download 3 file — simpan semua di `~/Dubbing/`
+
+### Step 4: Rename file hasil download (penting!)
+
+File dari web app akan bernama seperti `Season-audio-jawa.wav`, `Season-subs-jawa-new.srt`, `Season-retime-map.json`. Rename supaya gampang:
+
+```bash
+cd ~/Dubbing
+
+# Ganti "Season" dengan prefix user (cek nama file sebenarnya)
+mv Season-audio-jawa.wav audio-jawa.wav
+mv Season-subs-jawa-new.srt subs-jawa-new.srt
+mv Season-retime-map.json retime-map.json
+```
+
+### ✅ Fase 2 Selesai — Cek Folder
+
+```bash
+ls ~/Dubbing
+```
+
+Harus muncul:
+```
+mandarin.mp4          original.srt          retime-video.py
+audio-jawa.wav        subs-jawa-new.srt     separate-audio-sfx.py
+retime-map.json
+```
+
+> **Catatan tentang retime-map.json:** File ini berisi petunjuk timing untuk FFmpeg. User TIDAK perlu buka atau baca file ini — Python script akan baca otomatis. Cukup taruh di folder yang sama.
+
+---
+
+## 🎵 Fase 3: SFX Separation (Opsional, 10-20 Menit)
+
+**Hanya kalau MP4 punya backsound/music yang ingin dipertahankan.** Kalau MP4 hanya dialog murni, skip ke Fase 4.
+
+### Kenapa perlu SFX separation?
+
+Misal MP4 Mandarin punya:
+- Dialog Mandarin (akan diganti audio Jawa)
+- Backsound music (ingin dipertahankan)
+- SFX seperti ledakan, langkah kaki (ingin dipertahankan)
+
+Demucs akan pisahkan jadi 2 file:
+- `vocals-mandarin.wav` (dibuang)
+- `sfx-backsound.wav` (dipertahankan, di-mix dengan audio Jawa)
+
+### Step 1: Run Demucs
+
+```bash
+cd ~/Dubbing
+python3 separate-audio-sfx.py --mp4 mandarin.mp4 --output-dir output/
+```
+
+Tunggu 10-20 menit (untuk MP4 1 jam, di MacBook M1/M2 CPU).
+
+**Output:**
+```
+output/vocals-mandarin.wav      ← Dibuang (dialog Mandarin asli)
+output/sfx-backsound.wav        ← Dipertahankan (music + SFX)
+```
+
+### ✅ Fase 3 Selesai
+
+Sekarang folder `~/Dubbing/output/` berisi SFX yang siap di-mix.
+
+---
+
+## 🎬 Fase 4: Retime Video (10-30 Menit)
+
+Ini tahap inti: video Mandarin di-retim supaya timing-nya match audio Jawa.
+
+### Mode A: Basic (tanpa SFX, paling simpel)
+
+Kalau user TIDAK pakai Fase 3 (skip Demucs), pakai mode ini. Audio ori MP4 akan di-duck (volume turun) saat audio Jawa bicara.
+
+```bash
+cd ~/Dubbing
+python3 retime-video.py \
   --mp4 mandarin.mp4 \
-  --output-dir output/
+  --srt-mandarin original.srt \
+  --srt-jawa subs-jawa-new.srt \
+  --audio-jawa audio-jawa.wav \
+  --output mp4-jawa.mp4
+```
 
-# Output:
-# output/vocals-mandarin.wav  (akan dibuang)
-# output/sfx-backsound.wav    (akan di-mix dengan audio Jawa)
+### Mode B: Advanced (dengan SFX separation)
+
+Kalau user sudah run Fase 3 (Demucs output ada):
+
+```bash
+cd ~/Dubbing
+python3 retime-video.py \
+  --mp4 mandarin.mp4 \
+  --srt-mandarin original.srt \
+  --srt-jawa subs-jawa-new.srt \
+  --audio-jawa audio-jawa.wav \
+  --output mp4-jawa.mp4 \
+  --separate-sfx \
+  --sfx-ducking 12
+```
+
+### Step 1: Dry-run dulu (cek command tanpa eksekusi)
+
+Sebelum run beneran, cek command-nya:
+```bash
+python3 retime-video.py \
+  --mp4 mandarin.mp4 \
+  --srt-mandarin original.srt \
+  --srt-jawa subs-jawa-new.srt \
+  --audio-jawa audio-jawa.wav \
+  --output mp4-jawa.mp4 \
+  --dry-run
+```
+
+Akan muncul command FFmpeg lengkap, tapi tidak jalan. Cek tidak ada error.
+
+### Step 2: Run beneran
+
+Hapus `--dry-run` dan run:
+```bash
+python3 retime-video.py \
+  --mp4 mandarin.mp4 \
+  --srt-mandarin original.srt \
+  --srt-jawa subs-jawa-new.srt \
+  --audio-jawa audio-jawa.wav \
+  --output mp4-jawa.mp4
 ```
 
 **Estimasi waktu:**
-- File 90 menit, MacBook M1/M2 CPU: 10-20 menit
-- File 90 menit, GPU NVIDIA: 2-5 menit
+- MP4 6 menit → 2-5 menit
+- MP4 30 menit → 10-20 menit
+- MP4 1 jam → 30-60 menit
 
-**Kapan perlu SFX separation?**
-- ✅ MP4 punya backsound/music yang ingin dipertahankan
-- ✅ MP4 punya SFX (ledakan, langkah kaki, dll) yang penting untuk scene
-- ❌ MP4 hanya dialog tanpa backsound → skip Fase 3, langsung Fase 4
-
-## Fase 4: Retime Video dengan FFmpeg
-
-### Mode A: Basic (tanpa SFX separation)
-Audio ori MP4 di-duck (volume turun) saat audio Jawa bicara. Cocok untuk MP4 dengan dialog dominant.
-
-```bash
-python3 scripts/retime-video.py \
-  --mp4 mandarin.mp4 \
-  --srt-mandarin original.srt \
-  --srt-jawa subs-jawa-new.srt \
-  --audio-jawa audio-jawa.wav \
-  --output mp4-jawa.mp4 \
-  --sfx-ducking 12
+Tunggu sampai muncul:
+```
+✓ Output: mp4-jawa.mp4
+  Size: XX MB
+  Duration: HH:MM:SS
 ```
 
-**Parameter:**
-- `--sfx-ducking 12` — volume SFX turun 12dB saat audio Jawa bicara (default)
-- `--no-sfx` — buang audio ori total (hanya audio Jawa)
-- `--dry-run` — print command tanpa eksekusi (test dulu)
-- `--keep-temp` — keep temp files untuk debugging
+### ✅ Fase 4 Selesai
 
-### Mode B: Advanced (dengan SFX separation via Demucs)
+File `mp4-jawa.mp4` ada di `~/Dubbing/`. Buka dengan QuickTime atau DaVinci untuk cek hasil.
 
-```bash
-python3 scripts/retime-video.py \
-  --mp4 mandarin.mp4 \
-  --srt-mandarin original.srt \
-  --srt-jawa subs-jawa-new.srt \
-  --audio-jawa audio-jawa.wav \
-  --output mp4-jawa.mp4 \
-  --separate-sfx \
-  --sfx-ducking 12
-```
+---
 
-Script akan auto-run Demucs untuk separate SFX, lalu mix dengan audio Jawa.
+## 🎨 Fase 5: Edit Final di DaVinci Resolve (Manual)
 
-### Estimasi waktu Fase 4
-- File 90 menit, mode basic: 30-60 menit (ffmpeg render)
-- File 90 menit, mode advanced: 60-90 menit (Demucs + ffmpeg)
-- CPU: butuh 4-8 GB RAM untuk file besar
-
-## Fase 5: Edit Final di DaVinci Resolve
-
-1. Import `mp4-jawa.mp4` ke DaVinci Resolve
-2. Cek hasil:
-   - Video slow-mo di cue pendek (wajar, sudah di-retim match audio Jawa)
-   - Audio Jawa natural, tidak robot
-   - SFX backsound masih ada (jika mode B)
-3. Edit final (opsional):
-   - Tambah musik latar
+1. Buka DaVinci Resolve
+2. Drag `mp4-jawa.mp4` ke timeline
+3. Cek:
+   - **Audio Jawa** natural (tidak robot)
+   - **Video slow-mo** di cue pendek (wajar, supaya match audio Jawa)
+   - **SFX/backsound** masih ada (kalau pakai mode B)
+4. Edit final (opsional):
    - Color grade
+   - Tambah musik latar
    - Cut scene yang tidak perlu
-4. Export final video
+5. Export final video
 
-## Troubleshooting
+---
 
-### Error: "ffmpeg tidak ditemukan"
-Install ffmpeg:
+## ❓ FAQ Pemula
+
+### Q: Saya takut salah ketik command. Aman?
+
+**A:** Aman. Command Python cuma baca argumen, tidak hapus file user. Kalau typo, akan muncul error message — baca, perbaiki, jalankan ulang. Tidak ada data hilang.
+
+### Q: Kenapa harus pakai Terminal? Tidak ada aplikasi GUI?
+
+**A:** Buat GUI butuh waktu develop 1-2 minggu lagi. Untuk sekarang, command line cukup. Setelah user berhasi sekali, tinggal save command di Notes, copy-paste untuk video berikutnya.
+
+### Q: Boleh pakai VS Code atau editor lain?
+
+**A:** Boleh. Buka VS Code → Terminal → New Terminal → ketik command sama.
+
+### Q: Apa arti tanda `\` di akhir baris command?
+
+**A:** Itu artinya "command lanjut ke baris berikutnya". Bisa juga ditulis 1 baris saja:
 ```bash
-# Mac
+python3 retime-video.py --mp4 mandarin.mp4 --srt-mandarin original.srt --srt-jawa subs-jawa-new.srt --audio-jawa audio-jawa.wav --output mp4-jawa.mp4
+```
+
+### Q: JSON itu apa? Harus saya buka?
+
+**A:** JSON (JavaScript Object Notation) itu format text untuk data terstruktur. **User TIDAK perlu buka file JSON.** Itu dibaca otomatis oleh Python script. Cukup taruh di folder yang sama.
+
+### Q: Kalau Demucs gagal install, masih bisa pakai?
+
+**A:** Bisa. Skip Fase 3 (SFX separation), langsung Fase 4 mode A (basic). Audio ori MP4 akan di-duck saja (volume turun saat audio Jawa bicara). Backsound masih kedengaran, cuma tidak se-bersih mode Demucs.
+
+### Q: Video final saya kenapa slow-mo di beberapa scene?
+
+**A:** Itu wajar. Karena audio Jawa lebih panjang dari cue Mandarin asli, video harus melambat supaya timing-nya match. Kalau slow-mo terlalu janggal, naikkan speed di Fase 2 (1.0x → 1.25x atau 1.5x).
+
+### Q: Audio Jawa terdengar robot di beberapa cue?
+
+**A:** Kalau pakai speed 1.0x, seharusnya tidak ada robot. Tapi kalau ada, kemungkinan Edge TTS proxy error — coba generate ulang di web app. Atau pakai 1.5x (audio lebih cepat tapi tetap jelas).
+
+### Q: Saya mau coba dulu dengan audio 6 menit, kira-kira cepat?
+
+**A:** Cepat. Untuk audio 6 menit:
+- Fase 3 (Demucs, opsional): 2-5 menit
+- Fase 4 (FFmpeg retim): 1-3 menit
+- Total: 3-8 menit
+
+Sangat cocok untuk test awal.
+
+---
+
+## 🆘 Troubleshooting
+
+### Error: `command not found: python3`
+
+Python belum terinstall. Install:
+```bash
+brew install python@3.10
+```
+
+### Error: `command not found: ffmpeg`
+
+FFmpeg belum terinstall. Install:
+```bash
 brew install ffmpeg
-
-# Linux
-sudo apt install ffmpeg  # Debian/Ubuntu
-sudo dnf install ffmpeg   # Fedora
-
-# Windows
-# Download dari https://ffmpeg.org/download.html
 ```
 
-### Error: "Demucs tidak ditemukan"
-Install Demucs:
-```bash
-pip install demucs
+### Error: `command not found: demucs`
 
-# Atau dengan GPU (NVIDIA):
-pip install demucs torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+Demucs belum terinstall. Install:
+```bash
+pip3 install demucs
 ```
 
-### Demucs running lambat
-- Untuk file besar (>90 menit), butuh banyak RAM
-- GPU NVIDIA lebih cepat 5-10x dari CPU
-- Alternatif: pakai mode basic (tanpa Demucs) jika tidak butuh SFX preserve
+### Error: `FileNotFoundError: mandarin.mp4`
 
-### Video slow-mo terlalu janggal
-- Naikkan speed di Fase 2 (1.0 → 1.25 atau 1.5) — kurangi slow-mo video
-- Trade-off: audio mungkin sedikit robot di cue pendek
+User tidak di folder yang benar. Ketik:
+```bash
+cd ~/Dubbing
+ls
+```
+Pastikan file `mandarin.mp4` ada.
 
-### Audio Jawa tidak sync dengan video
-- Pastikan SRT Jawa dan audio Jawa dari sesi generate yang sama di web app
-- Cek `retime-map.json` — total offset harus wajar (~30% dari durasi SRT asli)
+### Error: `Edge TTS proxy error`
 
-### File MP4 output terlalu besar
-- Naikkan CRF: `--crf 28` (lebih kecil, kualitas turun)
-- Pakai preset `fast` (lebih cepat, file sedikit lebih besar)
+Web app gagal generate audio. Coba:
+1. Refresh browser
+2. Generate ulang
+3. Ganti voice (coba `id-ID-ArdiNeural`)
 
-### ffmpeg command error
-- Pakai `--dry-run` untuk lihat command tanpa eksekusi
-- Cek log stderr di terminal
+### FFmpeg render lambat
 
-## Contoh Workflow Lengkap (3 jam MP4)
+Normal. Untuk file besar, butuh banyak CPU. Tips:
+- Tutup aplikasi lain
+- Pakai preset `fast`: tambah `--preset fast` di command (kualitas turun sedikit, lebih cepat)
+
+### Output video gelap / tidak ada audio
+
+Cek:
+- `mp4-jawa.mp4` benar ada di folder?
+- File size > 1 MB?
+- Coba buka dengan VLC player (kadang QuickTime bermasalah)
+
+---
+
+## 📋 Checklist Praktek untuk Audio 6 Menit
+
+Test user dengan audio 6 menit yang sudah di-generate dari DUB web:
 
 ```bash
-# Persiapan folder
-mkdir dubbing && cd dubbing
+# 1. Setup folder
+mkdir -p ~/Dubbing
+cd ~/Dubbing
 
-# Copy file sumber
+# 2. Copy file sumber (ganti path sesuai lokasi user)
 cp ~/Downloads/mandarin.mp4 .
 cp ~/Downloads/original.srt .
 
-# Fase 2 (di web app):
-# Upload original.srt → Translate ke Jawa → Download 3 file
-# Rename:
-mv *-audio-jawa.wav audio-jawa.wav
-mv *-subs-jawa-new.srt subs-jawa-new.srt
-mv *-retime-map.json retime-map.json
+# 3. Copy 3 file dari DUB web (audio-jawa.wav, subs-jawa-new.srt, retime-map.json)
+# Bisa drag dari Finder ke folder Dubbing, atau:
+cp ~/Downloads/audio-jawa.wav .
+cp ~/Downloads/subs-jawa-new.srt .
+cp ~/Downloads/retime-map.json .
 
-# Fase 3 (opsional): SFX separation
-python3 scripts/separate-audio-sfx.py \
-  --mp4 mandarin.mp4 \
-  --output-dir output/
+# 4. Download script Python
+curl -L -o retime-video.py https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/retime-video.py
 
-# Fase 4: Retime video
-python3 scripts/retime-video.py \
+# 5. Cek folder
+ls
+# Harus muncul: audio-jawa.wav  mandarin.mp4   original.srt  retime-map.json  retime-video.py  subs-jawa-new.srt
+
+# 6. Dry-run (test command)
+python3 retime-video.py \
   --mp4 mandarin.mp4 \
   --srt-mandarin original.srt \
   --srt-jawa subs-jawa-new.srt \
   --audio-jawa audio-jawa.wav \
   --output mp4-jawa.mp4 \
-  --separate-sfx \
-  --sfx-ducking 12
+  --dry-run
 
-# Fase 5 (opsional): Edit di DaVinci Resolve
-# Import mp4-jawa.mp4 → Edit → Export
+# 7. Kalau dry-run OK, run beneran
+python3 retime-video.py \
+  --mp4 mandarin.mp4 \
+  --srt-mandarin original.srt \
+  --srt-jawa subs-jawa-new.srt \
+  --audio-jawa audio-jawa.wav \
+  --output mp4-jawa.mp4
+
+# 8. Buka hasil
+open mp4-jawa.mp4
 ```
 
-## FAQ
+**Estimasi waktu untuk audio 6 menit:**
+- Setup: 15 menit (sekali)
+- Fase 1-2: 10 menit (kalau sudah punya audio dari DUB web)
+- Fase 4: 2-5 menit
+- **Total: ~30 menit untuk test pertama**
 
-**Q: Bisakah saya skip Fase 3 (SFX separation)?**
-A: Ya. Kalau MP4 hanya dialog tanpa backsound penting, langsung Fase 4 dengan mode basic. Audio ori akan di-duck (volume turun) saat audio Jawa bicara.
+Kalau sukses, user bisa langsung pakai workflow ini untuk video 1 jam, 3 jam, dst. Cuma beda di waktu rendering FFmpeg.
 
-**Q: Bisakah saya pakai audio Jawa tanpa video retimed?**
-A: Ya. Download audio-jawa.wav saja, pakai sebagai dub track terpisah. Tapi video tidak akan sync dengan audio Jawa.
+---
 
-**Q: Berapa lama total workflow untuk 3 jam MP4?**
-A:
-- Fase 1: 5 menit (whisper generate SRT)
-- Fase 2: 15-30 menit (translate + rapikan + dubbing mode)
-- Fase 3: 10-20 menit (Demucs di CPU) — opsional
-- Fase 4: 30-90 menit (ffmpeg + Demucs ulang kalau mode B)
-- Fase 5: 30-60 menit (edit manual di DaVinci)
-- **Total: 90-180 menit untuk 3 jam MP4**
+## 📚 Dokumentasi Tambahan
 
-**Q: Bisakah workflow ini untuk bahasa lain selain Jawa?**
-A: Ya. Translate ke bahasa apapun (Sunda, Batak, Bali, dll) — Edge TTS support 70+ bahasa.
+- **`scripts/README.md`** — index semua Python script
+- **`scripts/tutor-python-lokal.md`** — setup Python untuk `srt-to-audio.py` (alternatif kalau web app lambat)
+- **`docs/EDGE_TTS_PROXY.md`** — cara kerja Edge TTS proxy (teknis)
 
-**Q: Apakah video slow-mo terlihat janggal?**
-A: Untuk cue pendek (1-2 kata), video akan slow-mo 2-3x. Viewer mungkin sadar. Untuk hasil terbaik, pakai speed 1.25x atau 1.5x (kompromi natural vs slow-mo).
+Kalau ada pertanyaan, tanya. Kalau ada error, copy pesan error ke AI untuk dianalisis.
