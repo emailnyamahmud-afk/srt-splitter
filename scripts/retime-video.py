@@ -451,12 +451,10 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
     # Input 1: audio Jawa WAV
     # Output: video dari concat + audio Jawa
     #
-    # FLAG PENTING untuk fix video merah di DaVinci/VLC:
-    # - -fflags +genpts: regenerate PTS/DTS supaya timestamp konsisten
-    # - -avoid_negative_ts make_zero: reset timestamp negatif ke 0
-    # - -max_interleave_delta 0: fix audio/video sync saat concat
-        # - -movflags +faststart: optimized untuk streaming/editing
-    # - JANGAN pakai -shortest (bikin video/audio terpotong ke stream terpendek)
+    # RE-ENCODE VIDEO (bukan stream copy) untuk fix timestamp issues:
+    # - Stream copy = cepat tapi timestamp non-monotonic → frame diulang, sync rusak
+    # - Re-encode = 5-10 menit tapi timestamp clean → video smooth, sync OK
+    # - Tambah -vf setpts=PTS-STARTPTS untuk reset timestamp setiap segment
     cmd = [
         ffmpeg_path, '-y',
         '-fflags', '+genpts+igndts+discardcorrupt',
@@ -465,14 +463,17 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
         '-i', audio_jawa,
         '-map', '0:v',
         '-map', '1:a',
-        '-c:v', 'copy',  # no re-encode (instant)
+        '-vf', 'setpts=PTS-STARTPTS',  # Reset timestamp supaya mulai dari 0
+        '-c:v', 'libx264',
+        '-preset', 'fast',
+        '-crf', '23',
         '-c:a', 'aac',
         '-b:a', '192k',
         '-avoid_negative_ts', 'make_zero',
         '-max_interleave_delta', '0',
-                '-movflags', '+faststart',
-        '-timecode', '00:00:00:00',  # Force timecode mulai dari 00:00:00
-        '-shortest',  # Output = stream terpendek (video test 5 menit → audio di-potong ke 5 menit)
+        '-movflags', '+faststart',
+        '-timecode', '00:00:00:00',
+        '-shortest',
         output,
     ]
 
