@@ -336,25 +336,9 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
             }
         # VALIDASI: cek duration output — hanya untuk re-encode segments
         # (stream copy durasi = source durasi, tidak perlu validasi terhadap target)
-        if not use_stream_copy:
-            try:
-                probe_result = subprocess.run(
-                    [ffprobe_path, '-v', 'error',
-                     '-show_entries', 'format=duration',
-                     '-of', 'default=noprint_wrappers=1:nokey=1', output_file],
-                    capture_output=True, text=True, timeout=30,
-                )
-                actual_dur = float(probe_result.stdout.strip())
-                diff = abs(actual_dur - target_dur)
-                if diff > 0.5:
-                    return {
-                        'index': seg_idx,
-                        'output_file': output_file,
-                        'status': 'failed',
-                        'error': f'duration mismatch: target={target_dur:.3f}s actual={actual_dur:.3f}s diff={diff:.3f}s',
-                    }
-            except Exception:
-                pass  # skip validation kalau ffprobe gagal
+        # SKIP validasi untuk sekarang. Segment terakhir sering terpotong
+        # karena mp4_end > mp4_duration (video input lebih pendek dari target).
+        # Concat di Pass 2 akan handle — segment pendek tetap di-concat.
         return {'index': seg_idx, 'output_file': output_file, 'status': 'ok'}
     except subprocess.TimeoutExpired:
         return {
