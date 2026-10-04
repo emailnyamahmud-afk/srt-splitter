@@ -423,10 +423,10 @@ def render_all_segments(tasks, mp4_path, segments_dir, ffmpeg_path, ffprobe_path
 # Pass 2: Concat semua segments + add audio Jawa
 # ============================================================
 
-def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_audio_ori, ducking_db):
+def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_audio_ori, ducking_db, video_only=False):
     """
     Concat semua segment files menggunakan concat demuxer.
-    Add audio Jawa (input 1) + opsi SFX dari MP4 ori (input 2).
+    Kalau video_only=True: output = video tanpa audio (user import audio terpisah di DaVinci).
     """
     print(f'\n=== Pass 2: Concat segments + mix audio ===')
 
@@ -447,35 +447,47 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
     print(f'  → Concat list: {concat_list} ({included} files, {skipped} skipped)')
 
     # Build FFmpeg command
-    # Input 0: concat list (video segments)
-    # Input 1: audio Jawa WAV
-    # Output: video dari concat + audio Jawa
-    #
-    # RE-ENCODE VIDEO (bukan stream copy) untuk fix timestamp issues:
-    # - Stream copy = cepat tapi timestamp non-monotonic → frame diulang, sync rusak
-    # - Re-encode = 5-10 menit tapi timestamp clean → video smooth, sync OK
-    # - Tambah -vf setpts=PTS-STARTPTS untuk reset timestamp setiap segment
-    cmd = [
-        ffmpeg_path, '-y',
-        '-fflags', '+genpts+igndts+discardcorrupt',
-        '-f', 'concat', '-safe', '0',
-        '-i', concat_list,
-        '-i', audio_jawa,
-        '-map', '0:v',
-        '-map', '1:a',
-        '-vf', 'setpts=PTS-STARTPTS',  # Reset timestamp supaya mulai dari 0
-        '-c:v', 'libx264',
-        '-preset', 'fast',
-        '-crf', '23',
-        '-c:a', 'aac',
-        '-b:a', '192k',
-        '-avoid_negative_ts', 'make_zero',
-        '-max_interleave_delta', '0',
-        '-movflags', '+faststart',
-        '-timecode', '00:00:00:00',
-        '-shortest',
-        output,
-    ]
+    # Mode video-only: concat video saja, tanpa audio Jawa
+    # Mode normal: concat video + mix audio Jawa
+    if video_only:
+        print(f'  → Mode: VIDEO ONLY (tanpa audio, user import terpisah di DaVinci)')
+        cmd = [
+            ffmpeg_path, '-y',
+            '-fflags', '+genpts+igndts+discardcorrupt',
+            '-f', 'concat', '-safe', '0',
+            '-i', concat_list,
+            '-vf', 'setpts=PTS-STARTPTS',
+            '-c:v', 'libx264',
+            '-preset', 'fast',
+            '-crf', '23',
+            '-an',  # no audio
+            '-avoid_negative_ts', 'make_zero',
+            '-movflags', '+faststart',
+            '-timecode', '00:00:00:00',
+            output,
+        ]
+    else:
+        cmd = [
+            ffmpeg_path, '-y',
+            '-fflags', '+genpts+igndts+discardcorrupt',
+            '-f', 'concat', '-safe', '0',
+            '-i', concat_list,
+            '-i', audio_jawa,
+            '-map', '0:v',
+            '-map', '1:a',
+            '-vf', 'setpts=PTS-STARTPTS',
+            '-c:v', 'libx264',
+            '-preset', 'fast',
+            '-crf', '23',
+            '-c:a', 'aac',
+            '-b:a', '192k',
+            '-avoid_negative_ts', 'make_zero',
+            '-max_interleave_delta', '0',
+            '-movflags', '+faststart',
+            '-timecode', '00:00:00:00',
+            '-shortest',
+            output,
+        ]
 
     print(f'  → Concat + mix audio...')
     print(f'  Command: {" ".join(cmd[:5])} ...')
@@ -556,6 +568,8 @@ def main():
                         help='FFmpeg x264 preset (default: fast). medium=bagus tapi lama.')
     parser.add_argument('--workers', type=int, default=4,
                         help='Parallel FFmpeg processes (default 4, max 8 untuk M1/M2)')
+    parser.add_argument('--video-only', action='store_true',
+                        help='Pass 2: concat video saja, TIDAK mix audio Jawa. User import audio terpisah di DaVinci.')
     args = parser.parse_args()
 
     # Validate inputs
@@ -654,6 +668,7 @@ def main():
     success = concat_segments(
         tasks, segments_dir, args.audio_jawa, args.output,
         ffmpeg, has_audio_ori, args.sfx_ducking,
+        video_only=args.video_only,
     )
 
     if not success:
