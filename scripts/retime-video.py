@@ -286,38 +286,36 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
 
     if use_stream_copy:
         # Stream copy (no re-encode) — instant
-        # Tambah -fflags +genpts untuk fix timestamp di segment
-        # -ss SETELAH -i (accurate seek, slow tapi precise)
+        # -ss SEBELUM -i (fast seek) untuk stream copy (keyframe-based, OK)
         cmd = [
             ffmpeg_path, '-y',
-            '-i', mp4_path,
             '-ss', f'{mp4_start:.3f}',
+            '-i', mp4_path,
             '-t', f'{mp4_dur:.3f}',
             '-c:v', 'copy',
-            '-an',  # no audio (akan di-mix di Pass 2)
+            '-an',
             '-avoid_negative_ts', 'make_zero',
-                        '-fflags', '+genpts',
+            '-fflags', '+genpts',
             output_file,
         ]
     else:
         # Re-encode dengan setpts untuk slow-mo/fast-forward
-        # setpts: factor > 1 = slow-mo (video melambat), factor < 1 = fast-forward
-        # PTS baru = (PTS - STARTPTS) / factor (mulai dari 0)
-        # -ss SETELAH -i (accurate seek)
-        setpts_factor = 1.0 / factor
-
+        # -ss SETELAH -i (accurate seek, frame-precise)
+        # PTS baru = (PTS - STARTPTS) * factor
+        #   factor > 1 = slow-mo (video melambat)
+        #   factor < 1 = fast-forward (video cepat)
+        # -t = target_dur (output duration, BUKAN mp4_dur)
         cmd = [
             ffmpeg_path, '-y',
             '-i', mp4_path,
             '-ss', f'{mp4_start:.3f}',
-            '-t', f'{mp4_dur:.3f}',
-            '-vf', f'setpts=(PTS-STARTPTS)/{factor:.6f}',
+            '-t', f'{target_dur:.3f}',
+            '-vf', f'setpts=(PTS-STARTPTS)*{factor:.6f}',
             '-c:v', 'libx264',
             '-preset', preset,
             '-crf', '23',
-            '-an',  # no audio
+            '-an',
             '-avoid_negative_ts', 'make_zero',
-                        '-vsync', 'cfr',  # constant frame rate
             '-fflags', '+genpts',
             output_file,
         ]
@@ -336,26 +334,27 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
                 'status': 'failed',
                 'error': f'code={result.returncode} | {error_summary[:200]}',
             }
-        # VALIDASI: cek duration output vs target
-        # Kalau selisih > 0.5s, segment ini bermasalah → TUI akan skip / video terpotong
-        try:
-            probe_result = subprocess.run(
-                [ffprobe_path if ffprobe_path else 'ffprobe', '-v', 'error',
-                 '-show_entries', 'format=duration',
-                 '-of', 'default=noprint_wrappers=1:nokey=1', output_file],
-                capture_output=True, text=True, timeout=30,
-            )
-            actual_dur = float(probe_result.stdout.strip())
-            diff = abs(actual_dur - target_dur)
-            if diff > 0.5:
-                return {
-                    'index': seg_idx,
-                    'output_file': output_file,
-                    'status': 'failed',
-                    'error': f'duration mismatch: target={target_dur:.3f}s actual={actual_dur:.3f}s diff={diff:.3f}s',
-                }
-        except Exception:
-            pass  # skip validation kalau ffprobe gagal
+        # VALIDASI: cek duration output — hanya untuk re-encode segments
+        # (stream copy durasi = source durasi, tidak perlu validasi terhadap target)
+        if not use_stream_copy:
+            try:
+                probe_result = subprocess.run(
+                    [ffprobe_path, '-v', 'error',
+                     '-show_entries', 'format=duration',
+                     '-of', 'default=noprint_wrappers=1:nokey=1', output_file],
+                    capture_output=True, text=True, timeout=30,
+                )
+                actual_dur = float(probe_result.stdout.strip())
+                diff = abs(actual_dur - target_dur)
+                if diff > 0.5:
+                    return {
+                        'index': seg_idx,
+                        'output_file': output_file,
+                        'status': 'failed',
+                        'error': f'duration mismatch: target={target_dur:.3f}s actual={actual_dur:.3f}s diff={diff:.3f}s',
+                    }
+            except Exception:
+                pass  # skip validation kalau ffprobe gagal
         return {'index': seg_idx, 'output_file': output_file, 'status': 'ok'}
     except subprocess.TimeoutExpired:
         return {
