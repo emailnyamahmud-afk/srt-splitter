@@ -408,7 +408,15 @@ def render_all_segments(tasks, mp4_path, segments_dir, ffmpeg_path, ffprobe_path
     print(f'  Gagal: {failed}')
     print(f'  Waktu: {time.time() - start_time:.0f}s')
 
-    return failed == 0
+    # Allow up to 5% failure (segment pendek di akhir video wajar gagal)
+    # Kalau gagal > 5%, return False (gagal total)
+    # Kalau gagal <= 5%, return True (lanjut ke Pass 2, segment gagal di-skip di concat)
+    if failed > total * 0.05:
+        print(f'  ❌ Gagal {failed}/{total} ({100*failed/total:.1f}%) > 5% threshold')
+        return False
+    elif failed > 0:
+        print(f'  ⚠ {failed} segment gagal ({100*failed/total:.1f}%), tapi < 5% → lanjut ke Pass 2 (segment gagal di-skip)')
+    return True
 
 
 # ============================================================
@@ -422,15 +430,21 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
     """
     print(f'\n=== Pass 2: Concat segments + mix audio ===')
 
-    # Build concat list file
+    # Build concat list file — skip segments yang gagal (file tidak ada atau < 1KB)
     concat_list = os.path.join(segments_dir, 'concat_list.txt')
+    included = 0
+    skipped = 0
     with open(concat_list, 'w') as f:
         for task in tasks:
             seg_file = os.path.join(segments_dir, f'seg_{task["index"]:05d}.mp4')
-            # Pakai relative path supaya aman
-            f.write(f"file '{seg_file}'\n")
+            # Skip kalau file tidak ada atau terlalu kecil (segment gagal)
+            if os.path.isfile(seg_file) and os.path.getsize(seg_file) > 1000:
+                f.write(f"file '{seg_file}'\n")
+                included += 1
+            else:
+                skipped += 1
 
-    print(f'  → Concat list: {concat_list} ({len(tasks)} files)')
+    print(f'  → Concat list: {concat_list} ({included} files, {skipped} skipped)')
 
     # Build FFmpeg command
     # Input 0: concat list (video segments)
