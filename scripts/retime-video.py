@@ -252,7 +252,7 @@ def build_segment_tasks(mandarin_entries, jawa_entries, mp4_duration):
 # Render 1 segment (worker function untuk parallel)
 # ============================================================
 
-def render_segment(task, mp4_path, segments_dir, ffmpeg_path, preset, has_audio_ori):
+def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, preset, has_audio_ori):
     """
     Render 1 segment jadi file MP4 kecil.
     Dipanggil oleh ProcessPoolExecutor (parallel).
@@ -278,38 +278,40 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, preset, has_audio_
     if use_stream_copy:
         # Stream copy (no re-encode) — instant
         # Tambah -fflags +genpts untuk fix timestamp di segment
+        # -ss SETELAH -i (accurate seek, slow tapi precise)
         cmd = [
             ffmpeg_path, '-y',
-            '-fflags', '+genpts',
-            '-ss', f'{mp4_start:.3f}',
             '-i', mp4_path,
+            '-ss', f'{mp4_start:.3f}',
             '-t', f'{mp4_dur:.3f}',
             '-c:v', 'copy',
             '-an',  # no audio (akan di-mix di Pass 2)
             '-avoid_negative_ts', 'make_zero',
             '-reset_ts', 'zero',
+            '-fflags', '+genpts',
             output_file,
         ]
     else:
         # Re-encode dengan setpts untuk slow-mo/fast-forward
         # setpts: factor > 1 = slow-mo (video melambat), factor < 1 = fast-forward
-        # PTS baru = PTS asli / factor
+        # PTS baru = (PTS - STARTPTS) / factor (mulai dari 0)
+        # -ss SETELAH -i (accurate seek)
         setpts_factor = 1.0 / factor
 
         cmd = [
             ffmpeg_path, '-y',
-            '-fflags', '+genpts',
-            '-ss', f'{mp4_start:.3f}',
             '-i', mp4_path,
+            '-ss', f'{mp4_start:.3f}',
             '-t', f'{mp4_dur:.3f}',
-            '-vf', f'setpts={setpts_factor:.6f}*PTS',
+            '-vf', f'setpts=(PTS-STARTPTS)/{factor:.6f}',
             '-c:v', 'libx264',
             '-preset', preset,
             '-crf', '23',
             '-an',  # no audio
             '-avoid_negative_ts', 'make_zero',
             '-reset_ts', 'zero',
-            '-vsync', 'cfr',  # constant frame rate (fix timestamp)
+            '-vsync', 'cfr',  # constant frame rate
+            '-fflags', '+genpts',
             output_file,
         ]
 
@@ -322,6 +324,26 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, preset, has_audio_
                 'status': 'failed',
                 'error': result.stderr[-300:],
             }
+        # VALIDASI: cek duration output vs target
+        # Kalau selisih > 0.5s, segment ini bermasalah → TUI akan skip / video terpotong
+        try:
+            probe_result = subprocess.run(
+                [ffprobe_path if ffprobe_path else 'ffprobe', '-v', 'error',
+                 '-show_entries', 'format=duration',
+                 '-of', 'default=noprint_wrappers=1:nokey=1', output_file],
+                capture_output=True, text=True, timeout=30,
+            )
+            actual_dur = float(probe_result.stdout.strip())
+            diff = abs(actual_dur - target_dur)
+            if diff > 0.5:
+                return {
+                    'index': seg_idx,
+                    'output_file': output_file,
+                    'status': 'failed',
+                    'error': f'duration mismatch: target={target_dur:.3f}s actual={actual_dur:.3f}s diff={diff:.3f}s',
+                }
+        except Exception:
+            pass  # skip validation kalau ffprobe gagal
         return {'index': seg_idx, 'output_file': output_file, 'status': 'ok'}
     except subprocess.TimeoutExpired:
         return {
@@ -343,7 +365,7 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, preset, has_audio_
 # Pass 1: Render semua segments (parallel)
 # ============================================================
 
-def render_all_segments(tasks, mp4_path, segments_dir, ffmpeg_path, preset, workers=4):
+def render_all_segments(tasks, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, preset, workers=4):
     """
     Render semua segments secara parallel.
     Pakai ProcessPoolExecutor untuk parallel FFmpeg processes.
@@ -358,7 +380,7 @@ def render_all_segments(tasks, mp4_path, segments_dir, ffmpeg_path, preset, work
     with ProcessPoolExecutor(max_workers=workers) as executor:
         # Submit semua tasks
         futures = {
-            executor.submit(render_segment, task, mp4_path, segments_dir, ffmpeg_path, preset, True): task
+            executor.submit(render_segment, task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, preset, True): task
             for task in tasks
         }
 
@@ -426,6 +448,7 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
     # - -max_interleave_delta 0: fix audio/video sync saat concat
     # - -reset_ts zero: reset timestamp di output
     # - -movflags +faststart: optimized untuk streaming/editing
+    # - JANGAN pakai -shortest (bikin video/audio terpotong ke stream terpendek)
     cmd = [
         ffmpeg_path, '-y',
         '-fflags', '+genpts+igndts+discardcorrupt',
@@ -441,7 +464,7 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
         '-max_interleave_delta', '0',
         '-reset_ts', 'zero',
         '-movflags', '+faststart',
-        '-shortest',
+        '-timecode', '00:00:00:00',  # Force timecode mulai dari 00:00:00
         output,
     ]
 
@@ -607,7 +630,7 @@ def main():
 
     # Pass 1: Render semua segments
     success = render_all_segments(
-        tasks, args.mp4, segments_dir, ffmpeg,
+        tasks, args.mp4, segments_dir, ffmpeg, ffprobe,
         preset=args.preset, workers=args.workers,
     )
 
