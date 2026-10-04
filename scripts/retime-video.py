@@ -524,15 +524,30 @@ Contah advanced (Demucs SFX separation):
             has_audio_ori=has_audio_ori, ducking_db=args.sfx_ducking,
         )
 
-        # Build command
+        # Build command — kalau filter complex panjang (>100KB), pakai file approach
+        # untuk hindari "Argument list too long" error di macOS (limit ~256KB)
+        filter_size = len(filter_complex)
+        use_filter_file = filter_size > 100_000  # 100KB threshold
+
         cmd = [
             ffmpeg,
             '-y',
             '-i', args.mp4,           # input 0: MP4 (video + audio ori)
             '-i', args.audio_jawa,    # input 1: audio Jawa
-            '-filter_complex', filter_complex,
-            '-map', '[outv]',
         ]
+
+        if use_filter_file:
+            # Write filter_complex ke file temp, FFmpeg baca dari file
+            filter_file = os.path.join(work_dir, 'filter_complex.txt')
+            with open(filter_file, 'w') as f:
+                f.write(filter_complex)
+            print(f'\n  → Filter complex: {filter_size/1024:.1f} KB (besar), pakai file approach')
+            print(f'  → Filter file: {filter_file}')
+            cmd.extend(['-filter_complex_script_filename', filter_file])
+        else:
+            cmd.extend(['-filter_complex', filter_complex])
+
+        cmd.extend(['-map', '[outv]'])
         if has_audio_ori:
             cmd.extend(['-map', '[outa]'])
         else:
