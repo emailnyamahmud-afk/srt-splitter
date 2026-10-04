@@ -187,11 +187,10 @@ def build_segment_tasks(mandarin_entries, jawa_entries, mp4_duration):
     jawa_by_idx = {i: e for i, e in enumerate(jawa_entries)}
     last_end = 0.0
     seg_idx = 0
+    cumulative_offset = 0.0  # sum durasi semua segments sebelumnya (untuk timestamp akumulatif)
 
     # Filter: hanya process cues yang mp4_start < mp4_duration
-    # (kalau user test dengan video potongan, segments di luar range akan skip)
     for i, m_entry in enumerate(mandarin_entries):
-        # Kalau cue ini di luar range video input (mp4_start > mp4_duration), skip semua sisanya
         if m_entry['start'] >= mp4_duration:
             print(f'  → Stop di cue {i} (mp4_start={m_entry["start"]:.2f}s ≥ mp4_duration={mp4_duration:.2f}s)')
             break
@@ -209,7 +208,6 @@ def build_segment_tasks(mandarin_entries, jawa_entries, mp4_duration):
             jawa_gap_dur = max(0.05, jawa_gap_dur)
             factor = jawa_gap_dur / gap_mp4_dur
 
-            # Kalau gap end melebihi mp4_duration, potong ke mp4_duration
             gap_end = min(m_entry['start'], mp4_duration)
             tasks.append({
                 'type': 'gap',
@@ -218,10 +216,12 @@ def build_segment_tasks(mandarin_entries, jawa_entries, mp4_duration):
                 'mp4_end': gap_end,
                 'target_duration': jawa_gap_dur,
                 'factor': factor,
+                'cumulative_offset': cumulative_offset,
             })
+            cumulative_offset += jawa_gap_dur
             seg_idx += 1
 
-        # Cue itu sendiri — hanya kalau cue end masih dalam range
+        # Cue itu sendiri
         if i in jawa_by_idx and m_entry['end'] <= mp4_duration:
             j_entry = jawa_by_idx[i]
             cue_mp4_dur = m_entry['end'] - m_entry['start']
@@ -236,12 +236,14 @@ def build_segment_tasks(mandarin_entries, jawa_entries, mp4_duration):
                     'mp4_end': m_entry['end'],
                     'target_duration': cue_jawa_dur,
                     'factor': factor,
+                    'cumulative_offset': cumulative_offset,
                 })
+                cumulative_offset += cue_jawa_dur
                 seg_idx += 1
 
         last_end = min(m_entry['end'], mp4_duration)
 
-    # Tail gap (kalau ada sisa video yang tidak terkover cue)
+    # Tail gap
     if last_end < mp4_duration - 0.05:
         tail_dur = mp4_duration - last_end
         tasks.append({
@@ -251,6 +253,7 @@ def build_segment_tasks(mandarin_entries, jawa_entries, mp4_duration):
             'mp4_end': mp4_duration,
             'target_duration': tail_dur,
             'factor': 1.0,
+            'cumulative_offset': cumulative_offset,
         })
         seg_idx += 1
 
@@ -280,13 +283,10 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
         return {'index': seg_idx, 'output_file': output_file, 'status': 'skipped'}
 
     # Build FFmpeg command
-    # Untuk slow-mo/fast-forward, pakai setpts
-    # Kalau factor ~1.0 (0.95-1.05), pakai stream copy (instant)
+    # Setiap segment PTS mulai dari 0. Pass 2 akan re-encode untuk fix timestamp.
     use_stream_copy = 0.95 <= factor <= 1.05 and task['type'] in ('gap', 'tail')
 
     if use_stream_copy:
-        # Stream copy (no re-encode) — instant
-        # -ss SEBELUM -i (fast seek) untuk stream copy (keyframe-based, OK)
         cmd = [
             ffmpeg_path, '-y',
             '-ss', f'{mp4_start:.3f}',
@@ -300,11 +300,7 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
         ]
     else:
         # Re-encode dengan setpts untuk slow-mo/fast-forward
-        # -ss SETELAH -i (accurate seek, frame-precise)
-        # PTS baru = (PTS - STARTPTS) * factor
-        #   factor > 1 = slow-mo (video melambat)
-        #   factor < 1 = fast-forward (video cepat)
-        # -t = target_dur (output duration, BUKAN mp4_dur)
+        # -t = target_dur (output duration)
         cmd = [
             ffmpeg_path, '-y',
             '-i', mp4_path,
@@ -315,7 +311,6 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
             '-preset', preset,
             '-crf', '23',
             '-an',
-            '-avoid_negative_ts', 'make_zero',
             '-fflags', '+genpts',
             output_file,
         ]
@@ -446,22 +441,20 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
 
     print(f'  → Concat list: {concat_list} ({included} files, {skipped} skipped)')
 
-    # Build FFmpeg command
-    # Mode video-only: concat video saja, tanpa audio Jawa
-    # Mode normal: concat video + mix audio Jawa
+    # Pass 2: RE-ENCODE (bukan stream copy) untuk fix timestamp
+    # Setiap segment PTS mulai dari 0 → concat demuxer stream copy = non-monotonic DTS
+    # Re-encode dengan setpts=PTS-STARTPTS = regenerates timestamp, clean
     if video_only:
-        print(f'  → Mode: VIDEO ONLY (tanpa audio, user import terpisah di DaVinci)')
+        print(f'  → Mode: VIDEO ONLY (re-encode, tanpa audio)')
         cmd = [
             ffmpeg_path, '-y',
-            '-fflags', '+genpts+igndts+discardcorrupt',
             '-f', 'concat', '-safe', '0',
             '-i', concat_list,
             '-vf', 'setpts=PTS-STARTPTS',
             '-c:v', 'libx264',
             '-preset', 'fast',
             '-crf', '23',
-            '-an',  # no audio
-            '-avoid_negative_ts', 'make_zero',
+            '-an',
             '-movflags', '+faststart',
             '-timecode', '00:00:00:00',
             output,
@@ -469,7 +462,6 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
     else:
         cmd = [
             ffmpeg_path, '-y',
-            '-fflags', '+genpts+igndts+discardcorrupt',
             '-f', 'concat', '-safe', '0',
             '-i', concat_list,
             '-i', audio_jawa,
@@ -481,8 +473,6 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
             '-crf', '23',
             '-c:a', 'aac',
             '-b:a', '192k',
-            '-avoid_negative_ts', 'make_zero',
-            '-max_interleave_delta', '0',
             '-movflags', '+faststart',
             '-timecode', '00:00:00:00',
             '-shortest',
