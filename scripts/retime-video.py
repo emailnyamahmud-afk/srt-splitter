@@ -472,6 +472,7 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
         '-max_interleave_delta', '0',
                 '-movflags', '+faststart',
         '-timecode', '00:00:00:00',  # Force timecode mulai dari 00:00:00
+        '-shortest',  # Output = stream terpendek (video test 5 menit → audio di-potong ke 5 menit)
         output,
     ]
 
