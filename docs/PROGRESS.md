@@ -85,6 +85,23 @@ Estimasi 30-60 menit di M1/M2.
 - Log TUI: 332 warning DTS, 211 warning h264_mp4toannexb, no fatal error
 - File output: 3.8 GB, 2h 30m, audio OK, video corrupt (timestamp)
 
+### ⚠️ KOREKSI (5 Okt 2026 03:25 WIB)
+User benar — DaVinci menampilkan cue terakhir di **03:35:52:17** (3 jam 35 menit),
+PADAHAL SRT sebenarnya cue terakhir di **02:35:56,032** (2 jam 36 menit).
+
+Selisih ~59 menit. Aku salah tadi bilang "SRT bersih, bukan masalah".
+
+**Hipotesis kuat**: Karena video stream RUSAK (332 DTS warnings), DaVinci
+mungkin salah import SRT juga. Saat video media "offline/merah", DaVinci
+mungkin pakai timecode dari video rusak yang inconsistent → SRT timestamp
+terlihat 1 jam lebih panjang dari sebenarnya.
+
+**Untuk verifikasi**: User buka SRT di TextEdit (bukan DaVinci) dan cek
+cue terakhir. Harusnya `02:35:54,312 → 02:35:56,032` (2 jam 36 menit).
+
+**Solusi**: Fix video dulu (re-encode 30-60 menit), lalu import ulang SRT
+di DaVinci. Seharusnya timestamp SRT benar setelah video tidak rusak.
+
 ---
 
 ## ✅ Yang Sudah Jalan (Production)
