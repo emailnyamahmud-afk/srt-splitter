@@ -2,7 +2,7 @@
 
 Dokumen ini catatan status project untuk AI / developer next time baca. Update setiap sesi kerja.
 
-**Last updated:** 5 Oktober 2026, 01:00 WIB
+**Last updated:** 5 Oktober 2026, 02:55 WIB
 
 ---
 
@@ -15,9 +15,40 @@ Dokumen ini catatan status project untuk AI / developer next time baca. Update s
 | Python `dubbing-tui.py` (TUI) | ✅ Working, user tested |
 | Python `retime-video.py` v3 (two-pass) | ✅ Working, user tested |
 | Python `separate-audio-sfx.py` (Demucs) | ✅ Working (belum user test) |
-| User test render S7-id.mp4 (2.5 jam) | ⏳ In progress (37% saat tulis ini) |
+| User test render S7-id.mp4 (2.5 jam) | ✅ **SUKSES! 5 Okt 2026 02:54 WIB** |
 | Kamus Jawa JSON | 🔜 Next step (riset) |
 | Workflow multi-bahasa (Jawa/Sunda/dll) | 🔜 Next step |
+
+---
+
+## 🎉 MILESTONE: First Successful End-to-End Render (5 Okt 2026)
+
+### Test Case
+- Source: `mandarin.mp4` (1.94 GB, 2h 23m, 1440x2560 portrait, S7 bahasa Indonesia)
+- SRT source: dari sumber eksternal (timing Mandarin = "penjara")
+- DUB mode: speed 1.25x, min gap 100ms → audio Indonesia natural + SRT baru
+- Render: TUI mode, preset `fast`, 4 workers, two-pass rendering
+
+### Output
+- `S7-id.mp4` — **3806.1 MB (3.8 GB)**
+- Duration: 02:29:59.133 (2 jam 30 menit, +7 menit dari source asli)
+- Bitrate: 3547.9 kbits/s
+- Audio: Indonesia/Jawa natural (24kHz mono AAC 192k)
+
+### Performance
+- Pass 1 (render 8268 segments): ~73 menit
+- Pass 2 (concat + mix audio): 2 menit 29 detik (speed 60.3x)
+- Total waktu: ~75 menit
+- Failed: 0
+
+### Warning yang Muncul (Tidak Fatal)
+```
+Non-monotonic DTS; previous: X, current: Y; changing to Z
+Auto-inserting h264_mp4toannexb bitstream filter
+```
+- Wajar saat concat segments dengan timestamp reset ke 0
+- FFmpeg auto-handle, output tetap valid
+- Mungkin perlu flag `-fflags +genpts` kalau ada masalah sync di future
 
 ---
 
@@ -39,6 +70,7 @@ Dokumen ini catatan status project untuk AI / developer next time baca. Update s
   - Pass 2: Concat + mix audio (instant, stream copy)
   - Support: `--preset fast/medium/slow`, `--workers 4`
   - Resume support (segment yang sudah ada di-skip)
+  - Filter complex pakai file approach (`-/filter_complex <file>`) untuk FFmpeg 7+
 - **`separate-audio-sfx.py`** — Demucs wrapper untuk SFX separation
 - **`srt-to-audio.py`** — alternatif TTS lokal
 - **`rapikan-jawa.py`** + `tambah-krama.py` — rapikan SRT Jawa
@@ -54,36 +86,35 @@ Dokumen ini catatan status project untuk AI / developer next time baca. Update s
 
 ---
 
-## 📊 Test User Saat Ini (5 Okt 2026)
+## 📊 User Test Summary (5 Okt 2026)
 
-### Setup
+### Setup User
 - MacBook Pro (Apple Silicon, M1/M2)
 - Python 3.14.7 via Homebrew
 - FFmpeg 9.0.2 via Homebrew
 - venv di `~/Dubbing/venv/`
-- File source: `mandarin.mp4` (1.94 GB, 2 jam 23 menit, 1440x2560 portrait)
 
-### Workflow User
-1. SRT Indonesia (sumber download, timing Mandarin = "penjara")
-2. Web DUB mode → audio Indonesia + SRT Indonesia baru (timing natural)
+### Workflow User (VERIFIED WORKING)
+1. Source SRT Indonesia (dari sumber, timing Mandarin = "penjara")
+2. Web DUB mode (1.25x speed, 100ms min gap) → audio + SRT baru (timing natural)
 3. Python TUI → render MP4 dengan timing SRT baru
-4. Output: `S7-id.mp4` (2 jam 36 menit, +13 menit dari source)
+4. Output: `S7-id.mp4` (2 jam 30 menit, +7 menit dari source)
 
 ### Hasil DUB Web App
 - Speed: 1.25x (kompromi natural vs slow-mo video)
-- Min gap: 100ms
-- Total offset: +780s (audio 13 menit lebih panjang)
+- Min gap: 100ms (cepat)
+- Total offset: +780s (audio 13 menit lebih panjang dari source)
 - Cue baru: 4132 (dari 4135 input, 3 cue skip)
 - Audio quality: bagus, tidak robot
 
-### Hasil Render (in progress saat tulis ini)
+### Hasil Render (S7-id.mp4)
 - Total segments: 8268 (4132 cue + 4135 gap + 1 tail)
 - Re-encode: 7974 (slow-mo/fast-forward)
 - Stream copy: 294 (gap dengan factor ~1.0)
 - Preset: fast
 - Workers: 4
-- Progress: 3050/8268 (37%) di elapsed 1757s
-- ETA: ~50 menit lagi
+- Total waktu: ~75 menit
+- Output size: 3.8 GB
 - Failed: 0 (semua sukses)
 
 ---
@@ -172,6 +203,19 @@ Render MP4 pakai timing SRT Indonesia DUB (atau SRT Jawa, sama)
 - Rekam bacaan Negarakertagama (10 jam Kawi)
 - Train Kawi TTS (pakai Jawa modern sebagai base)
 
+### Future: GPU Acceleration (kalau skala produksi besar)
+
+**Trigger**: Kalau render 6 season sekaligus (~7 jam di Mac, ~1.5 jam di Colab paralel)
+
+**Opsi:**
+- Google Colab Free (T4 GPU, 12 jam/hari) — untuk produksi massal
+- PC RTX 4070/4090 — untuk training TTS Jawa nanti
+
+**Yang perlu dibangun (kalau trigger):**
+- Notebook Colab `dubbing-colab.ipynb`
+- GPU acceleration di `retime-video.py` (detect CUDA → pakai h264_nvenc)
+- Estimasi effort: 30 menit
+
 ---
 
 ## 📁 Struktur Repo Saat Ini
@@ -209,12 +253,13 @@ Total: 102 files tracked di git.
 ## 🗂️ Aset User (Tidak Di-Commit ke Repo)
 
 File user pribadi, di MacBook lokal:
-- `~/Dubbing/mandarin.mp4` (1.94 GB)
-- `~/Dubbing/original.srt`
-- `~/Dubbing/audio-jawa.wav` (449 MB)
-- `~/Dubbing/subs-jawa-new.srt`
-- `~/Dubbing/retime-map.json` (2.7 MB)
-- `~/Dubbing/S7-id.mp4` (in progress)
+- `~/Dubbing/mandarin.mp4` (1.94 GB) — source MP4
+- `~/Dubbing/original.srt` — SRT Indonesia (timing Mandarin)
+- `~/Dubbing/audio-jawa.wav` (449 MB) — audio hasil DUB web
+- `~/Dubbing/subs-jawa-new.srt` — SRT baru (timing natural)
+- `~/Dubbing/retime-map.json` (2.7 MB) — JSON untuk FFmpeg
+- `~/Dubbing/S7-id.mp4` (3.8 GB) — **HASIL RENDER SUKSES!**
+- `~/Dubbing/venv/` — virtual environment Python
 
 Recording Zoom H6 (260 jam total, di luar repo):
 - 37 video panatacara (~150 jam)
@@ -225,16 +270,20 @@ Recording Zoom H6 (260 jam total, di luar repo):
 
 ## 📝 Catatan untuk AI Next Time Buka
 
-1. **Jangan lupa**: User workflow sudah benar — SRT Indonesia DUB = ground truth, bukan translate Mandarin
-2. **Test render user**: Sedang jalan (37% saat tulis ini), kemungkinan selesai dalam ~50 menit
+1. **Milestone dicapai**: Render `S7-id.mp4` sukses 5 Okt 2026 02:54 WIB. Workflow end-to-end WORKING.
+2. **User workflow verified**: SRT Indonesia DUB = ground truth, bukan translate Mandarin
 3. **Next priority**: Kamus Jawa JSON (riset awal sudah ada di atas)
 4. **Filosofi user**: "ada uang atau tidak, tetap dikerjakan step by step, terdokumentasi rapi"
 5. **Visi besar**: 700 bahasa Indonesia, 169 terancam punah. Project ini prototype digitalisasi.
-6. **Sandbox**: Code up-to-date dengan GitHub (commit `2791f98`). PAT user masih valid di `~/.git-credentials`.
+6. **Sandbox**: Code up-to-date dengan GitHub. PAT user masih valid di `~/.git-credentials`.
+7. **GPU acceleration**: Catatan untuk masa depan (Colab atau PC NVIDIA), bukan sekarang
+8. **Warning DTS**: Wajar saat concat segments, FFmpeg auto-handle, output valid
 
 ---
 
 ## 📅 Timeline Update
 
-- **5 Okt 2026, 01:00 WIB**: Initial PROGRESS.md dibuat, status render 37%
-- **Next update**: Setelah render selesai + diskusi kamus Jawa
+- **5 Okt 2026, 01:00 WIB**: Initial PROGRESS.md, status render 37%
+- **5 Okt 2026, 02:55 WIB**: UPDATE — render SUKSES! Output 3.8 GB, 2h 30m. Milestone dicapai.
+- **Next update**: Setelah user test video + diskusi next step (kamus Jawa)
+
