@@ -50,6 +50,41 @@ Auto-inserting h264_mp4toannexb bitstream filter
 - FFmpeg auto-handle, output tetap valid
 - Mungkin perlu flag `-fflags +genpts` kalau ada masalah sync di future
 
+### ⚠️ MASALAH DITEMUKAN (5 Okt 2026 03:00 WIB)
+Setelah audit file output `S7-id.mp4`:
+- **VLC**: frame berhenti, suara TTS ada
+- **DaVinci Resolve**: video merah (Media Offline), audio waveform hijau OK
+- **SRT durasi**: 2.6 jam (benar, bukan 3 jam)
+
+**Root cause** (dari audit log TUI):
+- **332 warning "Non-monotonic DTS"** di Pass 2 (concat)
+- 332 dari 8268 segments (~4%) punya timestamp yang mundur saat di-concat
+- DaVinci/VLC tidak bisa handle timestamp non-monotonic
+- Audio OK karena dari WAV (timestamp konsisten), video rusak karena stream copy + concat
+
+**Fix yang sudah aku terapkan di `retime-video.py`:**
+- Pass 1: tambah `-fflags +genpts`, `-reset_ts zero`, `-vsync cfr`
+- Pass 2: tambah `-fflags +genpts+igndts+discardcorrupt`, `-avoid_negative_ts make_zero`, `-max_interleave_delta 0`, `-reset_ts zero`, `-movflags +faststart`
+
+**Solusi untuk video yang sudah ada** (tanpa re-render):
+```bash
+ffmpeg -y -i S7-id.mp4 \
+  -c:v libx264 -preset fast -crf 23 \
+  -c:a copy \
+  -fflags +genpts \
+  -avoid_negative_ts make_zero \
+  -reset_ts zero \
+  -movflags +faststart \
+  S7-id-fixed.mp4
+```
+Estimasi 30-60 menit di M1/M2.
+
+**Audit hasil:**
+- SRT hasil DUB: BERSIH (4132 cues, 9356s = 2.6 jam, tidak ada cue > 3 jam)
+- JSON retime-map: BERSIH (max newEnd 9356s, tidak ada cue > 60s, tidak ada overlap)
+- Log TUI: 332 warning DTS, 211 warning h264_mp4toannexb, no fatal error
+- File output: 3.8 GB, 2h 30m, audio OK, video corrupt (timestamp)
+
 ---
 
 ## ✅ Yang Sudah Jalan (Production)
