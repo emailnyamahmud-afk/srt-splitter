@@ -529,6 +529,7 @@ Contah advanced (Demucs SFX separation):
 
         # Build command — kalau filter complex panjang (>100KB), pakai file approach
         # untuk hindari "Argument list too long" error di macOS (limit ~256KB)
+        # FFmpeg 7+: -filter_complex_script deprecated, pakai -/filter_complex <file>
         filter_size = len(filter_complex)
         use_filter_file = filter_size > 100_000  # 100KB threshold
 
@@ -540,13 +541,14 @@ Contah advanced (Demucs SFX separation):
         ]
 
         if use_filter_file:
-            # Write filter_complex ke file temp, FFmpeg baca dari file
+            # FFmpeg 7+ : pakai -/filter_complex <file> (recommended by FFmpeg docs)
+            # -filter_complex_script deprecated, diganti -/filter_complex <filename>
             filter_file = os.path.join(work_dir, 'filter_complex.txt')
             with open(filter_file, 'w') as f:
                 f.write(filter_complex)
             print(f'\n  → Filter complex: {filter_size/1024:.1f} KB (besar), pakai file approach')
             print(f'  → Filter file: {filter_file}')
-            cmd.extend(['-filter_complex_script_filename', filter_file])
+            cmd.extend(['-/filter_complex', filter_file])
         else:
             cmd.extend(['-filter_complex', filter_complex])
 
