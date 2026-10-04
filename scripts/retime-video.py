@@ -437,6 +437,9 @@ Contah advanced (Demucs SFX separation):
                         help='Buang audio ori total (hanya audio Jawa)')
     parser.add_argument('--dry-run', action='store_true', help='Print command tanpa eksekusi')
     parser.add_argument('--keep-temp', action='store_true', help='Keep temp files untuk debugging')
+    parser.add_argument('--preset', default='medium',
+                        choices=['ultrafast', 'superfast', 'veryfast', 'fast', 'medium', 'slow', 'slower'],
+                        help='FFmpeg x264 preset (default: medium). fast=lebih cepat, kualitas sedikit turun. slow=lebih bagus, lebih lama.')
     args = parser.parse_args()
 
     # Validate inputs
@@ -554,7 +557,7 @@ Contah advanced (Demucs SFX separation):
             cmd.extend(['-map', '1:a'])  # audio Jawa only
         cmd.extend([
             '-c:v', 'libx264',
-            '-preset', 'medium',
+            '-preset', args.preset,
             '-crf', '23',
             '-c:a', 'aac',
             '-b:a', '192k',
@@ -700,7 +703,7 @@ def build_command_with_demucs_sfx(
         '-map', '[outv]',
         '-map', '[outa]',
         '-c:v', 'libx264',
-        '-preset', 'medium',
+        '-preset', args.preset,
         '-crf', '23',
         '-c:a', 'aac',
         '-b:a', '192k',
