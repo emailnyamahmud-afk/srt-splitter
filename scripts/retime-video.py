@@ -296,8 +296,7 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
             '-c:v', 'copy',
             '-an',  # no audio (akan di-mix di Pass 2)
             '-avoid_negative_ts', 'make_zero',
-            '-reset_ts', 'zero',
-            '-fflags', '+genpts',
+                        '-fflags', '+genpts',
             output_file,
         ]
     else:
@@ -318,8 +317,7 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
             '-crf', '23',
             '-an',  # no audio
             '-avoid_negative_ts', 'make_zero',
-            '-reset_ts', 'zero',
-            '-vsync', 'cfr',  # constant frame rate
+                        '-vsync', 'cfr',  # constant frame rate
             '-fflags', '+genpts',
             output_file,
         ]
@@ -327,11 +325,16 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
         if result.returncode != 0:
+            # Print stderr LENGKAP untuk debugging (bukan cuma [-300:])
+            # Cari baris yang mengandung "Error" atau "error" di stderr
+            stderr_lines = result.stderr.split('\n')
+            error_lines = [l for l in stderr_lines if 'error' in l.lower() or 'invalid' in l.lower() or 'not found' in l.lower() or 'no such' in l.lower()]
+            error_summary = error_lines[0] if error_lines else stderr_lines[-5:]
             return {
                 'index': seg_idx,
                 'output_file': output_file,
                 'status': 'failed',
-                'error': result.stderr[-300:],
+                'error': f'code={result.returncode} | {error_summary[:200]}',
             }
         # VALIDASI: cek duration output vs target
         # Kalau selisih > 0.5s, segment ini bermasalah → TUI akan skip / video terpotong
@@ -455,8 +458,7 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
     # - -fflags +genpts: regenerate PTS/DTS supaya timestamp konsisten
     # - -avoid_negative_ts make_zero: reset timestamp negatif ke 0
     # - -max_interleave_delta 0: fix audio/video sync saat concat
-    # - -reset_ts zero: reset timestamp di output
-    # - -movflags +faststart: optimized untuk streaming/editing
+        # - -movflags +faststart: optimized untuk streaming/editing
     # - JANGAN pakai -shortest (bikin video/audio terpotong ke stream terpendek)
     cmd = [
         ffmpeg_path, '-y',
@@ -471,8 +473,7 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
         '-b:a', '192k',
         '-avoid_negative_ts', 'make_zero',
         '-max_interleave_delta', '0',
-        '-reset_ts', 'zero',
-        '-movflags', '+faststart',
+                '-movflags', '+faststart',
         '-timecode', '00:00:00:00',  # Force timecode mulai dari 00:00:00
         output,
     ]
