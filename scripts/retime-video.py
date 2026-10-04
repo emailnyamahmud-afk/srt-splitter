@@ -188,7 +188,14 @@ def build_segment_tasks(mandarin_entries, jawa_entries, mp4_duration):
     last_end = 0.0
     seg_idx = 0
 
+    # Filter: hanya process cues yang mp4_start < mp4_duration
+    # (kalau user test dengan video potongan, segments di luar range akan skip)
     for i, m_entry in enumerate(mandarin_entries):
+        # Kalau cue ini di luar range video input (mp4_start > mp4_duration), skip semua sisanya
+        if m_entry['start'] >= mp4_duration:
+            print(f'  → Stop di cue {i} (mp4_start={m_entry["start"]:.2f}s ≥ mp4_duration={mp4_duration:.2f}s)')
+            break
+
         # Gap sebelum cue ini
         gap_mp4_dur = m_entry['start'] - last_end
         if gap_mp4_dur > 0.01:
@@ -202,18 +209,20 @@ def build_segment_tasks(mandarin_entries, jawa_entries, mp4_duration):
             jawa_gap_dur = max(0.05, jawa_gap_dur)
             factor = jawa_gap_dur / gap_mp4_dur
 
+            # Kalau gap end melebihi mp4_duration, potong ke mp4_duration
+            gap_end = min(m_entry['start'], mp4_duration)
             tasks.append({
                 'type': 'gap',
                 'index': seg_idx,
                 'mp4_start': last_end,
-                'mp4_end': m_entry['start'],
+                'mp4_end': gap_end,
                 'target_duration': jawa_gap_dur,
                 'factor': factor,
             })
             seg_idx += 1
 
-        # Cue itu sendiri
-        if i in jawa_by_idx:
+        # Cue itu sendiri — hanya kalau cue end masih dalam range
+        if i in jawa_by_idx and m_entry['end'] <= mp4_duration:
             j_entry = jawa_by_idx[i]
             cue_mp4_dur = m_entry['end'] - m_entry['start']
             cue_jawa_dur = j_entry['end'] - j_entry['start']
@@ -230,9 +239,9 @@ def build_segment_tasks(mandarin_entries, jawa_entries, mp4_duration):
                 })
                 seg_idx += 1
 
-        last_end = m_entry['end']
+        last_end = min(m_entry['end'], mp4_duration)
 
-    # Tail gap
+    # Tail gap (kalau ada sisa video yang tidak terkover cue)
     if last_end < mp4_duration - 0.05:
         tail_dur = mp4_duration - last_end
         tasks.append({
@@ -240,7 +249,7 @@ def build_segment_tasks(mandarin_entries, jawa_entries, mp4_duration):
             'index': seg_idx,
             'mp4_start': last_end,
             'mp4_end': mp4_duration,
-            'target_duration': tail_dur,  # gap tail: factor 1.0
+            'target_duration': tail_dur,
             'factor': 1.0,
         })
         seg_idx += 1
