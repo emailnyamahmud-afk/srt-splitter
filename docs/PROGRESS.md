@@ -102,6 +102,40 @@ cue terakhir. Harusnya `02:35:54,312 → 02:35:56,032` (2 jam 36 menit).
 **Solusi**: Fix video dulu (re-encode 30-60 menit), lalu import ulang SRT
 di DaVinci. Seharusnya timestamp SRT benar setelah video tidak rusak.
 
+### ⚠️ KOREKSI KEDUA (5 Okt 2026 03:35 WIB) — ANALISIS LEBIH TELITI
+
+Setelah baca screenshot DaVinci lebih teliti, aku temukan **bug sebenarnya**:
+
+**Fakta dari screenshot:**
+- Viewer menampilkan frame video (balon udara + kota) — video TIDAK rusak total
+- Timeline V1: klip video `S7-id.mp4` mulai dari timecode `02:29:59:03`
+- Timeline A1: waveform audio terlihat jelas — audio JALAN
+- Media Pool: ada 1 "Media Offline" merah — itu klip lama yang tidak dipakai
+- Playhead di `03:29:59:01`
+
+**Bug sebenarnya**: Klip video di timeline mulai dari `02:29:59:03` — BUKAN `00:00:00`.
+Itu = offset 2 jam 30 menit dari seharusnya. Plus offset SRT, total terlihat 3 jam 35 menit.
+
+**Hipotesis kuat**: Video MP4 output dari FFmpeg punya **timecode track non-zero**.
+Kemungkinan:
+1. Source `mandarin.mp4` punya timecode mulai dari `01:00:00` atau `02:29:59` (common di video production)
+2. FFmpeg stream copy ikut timecode track dari source
+3. DaVinci pakai timecode itu untuk timeline
+
+**Untuk verifikasi** (user perlu jalankan):
+```bash
+ffprobe -v error -show_entries stream=codec_type,codec_name,timecode,start_time \
+  -show_entries format=duration,start_time -of json ~/Dubbing/S7-id.mp4
+ffprobe -v error -show_entries stream=codec_type,codec_name,timecode,start_time \
+  -show_entries format=duration,start_time -of json ~/Dubbing/mandarin.mp4
+```
+
+**Solusi proper**: Update `retime-video.py` dengan flag `-timecode 00:00:00:00`
+di output MP4 untuk force timecode mulai dari 0.
+
+**Solusi sementara di DaVinci**: Klik kanan klip video → Clip Attributes →
+Timecode → set "Start" ke `00:00:00:00`.
+
 ---
 
 ## ✅ Yang Sudah Jalan (Production)
