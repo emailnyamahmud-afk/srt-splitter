@@ -446,15 +446,21 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
 
     print(f'  → Concat list: {concat_list} ({included} files, {skipped} skipped)')
 
-    # Pass 2: STREAM COPY (instant, 2 detik)
-    # Timestamp sudah akumulatif dari Pass 1 → concat seamless, tidak ada non-monotonic DTS
+    # Pass 2: RE-ENCODE (bukan stream copy)
+    # Stream copy = 491 DTS warnings (B-frames + setpts slow-mo = non-monotonic)
+    # Re-encode = 0 DTS warnings (regenerates semua timestamp)
+    # Tambah -fflags +genpts+igndts+discardcorrupt untuk handle corrupt input
     if video_only:
-        print(f'  → Mode: VIDEO ONLY (stream copy, tanpa audio)')
+        print(f'  → Mode: VIDEO ONLY (re-encode, tanpa audio)')
         cmd = [
             ffmpeg_path, '-y',
+            '-fflags', '+genpts+igndts+discardcorrupt',
             '-f', 'concat', '-safe', '0',
             '-i', concat_list,
-            '-c:v', 'copy',
+            '-vf', 'setpts=PTS-STARTPTS',
+            '-c:v', 'libx264',
+            '-preset', 'fast',
+            '-crf', '23',
             '-an',
             '-movflags', '+faststart',
             '-timecode', '00:00:00:00',
@@ -463,12 +469,16 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
     else:
         cmd = [
             ffmpeg_path, '-y',
+            '-fflags', '+genpts+igndts+discardcorrupt',
             '-f', 'concat', '-safe', '0',
             '-i', concat_list,
             '-i', audio_jawa,
             '-map', '0:v',
             '-map', '1:a',
-            '-c:v', 'copy',  # stream copy (instant, timestamp sudah akumulatif)
+            '-vf', 'setpts=PTS-STARTPTS',
+            '-c:v', 'libx264',
+            '-preset', 'fast',
+            '-crf', '23',
             '-c:a', 'aac',
             '-b:a', '192k',
             '-movflags', '+faststart',
