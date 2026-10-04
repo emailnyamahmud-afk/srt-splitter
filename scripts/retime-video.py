@@ -277,14 +277,17 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, preset, has_audio_
 
     if use_stream_copy:
         # Stream copy (no re-encode) — instant
+        # Tambah -fflags +genpts untuk fix timestamp di segment
         cmd = [
             ffmpeg_path, '-y',
+            '-fflags', '+genpts',
             '-ss', f'{mp4_start:.3f}',
             '-i', mp4_path,
             '-t', f'{mp4_dur:.3f}',
             '-c:v', 'copy',
             '-an',  # no audio (akan di-mix di Pass 2)
             '-avoid_negative_ts', 'make_zero',
+            '-reset_ts', 'zero',
             output_file,
         ]
     else:
@@ -295,6 +298,7 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, preset, has_audio_
 
         cmd = [
             ffmpeg_path, '-y',
+            '-fflags', '+genpts',
             '-ss', f'{mp4_start:.3f}',
             '-i', mp4_path,
             '-t', f'{mp4_dur:.3f}',
@@ -304,6 +308,8 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, preset, has_audio_
             '-crf', '23',
             '-an',  # no audio
             '-avoid_negative_ts', 'make_zero',
+            '-reset_ts', 'zero',
+            '-vsync', 'cfr',  # constant frame rate (fix timestamp)
             output_file,
         ]
 
@@ -413,8 +419,16 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
     # Input 0: concat list (video segments)
     # Input 1: audio Jawa WAV
     # Output: video dari concat + audio Jawa
+    #
+    # FLAG PENTING untuk fix video merah di DaVinci/VLC:
+    # - -fflags +genpts: regenerate PTS/DTS supaya timestamp konsisten
+    # - -avoid_negative_ts make_zero: reset timestamp negatif ke 0
+    # - -max_interleave_delta 0: fix audio/video sync saat concat
+    # - -reset_ts zero: reset timestamp di output
+    # - -movflags +faststart: optimized untuk streaming/editing
     cmd = [
         ffmpeg_path, '-y',
+        '-fflags', '+genpts+igndts+discardcorrupt',
         '-f', 'concat', '-safe', '0',
         '-i', concat_list,
         '-i', audio_jawa,
@@ -423,6 +437,10 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
         '-c:v', 'copy',  # no re-encode (instant)
         '-c:a', 'aac',
         '-b:a', '192k',
+        '-avoid_negative_ts', 'make_zero',
+        '-max_interleave_delta', '0',
+        '-reset_ts', 'zero',
+        '-movflags', '+faststart',
         '-shortest',
         output,
     ]
