@@ -277,16 +277,20 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
     mp4_dur = mp4_end - mp4_start
     target_dur = task['target_duration']
     factor = task['factor']
+    cumulative_offset = task.get('cumulative_offset', 0.0)
 
     # Skip kalau sudah ada (resume support)
     if os.path.isfile(output_file) and os.path.getsize(output_file) > 1000:
         return {'index': seg_idx, 'output_file': output_file, 'status': 'skipped'}
 
-    # Build FFmpeg command
-    # Setiap segment PTS mulai dari 0. Pass 2 akan re-encode untuk fix timestamp.
+    # Strategi: TIMESTAMP AKUMULATIF
+    # Setiap segment punya timestamp mulai dari cumulative_offset (bukan 0)
+    # → saat concat di Pass 2, timestamp kontinyu, tidak overlap
+    # → Pass 2 bisa STREAM COPY (instant, 2 detik)
     use_stream_copy = 0.95 <= factor <= 1.05 and task['type'] in ('gap', 'tail')
 
     if use_stream_copy:
+        # Stream copy: pakai -output_ts_offset untuk set timestamp awal
         cmd = [
             ffmpeg_path, '-y',
             '-ss', f'{mp4_start:.3f}',
@@ -294,13 +298,13 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
             '-t', f'{mp4_dur:.3f}',
             '-c:v', 'copy',
             '-an',
-            '-avoid_negative_ts', 'make_zero',
+            '-output_ts_offset', f'{cumulative_offset:.6f}',
             '-fflags', '+genpts',
             output_file,
         ]
     else:
-        # Re-encode dengan setpts untuk slow-mo/fast-forward
-        # -t = target_dur (output duration)
+        # Re-encode: setpts untuk slow-mo, -output_ts_offset untuk timestamp akumulatif
+        # JANGAN pakai /TB (bug di FFmpeg 7+, output empty)
         cmd = [
             ffmpeg_path, '-y',
             '-i', mp4_path,
@@ -311,6 +315,7 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
             '-preset', preset,
             '-crf', '23',
             '-an',
+            '-output_ts_offset', f'{cumulative_offset:.6f}',
             '-fflags', '+genpts',
             output_file,
         ]
@@ -441,19 +446,15 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
 
     print(f'  → Concat list: {concat_list} ({included} files, {skipped} skipped)')
 
-    # Pass 2: RE-ENCODE (bukan stream copy) untuk fix timestamp
-    # Setiap segment PTS mulai dari 0 → concat demuxer stream copy = non-monotonic DTS
-    # Re-encode dengan setpts=PTS-STARTPTS = regenerates timestamp, clean
+    # Pass 2: STREAM COPY (instant, 2 detik)
+    # Timestamp sudah akumulatif dari Pass 1 → concat seamless, tidak ada non-monotonic DTS
     if video_only:
-        print(f'  → Mode: VIDEO ONLY (re-encode, tanpa audio)')
+        print(f'  → Mode: VIDEO ONLY (stream copy, tanpa audio)')
         cmd = [
             ffmpeg_path, '-y',
             '-f', 'concat', '-safe', '0',
             '-i', concat_list,
-            '-vf', 'setpts=PTS-STARTPTS',
-            '-c:v', 'libx264',
-            '-preset', 'fast',
-            '-crf', '23',
+            '-c:v', 'copy',
             '-an',
             '-movflags', '+faststart',
             '-timecode', '00:00:00:00',
@@ -467,10 +468,7 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
             '-i', audio_jawa,
             '-map', '0:v',
             '-map', '1:a',
-            '-vf', 'setpts=PTS-STARTPTS',
-            '-c:v', 'libx264',
-            '-preset', 'fast',
-            '-crf', '23',
+            '-c:v', 'copy',  # stream copy (instant, timestamp sudah akumulatif)
             '-c:a', 'aac',
             '-b:a', '192k',
             '-movflags', '+faststart',
