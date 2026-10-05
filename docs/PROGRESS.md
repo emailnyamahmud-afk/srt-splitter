@@ -2,7 +2,7 @@
 
 Dokumen ini catatan status project untuk AI / developer next time baca. Update setiap sesi kerja.
 
-**Last updated:** 5 Oktober 2026, 08:30 WIB
+**Last updated:** 5 Oktober 2026, 11:30 WIB
 
 ---
 
@@ -10,21 +10,57 @@ Dokumen ini catatan status project untuk AI / developer next time baca. Update s
 
 | Item | Status |
 |---|---|
-| Web app (srt-splitter.vercel.app) | ✅ Production ready |
-| Dubbing Mode (SRT = ground truth) | ✅ Working, tested user |
-| Python `dubbing-tui.py` (TUI) | ✅ Working, user tested |
-| Python `retime-video.py` v5 (M1 optimized) | ⏳ In progress (testing) |
+| Web app (srt-splitter.vercel.app) — v2.0 schema | ✅ Production ready, dub v2.0 tested user |
+| Dubbing Mode v2.0 (VoiceStudio adoptions: slack abs, peak norm, 15ms fade, SRT de-overlap) | ✅ Working, tested user (160 cues sub-ID) |
+| Python `dubbing-tui.py` (TUI) | ✅ Working, pakai argumen baru `--srt-original/--srt-dub/--audio-dub` |
+| Python `retime-video.py` v6 (cap slow-mo 2x + tpad freeze) | ⏳ In progress (test #16 jalan) |
 | Python `separate-audio-sfx.py` (Demucs) | ✅ Working (belum user test) |
-| User test render S7-id.mp4 (2.5 jam AV1) | ✅ SUKSES 5 Okt 02:54 — tapi video rusak (DTS) |
-| User test render 5min H.264 + VideoToolbox | ⏳ In progress (test #6) |
-| Kamus Jawa JSON | 🔜 Next step (riset) |
+| Standar nama file: `mp4-ori-`, `srt-{lang}-original.srt`, `srt-{lang}-dub.srt`, `audio-{lang}-dub.wav`, `mp4-{lang}-final.mp4` | ✅ Diterapkan di web + docs + Python |
+| Test #15 sub-ID (5 menit, 160 cues, H.264 + VideoToolbox) | ⚠️ DTS=0 durasi=5:24 OK, TAPI visual rusak (skip 24 seg + slow-mo 14x stop-motion) |
+| Test #16 sub-ID (5 menit, 160 cues, fix tpad + skip 100B) | ⏳ In progress (Pass 1 0%) |
+| Kamus Jawa JSON | 🔜 Next step (besok, setelah dub render jalan) |
 | Workflow multi-bahasa (Jawa/Sunda/dll) | 🔜 Next step |
 
 ---
 
-## 🐛 BUG HISTORY: Video Retaimed Rusak (5 Okt 03:00-08:00 WIB)
+## 🐛 BUG HISTORY: Video Retaimed Rusak — Test #1 sampai #15 (4-5 Okt 2026)
 
-### Gejala
+### Test timeline singkat
+
+| Test # | Strategi | Hasil |
+|---|---|---|
+| #1-#3 (4 Okt) | Filter complex inline → two-pass rendering | Memory 40GB, DTS non-monotonic |
+| #4-#8 (4 Okt malam) | Re-encode Pass 2 + flag berbagai | DTS warnings 332-491, video rusak |
+| #9-#14 (5 Okt pagi) | `-bf 0` + `-fps_mode cfr` + `-video_track_timescale 30000` + cumulative offset | DTS warnings turun tapi masih ada |
+| #15 (5 Okt 11:00) | cumulative offset + `output_ts_offset` + `fps=30` VFR guard + stream copy Pass 2 + `-bf 0` | **DTS=0, durasi=5:24 OK, TAPI visual rusak** (skip 24 seg + slow-mo 14x stop-motion weird) |
+| #16 (5 Okt 11:30) | + cap slow-mo 2x + `tpad=stop_mode=clone` freeze + skip threshold 1000→100 bytes | ⏳ In progress |
+
+### Bug test #15 (2 masalah baru setelah DTS fix)
+
+1. **Skip 24/233 segments (10.3%)**: threshold `os.path.getsize > 1000` terlalu tinggi. Segment pendek (gap 0.05s, cue 0.17s dengan source 5 frame H.264) hasilkan file < 1KB → di-skip → gap di video stream → VLC/DaVinci "berhenti lama" saat jump.
+
+2. **Slow-mo ekstrim (factor > 2x)**: `setpts=(PTS-STARTPTS)*14` untuk cue 0.17s → audio 2.39s = 5 frame diulang 14x = stop-motion weird. User lihat "kayak foto berhenti lama, ada yg diulang-ulang".
+
+### Fix test #16 (commit `09234ac`, 5 Okt 11:30)
+
+1. **Lower skip threshold** 1000 → 100 bytes. Segment pendek tetap masuk concat.
+
+2. **Cap slow-mo 2x + tpad freeze** untuk cue dengan factor > 2x:
+   ```python
+   MAX_SLOWMO_FACTOR = 2.0
+   if factor > MAX_SLOWMO_FACTOR and task['type'] == 'cue':
+       capped_dur = mp4_dur * MAX_SLOWMO_FACTOR
+       freeze_dur = target_dur - capped_dur
+       vf = f'fps=30,setpts=(PTS-STARTPTS)*2.0,tpad=stop_mode=clone:stop_duration={freeze_dur}'
+   ```
+   Hasil: 0.34s slow-mo 2x (smooth, 10 frame) + 2.05s freeze di last frame. Lebih halus daripada 5 frame diulang 14x.
+   Hanya berlaku untuk cue (bukan gap/tail). Gap tetap pakai setpts normal.
+
+---
+
+## 📚 Sebelumnya: Bug History Detail (Test #1-#8)
+
+### Gejala lama
 - VLC: frame berhenti, suara TTS ada
 - DaVinci: video merah (Media Offline), audio waveform OK
 - SRT terlihat 3 jam 35 menit di DaVinci (sebenarnya 2 jam 36 menit)
@@ -34,7 +70,7 @@ Dokumen ini catatan status project untuk AI / developer next time baca. Update s
 
 B-frames (bidirectional frames) punya DTS yang bisa mundur (menengok frame setelahnya). Saat `setpts` slow-mo, timestamp jadi non-monotonic → FFmpeg warning → video patah/diulang.
 
-### Timeline Debug (8 iterasi fix)
+### Timeline Debug (8 iterasi fix, 4 Okt 21:00 → 5 Okt 03:00 WIB)
 
 | Test # | Strategi | Hasil | Penyebab Gagal |
 |---|---|---|---|
@@ -43,9 +79,12 @@ B-frames (bidirectional frames) punya DTS yang bisa mundur (menengok frame setel
 | #3 | Cumulative offset + stream copy | 491 DTS warnings | B-frames tetap bermasalah |
 | #4 | Re-encode Pass 2 + source 360p rusak | Frame berhenti lama | Source video rusak (AV1→H.264 360p) |
 | #5 | Re-encode + source 5min stream copy | Masih DTS warnings | jsDelivr cache, user dapat versi lama |
-| #6 | H.264 source + VideoToolbox + `-bf 0` | ⏳ In progress | - |
+| #6 | H.264 source + VideoToolbox + `-bf 0` | Masih DTS warnings | -fps_mode cfr + -video_track_timescale konflik |
+| #7-#8 | Hapus -fps_mode cfr + -video_track_timescale | Masih DTS warnings | setpts=PTS-STARTPTS di Pass 2 hapus concat offset |
+| #9 | Stream copy Pass 2 + B-frames enabled | Non-monotonic DTS 11299 frame dup | B-frames + stream copy |
+| #10 | Stream copy Pass 2 + `-bf 0` | DTS warnings 0, durasi OK | ✓ Fix DTS, tapi visual masih jelek (test #15 issue) |
 
-### 8 Fix yang Diimplementasi di `retime-video.py`
+### 8 Fix yang Diimplementasi di `retime-video.py` (lama)
 
 | # | Fix | Dari Riset | Dampak |
 |---|---|---|---|
@@ -56,7 +95,7 @@ B-frames (bidirectional frames) punya DTS yang bisa mundur (menengok frame setel
 | 5 | Hapus `-vsync cfr` (deprecated FFmpeg 5.1+) | Sandbox test | Fix "Unrecognized option" |
 | 6 | `setpts=(PTS-STARTPTS)*factor` (bukan `/factor`) | Sandbox test | Fix slow-mo jadi fast-forward |
 | 7 | `-t target_dur` (bukan `mp4_dur`) | Sandbox test | Fix output terpotong |
-| 8 | **M1 Optimization**: `-hwaccel videotoolbox` + `-bf 0` + `-fps_mode cfr` + `-video_track_timescale 30000` | ffmpeg-micro blog + OBS user | Hardware decode/encode + fix DTS |
+| 8 | **M1 Optimization**: `-hwaccel videotoolbox` + `-bf 0` + `fps=30` + `output_ts_offset` | ffmpeg-micro + VoiceStudio | Hardware decode/encode + fix DTS + VFR guard + cumulative offset |
 
 ### M1 Optimization Detail
 
@@ -72,11 +111,14 @@ Fix di script:
 '-c:v', 'h264_videotoolbox',     # Hardware encode
 '-b:v', '5M',                    # Bitrate 5 Mbps (offline quality)
 '-bf', '0',                      # DISABLE B-frames (fix DTS!)
-'-fps_mode', 'cfr',              # Constant frame rate
-'-video_track_timescale', '30000', # Same timescale (fix DTS rounding)
+'-vf', 'fps=30,setpts=(PTS-STARTPTS)*{factor}',  # VFR guard
+'-output_ts_offset', '{cumulative_offset}',     # Cumulative timestamp
 
-# Pass 2 (concat + re-encode):
-# Same flags + setpts=PTS-STARTPTS + -shortest
+# Pass 2 (concat + stream copy):
+'-c:v', 'copy',                  # No re-encode
+'-bf', '0',                      # Inherited from Pass 1 segments
+'-shortest',                     # Stop saat audio dub habis
+'-timecode', '00:00:00:00',      # Fix DaVinci timecode offset
 ```
 
 ### Source Codec Impact
@@ -97,7 +139,7 @@ yt-dlp -f "137+140" --merge-output-format mp4 -o mandarin.mp4 "URL"
 
 | Video | Pass 1 | Pass 2 | Total |
 |---|---|---|---|
-| 5 menit (233 segments) | ~10 menit | ~1-2 menit | ~12 menit |
+| 5 menit (233 segments) | ~10 menit | ~3 detik | ~10 menit |
 | 30 menit (~1400 segments) | ~30 menit | ~5 menit | ~35 menit |
 | 1 jam (~2800 segments) | ~50 menit | ~10 menit | ~60 menit |
 | 2.5 jam (~8268 segments) | ~90 menit | ~20 menit | ~110 menit |
@@ -111,6 +153,7 @@ yt-dlp -f "137+140" --merge-output-format mp4 -o mandarin.mp4 "URL"
 | **pyVideoTrans** (19.2k stars) | Multi-role dubbing, voice cloning, sync strategi |
 | **OBS user screenshot** | `Apple VT H264 Hardware Encoder`, B-frames dicentang = root cause |
 | **Voice-Clone-Studio** (GitHub) | Multi-model voice cloning + voice design |
+| **VoiceStudio** (github.com/debpalash/VoiceStudio, commit 990f0627, 5 Okt 2026) | Pattern A (slack abs), C (15ms fade), D (peak norm -2dBFS), G (SRT de-overlap). Riset 36 file di `/scripts/voicestudio-study/`. |
 
 ### Filosofi yang Dipertahankan
 
@@ -119,6 +162,7 @@ yt-dlp -f "137+140" --merge-output-format mp4 -o mandarin.mp4 "URL"
 - atempo (audio stretch) = robot ekstrem untuk cue pendek
 - DUB mode (SRT = ground truth) = audio natural, video slow-mo
 - SRT + WAV = ground truth, MP4 ngikut SRT
+- "Dub = hulu. Kalau hulu sampah = hasil sampah, kalau hulu baik = hasil baik."
 
 ### DaVinci Resolve Timecode Offset
 
@@ -126,117 +170,7 @@ DaVinci default "Start Timecode" = `01:00:00:00` (SMPTE standar).
 User lihat 3 jam 35 menit di DaVinci = offset +1 jam dari timecode setting.
 
 **Fix di DaVinci**: Project Settings → Master Settings → "Start Timecode" = `00:00:00:00`
-
-**Fix di script**: `-timecode 00:00:00:00` di output MP4.
-
----
-
-### Output
-- `S7-id.mp4` — **3806.1 MB (3.8 GB)**
-- Duration: 02:29:59.133 (2 jam 30 menit, +7 menit dari source asli)
-- Bitrate: 3547.9 kbits/s
-- Audio: Indonesia/Jawa natural (24kHz mono AAC 192k)
-
-### Performance
-- Pass 1 (render 8268 segments): ~73 menit
-- Pass 2 (concat + mix audio): 2 menit 29 detik (speed 60.3x)
-- Total waktu: ~75 menit
-- Failed: 0
-
-### Warning yang Muncul (Tidak Fatal)
-```
-Non-monotonic DTS; previous: X, current: Y; changing to Z
-Auto-inserting h264_mp4toannexb bitstream filter
-```
-- Wajar saat concat segments dengan timestamp reset ke 0
-- FFmpeg auto-handle, output tetap valid
-- Mungkin perlu flag `-fflags +genpts` kalau ada masalah sync di future
-
-### ⚠️ MASALAH DITEMUKAN (5 Okt 2026 03:00 WIB)
-Setelah audit file output `S7-id.mp4`:
-- **VLC**: frame berhenti, suara TTS ada
-- **DaVinci Resolve**: video merah (Media Offline), audio waveform hijau OK
-- **SRT durasi**: 2.6 jam (benar, bukan 3 jam)
-
-**Root cause** (dari audit log TUI):
-- **332 warning "Non-monotonic DTS"** di Pass 2 (concat)
-- 332 dari 8268 segments (~4%) punya timestamp yang mundur saat di-concat
-- DaVinci/VLC tidak bisa handle timestamp non-monotonic
-- Audio OK karena dari WAV (timestamp konsisten), video rusak karena stream copy + concat
-
-**Fix yang sudah aku terapkan di `retime-video.py`:**
-- Pass 1: tambah `-fflags +genpts`, `-reset_ts zero`, `-vsync cfr`
-- Pass 2: tambah `-fflags +genpts+igndts+discardcorrupt`, `-avoid_negative_ts make_zero`, `-max_interleave_delta 0`, `-reset_ts zero`, `-movflags +faststart`
-
-**Solusi untuk video yang sudah ada** (tanpa re-render):
-```bash
-ffmpeg -y -i S7-id.mp4 \
-  -c:v libx264 -preset fast -crf 23 \
-  -c:a copy \
-  -fflags +genpts \
-  -avoid_negative_ts make_zero \
-  -reset_ts zero \
-  -movflags +faststart \
-  S7-id-fixed.mp4
-```
-Estimasi 30-60 menit di M1/M2.
-
-**Audit hasil:**
-- SRT hasil DUB: BERSIH (4132 cues, 9356s = 2.6 jam, tidak ada cue > 3 jam)
-- JSON retime-map: BERSIH (max newEnd 9356s, tidak ada cue > 60s, tidak ada overlap)
-- Log TUI: 332 warning DTS, 211 warning h264_mp4toannexb, no fatal error
-- File output: 3.8 GB, 2h 30m, audio OK, video corrupt (timestamp)
-
-### ⚠️ KOREKSI (5 Okt 2026 03:25 WIB)
-User benar — DaVinci menampilkan cue terakhir di **03:35:52:17** (3 jam 35 menit),
-PADAHAL SRT sebenarnya cue terakhir di **02:35:56,032** (2 jam 36 menit).
-
-Selisih ~59 menit. Aku salah tadi bilang "SRT bersih, bukan masalah".
-
-**Hipotesis kuat**: Karena video stream RUSAK (332 DTS warnings), DaVinci
-mungkin salah import SRT juga. Saat video media "offline/merah", DaVinci
-mungkin pakai timecode dari video rusak yang inconsistent → SRT timestamp
-terlihat 1 jam lebih panjang dari sebenarnya.
-
-**Untuk verifikasi**: User buka SRT di TextEdit (bukan DaVinci) dan cek
-cue terakhir. Harusnya `02:35:54,312 → 02:35:56,032` (2 jam 36 menit).
-
-**Solusi**: Fix video dulu (re-encode 30-60 menit), lalu import ulang SRT
-di DaVinci. Seharusnya timestamp SRT benar setelah video tidak rusak.
-
-### ⚠️ KOREKSI KEDUA (5 Okt 2026 03:35 WIB) — ANALISIS LEBIH TELITI
-
-Setelah baca screenshot DaVinci lebih teliti, aku temukan **bug sebenarnya**:
-
-**Fakta dari screenshot:**
-- Viewer menampilkan frame video (balon udara + kota) — video TIDAK rusak total
-- Timeline V1: klip video `S7-id.mp4` mulai dari timecode `02:29:59:03`
-- Timeline A1: waveform audio terlihat jelas — audio JALAN
-- Media Pool: ada 1 "Media Offline" merah — itu klip lama yang tidak dipakai
-- Playhead di `03:29:59:01`
-
-**Bug sebenarnya**: Klip video di timeline mulai dari `02:29:59:03` — BUKAN `00:00:00`.
-Itu = offset 2 jam 30 menit dari seharusnya. Plus offset SRT, total terlihat 3 jam 35 menit.
-
-**Hipotesis kuat**: Video MP4 output dari FFmpeg punya **timecode track non-zero**.
-Kemungkinan:
-1. Source `mandarin.mp4` punya timecode mulai dari `01:00:00` atau `02:29:59` (common di video production)
-2. FFmpeg stream copy ikut timecode track dari source
-3. DaVinci pakai timecode itu untuk timeline
-
-**Untuk verifikasi** (user perlu jalankan):
-```bash
-ffprobe -v error -show_entries stream=codec_type,codec_name,timecode,start_time \
-  -show_entries format=duration,start_time -of json ~/Dubbing/S7-id.mp4
-ffprobe -v error -show_entries stream=codec_type,codec_name,timecode,start_time \
-  -show_entries format=duration,start_time -of json ~/Dubbing/mandarin.mp4
-```
-
-**Solusi proper**: Update `retime-video.py` dengan flag `-timecode 00:00:00:00`
-di output MP4 untuk force timecode mulai dari 0.
-
-**Solusi sementara di DaVinci**: Klik kanan klip video → Clip Attributes →
-Timecode → set "Start" ke `00:00:00:00`.
+**Fix di script**: `-timecode 00:00:00:00` di output MP4 (sudah ada sejak test #10).
 
 ---
 
@@ -247,34 +181,45 @@ Timecode → set "Start" ke `00:00:00:00`.
 - **Translate** — Google Translate + OpenAI
 - **TTS Mode ON** — sync ke SRT, crossfade, durasi = SRT
 - **TTS Mode OFF** — natural sequential, speed 1.0x-2.0x
-- **🔴 DUBBING Mode** — audio natural → SRT baru → ground truth
+- **🔴 DUBBING Mode v2.0** — audio natural → SRT baru → ground truth
+  - VoiceStudio Pattern A: slack absorption (extend slot ke gap-guard 50ms)
+  - VoiceStudio Pattern C: 15ms fade in/out per cue (prevent click)
+  - VoiceStudio Pattern D: peak normalize -2 dBFS per cue (loudness konsisten)
+  - VoiceStudio Pattern G: SRT de-overlap + BOM strip + formatTime rounding fix
+  - Schema v2.0: chunks, fittedCues, params, sampleRate, gapGuardSec, skippedCues, audioRate, videoRatio, status, overflowSec, head/tail types
+  - Backward compat v1.0: `points` = `chunks` alias, `factor` = `videoRatio` alias
 - Trim silence (ThioJoe algoritma) untuk kurangi robot
 - Speed up + slow down mode (Voicertool filosofi)
+- Standar nama file download: `{prefix}-audio-jd-dub.wav`, `{prefix}-srt-dub.srt`, `{prefix}-retime-map.json`
 
 ### 2. Python Scripts (lokal, untuk produksi final)
-- **`dubbing-tui.py`** — TUI interaktif (questionary, arrow keys)
-- **`retime-video.py`** v3 — two-pass rendering:
-  - Pass 1: Render per-segment (parallel 4 workers)
-  - Pass 2: Concat + mix audio (instant, stream copy)
-  - Support: `--preset fast/medium/slow`, `--workers 4`
+- **`dubbing-tui.py`** — TUI interaktif (questionary, arrow keys), pakai argumen baru
+- **`retime-video.py`** v6 — two-pass rendering:
+  - Pass 1: Render per-segment (parallel 4 workers) dengan `-bf 0` + `output_ts_offset` + `fps=30` VFR guard
+  - Pass 1: Cap slow-mo 2x + `tpad=stop_mode=clone` freeze untuk cue factor > 2x (FIX test #15)
+  - Pass 2: Concat + stream copy + mix audio (instant, ~3 detik)
+  - Pass 2: Skip threshold 100 bytes (FIX test #15, sebelumnya 1000)
+  - Support: `--srt-original/--srt-dub/--audio-dub` (baru) + `--srt-mandarin/--srt-jawa/--audio-jawa` (alias deprecated)
+  - Support: `--preset fast/medium/slow`, `--workers 4`, `--encoder h264_videotoolbox`, `--video-only`
   - Resume support (segment yang sudah ada di-skip)
-  - Filter complex pakai file approach (`-/filter_complex <file>`) untuk FFmpeg 7+
 - **`separate-audio-sfx.py`** — Demucs wrapper untuk SFX separation
 - **`srt-to-audio.py`** — alternatif TTS lokal
 - **`rapikan-jawa.py`** + `tambah-krama.py` — rapikan SRT Jawa
+- **`test-dubbing-v2-schema.py`** — sanity test untuk v2.0 schema (6/6 tests pass)
 
 ### 3. Documentation
-- `README.md` — overview project + visi
+- `README.md` — overview project + visi + standar nama file
 - `docs/PROJECT_VISION.md` — visi digitalisasi bahasa + roadmap 2 tahun
 - `docs/PROGRESS.md` — dokumen ini (status terkini)
 - `docs/EDGE_TTS_PROXY.md` — cara kerja Edge TTS proxy
-- `scripts/tutor-dubbing-workflow.md` — workflow pemula buta Python
+- `scripts/tutor-dubbing-workflow.md` — workflow pemula buta Python (Fase 1-5 + FAQ + Checklist)
 - `scripts/tutor-python-lokal.md` — setup Python lokal
 - `scripts/README.md` — index Python scripts
+- `worklog.md` — log development lengkap (Task 1-7)
 
 ---
 
-## 📊 User Test Summary (5 Okt 2026)
+## 📊 User Test Summary
 
 ### Setup User
 - MacBook Pro (Apple Silicon, M1/M2)
@@ -282,35 +227,33 @@ Timecode → set "Start" ke `00:00:00:00`.
 - FFmpeg 9.0.2 via Homebrew
 - venv di `~/Dubbing/venv/`
 
-### Workflow User (VERIFIED WORKING)
-1. Source SRT Indonesia (dari sumber, timing Mandarin = "penjara")
-2. Web DUB mode (1.25x speed, 100ms min gap) → audio + SRT baru (timing natural)
-3. Python TUI → render MP4 dengan timing SRT baru
-4. Output: `S7-id.mp4` (2 jam 30 menit, +7 menit dari source)
+### Test #15 (5 Okt 2026 11:00 WIB) — sub-ID 5 menit
+- SRT ori: 160 cues (srt-id-original.srt, split 5 menit pertama)
+- SRT dub: 160 cues (srt-id-dub.srt, dari DUB web v2.0)
+- Audio dub: 7:23 (audio-id-dub.wav, dari DUB web v2.0)
+- MP4 source: 5 menit (mp4-ori-test-5min.mp4, H.264)
+- Total segments: 233 (116 cue + 116 gap + 1 tail)
+- Re-encode: 215, Stream copy: 18
+- Pass 1: 1147s (~19 menit), 0 gagal
+- Pass 2: stream copy, ~3 detik, 0 DTS warnings ✓
+- Output: mp4-id-final.mp4, 175.9 MB, durasi 5:24 ✓
+- Skip: 24/233 segments (10.3%) — BUG
+- Visual: "kayak foto berhenti lama, diulang" — BUG slow-mo 14x stop-motion
 
-### Hasil DUB Web App
-- Speed: 1.25x (kompromi natural vs slow-mo video)
-- Min gap: 100ms (cepat)
-- Total offset: +780s (audio 13 menit lebih panjang dari source)
-- Cue baru: 4132 (dari 4135 input, 3 cue skip)
-- Audio quality: bagus, tidak robot
-
-### Hasil Render (S7-id.mp4)
-- Total segments: 8268 (4132 cue + 4135 gap + 1 tail)
-- Re-encode: 7974 (slow-mo/fast-forward)
-- Stream copy: 294 (gap dengan factor ~1.0)
-- Preset: fast
-- Workers: 4
-- Total waktu: ~75 menit
-- Output size: 3.8 GB
-- Failed: 0 (semua sukses)
+### Test #16 (5 Okt 2026 11:30 WIB) — sub-ID 5 menit, fix tpad + skip 100B
+- Status: ⏳ In progress (Pass 1 0%)
+- Fix: cap slow-mo 2x + tpad freeze untuk cue factor > 2x, skip threshold 1000→100 bytes
 
 ---
 
 ## 🔜 Next Steps (Prioritas)
 
-### Priority 1: Kamus Bahasa Jawa JSON
+### Priority 1: Render video jalan (test #16 → #17 kalau perlu)
+- Target: video smooth, no "foto berhenti", no stop-motion weird
+- Kalau tpad fix jalan → lanjut ke test full season (S7-id, 2.5 jam)
+- Kalau masih gagal → riset alternatif (minterpolate frame blending, atau re-encode Pass 2 penuh)
 
+### Priority 2: Kamus Bahasa Jawa JSON (besok, setelah render jalan)
 **Tujuan:** Validasi SRT Jawa otomatis (ejaan, register, kosakata)
 
 **Riset sumber kamus:**
@@ -349,15 +292,9 @@ Timecode → set "Start" ke `00:00:00:00`.
 - Cek ejaan aksén (kowe vs kowé, dheweke vs dhèwèké)
 - Auto-suggest (keluarga → kulawarga)
 
-**Estimasi effort:**
-- Scraping Sastra.org: 1-2 hari
-- Parse Wiktionary: 1 hari
-- Consolidate + clean: 2-3 hari
-- Build validator script: 1 hari
-- **Total: 5-7 hari kerja**
+**Estimasi effort:** 5-7 hari kerja
 
-### Priority 2: Workflow Multi-Bahasa
-
+### Priority 3: Workflow Multi-Bahasa (setelah kamus Jawa)
 **Tujuan:** Pakai SRT Indonesia hasil DUB untuk bahasa lain (Jawa, Sunda, Bali, dll)
 
 **Konsep:**
@@ -371,82 +308,32 @@ Generate audio Jawa pakai SRT Jawa (timing sama dengan Indonesia DUB)
 Render MP4 pakai timing SRT Indonesia DUB (atau SRT Jawa, sama)
 ```
 
-**Yang perlu dibangun:**
-- Script `translate-srt-text.py` (translate text, timing tetap)
-- Mode "Generate Audio Only" di web app (skip DUB, langsung TTS)
-  - Catatan: user bilang ini sudah ada di mode ON (TTS sync ke SRT)
-  - Tapi mungkin perlu verify: ON mode generate WAV + SRT baru?
-
 **Estimasi effort:** 2-3 hari
 
-### Priority 3: Aksara Jawa OCR (Bulan 13-15 roadmap)
-
+### Priority 4: Aksara Jawa OCR (Bulan 13-15 roadmap)
 - TrOCR fine-tune dengan 1000 sample aksara Jawa
 - Training 20 jam GPU di Colab
-- Output: model OCR aksara Jawa
 
-### Priority 4: Kawi TTS (Bulan 16-18 roadmap)
-
+### Priority 5: Kawi TTS (Bulan 16-18 roadmap)
 - Rekrut dosen Sastra Jawa (UGM/UNY)
 - Rekam bacaan Negarakertagama (10 jam Kawi)
 - Train Kawi TTS (pakai Jawa modern sebagai base)
 
 ### Future: GPU Acceleration (kalau skala produksi besar)
-
 **Trigger**: Kalau render 6 season sekaligus (~7 jam di Mac, ~1.5 jam di Colab paralel)
-
-**Opsi:**
-- Google Colab Free (T4 GPU, 12 jam/hari) — untuk produksi massal
-- PC RTX 4070/4090 — untuk training TTS Jawa nanti
-
-**Yang perlu dibangun (kalau trigger):**
-- Notebook Colab `dubbing-colab.ipynb`
-- GPU acceleration di `retime-video.py` (detect CUDA → pakai h264_nvenc)
-- Estimasi effort: 30 menit
-
----
-
-## 📁 Struktur Repo Saat Ini
-
-```
-srt-splitter/
-├── README.md                    # Overview + visi
-├── docs/
-│   ├── PROJECT_VISION.md         # Visi digitalisasi bahasa
-│   ├── PROGRESS.md               # Dokumen ini (status terkini)
-│   └── EDGE_TTS_PROXY.md         # Cara kerja Edge TTS proxy
-├── scripts/
-│   ├── README.md                 # Index Python scripts
-│   ├── dubbing-tui.py            # TUI interaktif
-│   ├── retime-video.py           # Retime MP4 (two-pass v3)
-│   ├── separate-audio-sfx.py     # Demucs SFX separation
-│   ├── srt-to-audio.py           # TTS lokal alternatif
-│   ├── rapikan-jawa.py
-│   ├── rapikan-jawa-semua-season.py
-│   ├── tambah-krama.py
-│   ├── split_srt.py
-│   ├── analyze-srt-density.py
-│   ├── build_source_zip.py
-│   ├── tutor-dubbing-workflow.md  # Workflow pemula
-│   └── tutor-python-lokal.md     # Setup Python
-├── src/                          # Next.js source
-├── api/                          # Vercel functions
-└── public/                       # Static assets
-```
-
-Total: 102 files tracked di git.
+**Opsi:** Google Colab Free (T4 GPU) atau PC RTX 4070/4090
 
 ---
 
 ## 🗂️ Aset User (Tidak Di-Commit ke Repo)
 
 File user pribadi, di MacBook lokal (dengan standar nama):
-- `~/Dubbing/mp4-ori-test-5min.mp4` — source MP4 (5 menit test)
-- `~/Dubbing/srt-id-original.srt` — SRT Indonesia source (timing Mandarin = "penjara")
-- `~/Dubbing/srt-id-dub.srt` — SRT dub result (timing natural, dari DUB web)
-- `~/Dubbing/audio-id-dub.wav` — audio dub result (dari DUB web)
-- `~/Dubbing/retime-map.json` (2.7 MB) — JSON v2.0 untuk FFmpeg (chunks + fittedCues + params)
-- `~/Dubbing/mp4-id-final.mp4` — **HASIL RENDER**
+- `~/Dubbing/mp4-ori-test-5min.mp4` — source MP4 (5 menit test, H.264)
+- `~/Dubbing/srt-id-original.srt` — SRT Indonesia source (160 cues, 5 menit pertama)
+- `~/Dubbing/srt-id-dub.srt` — SRT dub result (160 cues, dari DUB web v2.0)
+- `~/Dubbing/audio-id-dub.wav` — audio dub result (7:23, dari DUB web v2.0)
+- `~/Dubbing/retime-map.json` — JSON v2.0 (chunks + fittedCues + params, dari DUB web)
+- `~/Dubbing/mp4-id-final.mp4` — HASIL RENDER test #15 (175.9 MB, 5:24, visual rusak)
 - `~/Dubbing/venv/` — virtual environment Python
 
 Standar nama file (konvensi project):
@@ -467,20 +354,28 @@ Recording Zoom H6 (260 jam total, di luar repo):
 
 ## 📝 Catatan untuk AI Next Time Buka
 
-1. **Milestone dicapai**: Render `S7-id.mp4` sukses 5 Okt 2026 02:54 WIB. Workflow end-to-end WORKING.
-2. **User workflow verified**: SRT Indonesia DUB = ground truth, bukan translate Mandarin
-3. **Next priority**: Kamus Jawa JSON (riset awal sudah ada di atas)
-4. **Filosofi user**: "ada uang atau tidak, tetap dikerjakan step by step, terdokumentasi rapi"
-5. **Visi besar**: 700 bahasa Indonesia, 169 terancam punah. Project ini prototype digitalisasi.
-6. **Sandbox**: Code up-to-date dengan GitHub. PAT user masih valid di `~/.git-credentials`.
-7. **GPU acceleration**: Catatan untuk masa depan (Colab atau PC NVIDIA), bukan sekarang
-8. **Warning DTS**: Wajar saat concat segments, FFmpeg auto-handle, output valid
+1. **Test #15 milestone**: DTS warnings = 0 (fix DTS complete), durasi 5:24 OK. Tapi visual masih rusak karena skip 10.3% + slow-mo 14x stop-motion. Test #16 jalan dengan fix tpad + skip 100B.
+2. **Filosofi**: "dub = hulu" — kualitas dub web menentukan kualitas seluruh pipeline. Garbage in = garbage out.
+3. **Standar nama file** sudah diterapkan: `mp4-ori-`, `srt-{lang}-original.srt`, `srt-{lang}-dub.srt`, `audio-{lang}-dub.wav`, `mp4-{lang}-final.mp4`.
+4. **Schema v2.0** sudah ter-deploy: chunks, fittedCues, params, sampleRate, gapGuardSec, skippedCues, audioRate, videoRatio, status, overflowSec, head/tail types. Backward compat v1.0 dengan `points` alias.
+5. **Python argumen baru**: `--srt-original`/`--srt-dub`/`--audio-dub` (standar), `--srt-mandarin`/`--srt-jawa`/`--audio-jawa` (alias deprecated, masih jalan).
+6. **Next priority**: Kalau test #16 sukses → test full season S7-id. Kalau gagal → riset minterpolate atau re-encode Pass 2 penuh. Setelah render jalan → baru kerjakan kamus Jawa (besok).
+7. **Filosofi user**: "ada uang atau tidak, tetap dikerjakan step by step, terdokumentasi rapi"
+8. **Visi besar**: 700 bahasa Indonesia, 169 terancam punah. Project ini prototype digitalisasi.
+9. **Sandbox**: Code up-to-date dengan GitHub. PAT user cached di credential helper.
+10. **VoiceStudio riset**: 36 file di `/scripts/voicestudio-study/` (gitignored). Latest commit main = 990f0627. Lihat worklog Task 7-a untuk detail 15 pattern + 8 worth adopting.
 
 ---
 
 ## 📅 Timeline Update
 
-- **5 Okt 2026, 01:00 WIB**: Initial PROGRESS.md, status render 37%
-- **5 Okt 2026, 02:55 WIB**: UPDATE — render SUKSES! Output 3.8 GB, 2h 30m. Milestone dicapai.
-- **Next update**: Setelah user test video + diskusi next step (kamus Jawa)
+- **4 Okt 2026, 21:00 WIB**: Initial PROGRESS.md, test #1-#8 (video rusak DTS)
+- **5 Okt 2026, 02:55 WIB**: UPDATE — render S7-id.mp4 full season SUKSES 3.8GB 2h30m, tapi video rusak (332 DTS warnings, timecode offset)
+- **5 Okt 2026, 03:00-08:00 WIB**: 8 iterasi fix DTS (test #9-#14)
+- **5 Okt 2026, 08:30 WIB**: Update PROGRESS.md — bug history + M1 optimization + riset referensi
+- **5 Okt 2026, 10:00 WIB**: Dub web v2.0 ter-deploy (VoiceStudio adoptions + JSON v2.0 schema)
+- **5 Okt 2026, 10:30 WIB**: Standar nama file diterapkan di web + docs + Python
+- **5 Okt 2026, 11:00 WIB**: Test #15 sub-ID 5 menit — DTS=0 OK, durasi 5:24 OK, TAPI visual rusak (skip 24 seg + slow-mo 14x stop-motion)
+- **5 Okt 2026, 11:30 WIB**: Test #16 sub-ID 5 menit — fix tpad + skip 100B (commit `09234ac`), in progress
+- **Next update**: Setelah test #16 selesai + audit visual
 
