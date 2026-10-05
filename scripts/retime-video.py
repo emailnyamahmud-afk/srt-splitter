@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-retime-video.py — Retime MP4 Mandarin supaya match SRT Jawa baru (SRT = ground truth)
+retime-video.py — Retime MP4 ori supaya match SRT dub baru (SRT = ground truth)
 
 Strategi v3 (Two-Pass with File-Based Segments):
   Problem lama: Filter complex inline dengan 8000+ segments = memory 40GB → swap → stuck
@@ -9,18 +9,37 @@ Strategi v3 (Two-Pass with File-Based Segments):
   Pass 1: Untuk setiap cue/gap, render jadi file MP4 kecil
     - Cue: trim + setpts (slow-mo) + re-encode
     - Gap: trim + stream copy (instant, no re-encode)
-  Pass 2: Concat semua segments + add audio Jawa
+  Pass 2: Concat semua segments + add audio dub
     - Pakai concat demuxer (text list of files)
     - Stream copy untuk video (no re-encode di concat)
-    - Audio: audio Jawa + (opsional) SFX dari MP4 ori
+    - Audio: audio dub + (opsional) SFX dari MP4 ori
 
-Usage:
-  python3 retime-video.py \
-    --mp4 mandarin.mp4 \
-    --srt-mandarin original.srt \
-    --srt-jawa subs-jawa-new.srt \
-    --audio-jawa audio-jawa.wav \
-    --output mp4-jawa.mp4
+STANDAR NAMA FILE (wajib ikut, biar tidak bingung):
+  File source (input):
+    --mp4          mp4-ori[-test-Nmin].mp4     (video MP4 asli, mis. mp4-ori-test-5min.mp4)
+    --srt-original srt-{lang}-original.srt    (SRT source, mis. srt-id-original.srt)
+    --srt-dub      srt-{lang}-dub.srt         (SRT hasil dub dari web, mis. srt-id-dub.srt)
+    --audio-dub    audio-{lang}-dub.wav       (audio hasil dub dari web, mis. audio-id-dub.wav)
+  File output:
+    --output       mp4-{lang}-dub[-test-Nmin].mp4  (video final, mis. mp4-id-dub-test-5min.mp4)
+
+  {lang} = id (Indonesia), jw (Jawa), mn (Mandarin), su (Sunda), etc.
+
+Usage (contoh sub-ID test 5 menit):
+  python3 retime-video.py \\
+    --mp4 mp4-ori-test-5min.mp4 \\
+    --srt-original srt-id-original.srt \\
+    --srt-dub srt-id-dub.srt \\
+    --audio-dub audio-id-dub.wav \\
+    --output mp4-id-dub-test-5min.mp4
+
+Usage (full season Jawa):
+  python3 retime-video.py \\
+    --mp4 mp4-ori.mp4 \\
+    --srt-original srt-mn-original.srt \\
+    --srt-dub srt-jw-dub.srt \\
+    --audio-dub audio-jw-dub.wav \\
+    --output mp4-jw-dub.mp4
 
 Optional:
   --separate-sfx        Pakai Demucs untuk separate SFX
@@ -30,6 +49,11 @@ Optional:
   --workers 4           Parallel FFmpeg processes (default 4)
   --dry-run             Test command tanpa eksekusi
   --keep-temp           Keep temp files untuk debugging
+
+Backward compat:
+  --srt-mandarin        Alias ke --srt-original (lama, jangan dipakai lagi)
+  --srt-jawa            Alias ke --srt-dub (lama, jangan dipakai lagi)
+  --audio-jawa          Alias ke --audio-dub (lama, jangan dipakai lagi)
 
 Requirements:
   - ffmpeg (auto-detect atau --ffmpeg)
@@ -547,22 +571,35 @@ def separate_sfx_with_demucs(mp4_path: str, work_dir: str) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Retime MP4 Mandarin → SRT Jawa (Two-Pass, SRT = Ground of Truth)',
+        description='Retime MP4 ori supaya match SRT dub (Two-Pass, SRT dub = ground truth)',
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument('--mp4', required=True, help='Path ke MP4 Mandarin asli')
-    parser.add_argument('--srt-mandarin', required=True, help='Path ke SRT Mandarin asli')
-    parser.add_argument('--srt-jawa', required=True, help='Path ke SRT Jawa baru (output Fase 2)')
-    parser.add_argument('--audio-jawa', required=True, help='Path ke audio Jawa WAV (output Fase 2)')
-    parser.add_argument('--output', required=True, help='Path output MP4 final')
+    parser.add_argument('--mp4', required=True,
+                        help='Path ke MP4 ori (video asli). Standar: mp4-ori[-test-Nmin].mp4')
+    # Argumen baru (standar):
+    parser.add_argument('--srt-original',
+                        help='Path ke SRT ori (source subtitle). Standar: srt-{lang}-original.srt')
+    parser.add_argument('--srt-dub',
+                        help='Path ke SRT dub (hasil dub dari web). Standar: srt-{lang}-dub.srt')
+    parser.add_argument('--audio-dub',
+                        help='Path ke audio dub WAV (hasil dub dari web). Standar: audio-{lang}-dub.wav')
+    # Backward compat (alias, deprecated):
+    parser.add_argument('--srt-mandarin',
+                        help='(DEPRECATED, alias ke --srt-original) Path ke SRT Mandarin asli')
+    parser.add_argument('--srt-jawa',
+                        help='(DEPRECATED, alias ke --srt-dub) Path ke SRT Jawa baru (output Fase 2)')
+    parser.add_argument('--audio-jawa',
+                        help='(DEPRECATED, alias ke --audio-dub) Path ke audio Jawa WAV (output Fase 2)')
+    parser.add_argument('--output', required=True,
+                        help='Path output MP4 final. Standar: mp4-{lang}-dub[-test-Nmin].mp4')
     parser.add_argument('--ffmpeg', help='Path kustom ke ffmpeg')
     parser.add_argument('--ffprobe', help='Path kustom ke ffprobe')
     parser.add_argument('--separate-sfx', action='store_true',
-                        help='Pakai Demucs untuk separate SFX dari vocals Mandarin')
+                        help='Pakai Demucs untuk separate SFX dari vocals ori')
     parser.add_argument('--sfx-ducking', type=float, default=12.0,
                         help='Volume SFX di-duck (dB). Default 12')
     parser.add_argument('--no-sfx', action='store_true',
-                        help='Buang audio ori total (hanya audio Jawa)')
+                        help='Buang audio ori total (hanya audio dub)')
     parser.add_argument('--dry-run', action='store_true', help='Print plan tanpa eksekusi')
     parser.add_argument('--keep-temp', action='store_true', help='Keep temp files untuk debugging')
     parser.add_argument('--preset', default='fast',
@@ -574,15 +611,37 @@ def main():
                         choices=['libx264', 'h264_videotoolbox'],
                         help='Video encoder: libx264 (software, default) atau h264_videotoolbox (hardware M1/M2, 4x cepat)')
     parser.add_argument('--video-only', action='store_true',
-                        help='Pass 2: concat video saja, TIDAK mix audio Jawa. User import audio terpisah di DaVinci.')
+                        help='Pass 2: concat video saja, TIDAK mix audio dub. User import audio terpisah di DaVinci.')
     args = parser.parse_args()
+
+    # Resolve alias: argumen baru diprioritaskan, fallback ke alias lama (backward compat)
+    srt_original_path = args.srt_original or args.srt_mandarin
+    srt_dub_path = args.srt_dub or args.srt_jawa
+    audio_dub_path = args.audio_dub or args.audio_jawa
+
+    if not srt_original_path:
+        print('Error: --srt-original (atau --srt-mandarin alias) wajib diisi', file=sys.stderr)
+        sys.exit(2)
+    if not srt_dub_path:
+        print('Error: --srt-dub (atau --srt-jawa alias) wajib diisi', file=sys.stderr)
+        sys.exit(2)
+    if not audio_dub_path:
+        print('Error: --audio-dub (atau --audio-jawa alias) wajib diisi', file=sys.stderr)
+        sys.exit(2)
+
+    # Warning kalau pakai argumen lama (deprecated)
+    if args.srt_mandarin or args.srt_jawa or args.audio_jawa:
+        print('⚠ WARNING: --srt-mandarin / --srt-jawa / --audio-jawa adalah alias deprecated.')
+        print('  Pakai --srt-original / --srt-dub / --audio-dub (standar baru).')
+        print(f'  File dipakai: srt-original={srt_original_path}, srt-dub={srt_dub_path}, audio-dub={audio_dub_path}')
+        print()
 
     # Validate inputs
     for label, path in [
-        ('MP4', args.mp4),
-        ('SRT Mandarin', args.srt_mandarin),
-        ('SRT Jawa', args.srt_jawa),
-        ('Audio Jawa', args.audio_jawa),
+        ('MP4 ori', args.mp4),
+        ('SRT ori', srt_original_path),
+        ('SRT dub', srt_dub_path),
+        ('Audio dub', audio_dub_path),
     ]:
         if not os.path.isfile(path):
             print(f'Error: {label} tidak ditemukan: {path}', file=sys.stderr)
@@ -600,13 +659,13 @@ def main():
     print(f'ffprobe: {ffprobe}')
 
     # Parse SRT
-    with open(args.srt_mandarin, 'r', encoding='utf-8') as f:
+    with open(srt_original_path, 'r', encoding='utf-8') as f:
         mandarin_entries = parse_srt(f.read())
-    with open(args.srt_jawa, 'r', encoding='utf-8') as f:
+    with open(srt_dub_path, 'r', encoding='utf-8') as f:
         jawa_entries = parse_srt(f.read())
 
-    print(f'\nSRT Mandarin: {len(mandarin_entries)} cues')
-    print(f'SRT Jawa: {len(jawa_entries)} cues')
+    print(f'\nSRT ori: {len(mandarin_entries)} cues ({srt_original_path})')
+    print(f'SRT dub: {len(jawa_entries)} cues ({srt_dub_path})')
 
     if not mandarin_entries or not jawa_entries:
         print('Error: SRT kosong', file=sys.stderr)
@@ -672,7 +731,7 @@ def main():
 
     # Pass 2: Concat + mix audio
     success = concat_segments(
-        tasks, segments_dir, args.audio_jawa, args.output,
+        tasks, segments_dir, audio_dub_path, args.output,
         ffmpeg, has_audio_ori, args.sfx_ducking,
         video_only=args.video_only, encoder=args.encoder,
     )

@@ -160,53 +160,53 @@ def main():
     print('   Navigasi: ↑↓ arrow keys, Enter konfirmasi, q batal')
     print()
 
-    # Step 1: MP4 Mandarin
-    print('▶ Step 1/8: Pilih file MP4 Mandarin asli')
-    mp4 = select_file('MP4 Mandarin:', ['mp4', 'MP4'])
+    # Step 1: MP4 ori
+    print('▶ Step 1/8: Pilih file MP4 ori (video asli)')
+    mp4 = select_file('MP4 ori (mis. mp4-ori.mp4, mp4-ori-test-5min.mp4):', ['mp4', 'MP4'])
     if not mp4:
         print('Batal.')
         sys.exit(0)
     print(f'  ✓ {mp4}')
     print()
 
-    # Step 2: SRT Mandarin
-    print('▶ Step 2/8: Pilih file SRT Mandarin asli')
-    srt_mandarin = select_file('SRT Mandarin:', ['srt', 'SRT'])
-    if not srt_mandarin:
+    # Step 2: SRT ori (source subtitle)
+    print('▶ Step 2/8: Pilih file SRT ori (source subtitle)')
+    srt_original = select_file('SRT ori (mis. srt-id-original.srt, srt-mn-original.srt):', ['srt', 'SRT'])
+    if not srt_original:
         print('Batal.')
         sys.exit(0)
-    print(f'  ✓ {srt_mandarin}')
+    print(f'  ✓ {srt_original}')
     print()
 
-    # Step 3: SRT Jawa (dari DUB web)
-    print('▶ Step 3/8: Pilih file SRT Jawa baru (dari DUB web)')
-    srt_jawa = select_file(
-        'SRT Jawa (biasanya berakhiran -subs-jawa-new.srt):',
+    # Step 3: SRT dub (dari DUB web)
+    print('▶ Step 3/8: Pilih file SRT dub (hasil DUB dari web)')
+    srt_dub = select_file(
+        'SRT dub (mis. srt-id-dub.srt, srt-jw-dub.srt):',
         ['srt', 'SRT'],
     )
-    if not srt_jawa:
+    if not srt_dub:
         print('Batal.')
         sys.exit(0)
-    print(f'  ✓ {srt_jawa}')
+    print(f'  ✓ {srt_dub}')
     print()
 
-    # Step 4: Audio Jawa WAV
-    print('▶ Step 4/8: Pilih file audio Jawa WAV (dari DUB web)')
-    audio_jawa = select_file(
-        'Audio Jawa WAV (biasanya berakhiran -audio-jawa.wav):',
+    # Step 4: Audio dub WAV (dari DUB web)
+    print('▶ Step 4/8: Pilih file audio dub WAV (hasil DUB dari web)')
+    audio_dub = select_file(
+        'Audio dub WAV (mis. audio-id-dub.wav, audio-jw-dub.wav):',
         ['wav', 'WAV'],
     )
-    if not audio_jawa:
+    if not audio_dub:
         print('Batal.')
         sys.exit(0)
-    print(f'  ✓ {audio_jawa}')
+    print(f'  ✓ {audio_dub}')
     print()
 
     # Step 5: Output MP4
     print('▶ Step 5/8: Pilih nama output MP4')
     output = questionary.text(
         'Nama file output MP4:',
-        default='mp4-jawa.mp4',
+        default='mp4-id-dub.mp4',
     ).ask()
     if not output:
         print('Batal.')
@@ -221,7 +221,7 @@ def main():
         choices=[
             'Mode A — Basic (audio ori di-duck, simpel) — REKOMENDASI',
             'Mode B — Separate SFX dengan Demucs (lebih bersih, butuh 10-20 menit)',
-            'Mode C — Buang audio ori total (hanya audio Jawa)',
+            'Mode C — Buang audio ori total (hanya audio dub)',
         ],
         default='Mode A — Basic (audio ori di-duck, simpel) — REKOMENDASI',
     ).ask()
@@ -236,13 +236,13 @@ def main():
     if 'Mode A' in sfx_mode or 'Mode B' in sfx_mode:
         print('▶ Step 7/8: Pilih SFX ducking level')
         ducking_choice = questionary.select(
-            'SFX ducking (volume SFX turun saat audio Jawa bicara):',
+            'SFX ducking (volume SFX turun saat audio dub bicara):',
             choices=[
                 '-12 dB (default, seimbang) — REKOMENDASI',
                 '-6 dB (SFX lebih keras)',
-                '-18 dB (SFX pelan, audio Jawa dominan)',
+                '-18 dB (SFX pelan, audio dub dominan)',
                 '-24 dB (hampir tidak ada SFX)',
-                '0 dB (SFX dan audio Jawa sama keras)',
+                '0 dB (SFX dan audio dub sama keras)',
             ],
             default='-12 dB (default, seimbang) — REKOMENDASI',
         ).ask()
@@ -274,12 +274,12 @@ def main():
     print(f'  ✓ {action}')
     print()
 
-    # Build args
+    # Build args (pakai argumen standar baru — srt-original, srt-dub, audio-dub)
     args = [
         '--mp4', mp4,
-        '--srt-mandarin', srt_mandarin,
-        '--srt-jawa', srt_jawa,
-        '--audio-jawa', audio_jawa,
+        '--srt-original', srt_original,
+        '--srt-dub', srt_dub,
+        '--audio-dub', audio_dub,
         '--output', output,
     ]
     if 'Mode B' in sfx_mode:
@@ -299,9 +299,9 @@ def main():
     print('║  📋 Ringkasan:' + ' ' * 49 + '║')
     print('╠' + '═' * 64 + '╣')
     print(f'║  MP4      : {mp4:<46}║')
-    print(f'║  SRT M    : {srt_mandarin:<46}║')
-    print(f'║  SRT J    : {srt_jawa:<46}║')
-    print(f'║  Audio J  : {audio_jawa:<46}║')
+    print(f'║  SRT ori  : {srt_original:<46}║')
+    print(f'║  SRT dub  : {srt_dub:<46}║')
+    print(f'║  Audio db : {audio_dub:<46}║')
     print(f'║  Output   : {output:<46}║')
     print(f'║  Mode     : {sfx_mode[:46]:<46}║')
     if 'Mode C' not in sfx_mode:
