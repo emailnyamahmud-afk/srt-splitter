@@ -39,24 +39,38 @@ Aplikasi web untuk split SRT, translate subtitle, dan **dubbing Mandarin → Jaw
 ## Workflow Dubbing Mandarin → Jawa (5 Fase)
 
 ```
-Fase 1: Persiapan bahan
-  MP4 Mandarin + SRT Mandarin (sumber)
+Fase 1: Persiapan bahan (rename ke standar)
+  mp4-ori-{name}.mp4       (MP4 source, mis. mp4-ori-test-5min.mp4)
+  srt-{lang}-original.srt  (SRT source, mis. srt-id-original.srt, srt-mn-original.srt)
         ↓
 Fase 2: Web app (translate + dubbing mode)
-  Upload SRT Mandarin → Translate ke Jawa → Rapikan → Dubbing Mode
-  Output: audio-jawa.wav + subs-jawa-new.srt + retime-map.json
+  Upload SRT ori → Translate (kalau perlu) → Dubbing Mode → Download 3 file
+  Output: audio-jd-dub.wav + srt-dub.srt + retime-map.json
+  Rename ke: audio-{lang}-dub.wav + srt-{lang}-dub.srt + retime-map.json
         ↓
 Fase 3 (opsional): SFX Separation dengan Demucs
-  Input: MP4 Mandarin → Output: vocals-mandarin.wav + sfx-backsound.wav
+  Input: MP4 → Output: vocals-mandarin.wav + sfx-backsound.wav
         ↓
 Fase 4: Retime Video dengan FFmpeg (Python lokal)
-  Input: MP4 + SRT Mandarin + SRT Jawa + audio Jawa (+ SFX)
-  Output: mp4-jawa.mp4 (video slow-mo + audio Jawa + SFX preserve)
+  Input: mp4-ori + srt-{lang}-original + srt-{lang}-dub + audio-{lang}-dub (+ SFX)
+  Output: mp4-{lang}-final.mp4 (video slow-mo + audio dub + SFX preserve)
         ↓
 Fase 5: Edit final di DaVinci Resolve (manual)
 ```
 
 **Detail lengkap workflow:** [`scripts/tutor-dubbing-workflow.md`](scripts/tutor-dubbing-workflow.md)
+
+**Standar nama file** (lihat tabel di `tutor-dubbing-workflow.md` Fase 1):
+
+| File | Format nama | Contoh |
+|---|---|---|
+| MP4 source | `mp4-ori-{name}.mp4` | `mp4-ori-test-5min.mp4` |
+| SRT source | `srt-{lang}-original.srt` | `srt-id-original.srt`, `srt-mn-original.srt` |
+| SRT dub result | `srt-{lang}-dub.srt` | `srt-id-dub.srt`, `srt-jw-dub.srt` |
+| Audio dub result | `audio-{lang}-dub.wav` | `audio-id-dub.wav`, `audio-jw-dub.wav` |
+| Output MP4 final | `mp4-{lang}-final.mp4` | `mp4-jw-final.mp4`, `mp4-id-final.mp4` |
+
+(di mana `{lang}` = `id` untuk Indonesia, `jw` untuk Jawa, `su` untuk Sunda, dst.)
 
 **Estimasi waktu** untuk MP4 3 jam:
 - Fase 1: 5 menit

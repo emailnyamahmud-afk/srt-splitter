@@ -440,14 +440,23 @@ Total: 102 files tracked di git.
 
 ## 🗂️ Aset User (Tidak Di-Commit ke Repo)
 
-File user pribadi, di MacBook lokal:
-- `~/Dubbing/mandarin.mp4` (1.94 GB) — source MP4
-- `~/Dubbing/original.srt` — SRT Indonesia (timing Mandarin)
-- `~/Dubbing/audio-jawa.wav` (449 MB) — audio hasil DUB web
-- `~/Dubbing/subs-jawa-new.srt` — SRT baru (timing natural)
-- `~/Dubbing/retime-map.json` (2.7 MB) — JSON untuk FFmpeg
-- `~/Dubbing/S7-id.mp4` (3.8 GB) — **HASIL RENDER SUKSES!**
+File user pribadi, di MacBook lokal (dengan standar nama):
+- `~/Dubbing/mp4-ori-test-5min.mp4` — source MP4 (5 menit test)
+- `~/Dubbing/srt-id-original.srt` — SRT Indonesia source (timing Mandarin = "penjara")
+- `~/Dubbing/srt-id-dub.srt` — SRT dub result (timing natural, dari DUB web)
+- `~/Dubbing/audio-id-dub.wav` — audio dub result (dari DUB web)
+- `~/Dubbing/retime-map.json` (2.7 MB) — JSON v2.0 untuk FFmpeg (chunks + fittedCues + params)
+- `~/Dubbing/mp4-id-final.mp4` — **HASIL RENDER**
 - `~/Dubbing/venv/` — virtual environment Python
+
+Standar nama file (konvensi project):
+| File | Format | Contoh |
+|---|---|---|
+| MP4 source | `mp4-ori-{name}.mp4` | `mp4-ori-test-5min.mp4` |
+| SRT source | `srt-{lang}-original.srt` | `srt-id-original.srt`, `srt-mn-original.srt` |
+| SRT dub | `srt-{lang}-dub.srt` | `srt-id-dub.srt`, `srt-jw-dub.srt` |
+| Audio dub | `audio-{lang}-dub.wav` | `audio-id-dub.wav`, `audio-jw-dub.wav` |
+| Output final | `mp4-{lang}-final.mp4` | `mp4-id-final.mp4`, `mp4-jw-final.mp4` |
 
 Recording Zoom H6 (260 jam total, di luar repo):
 - 37 video panatacara (~150 jam)

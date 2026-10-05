@@ -17,12 +17,17 @@ Tenang, ini cuma untuk **produksi final** (Fase 4). Untuk translate + generate a
 
 ### Apa itu file JSON yang di-download dari DUB?
 
-Dari web app Dubbing Mode, user download 3 file:
+Dari web app Dubbing Mode, user download 3 file (dengan prefix, mis. `Season-1`):
 ```
-audio-jawa.wav          ← Audio Jawa natural (diputar di video final)
-subs-jawa-new.srt       ← Subtitle Jawa dengan timing baru
-retime-map.json         ← PETUNJUK untuk FFmpeg: timing cue Jawa mana ↔ cue Mandarin mana
+Season-1-audio-jd-dub.wav    ← Audio dub natural (diputar di video final, jd = Jawa Dub project)
+Season-1-srt-dub.srt         ← Subtitle dub dengan timing baru (rename ke srt-{lang}-dub.srt)
+Season-1-retime-map.json     ← PETUNJUK untuk FFmpeg: timing cue dub mana ↔ cue ori mana
 ```
+
+Setelah download, rename file supaya konsisten dengan bahasa test:
+- sub-ID (Indonesia): `srt-id-dub.srt`, `audio-id-dub.wav`
+- sub-Jawa: `srt-jw-dub.srt`, `audio-jw-dub.wav`
+- (audio boleh tetap `audio-jd-dub.wav` — jd = "Jawa Dub" project, konstanta)
 
 **JSON tidak user buka manual.** Itu dibaca otomatis oleh Python script `retime-video.py`. User cukup taruh di folder yang sama dengan file lainnya, lalu jalankan command — JSON akan dipakai otomatis.
 
@@ -152,15 +157,26 @@ cd ~/Dubbing
 
 Artinya: bikin folder bernama "Dubbing" di home directory, lalu masuk ke folder itu.
 
-### Step 2: Copy file sumber ke folder Dubbing
+### Step 2: Copy file sumber ke folder Dubbing (dengan nama standar)
 
-Copy dari folder asli user:
+Standar nama file di folder Dubbing (biar tidak bingung):
+
+| File | Format nama | Contoh |
+|---|---|---|
+| MP4 source | `mp4-ori-{name}.mp4` | `mp4-ori-test-5min.mp4`, `mp4-ori-S01E01.mp4` |
+| SRT source (Indonesia) | `srt-id-original.srt` | timing Mandarin = "penjara" |
+| SRT source (Mandarin) | `srt-mn-original.srt` | timing Mandarin = "penjara" |
+| SRT dub result (dari web) | `srt-{lang}-dub.srt` | `srt-id-dub.srt`, `srt-jw-dub.srt` |
+| Audio dub result (dari web) | `audio-{lang}-dub.wav` | `audio-id-dub.wav`, `audio-jw-dub.wav` |
+| Output MP4 jawa | `mp4-{lang}-final.mp4` | `mp4-jw-final.mp4`, `mp4-id-final.mp4` |
+
+Copy dari folder asli user, sambil rename ke standar:
 ```bash
-# Ganti ~/Downloads/mandarin.mp4 dengan lokasi file MP4 user
-cp ~/Downloads/mandarin.mp4 ~/Dubbing/
+# Copy MP4 source (ganti path sesuai lokasi user)
+cp ~/Downloads/mandarin.mp4 ~/Dubbing/mp4-ori-test-5min.mp4
 
-# Ganti ~/Downloads/original.srt dengan lokasi SRT Mandarin
-cp ~/Downloads/original.srt ~/Dubbing/
+# Copy SRT Indonesia source (ganti path sesuai lokasi user)
+cp ~/Downloads/original.srt ~/Dubbing/srt-id-original.srt
 ```
 
 Cek isi folder:
@@ -170,7 +186,7 @@ ls ~/Dubbing
 
 Harus muncul:
 ```
-mandarin.mp4    original.srt
+mp4-ori-test-5min.mp4    srt-id-original.srt
 ```
 
 ### Step 3: Download script Python dari GitHub
@@ -190,34 +206,37 @@ ls ~/Dubbing
 
 Harus muncul:
 ```
-mandarin.mp4    original.srt    retime-video.py    dubbing-tui.py    separate-audio-sfx.py
+mp4-ori-test-5min.mp4    srt-id-original.srt    retime-video.py    dubbing-tui.py    separate-audio-sfx.py
 ```
 
 ---
 
 ## 🌐 Fase 2: Web App (Sudah User Pahami)
 
-### Step 1: Translate Mandarin → Jawa
+### Step 1: Translate Mandarin → Jawa (opsional, kalau source = Mandarin)
 
 1. Buka https://srt-splitter.vercel.app/
-2. Upload `original.srt`
-3. Di panel Translate, pilih source `Chinese` → target `Jawa`
+2. Upload `srt-mn-original.srt` (kalau source Mandarin) atau `srt-id-original.srt` (kalau source Indonesia)
+3. Di panel Translate, pilih source `Chinese` → target `Jawa` (atau sesuai bahasa)
 4. Klik Translate, tunggu 1-2 menit
-5. Download hasil → simpan sebagai `subs-jawa.srt` di folder `~/Dubbing/`
+5. Download hasil → simpan sebagai `srt-jw-original.srt` di folder `~/Dubbing/` (text Jawa, timing masih Mandarin = "penjara")
 
 ### Step 2: Rapikan tatabahasa Jawa (opsional)
 
 ```bash
 cd ~/Dubbing
-python3 retime-video.py --help  # skip kalau mau langsung
-# Atau pakai script rapikan-jawa.py dari repo
+# Pakai script rapikan-jawa.py dari repo (download kalau belum ada)
+curl -L -o rapikan-jawa.py https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/rapikan-jawa.py
+python3 rapikan-jawa.py srt-jw-original.srt srt-jw-rapi.srt
 ```
 
 ### Step 3: Dubbing Mode di Web App
 
-1. Upload `subs-jawa.srt` ke web app
+1. Upload `srt-jw-rapi.srt` (atau `srt-id-original.srt` untuk test sub-ID) ke web app
 2. Pilih mode **🔴 DUBBING**
-3. Pilih voice: `id-ID-GadisNeural` (perempuan) atau `id-ID-ArdiNeural` (laki-laki)
+3. Pilih voice:
+   - sub-ID test: `id-ID-GadisNeural` (perempuan) atau `id-ID-ArdiNeural` (laki-laki)
+   - sub-Jawa test: `jv-ID-SitiNeural` (perempuan) atau `jv-ID-DimasNeural` (laki-laki)
 4. Pilih speed:
    - **1.0x Natural** → paling natural, video slow-mo paling banyak (rekomendasi awal)
    - **1.25x** → kompromi (audio masih natural, video slow-mo kurang)
@@ -226,17 +245,22 @@ python3 retime-video.py --help  # skip kalau mau langsung
 6. Setelah selesai, klik **Download 3 file (WAV + SRT + JSON)**
 7. Akan download 3 file — simpan semua di `~/Dubbing/`
 
-### Step 4: Rename file hasil download (penting!)
+### Step 4: Rename file hasil download ke standar
 
-File dari web app akan bernama seperti `Season-audio-jawa.wav`, `Season-subs-jawa-new.srt`, `Season-retime-map.json`. Rename supaya gampang:
+File dari web app akan bernama `{prefix}-audio-jd-dub.wav`, `{prefix}-srt-dub.srt`, `{prefix}-retime-map.json`. Rename supaya konsisten dengan bahasa test:
 
 ```bash
 cd ~/Dubbing
 
-# Ganti "Season" dengan prefix user (cek nama file sebenarnya)
-mv Season-audio-jawa.wav audio-jawa.wav
-mv Season-subs-jawa-new.srt subs-jawa-new.srt
+# Contoh untuk sub-ID (ganti "Season" dengan prefix user, dan "id" sesuai bahasa)
+mv Season-audio-jd-dub.wav audio-id-dub.wav
+mv Season-srt-dub.srt     srt-id-dub.srt
 mv Season-retime-map.json retime-map.json
+
+# Contoh untuk sub-Jawa
+# mv Season-audio-jd-dub.wav audio-jw-dub.wav
+# mv Season-srt-dub.srt     srt-jw-dub.srt
+# mv Season-retime-map.json retime-map.json
 ```
 
 ### ✅ Fase 2 Selesai — Cek Folder
@@ -245,14 +269,14 @@ mv Season-retime-map.json retime-map.json
 ls ~/Dubbing
 ```
 
-Harus muncul:
+Harus muncul (untuk sub-ID test):
 ```
-mandarin.mp4          original.srt          retime-video.py        separate-audio-sfx.py
-audio-jawa.wav        subs-jawa-new.srt     dubbing-tui.py
+mp4-ori-test-5min.mp4    srt-id-original.srt    retime-video.py        separate-audio-sfx.py
+srt-id-dub.srt          audio-id-dub.wav      dubbing-tui.py
 retime-map.json
 ```
 
-> **Catatan tentang retime-map.json:** File ini berisi petunjuk timing untuk FFmpeg. User TIDAK perlu buka atau baca file ini — Python script akan baca otomatis. Cukup taruh di folder yang sama.
+> **Catatan tentang retime-map.json:** File ini berisi petunjuk timing untuk FFmpeg (schema v2.0: chunks, fittedCues, params). User TIDak perlu buka atau baca file ini — Python script akan baca otomatis. Cukup taruh di folder yang sama.
 
 ---
 
@@ -272,14 +296,14 @@ python3 dubbing-tui.py
 Akan muncul menu interaktif:
 ```
 ╔══════════════════════════════════════════════════════════════════╗
-║  🎬 Dubbing Mandarin → Jawa (TUI Mode)                          ║
-║  Workflow: MP4 + SRT Mandarin + Audio Jawa → MP4 Final         ║
+║  🎬 Dubbing (TUI Mode)                                          ║
+║  Workflow: MP4 + SRT ori + SRT dub + Audio dub → MP4 Final     ║
 ╚══════════════════════════════════════════════════════════════════╝
 
-Step 1: Pilih file MP4 Mandarin asli
+Step 1: Pilih file MP4 ori (mis. mp4-ori-test-5min.mp4)
 ┌─────────────────────────────────────────────┐
-│ ❯ mandarin.mp4                              │ ← arrow ↑↓ navigasi
-│   test-mandarin.mp4                         │
+│ ❯ mp4-ori-test-5min.mp4                     │ ← arrow ↑↓ navigasi
+│   mp4-ori-S01E01.mp4                         │
 │   ~/Downloads/movie-3jam.mp4                │
 │   [Ketik path manual]                       │
 └─────────────────────────────────────────────┘
@@ -287,11 +311,11 @@ Step 1: Pilih file MP4 Mandarin asli
 ```
 
 Ikuti 8 step di layar:
-1. Pilih MP4 Mandarin (arrow ↑↓, Enter)
-2. Pilih SRT Mandarin
-3. Pilih SRT Jawa (dari DUB web)
-4. Pilih Audio Jawa WAV (dari DUB web)
-5. Pilih nama output MP4 (default: mp4-jawa.mp4)
+1. Pilih MP4 ori (mis. `mp4-ori-test-5min.mp4`)
+2. Pilih SRT ori (mis. `srt-id-original.srt` atau `srt-mn-original.srt`)
+3. Pilih SRT dub (mis. `srt-id-dub.srt` atau `srt-jw-dub.srt`)
+4. Pilih Audio dub (mis. `audio-id-dub.wav` atau `audio-jw-dub.wav`)
+5. Pilih nama output MP4 (default: `mp4-jw-final.mp4`)
 6. Pilih mode SFX:
    - **Mode A — Basic** (audio ori di-duck) — REKOMENDASI
    - Mode B — Separate SFX dengan Demucs (lebih bersih)
@@ -305,14 +329,17 @@ Setelah semua step, akan muncul:
 ```
 ╔══════════════════════════════════════════════════════════════════╗
 ║  📋 Ringkasan:                                                  ║
-║  MP4      : mandarin.mp4                                       ║
-║  SRT M    : original.srt                                       ║
+║  MP4      : mp4-ori-test-5min.mp4                              ║
+║  SRT ori  : srt-id-original.srt                                 ║
+║  SRT dub  : srt-id-dub.srt                                      ║
+║  Audio    : audio-id-dub.wav                                    ║
+║  Output   : mp4-jw-final.mp4                                    ║
 ║  ...                                                            ║
 ║  Action   : DRY-RUN                                            ║
 ╚══════════════════════════════════════════════════════════════════╝
 
 === Command yang akan dijalankan ===
-python3 retime-video.py --mp4 mandarin.mp4 --srt-mandarin ...
+python3 retime-video.py --mp4 mp4-ori-test-5min.mp4 --srt-original srt-id-original.srt ...
 
 Konfirmasi? [Y/n]:
 ```
@@ -330,16 +357,28 @@ Untuk RUN beneran, jalankan ulang TUI dan pilih RUN.
 
 Kalau user sudah mahir dan mau cepat (tanpa TUI), ketik langsung:
 
-**Mode A: Basic (tanpa SFX separation, paling simpel)**
+**Mode A: Basic (tanpa SFX separation, paling simpel) — sub-ID test**
 
 ```bash
 cd ~/Dubbing
 python3 retime-video.py \
-  --mp4 mandarin.mp4 \
-  --srt-mandarin original.srt \
-  --srt-jawa subs-jawa-new.srt \
-  --audio-jawa audio-jawa.wav \
-  --output mp4-jawa.mp4
+  --mp4 mp4-ori-test-5min.mp4 \
+  --srt-original srt-id-original.srt \
+  --srt-dub srt-id-dub.srt \
+  --audio-dub audio-id-dub.wav \
+  --output mp4-id-final.mp4
+```
+
+**Mode A: Basic — sub-Jawa test**
+
+```bash
+cd ~/Dubbing
+python3 retime-video.py \
+  --mp4 mp4-ori-test-5min.mp4 \
+  --srt-original srt-mn-original.srt \
+  --srt-dub srt-jw-dub.srt \
+  --audio-dub audio-jw-dub.wav \
+  --output mp4-jw-final.mp4
 ```
 
 **Mode B: Advanced (dengan SFX separation via Demucs)**
@@ -347,11 +386,11 @@ python3 retime-video.py \
 ```bash
 cd ~/Dubbing
 python3 retime-video.py \
-  --mp4 mandarin.mp4 \
-  --srt-mandarin original.srt \
-  --srt-jawa subs-jawa-new.srt \
-  --audio-jawa audio-jawa.wav \
-  --output mp4-jawa.mp4 \
+  --mp4 mp4-ori-test-5min.mp4 \
+  --srt-original srt-id-original.srt \
+  --srt-dub srt-id-dub.srt \
+  --audio-dub audio-id-dub.wav \
+  --output mp4-id-final.mp4 \
   --separate-sfx \
   --sfx-ducking 12
 ```
@@ -361,13 +400,15 @@ python3 retime-video.py \
 Tambah `--dry-run` di akhir command, contoh:
 ```bash
 python3 retime-video.py \
-  --mp4 mandarin.mp4 \
-  --srt-mandarin original.srt \
-  --srt-jawa subs-jawa-new.srt \
-  --audio-jawa audio-jawa.wav \
-  --output mp4-jawa.mp4 \
+  --mp4 mp4-ori-test-5min.mp4 \
+  --srt-original srt-id-original.srt \
+  --srt-dub srt-id-dub.srt \
+  --audio-dub audio-id-dub.wav \
+  --output mp4-id-final.mp4 \
   --dry-run
 ```
+
+**Catatan**: argumen lama (`--srt-mandarin`, `--srt-jawa`, `--audio-jawa`) masih bisa dipakai sebagai alias (deprecated), tapi sebaiknya pakai yang baru (`--srt-original`, `--srt-dub`, `--audio-dub`).
 
 ### Estimasi Waktu Fase 4
 
@@ -380,24 +421,24 @@ python3 retime-video.py \
 
 Tunggu sampai muncul:
 ```
-✓ Output: mp4-jawa.mp4
+✓ Output: mp4-id-final.mp4 (atau mp4-jw-final.mp4)
   Size: XX MB
   Duration: HH:MM:SS
 ```
 
 ### ✅ Fase 4 Selesai
 
-File `mp4-jawa.mp4` ada di `~/Dubbing/`. Buka dengan QuickTime atau DaVinci untuk cek hasil.
+File `mp4-id-final.mp4` (atau `mp4-jw-final.mp4`) ada di `~/Dubbing/`. Buka dengan QuickTime atau DaVinci untuk cek hasil.
 
 ---
 
 ## 🎨 Fase 5: Edit Final di DaVinci Resolve (Manual)
 
 1. Buka DaVinci Resolve
-2. Drag `mp4-jawa.mp4` ke timeline
+2. Drag `mp4-jw-final.mp4` (atau `mp4-id-final.mp4`) ke timeline
 3. Cek:
-   - **Audio Jawa** natural (tidak robot)
-   - **Video slow-mo** di cue pendek (wajar, supaya match audio Jawa)
+   - **Audio dub** natural (tidak robot)
+   - **Video slow-mo** di cue pendek (wajar, supaya match audio dub)
    - **SFX/backsound** masih ada (kalau pakai mode B)
 4. Edit final (opsional):
    - Color grade
@@ -425,7 +466,7 @@ File `mp4-jawa.mp4` ada di `~/Dubbing/`. Buka dengan QuickTime atau DaVinci untu
 
 **A:** Itu artinya "command lanjut ke baris berikutnya". Bisa juga ditulis 1 baris saja:
 ```bash
-python3 retime-video.py --mp4 mandarin.mp4 --srt-mandarin original.srt --srt-jawa subs-jawa-new.srt --audio-jawa audio-jawa.wav --output mp4-jawa.mp4
+python3 retime-video.py --mp4 mp4-ori-test-5min.mp4 --srt-original srt-id-original.srt --srt-dub srt-id-dub.srt --audio-dub audio-id-dub.wav --output mp4-id-final.mp4
 ```
 
 ### Q: JSON itu apa? Harus saya buka?
@@ -438,9 +479,9 @@ python3 retime-video.py --mp4 mandarin.mp4 --srt-mandarin original.srt --srt-jaw
 
 ### Q: Video final saya kenapa slow-mo di beberapa scene?
 
-**A:** Itu wajar. Karena audio Jawa lebih panjang dari cue Mandarin asli, video harus melambat supaya timing-nya match. Kalau slow-mo terlalu janggal, naikkan speed di Fase 2 (1.0x → 1.25x atau 1.5x).
+**A:** Itu wajar. Karena audio dub lebih panjang dari cue ori asli, video harus melambat supaya timing-nya match. Kalau slow-mo terlalu janggal, naikkan speed di Fase 2 (1.0x → 1.25x atau 1.5x).
 
-### Q: Audio Jawa terdengar robot di beberapa cue?
+### Q: Audio dub terdengar robot di beberapa cue?
 
 **A:** Kalau pakai speed 1.0x, seharusnya tidak ada robot. Tapi kalau ada, kemungkinan Edge TTS proxy error — coba generate ulang di web app. Atau pakai 1.5x (audio lebih cepat tapi tetap jelas).
 
@@ -478,14 +519,14 @@ Demucs belum terinstall. Install:
 pip3 install demucs
 ```
 
-### Error: `FileNotFoundError: mandarin.mp4`
+### Error: `FileNotFoundError: mp4-ori-test-5min.mp4`
 
 User tidak di folder yang benar. Ketik:
 ```bash
 cd ~/Dubbing
 ls
 ```
-Pastikan file `mandarin.mp4` ada.
+Pastikan file `mp4-ori-test-5min.mp4` (atau nama MP4 source user) ada.
 
 ### Error: `Edge TTS proxy error`
 
@@ -503,63 +544,65 @@ Normal. Untuk file besar, butuh banyak CPU. Tips:
 ### Output video gelap / tidak ada audio
 
 Cek:
-- `mp4-jawa.mp4` benar ada di folder?
+- `mp4-jw-final.mp4` (atau `mp4-id-final.mp4`) benar ada di folder?
 - File size > 1 MB?
 - Coba buka dengan VLC player (kadang QuickTime bermasalah)
 
 ---
 
-## 📋 Checklist Praktek untuk Audio 6 Menit
+## 📋 Checklist Praktek untuk Audio 5 Menit (sub-ID test)
 
-Test user dengan audio 6 menit yang sudah di-generate dari DUB web:
+Test user dengan audio 5 menit yang sudah di-generate dari DUB web:
 
 ```bash
 # 1. Setup folder
 mkdir -p ~/Dubbing
 cd ~/Dubbing
 
-# 2. Copy file sumber (ganti path sesuai lokasi user)
-cp ~/Downloads/mandarin.mp4 .
-cp ~/Downloads/original.srt .
+# 2. Copy file sumber dengan nama standar (ganti path sesuai lokasi user)
+cp ~/Downloads/mandarin.mp4 mp4-ori-test-5min.mp4
+cp ~/Downloads/original.srt srt-id-original.srt
 
-# 3. Copy 3 file dari DUB web (audio-jawa.wav, subs-jawa-new.srt, retime-map.json)
-# Bisa drag dari Finder ke folder Dubbing, atau:
-cp ~/Downloads/audio-jawa.wav .
-cp ~/Downloads/subs-jawa-new.srt .
-cp ~/Downloads/retime-map.json .
+# 3. Copy 3 file dari DUB web (audio-jd-dub.wav, srt-dub.srt, retime-map.json)
+#    Bisa drag dari Finder ke folder Dubbing, atau:
+cp ~/Downloads/Season-audio-jd-dub.wav audio-id-dub.wav
+cp ~/Downloads/Season-srt-dub.srt           srt-id-dub.srt
+cp ~/Downloads/Season-retime-map.json       retime-map.json
 
 # 4. Download script Python
 curl -L -o retime-video.py https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/retime-video.py
 
 # 5. Cek folder
 ls
-# Harus muncul: audio-jawa.wav  mandarin.mp4   original.srt  retime-map.json  retime-video.py  subs-jawa-new.srt
+# Harus muncul: audio-id-dub.wav  mp4-ori-test-5min.mp4  srt-id-original.srt  retime-map.json  retime-video.py  srt-id-dub.srt
 
 # 6. Dry-run (test command)
 python3 retime-video.py \
-  --mp4 mandarin.mp4 \
-  --srt-mandarin original.srt \
-  --srt-jawa subs-jawa-new.srt \
-  --audio-jawa audio-jawa.wav \
-  --output mp4-jawa.mp4 \
+  --mp4 mp4-ori-test-5min.mp4 \
+  --srt-original srt-id-original.srt \
+  --srt-dub srt-id-dub.srt \
+  --audio-dub audio-id-dub.wav \
+  --output mp4-id-final.mp4 \
   --dry-run
 
 # 7. Kalau dry-run OK, run beneran
 python3 retime-video.py \
-  --mp4 mandarin.mp4 \
-  --srt-mandarin original.srt \
-  --srt-jawa subs-jawa-new.srt \
-  --audio-jawa audio-jawa.wav \
-  --output mp4-jawa.mp4
+  --mp4 mp4-ori-test-5min.mp4 \
+  --srt-original srt-id-original.srt \
+  --srt-dub srt-id-dub.srt \
+  --audio-dub audio-id-dub.wav \
+  --output mp4-id-final.mp4 \
+  --encoder h264_videotoolbox \
+  --workers 4
 
 # 8. Buka hasil
-open mp4-jawa.mp4
+open mp4-id-final.mp4
 ```
 
-**Estimasi waktu untuk audio 6 menit:**
+**Estimasi waktu untuk audio 5 menit (H.264 + VideoToolbox M1):**
 - Setup: 15 menit (sekali)
 - Fase 1-2: 10 menit (kalau sudah punya audio dari DUB web)
-- Fase 4: 2-5 menit
+- Fase 4: 5-8 menit
 - **Total: ~30 menit untuk test pertama**
 
 Kalau sukses, user bisa langsung pakai workflow ini untuk video 1 jam, 3 jam, dst. Cuma beda di waktu rendering FFmpeg.

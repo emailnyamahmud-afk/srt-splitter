@@ -222,8 +222,9 @@ Fase 1: Persiapan bahan
   MP4 Mandarin + SRT Mandarin (sumber)
         ↓
 Fase 2: Web app (translate + dubbing mode)
-  Upload SRT → Translate ke Jawa → Dubbing Mode
-  Output: audio-jawa.wav + subs-jawa-new.srt + retime-map.json
+  Upload SRT ori → Translate ke Jawa → Dubbing Mode → Download 3 file
+  Output: audio-jd-dub.wav + srt-dub.srt + retime-map.json
+  Rename ke: audio-{lang}-dub.wav + srt-{lang}-dub.srt + retime-map.json
         ↓
 Fase 3 (opsional): SFX Separation dengan Demucs
   Input: MP4 → Output: vocals-mandarin.wav + sfx-backsound.wav

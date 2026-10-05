@@ -263,12 +263,20 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
 
   const downloadDubbingFiles = useCallback(() => {
     if (!dubbingResult) return
-    downloadBlob(`${prefix}-audio-jawa.wav`, dubbingResult.audioBlob)
+    // Standar nama file (konvensi project):
+    //   {prefix}-audio-jd-dub.wav      (jd = Jawa Dub, konstanta project)
+    //   {prefix}-srt-dub.srt           (tanpa lang code — user rename ke srt-id-dub.srt / srt-jw-dub.srt)
+    //   {prefix}-retime-map.json
+    //
+    // Setelah download, user rename sesuai bahasa test:
+    //   sub-ID  → srt-id-dub.srt, audio-id-dub.wav (atau biarkan jd)
+    //   sub-Jawa → srt-jw-dub.srt, audio-jw-dub.wav
+    downloadBlob(`${prefix}-audio-jd-dub.wav`, dubbingResult.audioBlob)
     const srtBlob = new Blob([dubbingResult.srtContent], { type: 'application/x-subrip;charset=utf-8' })
-    downloadBlob(`${prefix}-subs-jawa-new.srt`, srtBlob)
+    downloadBlob(`${prefix}-srt-dub.srt`, srtBlob)
     const jsonBlob = new Blob([dubbingResult.retimeMapJson], { type: 'application/json' })
     downloadBlob(`${prefix}-retime-map.json`, jsonBlob)
-    toast.success('3 file didownload: audio WAV + SRT baru + retime-map JSON')
+    toast.success('3 file didownload: audio-jd-dub.wav + srt-dub.srt + retime-map.json')
   }, [dubbingResult, prefix])
 
 
@@ -719,8 +727,16 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
                 <div className="text-xs">
                   <strong>Petunjuk Fase 3 (Python):</strong>
                   <ol className="list-decimal ml-4 mt-1 space-y-0.5 text-muted-foreground">
-                    <li>Download 3 file (WAV + SRT baru + JSON)</li>
-                    <li>Jalankan <code className="px-1 rounded bg-amber-100 dark:bg-amber-950/40">python scripts/retime-video.py --mp4 mandarin.mp4 --srt-mandarin original.srt --srt-jawa {prefix}-subs-jawa-new.srt --audio-jawa {prefix}-audio-jawa.wav --output mp4-jawa.mp4</code></li>
+                    <li>Download 3 file: <code>{prefix}-audio-jd-dub.wav</code>, <code>{prefix}-srt-dub.srt</code>, <code>{prefix}-retime-map.json</code></li>
+                    <li>Rename file sesuai bahasa test:
+                      <ul className="list-disc ml-4 mt-1">
+                        <li>sub-ID: <code>{prefix}-srt-dub.srt</code> → <code>srt-id-dub.srt</code>, <code>{prefix}-audio-jd-dub.wav</code> → <code>audio-id-dub.wav</code></li>
+                        <li>sub-Jawa: <code>{prefix}-srt-dub.srt</code> → <code>srt-jw-dub.srt</code>, <code>{prefix}-audio-jd-dub.wav</code> → <code>audio-jw-dub.wav</code></li>
+                      </ul>
+                    </li>
+                    <li>Rename MP4 source: <code>mp4-ori-test-5min.mp4</code> (atau nama MP4 source user)</li>
+                    <li>Rename SRT source: <code>srt-id-original.srt</code> (untuk sub-ID) atau <code>srt-mn-original.srt</code> (untuk Mandarin)</li>
+                    <li>Jalankan: <code className="px-1 rounded bg-amber-100 dark:bg-amber-950/40">python retime-video.py --mp4 mp4-ori-test-5min.mp4 --srt-original srt-id-original.srt --srt-dub srt-id-dub.srt --audio-dub audio-id-dub.wav --output mp4-jawa.mp4</code></li>
                     <li>Output MP4 jawa ready diedit di DaVinci Resolve</li>
                   </ol>
                 </div>
