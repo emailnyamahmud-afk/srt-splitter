@@ -485,3 +485,29 @@ Stage Summary:
 - File baru: demucs-tui.py, mix-audio-dub.py (update --sfx-wav), tutor-demucs-setup.md
 - File deprecated: retime-video.py (tetap di repo sebagai backup)
 - Next: test full season S7-id (2.5 jam) → kamus Jawa JSON
+
+---
+Task ID: 10
+Agent: main
+Task: Supabase PostgreSQL client + Rapikan SRT Jawa panel + kamus JSON + yt-dlp TUI + mix-tui + Demucs TUI
+
+Work Log (6 Okt 2026, dini hari 00:00-02:30 WIB):
+- Test #25 MILESTONE: Demucs + mode ON + mix = 10000% sync, MP4 profesional
+- Silence bug fix: hapus -shortest + makeup=0 di mix
+- Repo audit: 162 → 108 tracked files (54 sampah di-untrack)
+- mix-tui.py (NEW): TUI untuk mix SFX + dub + MP4, 6 step
+- yt-dlp-tui.py (NEW): TUI download YouTube 1080p H.264 + audio
+- Kamus Jawa JSON: 157 entri (ngoko/krama/krama_inggil, aksén tidak dipakai)
+- rapikan-jawa.ts: library untuk kamus check + strip aksén + suggest register
+- rapikan-jawa-panel.tsx (NEW): SRT editor inline + toggle ngoko/krama + highlight
+- supabase.ts (NEW): PostgreSQL client, CRUD untuk SRT project + cue data
+- .env.example: template untuk NEXT_PUBLIC_SUPABASE_URL + ANON_KEY
+
+Stage Summary:
+- Workflow end-to-end JALAN: yt-dlp → demucs → web ON+SmartFit → mix → MP4 profesional
+- Web app: 4 panel (Split, Translate, Rapikan Jawa, TTS) + Smart Fit + pitch control
+- Python: 3 TUI (yt-dlp, demucs, mix) + backup (retime, dubbing-tui)
+- Kamus Jawa: 157 entri, bisa expand manual
+- Supabase: client siap, tunggu env vars dari user (besok)
+- Aksén Jawa tidak dipakai (Edge TTS tidak bisa baca)
+- Filosofi: video = ground truth, audio dub fit SRT ori, SFX bersih dari Demucs
