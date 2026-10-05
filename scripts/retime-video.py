@@ -304,7 +304,10 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
     cumulative_offset = task.get('cumulative_offset', 0.0)
 
     # Skip kalau sudah ada (resume support)
-    if os.path.isfile(output_file) and os.path.getsize(output_file) > 1000:
+    # FIX audit 5 Okt: sync threshold ke 100 bytes (sama dengan concat_segments Pass 2)
+    # Sebelumnya 1000 bytes — segment pendek (gap 0.05s, cue 0.17s) di-skip di resume,
+    # tapi concat Pass 2 juga skip → segment hilang dari output.
+    if os.path.isfile(output_file) and os.path.getsize(output_file) > 100:
         return {'index': seg_idx, 'output_file': output_file, 'status': 'skipped'}
 
     # Encoder params: libx264 (software) atau h264_videotoolbox (hardware M1)
@@ -317,8 +320,15 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
 
     use_stream_copy = 0.95 <= factor <= 1.05 and task['type'] in ('gap', 'tail')
 
+    # FIX audit 5 Okt (Bug #6, #7):
+    # Sebelumnya: -i mp4 lalu -ss mp4_start (slow seek, decode dari 0) + -t target_dur (post-setpts durasi)
+    # VoiceStudio riset: "-ss sebelum -i = fast seek (decode dari keyframe sebelum), O(n) bukan O(n²)"
+    # "-t harus pakai INPUT durasi (mp4_dur), bukan OUTPUT durasi (target_dur)"
+    # Kalau factor=14x: mp4_dur=0.17s, target_dur=2.39s → FFmpeg baca 2.39s input padahal cuma 0.17s dipakai
+    # Setelah fix: -ss sebelum -i, -t pakai mp4_dur + 0.5s margin (untuk akurasi trim)
+
     if use_stream_copy:
-        # Stream copy dengan output_ts_offset = timestamp akumulatif
+        # Stream copy: -ss sebelum -i (fast seek), -t pakai mp4_dur (input durasi)
         cmd = [
             ffmpeg_path, '-y',
             '-hwaccel', 'videotoolbox',
@@ -332,22 +342,18 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
             output_file,
         ]
     else:
-        # Re-encode: setpts untuk slow-mo + output_ts_offset untuk timestamp akumulatif
-        # fps=30 filter SEBELUM setpts (VFR guard, dari riset VoiceStudio)
+        # Re-encode: -ss sebelum -i (fast seek), -t pakai mp4_dur (input durasi, BUKAN target_dur)
+        # Filter: fps=30 (VFR guard) → setpts * factor (slow-mo)
+        # Output duration ditentukan oleh filter (mp4_dur * factor = target_dur)
         #
-        # Catatan test #16 (5 Okt 2026): tpad=stop_mode=clone untuk cap slow-mo 2x
-        # GAGAL — PTS overflow (DTS 141670994490979984, INT64_MAX/1000) di h264_videotoolbox.
-        # Cloned frames dapet PTS yang overflow saat di-mux → Pass 2 drop frames invalid.
-        # 16 cue dengan factor > 2x sekarang frame hilang (lebih buruk dari stop-motion).
-        # Keputusan: REVERT tpad. Slow-mo factor > 2x kembali ke setpts * factor (stop-motion,
-        # tapi frame ada). Skip threshold 100B tetap (fix #16 yang bagus).
-        # Future: kalau mau smooth slow-mo > 2x, pakai minterpolate (CPU heavy).
+        # Catatan test #16 (5 Okt 2026): tpad=stop_mode=clone GAGAL — PTS overflow di h264_videotoolbox.
+        # Slow-mo factor > 2x tetap pakai setpts * factor (stop-motion, frame ada).
         cmd = [
             ffmpeg_path, '-y',
             '-hwaccel', 'videotoolbox',
-            '-i', mp4_path,
             '-ss', f'{mp4_start:.3f}',
-            '-t', f'{target_dur:.3f}',
+            '-i', mp4_path,
+            '-t', f'{mp4_dur + 0.1:.3f}',  # +100ms margin untuk akurasi trim
             '-vf', f'fps=30,setpts=(PTS-STARTPTS)*{factor:.6f}',
             *enc_params,
             '-output_ts_offset', f'{cumulative_offset:.6f}',
@@ -686,10 +692,14 @@ def main():
     mp4_duration = get_mp4_duration(ffprobe, args.mp4)
     audio_streams = get_mp4_audio_streams(ffprobe, args.mp4)
     has_audio_ori = (not args.no_sfx) and len(audio_streams) > 0
-
     print(f'MP4 durasi: {format_time_ffmpeg(mp4_duration)}')
-    print(f'Audio streams di MP4: {len(audio_streams)}')
-    print(f'SFX preserve: {"YA" if has_audio_ori else "TIDAK"}')
+    print(f'MP4 audio streams: {len(audio_streams)}')
+    print(f'Audio dub replace: {"YA (audio ori MP4 di-drop, hanya audio dub)" if has_audio_ori else "TIDAK"}')
+    print(f'SFX preserve (Demucs): {"AKTIF" if args.separate_sfx else "TIDAK (audio ori di-drop total)"}')
+    if args.sfx_ducking and not args.separate_sfx:
+        print(f'⚠ Catatan: --sfx-ducking {args.sfx_ducking} dB TIDAK ADA EFEK tanpa --separate-sfx')
+        print(f'   Saat ini audio ori MP4 di-drop total (di-mode C), tidak ada SFX untuk di-duck.')
+        print(f'   Untuk SFX preservation: gunakan --separate-sfx (butuh Demucs install).')
     print(f'Preset: {args.preset}')
     print(f'Encoder: {args.encoder}')
     print(f'Workers: {args.workers}')
