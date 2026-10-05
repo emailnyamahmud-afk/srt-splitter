@@ -1,0 +1,782 @@
+     1→#!/usr/bin/env python3
+     2→"""
+     3→retime-video.py — Retime MP4 ori supaya match SRT dub baru (SRT = ground truth)
+     4→
+     5→Strategi v3 (Two-Pass with File-Based Segments):
+     6→  Problem lama: Filter complex inline dengan 8000+ segments = memory 40GB → swap → stuck
+     7→  Solusi: Render per-segment sebagai file kecil, lalu concat
+     8→
+     9→  Pass 1: Untuk setiap cue/gap, render jadi file MP4 kecil
+    10→    - Cue: trim + setpts (slow-mo) + re-encode
+    11→    - Gap: trim + stream copy (instant, no re-encode)
+    12→  Pass 2: Concat semua segments + add audio dub
+    13→    - Pakai concat demuxer (text list of files)
+    14→    - Stream copy untuk video (no re-encode di concat)
+    15→    - Audio: audio dub + (opsional) SFX dari MP4 ori
+    16→
+    17→STANDAR NAMA FILE (wajib ikut, biar tidak bingung):
+    18→  File source (input):
+    19→    --mp4          mp4-ori[-test-Nmin].mp4     (video MP4 asli, mis. mp4-ori-test-5min.mp4)
+    20→    --srt-original srt-{lang}-original.srt    (SRT source, mis. srt-id-original.srt)
+    21→    --srt-dub      srt-{lang}-dub.srt         (SRT hasil dub dari web, mis. srt-id-dub.srt)
+    22→    --audio-dub    audio-{lang}-dub.wav       (audio hasil dub dari web, mis. audio-id-dub.wav)
+    23→  File output:
+    24→    --output       mp4-{lang}-dub[-test-Nmin].mp4  (video final, mis. mp4-id-dub-test-5min.mp4)
+    25→
+    26→  {lang} = id (Indonesia), jw (Jawa), mn (Mandarin), su (Sunda), etc.
+    27→
+    28→Usage (contoh sub-ID test 5 menit):
+    29→  python3 retime-video.py \\
+    30→    --mp4 mp4-ori-test-5min.mp4 \\
+    31→    --srt-original srt-id-original.srt \\
+    32→    --srt-dub srt-id-dub.srt \\
+    33→    --audio-dub audio-id-dub.wav \\
+    34→    --output mp4-id-dub-test-5min.mp4
+    35→
+    36→Usage (full season Jawa):
+    37→  python3 retime-video.py \\
+    38→    --mp4 mp4-ori.mp4 \\
+    39→    --srt-original srt-mn-original.srt \\
+    40→    --srt-dub srt-jw-dub.srt \\
+    41→    --audio-dub audio-jw-dub.wav \\
+    42→    --output mp4-jw-dub.mp4
+    43→
+    44→Optional:
+    45→  --separate-sfx        Pakai Demucs untuk separate SFX
+    46→  --sfx-ducking 12      Volume SFX turun 12dB
+    47→  --no-sfx              Buang audio ori total
+    48→  --preset fast         FFmpeg preset (fast/medium/slow)
+    49→  --workers 4           Parallel FFmpeg processes (default 4)
+    50→  --dry-run             Test command tanpa eksekusi
+    51→  --keep-temp           Keep temp files untuk debugging
+    52→
+    53→Backward compat:
+    54→  --srt-mandarin        Alias ke --srt-original (lama, jangan dipakai lagi)
+    55→  --srt-jawa            Alias ke --srt-dub (lama, jangan dipakai lagi)
+    56→  --audio-jawa          Alias ke --audio-dub (lama, jangan dipakai lagi)
+    57→
+    58→Requirements:
+    59→  - ffmpeg (auto-detect atau --ffmpeg)
+    60→  - Python 3.8+
+    61→  - Demucs (opsional, untuk SFX separation)
+    62→"""
+    63→
+    64→import argparse
+    65→import json
+    66→import os
+    67→import re
+    68→import shutil
+    69→import subprocess
+    70→import sys
+    71→import tempfile
+    72→import time
+    73→from concurrent.futures import ProcessPoolExecutor, as_completed
+    74→from pathlib import Path
+    75→
+    76→
+    77→# ============================================================
+    78→# SRT parsing
+    79→# ============================================================
+    80→
+    81→def parse_srt(content: str):
+    82→    """Parse SRT string jadi list of {index, start, end, text}."""
+    83→    normalized = content.replace('\r\n', '\n').replace('\r', '\n').strip()
+    84→    if not normalized:
+    85→        return []
+    86→    blocks = re.split(r'\n\s*\n', normalized)
+    87→    entries = []
+    88→    for block in blocks:
+    89→        lines = [l for l in block.split('\n') if l.strip()]
+    90→        if not lines:
+    91→            continue
+    92→        time_idx = -1
+    93→        for i, line in enumerate(lines):
+    94→            if '-->' in line:
+    95→                time_idx = i
+    96→                break
+    97→        if time_idx == -1:
+    98→            continue
+    99→        m = re.match(
+   100→            r'(\d{1,2}:\d{2}:\d{2}[,.]\d{1,3})\s*-->\s*(\d{1,2}:\d{2}:\d{2}[,.]\d{1,3})',
+   101→            lines[time_idx],
+   102→        )
+   103→        if not m:
+   104→            continue
+   105→        start = parse_time(m.group(1))
+   106→        end = parse_time(m.group(2))
+   107→        text = '\n'.join(lines[time_idx + 1:])
+   108→        entries.append({
+   109→            'index': len(entries) + 1,
+   110→            'start': start,
+   111→            'end': end,
+   112→            'text': text,
+   113→        })
+   114→    return entries
+   115→
+   116→
+   117→def parse_time(ts: str) -> float:
+   118→    """Parse 'HH:MM:SS,mmm' → seconds (float)."""
+   119→    ts = ts.replace('.', ',')
+   120→    hms, ms = ts.split(',') if ',' in ts else (ts, '0')
+   121→    h, m, s = hms.split(':')
+   122→    return int(h) * 3600 + int(m) * 60 + int(s) + int(ms) / 1000
+   123→
+   124→
+   125→def format_time_ffmpeg(seconds: float) -> str:
+   126→    """Format seconds → 'HH:MM:SS.mmm' (untuk ffmpeg trim)."""
+   127→    if seconds < 0:
+   128→        seconds = 0
+   129→    h = int(seconds // 3600)
+   130→    m = int((seconds % 3600) // 60)
+   131→    s = int(seconds % 60)
+   132→    ms = int((seconds - int(seconds)) * 1000)
+   133→    return f'{h:02d}:{m:02d}:{s:02d}.{ms:03d}'
+   134→
+   135→
+   136→# ============================================================
+   137→# ffmpeg helpers
+   138→# ============================================================
+   139→
+   140→def find_ffmpeg(custom_path: str = None) -> str:
+   141→    if custom_path:
+   142→        if os.path.isfile(custom_path) and os.access(custom_path, os.X_OK):
+   143→            return custom_path
+   144→        raise FileNotFoundError(f'ffmpeg tidak ditemukan di: {custom_path}')
+   145→    path = shutil.which('ffmpeg') or shutil.which('ffmpeg.exe')
+   146→    if path:
+   147→        return path
+   148→    for loc in ['/usr/local/bin/ffmpeg', '/usr/bin/ffmpeg', '/opt/homebrew/bin/ffmpeg',
+   149→                '/Applications/ffmpeg', 'C:\\ffmpeg\\bin\\ffmpeg.exe']:
+   150→        if os.path.isfile(loc):
+   151→            return loc
+   152→    raise FileNotFoundError('ffmpeg tidak ditemukan di PATH. Install ffmpeg atau specify via --ffmpeg.')
+   153→
+   154→
+   155→def find_ffprobe(custom_path: str = None) -> str:
+   156→    if custom_path:
+   157→        if os.path.isfile(custom_path) and os.access(custom_path, os.X_OK):
+   158→            return custom_path
+   159→        raise FileNotFoundError(f'ffprobe tidak ditemukan di: {custom_path}')
+   160→    path = shutil.which('ffprobe') or shutil.which('ffprobe.exe')
+   161→    if path:
+   162→        return path
+   163→    for loc in ['/usr/local/bin/ffprobe', '/usr/bin/ffprobe', '/opt/homebrew/bin/ffprobe']:
+   164→        if os.path.isfile(loc):
+   165→            return loc
+   166→    raise FileNotFoundError('ffprobe tidak ditemukan di PATH')
+   167→
+   168→
+   169→def get_mp4_duration(ffprobe: str, mp4_path: str) -> float:
+   170→    result = subprocess.run([
+   171→        ffprobe, '-v', 'error',
+   172→        '-show_entries', 'format=duration',
+   173→        '-of', 'default=noprint_wrappers=1:nokey=1',
+   174→        mp4_path,
+   175→    ], capture_output=True, text=True)
+   176→    return float(result.stdout.strip())
+   177→
+   178→
+   179→def get_mp4_audio_streams(ffprobe: str, mp4_path: str) -> list:
+   180→    result = subprocess.run([
+   181→        ffprobe, '-v', 'error',
+   182→        '-show_entries', 'stream=index,codec_type,codec_name,channels',
+   183→        '-of', 'json',
+   184→        mp4_path,
+   185→    ], capture_output=True, text=True)
+   186→    data = json.loads(result.stdout)
+   187→    return [s for s in data.get('streams', []) if s.get('codec_type') == 'audio']
+   188→
+   189→
+   190→# ============================================================
+   191→# Build segment tasks
+   192→# ============================================================
+   193→
+   194→def build_segment_tasks(mandarin_entries, jawa_entries, mp4_duration):
+   195→    """
+   196→    Build list of segment tasks untuk Pass 1.
+   197→    Setiap task = 1 FFmpeg command untuk render 1 segment (cue atau gap).
+   198→
+   199→    Returns:
+   200→      list of dict: {
+   201→        'type': 'cue' | 'gap' | 'tail',
+   202→        'index': int,
+   203→        'mp4_start': float,  # start di MP4 ori
+   204→        'mp4_end': float,    # end di MP4 ori
+   205→        'target_duration': float,  # durasi setelah retim
+   206→        'factor': float,     # target_duration / (mp4_end - mp4_start)
+   207→        'output_file': str,  # path ke segment file
+   208→      }
+   209→    """
+   210→    tasks = []
+   211→    jawa_by_idx = {i: e for i, e in enumerate(jawa_entries)}
+   212→    last_end = 0.0
+   213→    seg_idx = 0
+   214→    cumulative_offset = 0.0  # sum durasi semua segments sebelumnya (untuk timestamp akumulatif)
+   215→
+   216→    # Filter: hanya process cues yang mp4_start < mp4_duration
+   217→    for i, m_entry in enumerate(mandarin_entries):
+   218→        if m_entry['start'] >= mp4_duration:
+   219→            print(f'  → Stop di cue {i} (mp4_start={m_entry["start"]:.2f}s ≥ mp4_duration={mp4_duration:.2f}s)')
+   220→            break
+   221→
+   222→        # Gap sebelum cue ini
+   223→        gap_mp4_dur = m_entry['start'] - last_end
+   224→        if gap_mp4_dur > 0.01:
+   225→            if i in jawa_by_idx and (i - 1) in jawa_by_idx:
+   226→                jawa_gap_dur = jawa_by_idx[i]['start'] - jawa_by_idx[i - 1]['end']
+   227→            elif i == 0 and i in jawa_by_idx:
+   228→                jawa_gap_dur = jawa_by_idx[i]['start']
+   229→            else:
+   230→                jawa_gap_dur = gap_mp4_dur
+   231→
+   232→            jawa_gap_dur = max(0.05, jawa_gap_dur)
+   233→            factor = jawa_gap_dur / gap_mp4_dur
+   234→
+   235→            gap_end = min(m_entry['start'], mp4_duration)
+   236→            tasks.append({
+   237→                'type': 'gap',
+   238→                'index': seg_idx,
+   239→                'mp4_start': last_end,
+   240→                'mp4_end': gap_end,
+   241→                'target_duration': jawa_gap_dur,
+   242→                'factor': factor,
+   243→                'cumulative_offset': cumulative_offset,
+   244→            })
+   245→            cumulative_offset += jawa_gap_dur
+   246→            seg_idx += 1
+   247→
+   248→        # Cue itu sendiri
+   249→        if i in jawa_by_idx and m_entry['end'] <= mp4_duration:
+   250→            j_entry = jawa_by_idx[i]
+   251→            cue_mp4_dur = m_entry['end'] - m_entry['start']
+   252→            cue_jawa_dur = j_entry['end'] - j_entry['start']
+   253→
+   254→            if cue_mp4_dur > 0.01 and cue_jawa_dur > 0.01:
+   255→                factor = cue_jawa_dur / cue_mp4_dur
+   256→                tasks.append({
+   257→                    'type': 'cue',
+   258→                    'index': seg_idx,
+   259→                    'mp4_start': m_entry['start'],
+   260→                    'mp4_end': m_entry['end'],
+   261→                    'target_duration': cue_jawa_dur,
+   262→                    'factor': factor,
+   263→                    'cumulative_offset': cumulative_offset,
+   264→                })
+   265→                cumulative_offset += cue_jawa_dur
+   266→                seg_idx += 1
+   267→
+   268→        last_end = min(m_entry['end'], mp4_duration)
+   269→
+   270→    # Tail gap
+   271→    if last_end < mp4_duration - 0.05:
+   272→        tail_dur = mp4_duration - last_end
+   273→        tasks.append({
+   274→            'type': 'tail',
+   275→            'index': seg_idx,
+   276→            'mp4_start': last_end,
+   277→            'mp4_end': mp4_duration,
+   278→            'target_duration': tail_dur,
+   279→            'factor': 1.0,
+   280→            'cumulative_offset': cumulative_offset,
+   281→        })
+   282→        seg_idx += 1
+   283→
+   284→    return tasks
+   285→
+   286→
+   287→# ============================================================
+   288→# Render 1 segment (worker function untuk parallel)
+   289→# ============================================================
+   290→
+   291→def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, preset, has_audio_ori, encoder='libx264'):
+   292→    """
+   293→    Render 1 segment jadi file MP4 kecil.
+   294→    Dipanggil oleh ProcessPoolExecutor (parallel).
+   295→    """
+   296→    seg_idx = task['index']
+   297→    output_file = os.path.join(segments_dir, f'seg_{seg_idx:05d}.mp4')
+   298→
+   299→    mp4_start = task['mp4_start']
+   300→    mp4_end = task['mp4_end']
+   301→    mp4_dur = mp4_end - mp4_start
+   302→    target_dur = task['target_duration']
+   303→    factor = task['factor']
+   304→    cumulative_offset = task.get('cumulative_offset', 0.0)
+   305→
+   306→    # Skip kalau sudah ada (resume support)
+   307→    if os.path.isfile(output_file) and os.path.getsize(output_file) > 1000:
+   308→        return {'index': seg_idx, 'output_file': output_file, 'status': 'skipped'}
+   309→
+   310→    # Encoder params: libx264 (software) atau h264_videotoolbox (hardware M1)
+   311→    if encoder == 'h264_videotoolbox':
+   312→        enc_params = ['-c:v', 'h264_videotoolbox', '-b:v', '5M', '-realtime', '0',
+   313→                       '-bf', '0', '-profile:v', 'high']
+   314→    else:
+   315→        enc_params = ['-c:v', 'libx264', '-preset', preset, '-crf', '23',
+   316→                       '-bf', '0', '-profile:v', 'high']
+   317→
+   318→    use_stream_copy = 0.95 <= factor <= 1.05 and task['type'] in ('gap', 'tail')
+   319→
+   320→    if use_stream_copy:
+   321→        # Stream copy dengan output_ts_offset = timestamp akumulatif
+   322→        cmd = [
+   323→            ffmpeg_path, '-y',
+   324→            '-hwaccel', 'videotoolbox',
+   325→            '-ss', f'{mp4_start:.3f}',
+   326→            '-i', mp4_path,
+   327→            '-t', f'{mp4_dur:.3f}',
+   328→            '-c:v', 'copy',
+   329→            '-an',
+   330→            '-output_ts_offset', f'{cumulative_offset:.6f}',
+   331→            '-fflags', '+genpts',
+   332→            output_file,
+   333→        ]
+   334→    else:
+   335→        # Re-encode: setpts untuk slow-mo + output_ts_offset untuk timestamp akumulatif
+   336→        # fps=30 filter SEBELUM setpts (VFR guard, dari riset VoiceStudio)
+   337→        #
+   338→        # Catatan test #16 (5 Okt 2026): tpad=stop_mode=clone untuk cap slow-mo 2x
+   339→        # GAGAL — PTS overflow (DTS 141670994490979984, INT64_MAX/1000) di h264_videotoolbox.
+   340→        # Cloned frames dapet PTS yang overflow saat di-mux → Pass 2 drop frames invalid.
+   341→        # 16 cue dengan factor > 2x sekarang frame hilang (lebih buruk dari stop-motion).
+   342→        # Keputusan: REVERT tpad. Slow-mo factor > 2x kembali ke setpts * factor (stop-motion,
+   343→        # tapi frame ada). Skip threshold 100B tetap (fix #16 yang bagus).
+   344→        # Future: kalau mau smooth slow-mo > 2x, pakai minterpolate (CPU heavy).
+   345→        cmd = [
+   346→            ffmpeg_path, '-y',
+   347→            '-hwaccel', 'videotoolbox',
+   348→            '-i', mp4_path,
+   349→            '-ss', f'{mp4_start:.3f}',
+   350→            '-t', f'{target_dur:.3f}',
+   351→            '-vf', f'fps=30,setpts=(PTS-STARTPTS)*{factor:.6f}',
+   352→            *enc_params,
+   353→            '-output_ts_offset', f'{cumulative_offset:.6f}',
+   354→            '-an',
+   355→            '-fflags', '+genpts',
+   356→            output_file,
+   357→        ]
+   358→
+   359→    try:
+   360→        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+   361→        if result.returncode != 0:
+   362→            # Print stderr LENGKAP untuk debugging (bukan cuma [-300:])
+   363→            # Cari baris yang mengandung "Error" atau "error" di stderr
+   364→            stderr_lines = result.stderr.split('\n')
+   365→            error_lines = [l for l in stderr_lines if 'error' in l.lower() or 'invalid' in l.lower() or 'not found' in l.lower() or 'no such' in l.lower()]
+   366→            error_summary = error_lines[0] if error_lines else stderr_lines[-5:]
+   367→            return {
+   368→                'index': seg_idx,
+   369→                'output_file': output_file,
+   370→                'status': 'failed',
+   371→                'error': f'code={result.returncode} | {error_summary[:200]}',
+   372→            }
+   373→        # VALIDASI: cek duration output — hanya untuk re-encode segments
+   374→        # (stream copy durasi = source durasi, tidak perlu validasi terhadap target)
+   375→        # SKIP validasi untuk sekarang. Segment terakhir sering terpotong
+   376→        # karena mp4_end > mp4_duration (video input lebih pendek dari target).
+   377→        # Concat di Pass 2 akan handle — segment pendek tetap di-concat.
+   378→        return {'index': seg_idx, 'output_file': output_file, 'status': 'ok'}
+   379→    except subprocess.TimeoutExpired:
+   380→        return {
+   381→            'index': seg_idx,
+   382→            'output_file': output_file,
+   383→            'status': 'failed',
+   384→            'error': 'timeout (300s)',
+   385→        }
+   386→    except Exception as e:
+   387→        return {
+   388→            'index': seg_idx,
+   389→            'output_file': output_file,
+   390→            'status': 'failed',
+   391→            'error': str(e),
+   392→        }
+   393→
+   394→
+   395→# ============================================================
+   396→# Pass 1: Render semua segments (parallel)
+   397→# ============================================================
+   398→
+   399→def render_all_segments(tasks, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, preset, workers=4, encoder='libx264'):
+   400→    """
+   401→    Render semua segments secara parallel.
+   402→    Pakai ProcessPoolExecutor untuk parallel FFmpeg processes.
+   403→    """
+   404→    total = len(tasks)
+   405→    print(f'\n=== Pass 1: Render {total} segments (parallel {workers} workers) ===')
+   406→
+   407→    completed = 0
+   408→    failed = 0
+   409→    start_time = time.time()
+   410→
+   411→    with ProcessPoolExecutor(max_workers=workers) as executor:
+   412→        # Submit semua tasks
+   413→        futures = {
+   414→            executor.submit(render_segment, task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, preset, True, encoder): task
+   415→            for task in tasks
+   416→        }
+   417→
+   418→        # Wait dan report progress
+   419→        for future in as_completed(futures):
+   420→            task = futures[future]
+   421→            try:
+   422→                result = future.result()
+   423→                completed += 1
+   424→                if result['status'] == 'failed':
+   425→                    failed += 1
+   426→                    print(f'  ✗ Segment {result["index"]} gagal: {result.get("error", "unknown")[:100]}')
+   427→                elif result['status'] == 'skipped':
+   428→                    pass  # silent skip
+   429→
+   430→                # Progress setiap 50 segments
+   431→                if completed % 50 == 0 or completed == total:
+   432→                    elapsed = time.time() - start_time
+   433→                    rate = completed / elapsed if elapsed > 0 else 0
+   434→                    eta = (total - completed) / rate if rate > 0 else 0
+   435→                    print(f'  → {completed}/{total} segments ({100*completed/total:.1f}%) — '
+   436→                          f'elapsed {elapsed:.0f}s, ETA {eta:.0f}s, failed {failed}')
+   437→            except Exception as e:
+   438→                failed += 1
+   439→                print(f'  ✗ Task exception: {e}')
+   440→
+   441→    print(f'\n=== Pass 1 selesai ===')
+   442→    print(f'  Total: {total} segments')
+   443→    print(f'  Sukses: {total - failed}')
+   444→    print(f'  Gagal: {failed}')
+   445→    print(f'  Waktu: {time.time() - start_time:.0f}s')
+   446→
+   447→    # Allow up to 5% failure (segment pendek di akhir video wajar gagal)
+   448→    # Kalau gagal > 5%, return False (gagal total)
+   449→    # Kalau gagal <= 5%, return True (lanjut ke Pass 2, segment gagal di-skip di concat)
+   450→    if failed > total * 0.05:
+   451→        print(f'  ❌ Gagal {failed}/{total} ({100*failed/total:.1f}%) > 5% threshold')
+   452→        return False
+   453→    elif failed > 0:
+   454→        print(f'  ⚠ {failed} segment gagal ({100*failed/total:.1f}%), tapi < 5% → lanjut ke Pass 2 (segment gagal di-skip)')
+   455→    return True
+   456→
+   457→
+   458→# ============================================================
+   459→# Pass 2: Concat semua segments + add audio dub
+   460→# ============================================================
+   461→
+   462→def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_audio_ori, ducking_db, video_only=False, encoder='libx264'):
+   463→    """
+   464→    Concat semua segment files menggunakan concat demuxer.
+   465→    Kalau video_only=True: output = video tanpa audio (user import audio terpisah di DaVinci).
+   466→    """
+   467→    print(f'\n=== Pass 2: Concat segments + mix audio ===')
+   468→
+   469→    # Build concat list file — skip segments yang gagal (file tidak ada atau terlalu kecil)
+   470→    # FIX test #15: threshold 1000 bytes terlalu tinggi, segment pendek (gap 0.05s, cue 0.17s)
+   471→    # bisa hasilkan file < 1KB → di-skip → gap di video → "berhenti lama" di VLC/DaVinci.
+   472→    # Lower ke 100 bytes supaya segment pendek tetap masuk concat.
+   473→    MIN_SEGMENT_SIZE = 100  # bytes (sebelumnya 1000)
+   474→    concat_list = os.path.join(segments_dir, 'concat_list.txt')
+   475→    included = 0
+   476→    skipped = 0
+   477→    with open(concat_list, 'w') as f:
+   478→        for task in tasks:
+   479→            seg_file = os.path.join(segments_dir, f'seg_{task["index"]:05d}.mp4')
+   480→            # Skip kalau file tidak ada atau terlalu kecil (segment gagal total)
+   481→            if os.path.isfile(seg_file) and os.path.getsize(seg_file) > MIN_SEGMENT_SIZE:
+   482→                f.write(f"file '{seg_file}'\n")
+   483→                included += 1
+   484→            else:
+   485→                skipped += 1
+   486→
+   487→    print(f'  → Concat list: {concat_list} ({included} files, {skipped} skipped)')
+   488→
+   489→    # Encoder params untuk Pass 2 re-encode
+   490→    if encoder == 'h264_videotoolbox':
+   491→        enc_params = ['-c:v', 'h264_videotoolbox', '-b:v', '5M', '-realtime', '0',
+   492→                       '-bf', '0', '-profile:v', 'high']
+   493→    else:
+   494→        enc_params = ['-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+   495→                       '-bf', '0', '-profile:v', 'high']
+   496→
+   497→    # Pass 2: STREAM COPY (instant, 2 detik)
+   498→    # Timestamp sudah akumulatif dari Pass 1 (output_ts_offset)
+   499→    # → concat demuxer stream copy = seamless, tidak ada DTS out of order
+   500→    if video_only:
+   501→        print(f'  → Mode: VIDEO ONLY (stream copy, tanpa audio)')
+   502→        cmd = [
+   503→            ffmpeg_path, '-y',
+   504→            '-f', 'concat', '-safe', '0',
+   505→            '-i', concat_list,
+   506→            '-c:v', 'copy',
+   507→            '-an',
+   508→            '-movflags', '+faststart',
+   509→            '-timecode', '00:00:00:00',
+   510→            output,
+   511→        ]
+   512→    else:
+   513→        cmd = [
+   514→            ffmpeg_path, '-y',
+   515→            '-f', 'concat', '-safe', '0',
+   516→            '-i', concat_list,
+   517→            '-i', audio_jawa,
+   518→            '-map', '0:v',
+   519→            '-map', '1:a',
+   520→            '-c:v', 'copy',
+   521→            '-c:a', 'aac',
+   522→            '-b:a', '192k',
+   523→            '-movflags', '+faststart',
+   524→            '-timecode', '00:00:00:00',
+   525→            '-shortest',
+   526→            output,
+   527→        ]
+   528→
+   529→    print(f'  → Concat + mix audio...')
+   530→    print(f'  Command: {" ".join(cmd[:5])} ...')
+   531→
+   532→    result = subprocess.run(cmd)
+   533→    if result.returncode != 0:
+   534→        print(f'\n✗ Pass 2 gagal dengan code {result.returncode}')
+   535→        return False
+   536→
+   537→    print(f'  ✓ Pass 2 selesai')
+   538→    return True
+   539→
+   540→
+   541→# ============================================================
+   542→# Demucs SFX separation (optional)
+   543→# ============================================================
+   544→
+   545→def separate_sfx_with_demucs(mp4_path: str, work_dir: str) -> dict:
+   546→    print('\n=== SFX Separation dengan Demucs ===')
+   547→    demucs_bin = shutil.which('demucs') or shutil.which('demucs.exe')
+   548→    if not demucs_bin:
+   549→        print('  ⚠ Demucs tidak ditemukan. Skip SFX separation.')
+   550→        return None
+   551→
+   552→    audio_ori = os.path.join(work_dir, 'audio-original.wav')
+   553→    ffmpeg = find_ffmpeg()
+   554→    subprocess.run([
+   555→        ffmpeg, '-y', '-i', mp4_path,
+   556→        '-vn', '-acodec', 'pcm_s16le', '-ar', '44100', '-ac', '2',
+   557→        audio_ori,
+   558→    ], check=True)
+   559→
+   560→    print('  → Run Demucs (mungkin butuh 5-15 menit untuk file besar)...')
+   561→    demucs_out_dir = os.path.join(work_dir, 'demucs-output')
+   562→    os.makedirs(demucs_out_dir, exist_ok=True)
+   563→    result = subprocess.run([
+   564→        demucs_bin, '--two-stems', 'vocals', '-o', demucs_out_dir, audio_ori,
+   565→    ])
+   566→    if result.returncode != 0:
+   567→        print(f'  ✗ Demucs gagal. Skip SFX.')
+   568→        return None
+   569→
+   570→    base_name = os.path.splitext(os.path.basename(audio_ori))[0]
+   571→    no_vocals = os.path.join(demucs_out_dir, base_name, 'no_vocals.wav')
+   572→    if not os.path.isfile(no_vocals):
+   573→        return None
+   574→
+   575→    print(f'  ✓ SFX: {no_vocals}')
+   576→    return {'no_vocals': no_vocals}
+   577→
+   578→
+   579→# ============================================================
+   580→# Main
+   581→# ============================================================
+   582→
+   583→def main():
+   584→    parser = argparse.ArgumentParser(
+   585→        description='Retime MP4 ori supaya match SRT dub (Two-Pass, SRT dub = ground truth)',
+   586→        formatter_class=argparse.RawDescriptionHelpFormatter,
+   587→    )
+   588→    parser.add_argument('--mp4', required=True,
+   589→                        help='Path ke MP4 ori (video asli). Standar: mp4-ori[-test-Nmin].mp4')
+   590→    # Argumen baru (standar):
+   591→    parser.add_argument('--srt-original',
+   592→                        help='Path ke SRT ori (source subtitle). Standar: srt-{lang}-original.srt')
+   593→    parser.add_argument('--srt-dub',
+   594→                        help='Path ke SRT dub (hasil dub dari web). Standar: srt-{lang}-dub.srt')
+   595→    parser.add_argument('--audio-dub',
+   596→                        help='Path ke audio dub WAV (hasil dub dari web). Standar: audio-{lang}-dub.wav')
+   597→    # Backward compat (alias, deprecated):
+   598→    parser.add_argument('--srt-mandarin',
+   599→                        help='(DEPRECATED, alias ke --srt-original) Path ke SRT Mandarin asli')
+   600→    parser.add_argument('--srt-jawa',
+   601→                        help='(DEPRECATED, alias ke --srt-dub) Path ke SRT Jawa baru (output Fase 2)')
+   602→    parser.add_argument('--audio-jawa',
+   603→                        help='(DEPRECATED, alias ke --audio-dub) Path ke audio Jawa WAV (output Fase 2)')
+   604→    parser.add_argument('--output', required=True,
+   605→                        help='Path output MP4 final. Standar: mp4-{lang}-dub[-test-Nmin].mp4')
+   606→    parser.add_argument('--ffmpeg', help='Path kustom ke ffmpeg')
+   607→    parser.add_argument('--ffprobe', help='Path kustom ke ffprobe')
+   608→    parser.add_argument('--separate-sfx', action='store_true',
+   609→                        help='Pakai Demucs untuk separate SFX dari vocals ori')
+   610→    parser.add_argument('--sfx-ducking', type=float, default=12.0,
+   611→                        help='Volume SFX di-duck (dB). Default 12')
+   612→    parser.add_argument('--no-sfx', action='store_true',
+   613→                        help='Buang audio ori total (hanya audio dub)')
+   614→    parser.add_argument('--dry-run', action='store_true', help='Print plan tanpa eksekusi')
+   615→    parser.add_argument('--keep-temp', action='store_true', help='Keep temp files untuk debugging')
+   616→    parser.add_argument('--preset', default='fast',
+   617→                        choices=['ultrafast', 'superfast', 'veryfast', 'fast', 'medium', 'slow', 'slower'],
+   618→                        help='FFmpeg x264 preset (default: fast). medium=bagus tapi lama.')
+   619→    parser.add_argument('--workers', type=int, default=4,
+   620→                        help='Parallel FFmpeg processes (default 4, max 8 untuk M1/M2)')
+   621→    parser.add_argument('--encoder', default='libx264',
+   622→                        choices=['libx264', 'h264_videotoolbox'],
+   623→                        help='Video encoder: libx264 (software, default) atau h264_videotoolbox (hardware M1/M2, 4x cepat)')
+   624→    parser.add_argument('--video-only', action='store_true',
+   625→                        help='Pass 2: concat video saja, TIDAK mix audio dub. User import audio terpisah di DaVinci.')
+   626→    args = parser.parse_args()
+   627→
+   628→    # Resolve alias: argumen baru diprioritaskan, fallback ke alias lama (backward compat)
+   629→    srt_original_path = args.srt_original or args.srt_mandarin
+   630→    srt_dub_path = args.srt_dub or args.srt_jawa
+   631→    audio_dub_path = args.audio_dub or args.audio_jawa
+   632→
+   633→    if not srt_original_path:
+   634→        print('Error: --srt-original (atau --srt-mandarin alias) wajib diisi', file=sys.stderr)
+   635→        sys.exit(2)
+   636→    if not srt_dub_path:
+   637→        print('Error: --srt-dub (atau --srt-jawa alias) wajib diisi', file=sys.stderr)
+   638→        sys.exit(2)
+   639→    if not audio_dub_path:
+   640→        print('Error: --audio-dub (atau --audio-jawa alias) wajib diisi', file=sys.stderr)
+   641→        sys.exit(2)
+   642→
+   643→    # Warning kalau pakai argumen lama (deprecated)
+   644→    if args.srt_mandarin or args.srt_jawa or args.audio_jawa:
+   645→        print('⚠ WARNING: --srt-mandarin / --srt-jawa / --audio-jawa adalah alias deprecated.')
+   646→        print('  Pakai --srt-original / --srt-dub / --audio-dub (standar baru).')
+   647→        print(f'  File dipakai: srt-original={srt_original_path}, srt-dub={srt_dub_path}, audio-dub={audio_dub_path}')
+   648→        print()
+   649→
+   650→    # Validate inputs
+   651→    for label, path in [
+   652→        ('MP4 ori', args.mp4),
+   653→        ('SRT ori', srt_original_path),
+   654→        ('SRT dub', srt_dub_path),
+   655→        ('Audio dub', audio_dub_path),
+   656→    ]:
+   657→        if not os.path.isfile(path):
+   658→            print(f'Error: {label} tidak ditemukan: {path}', file=sys.stderr)
+   659→            sys.exit(1)
+   660→
+   661→    # Find tools
+   662→    try:
+   663→        ffmpeg = find_ffmpeg(args.ffmpeg)
+   664→        ffprobe = find_ffprobe(args.ffprobe)
+   665→    except FileNotFoundError as e:
+   666→        print(f'Error: {e}', file=sys.stderr)
+   667→        sys.exit(1)
+   668→
+   669→    print(f'ffmpeg: {ffmpeg}')
+   670→    print(f'ffprobe: {ffprobe}')
+   671→
+   672→    # Parse SRT
+   673→    with open(srt_original_path, 'r', encoding='utf-8') as f:
+   674→        mandarin_entries = parse_srt(f.read())
+   675→    with open(srt_dub_path, 'r', encoding='utf-8') as f:
+   676→        jawa_entries = parse_srt(f.read())
+   677→
+   678→    print(f'\nSRT ori: {len(mandarin_entries)} cues ({srt_original_path})')
+   679→    print(f'SRT dub: {len(jawa_entries)} cues ({srt_dub_path})')
+   680→
+   681→    if not mandarin_entries or not jawa_entries:
+   682→        print('Error: SRT kosong', file=sys.stderr)
+   683→        sys.exit(1)
+   684→
+   685→    # Get MP4 info
+   686→    mp4_duration = get_mp4_duration(ffprobe, args.mp4)
+   687→    audio_streams = get_mp4_audio_streams(ffprobe, args.mp4)
+   688→    has_audio_ori = (not args.no_sfx) and len(audio_streams) > 0
+   689→
+   690→    print(f'MP4 durasi: {format_time_ffmpeg(mp4_duration)}')
+   691→    print(f'Audio streams di MP4: {len(audio_streams)}')
+   692→    print(f'SFX preserve: {"YA" if has_audio_ori else "TIDAK"}')
+   693→    print(f'Preset: {args.preset}')
+   694→    print(f'Encoder: {args.encoder}')
+   695→    print(f'Workers: {args.workers}')
+   696→
+   697→    # Build segment tasks
+   698→    tasks = build_segment_tasks(mandarin_entries, jawa_entries, mp4_duration)
+   699→    print(f'\nTotal segments: {len(tasks)}')
+   700→    print(f'  Cue segments: {sum(1 for t in tasks if t["type"] == "cue")}')
+   701→    print(f'  Gap segments: {sum(1 for t in tasks if t["type"] == "gap")}')
+   702→    print(f'  Tail segments: {sum(1 for t in tasks if t["type"] == "tail")}')
+   703→
+   704→    # Count segments yang perlu re-encode vs stream copy
+   705→    reencode_count = sum(1 for t in tasks if not (0.95 <= t['factor'] <= 1.05 and t['type'] in ('gap', 'tail')))
+   706→    streamcopy_count = len(tasks) - reencode_count
+   707→    print(f'  Re-encode (slow-mo/fast): {reencode_count}')
+   708→    print(f'  Stream copy (instant): {streamcopy_count}')
+   709→
+   710→    if args.dry_run:
+   711→        print('\n=== DRY RUN ===')
+   712→        print(f'Plan: render {len(tasks)} segments di {args.workers} workers paralel')
+   713→        print(f'Preset: {args.preset}')
+   714→        print(f'Output: {args.output}')
+   715→        print(f'\nSample tasks (first 5):')
+   716→        for t in tasks[:5]:
+   717→            print(f'  {t["type"]:5s} seg_{t["index"]:05d} | mp4 {t["mp4_start"]:.2f}-{t["mp4_end"]:.2f} '
+   718→                  f'({t["mp4_end"]-t["mp4_start"]:.2f}s) → target {t["target_duration"]:.2f}s '
+   719→                  f'(factor {t["factor"]:.2f}x)')
+   720→        print(f'\nDry run — tidak eksekusi.')
+   721→        return
+   722→
+   723→    # Setup work directory
+   724→    work_dir = tempfile.mkdtemp(prefix='retime-v3-')
+   725→    segments_dir = os.path.join(work_dir, 'segments')
+   726→    os.makedirs(segments_dir, exist_ok=True)
+   727→    print(f'\nWork directory: {work_dir}')
+   728→    print(f'Segments directory: {segments_dir}')
+   729→
+   730→    # Pass 1: Render semua segments
+   731→    success = render_all_segments(
+   732→        tasks, args.mp4, segments_dir, ffmpeg, ffprobe,
+   733→        preset=args.preset, workers=args.workers, encoder=args.encoder,
+   734→    )
+   735→
+   736→    if not success:
+   737→        print('\n❌ Pass 1 gagal. Beberapa segment gagal di-render.')
+   738→        print('Coba jalankan ulang (resume support — segment yang sudah ada akan di-skip).')
+   739→        if not args.keep_temp:
+   740→            print(f'Temp files: {work_dir} (pakai --keep-temp untuk inspect)')
+   741→        sys.exit(1)
+   742→
+   743→    # Pass 2: Concat + mix audio
+   744→    success = concat_segments(
+   745→        tasks, segments_dir, audio_dub_path, args.output,
+   746→        ffmpeg, has_audio_ori, args.sfx_ducking,
+   747→        video_only=args.video_only, encoder=args.encoder,
+   748→    )
+   749→
+   750→    if not success:
+   751→        print('\n❌ Pass 2 gagal.')
+   752→        if not args.keep_temp:
+   753→            shutil.rmtree(work_dir, ignore_errors=True)
+   754→        sys.exit(1)
+   755→
+   756→    # Verify output
+   757→    if os.path.isfile(args.output):
+   758→        out_size = os.path.getsize(args.output)
+   759→        out_duration = get_mp4_duration(ffprobe, args.output)
+   760→        print(f'\n✅ Output: {args.output}')
+   761→        print(f'   Size: {out_size / 1024 / 1024:.1f} MB')
+   762→        print(f'   Duration: {format_time_ffmpeg(out_duration)}')
+   763→        print(f'\n   → Buka di DaVinci Resolve untuk editing final.')
+   764→    else:
+   765→        print(f'\n❌ Output tidak ditemukan: {args.output}', file=sys.stderr)
+   766→        if not args.keep_temp:
+   767→            shutil.rmtree(work_dir, ignore_errors=True)
+   768→        sys.exit(1)
+   769→
+   770→    # Cleanup
+   771→    if not args.keep_temp:
+   772→        shutil.rmtree(work_dir, ignore_errors=True)
+   773→        print(f'   (Temp files dihapus. Pakai --keep-temp untuk debugging.)')
+   774→
+   775→
+   776→if __name__ == '__main__':
+   777→    try:
+   778→        main()
+   779→    except KeyboardInterrupt:
+   780→        print('\n\n⏹ Dibatalkan user.')
+   781→        sys.exit(130)
+   782→
