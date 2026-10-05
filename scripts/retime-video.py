@@ -454,8 +454,9 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
         enc_params = ['-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
                        '-bf', '0', '-profile:v', 'high']
 
-    # Pass 2: RE-ENCODE (bukan stream copy) dengan B-Frames disabled
-    # JANGAN pakai -fps_mode cfr di Pass 2 → konflik dengan setpts, cause frame duplikasi massal
+    # Pass 2: RE-ENCODE tanpa setpts (concat demuxer sudah handle offset)
+    # JANGAN pakai setpts=PTS-STARTPTS → hapus concat offset, cause DTS out of order
+    # JANGAN pakai -fps_mode cfr → cause frame duplikasi massal
     if video_only:
         print(f'  → Mode: VIDEO ONLY (re-encode {encoder}, tanpa audio)')
         cmd = [
@@ -464,7 +465,6 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
             '-fflags', '+genpts+igndts+discardcorrupt',
             '-f', 'concat', '-safe', '0',
             '-i', concat_list,
-            '-vf', 'setpts=PTS-STARTPTS',
             *enc_params,
             '-an',
             '-movflags', '+faststart',
@@ -481,7 +481,6 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
             '-i', audio_jawa,
             '-map', '0:v',
             '-map', '1:a',
-            '-vf', 'setpts=PTS-STARTPTS',
             *enc_params,
             '-c:a', 'aac',
             '-b:a', '192k',
