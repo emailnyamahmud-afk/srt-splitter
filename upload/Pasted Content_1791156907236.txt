@@ -1,0 +1,546 @@
+t timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3864065, current: 3862528; changing to 3864066. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3864066, current: 3863552; changing to 3864067. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3865600, current: 3864576; changing to 3865601. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3865601, current: 3865088; changing to 3865602. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3867648, current: 3866624; changing to 3867649. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3867649, current: 3866112; changing to 3867650. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3867650, current: 3867136; changing to 3867651. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3869184, current: 3868160; changing to 3869185. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3869185, current: 3868672; changing to 3869186. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3872768, current: 3871744; changing to 3872769. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3872769, current: 3871232; changing to 3872770. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3872770, current: 3872256; changing to 3872771. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3874816, current: 3873792; changing to 3874817. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3874817, current: 3873280; changing to 3874818. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3874818, current: 3874304; changing to 3874819. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3876864, current: 3875840; changing to 3876865. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3876865, current: 3875328; changing to 3876866. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3876866, current: 3876352; changing to 3876867. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3878400, current: 3877376; changing to 3878401. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3878401, current: 3877888; changing to 3878402. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3880960, current: 3879936; changing to 3880961. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3880961, current: 3879424; changing to 3880962. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3880962, current: 3880448; changing to 3880963. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3883008, current: 3881984; changing to 3883009. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3883009, current: 3881472; changing to 3883010. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3883010, current: 3882496; changing to 3883011. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3884544, current: 3883520; changing to 3884545. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3884545, current: 3884032; changing to 3884546. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3885568, current: 3885056; changing to 3885569. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3889152, current: 3888128; changing to 3889153. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3889153, current: 3887616; changing to 3889154. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3889154, current: 3888640; changing to 3889155. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3891200, current: 3890176; changing to 3891201. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3891201, current: 3889664; changing to 3891202. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3891202, current: 3890688; changing to 3891203. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3892224, current: 3891712; changing to 3892225. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filterd=85.8x elapsed=0:00:03.03    
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3988992, current: 3987968; changing to 3988993. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3988993, current: 3986944; changing to 3988994. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3988994, current: 3988480; changing to 3988995. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3992064, current: 3990528; changing to 3992065. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3992065, current: 3990016; changing to 3992066. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3992066, current: 3991040; changing to 3992067. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3994624, current: 3993600; changing to 3994625. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3994625, current: 3992576; changing to 3994626. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3994626, current: 3994112; changing to 3994627. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3998208, current: 3997184; changing to 3998209. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3998209, current: 3996672; changing to 3998210. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 3998210, current: 3997696; changing to 3998211. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4000256, current: 3999232; changing to 4000257. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4000257, current: 3998720; changing to 4000258. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4000258, current: 3999744; changing to 4000259. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4002304, current: 4001280; changing to 4002305. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4002305, current: 4000768; changing to 4002306. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4002306, current: 4001792; changing to 4002307. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4003328, current: 4002816; changing to 4003329. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4277760, current: 4276736; changing to 4277761. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4277761, current: 4276224; changing to 4277762. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4277762, current: 4277248; changing to 4277763. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4279296, current: 4278272; changing to 4279297. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4279297, current: 4278784; changing to 4279298. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4281344, current: 4280320; changing to 4281345. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4281345, current: 4279808; changing to 4281346. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4281346, current: 4280832; changing to 4281347. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4283392, current: 4282368; changing to 4283393. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4283393, current: 4281856; changing to 4283394. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4283394, current: 4282880; changing to 4283395. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4285440, current: 4284416; changing to 4285441. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4285441, current: 4283904; changing to 4285442. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4285442, current: 4284928; changing to 4285443. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4287488, current: 4286464; changing to 4287489. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4287489, current: 4285952; changing to 4287490. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4287490, current: 4286976; changing to 4287491. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4289536, current: 4288512; changing to 4289537. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4289537, current: 4288000; changing to 4289538. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4289538, current: 4289024; changing to 4289539. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4291584, current: 4290560; changing to 4291585. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4291585, current: 4290048; changing to 4291586. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4291586, current: 4291072; changing to 4291587. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4292608, current: 4292096; changing to 4292609. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4297728, current: 4297216; changing to 4297729. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4299264, current: 4298240; changing to 4299265. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4299265, current: 4298752; changing to 4299266. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4300288, current: 4299776; changing to 4300289. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4301312, current: 4300800; changing to 4301313. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4304384, current: 4303872; changing to 4304385. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4305408, current: 4304896; changing to 4305409. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4307968, current: 4306944; changing to 4307969. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4311040, current: 4310016; changing to 4311041. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4311041, current: 4310528; changing to 4311042. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4313600, current: 4312576; changing to 4313601. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4313601, current: 4311552; changing to 4313602. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4313602, current: 4313088; changing to 4313603. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4316672, current: 4315136; changing to 4316673. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4316673, current: 4314624; changing to 4316674. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4316674, current: 4315648; changing to 4316675. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4319232, current: 4317696; changing to 4319233. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4319233, current: 4317184; changing to 4319234. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4319234, current: 4318208; changing to 4319235. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4321280, current: 4319744; changing to 4321281. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4321281, current: 4320256; changing to 4321282. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4322816, current: 4322304; changing to 4322817. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4323840, current: 4323328; changing to 4323841. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4326400, current: 4325888; changing to 4326401. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4328448, current: 4327936; changing to 4328449. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4329472, current: 4328960; changing to 4329473. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4331008, current: 4330496; changing to 4331009. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4333568, current: 4332544; changing to 4333569. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4333569, current: 4332032; changing to 4333570. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4333570, current: 4333056; changing to 4333571. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4334592, current: 4334080; changing to 4334593. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4335616, current: 4335104; changing to 4335617. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4337152, current: 4336128; changing to 4337153. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4337153, current: 4336640; changing to 4337154. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4338688, current: 4338176; changing to 4338689. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4343296, current: 4341248; changing to 4343297. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4343297, current: 4340224; changing to 4343298. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4343298, current: 4342272; changing to 4343299. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4347392, current: 4345344; changing to 4347393. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4347393, current: 4344320; changing to 4347394. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4347394, current: 4346368; changing to 4347395. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4351488, current: 4349440; changing to 4351489. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4351489, current: 4348416; changing to 4351490. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4351490, current: 4350464; changing to 4351491. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4355584, current: 4353536; changing to 4355585. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4355585, current: 4352512; changing to 4355586. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4355586, current: 4354560; changing to 4355587. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4359680, current: 4357632; changing to 4359681. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4359681, current: 4356608; changing to 4359682. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4359682, current: 4358656; changing to 4359683. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4362752, current: 4360704; changing to 4362753. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4362753, current: 4361728; changing to 4362754. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4367872, current: 4366848; changing to 4367873. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4367873, current: 4366336; changing to 4367874. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4367874, current: 4367360; changing to 4367875. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4369920, current: 4368896; changing to 4369921. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4369921, current: 4368384; changing to 4369922. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4369922, current: 4369408; changing to 4369923. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4371968, current: 4371456; changing to 4371969. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4372992, current: 4372480; changing to 4372993. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4374528, current: 4373504; changing to 4374529. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4374529, current: 4374016; changing to 4374530. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4378624, current: 4378112; changing to 4378625. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4383744, current: 4382720; changing to 4383745. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4383745, current: 4382208; changing to 4383746. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4383746, current: 4383232; changing to 4383747. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4385792, current: 4384768; changing to 4385793. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4385793, current: 4384256; changing to 4385794. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4385794, current: 4385280; changing to 4385795. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4388352, current: 4387328; changing to 4388353. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4388353, current: 4387840; changing to 4388354. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4390400, current: 4389376; changing to 4390401. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4390401, current: 4388864; changing to 4390402. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4390402, current: 4389888; changing to 4390403. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4392448, current: 4391424; changing to 4392449. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4392449, current: 4390912; changing to 4392450. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4392450, current: 4391936; changing to 4392451. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4395008, current: 4393984; changing to 4395009. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4395009, current: 4392960; changing to 4395010. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4395010, current: 4394496; changing to 4395011. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4397056, current: 4396032; changing to 4397057. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4397057, current: 4395520; changing to 4397058. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4397058, current: 4396544; changing to 4397059. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4399104, current: 4398080; changing to 4399105. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4399105, current: 4397568; changing to 4399106. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4399106, current: 4398592; changing to 4399107. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4401664, current: 4400640; changing to 4401665. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4401665, current: 4401152; changing to 4401666. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4403200, current: 4402176; changing to 4403201. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4404224, current: 4403712; changing to 4404225. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4407296, current: 4406272; changing to 4407297. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4410368, current: 4409856; changing to 4410369. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4489216, current: 4488192; changing to 4489217. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4489217, current: 4488704; changing to 4489218. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4491264, current: 4490240; changing to 4491265. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4491265, current: 4489728; changing to 4491266. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4491266, current: 4490752; changing to 4491267. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4493312, current: 4492288; changing to 4493313. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4493313, current: 4491776; changing to 4493314. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4493314, current: 4492800; changing to 4493315. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4495360, current: 4494336; changing to 4495361. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4495361, current: 4493824; changing to 4495362. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4495362, current: 4494848; changing to 4495363. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4497408, current: 4496384; changing to 4497409. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4497409, current: 4495872; changing to 4497410. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4497410, current: 4496896; changing to 4497411. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4499456, current: 4498432; changing to 4499457. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4499457, current: 4497920; changing to 4499458. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4499458, current: 4498944; changing to 4499459. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4501504, current: 4500480; changing to 4501505. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4501505, current: 4499968; changing to 4501506. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4501506, current: 4500992; changing to 4501507. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4503552, current: 4502528; changing to 4503553. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4503553, current: 4502016; changing to 4503554. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4503554, current: 4503040; changing to 4503555. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4505088, current: 4504064; changing to 4505089. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4505089, current: 4504576; changing to 4505090. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4507648, current: 4506624; changing to 4507649. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4511232, current: 4509696; changing to 4511233. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4511233, current: 4509184; changing to 4511234. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4511234, current: 4510720; changing to 4511235. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4514304, current: 4512768; changing to 4514305. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4514305, current: 4511744; changing to 4514306. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4514306, current: 4513280; changing to 4514307. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4516864, current: 4515328; changing to 4516865. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4516865, current: 4514816; changing to 4516866. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4516866, current: 4516352; changing to 4516867. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4519424, current: 4517888; changing to 4519425. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4519425, current: 4518400; changing to 4519426. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4521472, current: 4519936; changing to 4521473. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4521473, current: 4520448; changing to 4521474. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4524544, current: 4523008; changing to 4524545. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4524545, current: 4521984; changing to 4524546. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4524546, current: 4523520; changing to 4524547. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4525568, current: 4525056; changing to 4525569. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4528640, current: 4527616; changing to 4528641. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4528641, current: 4527104; changing to 4528642. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4528642, current: 4528128; changing to 4528643. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4530688, current: 4529664; changing to 4530689. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4530689, current: 4529152; changing to 4530690. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4530690, current: 4530176; changing to 4530691. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4532736, current: 4531712; changing to 4532737. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4532737, current: 4531200; changing to 4532738. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4532738, current: 4532224; changing to 4532739. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4534784, current: 4533760; changing to 4534785. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4534785, current: 4533248; changing to 4534786. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4534786, current: 4534272; changing to 4534787. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4536832, current: 4535808; changing to 4536833. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4536833, current: 4535296; changing to 4536834. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4536834, current: 4536320; changing to 4536835. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4538880, current: 4537856; changing to 4538881. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4538881, current: 4537344; changing to 4538882. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4538882, current: 4538368; changing to 4538883. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4540928, current: 4539904; changing to 4540929. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4540929, current: 4539392; changing to 4540930. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4540930, current: 4540416; changing to 4540931. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4542976, current: 4541952; changing to 4542977. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4542977, current: 4541440; changing to 4542978. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4542978, current: 4542464; changing to 4542979. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4546560, current: 4545024; changing to 4546561. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4546561, current: 4544512; changing to 4546562. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4546562, current: 4545536; changing to 4546563. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4547072, current: 4547072; changing to 4547073. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4549120, current: 4548096; changing to 4549121. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4549121, current: 4547584; changing to 4549122. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4549122, current: 4548608; changing to 4549123. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4551168, current: 4550144; changing to 4551169. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4551169, current: 4549632; changing to 4551170. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4551170, current: 4550656; changing to 4551171. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4553216, current: 4552192; changing to 4553217. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4553217, current: 4551680; changing to 4553218. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4553218, current: 4552704; changing to 4553219. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4555264, current: 4554240; changing to 4555265. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4555265, current: 4553728; changing to 4555266. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4555266, current: 4554752; changing to 4555267. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4557312, current: 4556288; changing to 4557313. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4557313, current: 4555776; changing to 4557314. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4557314, current: 4556800; changing to 4557315. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4559360, current: 4558336; changing to 4559361. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4559361, current: 4557824; changing to 4559362. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4559362, current: 4558848; changing to 4559363. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4561408, current: 4560384; changing to 4561409. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4561409, current: 4559872; changing to 4561410. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4561410, current: 4560896; changing to 4561411. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4563456, current: 4562432; changing to 4563457. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4563457, current: 4561920; changing to 4563458. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4563458, current: 4562944; changing to 4563459. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4565504, current: 4564480; changing to 4565505. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4565505, current: 4563968; changing to 4565506. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4565506, current: 4564992; changing to 4565507. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4567552, current: 4566528; changing to 4567553. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4567553, current: 4566016; changing to 4567554. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4567554, current: 4567040; changing to 4567555. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4569600, current: 4569088; changing to 4569601. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4570624, current: 4570112; changing to 4570625. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4572160, current: 4571136; changing to 4572161. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4572161, current: 4571648; changing to 4572162. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4599808, current: 4598784; changing to 4599809. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4599809, current: 4599296; changing to 4599810. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4602368, current: 4601344; changing to 4602369. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4602369, current: 4600832; changing to 4602370. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4602370, current: 4601856; changing to 4602371. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4603904, current: 4602880; changing to 4603905. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4603905, current: 4603392; changing to 4603906. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4606464, current: 4605440; changing to 4606465. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4606465, current: 4604928; changing to 4606466. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4606466, current: 4605952; changing to 4606467. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4608512, current: 4607488; changing to 4608513. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4608513, current: 4606976; changing to 4608514. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4608514, current: 4608000; changing to 4608515. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4611072, current: 4610048; changing to 4611073. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4611073, current: 4609536; changing to 4611074. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4611074, current: 4610560; changing to 4611075. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4612608, current: 4611584; changing to 4612609. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4612609, current: 4612096; changing to 4612610. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4617216, current: 4615680; changing to 4617217. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4617217, current: 4614656; changing to 4617218. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4617218, current: 4616192; changing to 4617219. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4620288, current: 4618752; changing to 4620289. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4620289, current: 4617728; changing to 4620290. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4620290, current: 4619776; changing to 4620291. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4625408, current: 4623872; changing to 4625409. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4625409, current: 4622848; changing to 4625410. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4625410, current: 4624384; changing to 4625411. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4628480, current: 4626944; changing to 4628481. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4628481, current: 4625920; changing to 4628482. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4628482, current: 4627968; changing to 4628483. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4632064, current: 4630016; changing to 4632065. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4632065, current: 4629504; changing to 4632066. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4632066, current: 4631040; changing to 4632067. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4634624, current: 4632576; changing to 4634625. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4634625, current: 4633600; changing to 4634626. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4637696, current: 4636160; changing to 4637697. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4637697, current: 4635136; changing to 4637698. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4637698, current: 4636672; changing to 4637699. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4640768, current: 4639232; changing to 4640769. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4640769, current: 4638720; changing to 4640770. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4640770, current: 4640256; changing to 4640771. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4645888, current: 4644352; changing to 4645889. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4645889, current: 4643840; changing to 4645890. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4645890, current: 4645376; changing to 4645891. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4648448, current: 4646912; changing to 4648449. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4648449, current: 4647424; changing to 4648450. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4650496, current: 4648960; changing to 4650497. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4650497, current: 4649984; changing to 4650498. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4654592, current: 4653568; changing to 4654593. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4654593, current: 4652544; changing to 4654594. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4654594, current: 4654080; changing to 4654595. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4657152, current: 4656128; changing to 4657153. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4657153, current: 4655104; changing to 4657154. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4657154, current: 4656640; changing to 4657155. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4659712, current: 4658176; changing to 4659713. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4659713, current: 4657664; changing to 4659714. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4659714, current: 4659200; changing to 4659715. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4662272, current: 4660736; changing to 4662273. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4662273, current: 4660224; changing to 4662274. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4662274, current: 4661760; changing to 4662275. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4664832, current: 4663296; changing to 4664833. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4664833, current: 4662784; changing to 4664834. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4664834, current: 4664320; changing to 4664835. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4667392, current: 4665856; changing to 4667393. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4667393, current: 4665344; changing to 4667394. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4667394, current: 4666880; changing to 4667395. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4669952, current: 4668416; changing to 4669953. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4669953, current: 4667904; changing to 4669954. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4669954, current: 4669440; changing to 4669955. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filterd=86.2x elapsed=0:00:03.53    
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4841472, current: 4839424; changing to 4841473. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4841473, current: 4838400; changing to 4841474. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4841474, current: 4840448; changing to 4841475. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4842496, current: 4842496; changing to 4842497. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4847616, current: 4846080; changing to 4847617. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4847617, current: 4845568; changing to 4847618. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4847618, current: 4846592; changing to 4847619. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4849664, current: 4848128; changing to 4849665. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4849665, current: 4848640; changing to 4849666. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4852224, current: 4851200; changing to 4852225. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4852225, current: 4850176; changing to 4852226. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4852226, current: 4851712; changing to 4852227. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4855296, current: 4853760; changing to 4855297. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4855297, current: 4853248; changing to 4855298. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4855298, current: 4854272; changing to 4855299. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4857344, current: 4855808; changing to 4857345. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4857345, current: 4856320; changing to 4857346. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4859904, current: 4858368; changing to 4859905. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4859905, current: 4857856; changing to 4859906. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4859906, current: 4859392; changing to 4859907. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4862976, current: 4861440; changing to 4862977. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4862977, current: 4860928; changing to 4862978. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4862978, current: 4861952; changing to 4862979. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4865536, current: 4864000; changing to 4865537. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4865537, current: 4863488; changing to 4865538. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4865538, current: 4865024; changing to 4865539. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4868096, current: 4867072; changing to 4868097. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4868097, current: 4866048; changing to 4868098. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4868098, current: 4867584; changing to 4868099. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4872192, current: 4871168; changing to 4872193. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4872193, current: 4870656; changing to 4872194. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4872194, current: 4871680; changing to 4872195. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4874240, current: 4873216; changing to 4874241. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4874241, current: 4873728; changing to 4874242. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4876288, current: 4875776; changing to 4876289. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4883456, current: 4882432; changing to 4883457. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4883457, current: 4881408; changing to 4883458. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4883458, current: 4882944; changing to 4883459. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4884992, current: 4883968; changing to 4884993. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4887552, current: 4886016; changing to 4887553. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4887553, current: 4885504; changing to 4887554. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4887554, current: 4886528; changing to 4887555. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4890112, current: 4888576; changing to 4890113. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4890113, current: 4888064; changing to 4890114. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4890114, current: 4889088; changing to 4890115. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4892160, current: 4890624; changing to 4892161. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4892161, current: 4891136; changing to 4892162. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4894720, current: 4893184; changing to 4894721. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4894721, current: 4892672; changing to 4894722. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4894722, current: 4893696; changing to 4894723. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4897280, current: 4895744; changing to 4897281. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4897281, current: 4895232; changing to 4897282. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4897282, current: 4896256; changing to 4897283. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4899840, current: 4898304; changing to 4899841. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4899841, current: 4897792; changing to 4899842. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4899842, current: 4899328; changing to 4899843. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4902400, current: 4900864; changing to 4902401. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4902401, current: 4900352; changing to 4902402. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4902402, current: 4901888; changing to 4902403. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4991488, current: 4990464; changing to 4991489. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4991489, current: 4990976; changing to 4991490. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4993536, current: 4992512; changing to 4993537. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4993537, current: 4992000; changing to 4993538. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4993538, current: 4993024; changing to 4993539. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4996096, current: 4995072; changing to 4996097. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4996097, current: 4994048; changing to 4996098. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4996098, current: 4995584; changing to 4996099. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4998144, current: 4997120; changing to 4998145. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4998145, current: 4996608; changing to 4998146. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 4998146, current: 4997632; changing to 4998147. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5000704, current: 4999680; changing to 5000705. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5000705, current: 4999168; changing to 5000706. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5000706, current: 5000192; changing to 5000707. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5002752, current: 5001728; changing to 5002753. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5002753, current: 5001216; changing to 5002754. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5002754, current: 5002240; changing to 5002755. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5005312, current: 5004288; changing to 5005313. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5005313, current: 5003776; changing to 5005314. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5005314, current: 5004800; changing to 5005315. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5007872, current: 5006336; changing to 5007873. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5007873, current: 5005824; changing to 5007874. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5007874, current: 5006848; changing to 5007875. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5008896, current: 5008384; changing to 5008897. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5012480, current: 5010944; changing to 5012481. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5012481, current: 5010432; changing to 5012482. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5012482, current: 5011968; changing to 5012483. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5015040, current: 5013504; changing to 5015041. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5015041, current: 5012992; changing to 5015042. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5015042, current: 5014528; changing to 5015043. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5017600, current: 5016064; changing to 5017601. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5017601, current: 5015552; changing to 5017602. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5017602, current: 5017088; changing to 5017603. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5018624, current: 5018112; changing to 5018625. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5021184, current: 5020160; changing to 5021185. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5021185, current: 5019648; changing to 5021186. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5021186, current: 5020672; changing to 5021187. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5023744, current: 5022720; changing to 5023745. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5023745, current: 5022208; changing to 5023746. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5023746, current: 5023232; changing to 5023747. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5025280, current: 5024768; changing to 5025281. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5027840, current: 5026304; changing to 5027841. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5027841, current: 5025792; changing to 5027842. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5027842, current: 5027328; changing to 5027843. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5029888, current: 5028352; changing to 5029889. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5029889, current: 5028864; changing to 5029890. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5031424, current: 5030400; changing to 5031425. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5031425, current: 5030912; changing to 5031426. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5033472, current: 5032960; changing to 5033473. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5090304, current: 5088768; changing to 5090305. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5090305, current: 5088256; changing to 5090306. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5090306, current: 5089792; changing to 5090307. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5093376, current: 5091840; changing to 5093377. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5093377, current: 5090816; changing to 5093378. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5093378, current: 5092352; changing to 5093379. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5095936, current: 5094400; changing to 5095937. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5095937, current: 5093888; changing to 5095938. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5095938, current: 5095424; changing to 5095939. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5100544, current: 5098496; changing to 5100545. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5100545, current: 5097472; changing to 5100546. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5100546, current: 5099520; changing to 5100547. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5104128, current: 5102080; changing to 5104129. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5104129, current: 5101056; changing to 5104130. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5104130, current: 5103104; changing to 5104131. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5108224, current: 5106176; changing to 5108225. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5108225, current: 5105152; changing to 5108226. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5108226, current: 5107200; changing to 5108227. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5112320, current: 5111296; changing to 5112321. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5112321, current: 5110272; changing to 5112322. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5112322, current: 5111808; changing to 5112323. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5113856, current: 5112832; changing to 5113857. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5116416, current: 5115904; changing to 5116417. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5117952, current: 5116928; changing to 5117953. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5120512, current: 5118976; changing to 5120513. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5120513, current: 5118464; changing to 5120514. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5120514, current: 5119488; changing to 5120515. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5123072, current: 5121536; changing to 5123073. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5123073, current: 5121024; changing to 5123074. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5123074, current: 5122560; changing to 5123075. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5125632, current: 5124096; changing to 5125633. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5125633, current: 5123584; changing to 5125634. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5125634, current: 5125120; changing to 5125635. This may result in incorrect timestamps in the output file.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x910c24280] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5130240, current: 5128704; changing to 5130241. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5130241, current: 5129216; changing to 5130242. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5133312, current: 5132288; changing to 5133313. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5133313, current: 5131264; changing to 5133314. This may result in incorrect timestamps in the output file.
+[vost#0:0/copy @ 0x911118000] Non-monotonic DTS; previous: 5133314, current: 5132800; changing to 5133315. This may result in incorrect timestamps in the output file.
+[mp4 @ 0x910c24a00] Starting second pass: moving the moov atom to the beginning of the file
+[out#0/mp4 @ 0x910c0cb40] video:157233KiB audio:2186KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.112085%
+frame= 9226 fps=2342 q=-1.0 Lsize=  159598KiB time=00:05:39.28 bitrate=3853.5kbits/s speed=86.1x elapsed=0:00:03.93    
+[aac @ 0x910c6dc00] Qavg: 65494.879
+  ✓ Pass 2 selesai
+
+✅ Output: S7-5min-test.mp4
+   Size: 155.9 MB
+   Duration: 00:05:39.276
+
+   → Buka di DaVinci Resolve untuk editing final.
+   (Temp files dihapus. Pakai --keep-temp untuk debugging.)
+(venv) macbookpro@MacBooks-MacBook-Pro-4 Dubbing % 
