@@ -277,6 +277,7 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
     mp4_dur = mp4_end - mp4_start
     target_dur = task['target_duration']
     factor = task['factor']
+    cumulative_offset = task.get('cumulative_offset', 0.0)
 
     # Skip kalau sudah ada (resume support)
     if os.path.isfile(output_file) and os.path.getsize(output_file) > 1000:
@@ -293,28 +294,32 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
     use_stream_copy = 0.95 <= factor <= 1.05 and task['type'] in ('gap', 'tail')
 
     if use_stream_copy:
+        # Stream copy dengan output_ts_offset = timestamp akumulatif
         cmd = [
             ffmpeg_path, '-y',
-            '-hwaccel', 'videotoolbox',  # Hardware decode (H.264/HEVC only, AV1 fallback software)
+            '-hwaccel', 'videotoolbox',
             '-ss', f'{mp4_start:.3f}',
             '-i', mp4_path,
             '-t', f'{mp4_dur:.3f}',
             '-c:v', 'copy',
             '-an',
+            '-output_ts_offset', f'{cumulative_offset:.6f}',
             '-fflags', '+genpts',
             output_file,
         ]
     else:
+        # Re-encode: setpts untuk slow-mo + output_ts_offset untuk timestamp akumulatif
+        # fps=30 filter SEBELUM setpts (VFR guard, dari riset VoiceStudio)
+        # JANGAN pakai -fps_mode cfr atau -video_track_timescale sebagai output option
         cmd = [
             ffmpeg_path, '-y',
-            '-hwaccel', 'videotoolbox',  # Hardware decode (H.264/HEVC only)
+            '-hwaccel', 'videotoolbox',
             '-i', mp4_path,
             '-ss', f'{mp4_start:.3f}',
             '-t', f'{target_dur:.3f}',
-            '-vf', f'setpts=(PTS-STARTPTS)*{factor:.6f}',
+            '-vf', f'fps=30,setpts=(PTS-STARTPTS)*{factor:.6f}',
             *enc_params,
-            '-fps_mode', 'cfr',                  # Constant frame rate (fix VFR)
-            '-video_track_timescale', '30000',   # Same timescale (fix DTS rounding)
+            '-output_ts_offset', f'{cumulative_offset:.6f}',
             '-an',
             '-fflags', '+genpts',
             output_file,
@@ -454,18 +459,16 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
         enc_params = ['-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
                        '-bf', '0', '-profile:v', 'high']
 
-    # Pass 2: RE-ENCODE tanpa setpts (concat demuxer sudah handle offset)
-    # JANGAN pakai setpts=PTS-STARTPTS → hapus concat offset, cause DTS out of order
-    # JANGAN pakai -fps_mode cfr → cause frame duplikasi massal
+    # Pass 2: STREAM COPY (instant, 2 detik)
+    # Timestamp sudah akumulatif dari Pass 1 (output_ts_offset)
+    # → concat demuxer stream copy = seamless, tidak ada DTS out of order
     if video_only:
-        print(f'  → Mode: VIDEO ONLY (re-encode {encoder}, tanpa audio)')
+        print(f'  → Mode: VIDEO ONLY (stream copy, tanpa audio)')
         cmd = [
             ffmpeg_path, '-y',
-            '-hwaccel', 'videotoolbox',
-            '-fflags', '+genpts+igndts+discardcorrupt',
             '-f', 'concat', '-safe', '0',
             '-i', concat_list,
-            *enc_params,
+            '-c:v', 'copy',
             '-an',
             '-movflags', '+faststart',
             '-timecode', '00:00:00:00',
@@ -474,14 +477,12 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
     else:
         cmd = [
             ffmpeg_path, '-y',
-            '-hwaccel', 'videotoolbox',
-            '-fflags', '+genpts+igndts+discardcorrupt',
             '-f', 'concat', '-safe', '0',
             '-i', concat_list,
             '-i', audio_jawa,
             '-map', '0:v',
             '-map', '1:a',
-            *enc_params,
+            '-c:v', 'copy',
             '-c:a', 'aac',
             '-b:a', '192k',
             '-movflags', '+faststart',
