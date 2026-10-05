@@ -101,6 +101,12 @@ export interface NarrationOptions {
   smartFitCrossfadeMs?: number       // default 150 — crossfade kalau audio overflow cue (tumpang tindih smooth ke cue next).
   smartFitNormalizeDbFS?: number     // default -2 — per-cue peak normalize untuk loudness konsisten.
 
+  // === PITCH CONTROL (Edge TTS only) ===
+  // User suggestion: '-10Hz' untuk laki-laki (lebih bas), '+10Hz' untuk perempuan (lebih tinggi).
+  // Agar suara tidak terkesan "standar". Pitch preserved saat Smart Fit speedup (server-side).
+  // Range: -50Hz to +50Hz. Default '+0Hz' (natural).
+  pitch?: string                    // default '+0Hz' = natural. Format: '-10Hz', '+0Hz', '+10Hz'.
+
   onModelProgress?: (p: TTSProgress) => void
   onLineProgress?: (current: number, total: number, text: string) => void
   onStage?: ProgressCallback
@@ -126,6 +132,9 @@ export async function synthesizeText(
     apiKey?: string
     speed?: number           // Kokoro speed (default 1.0)
     rate?: string             // Edge TTS prosody rate (default '+0%' = natural)
+    pitch?: string            // Edge TTS prosody pitch (default '+0Hz' = natural). Range: -50Hz to +50Hz.
+                              // User suggestion: '-10Hz' untuk laki-laki (lebih bas),
+                              // '+10Hz' untuk perempuan (lebih tinggi). Agar tidak terkesan "standar".
     openaiSpeed?: number      // OpenAI/OpenRouter speed (0.25-4.0)
     onModelProgress?: (p: TTSProgress) => void
   },
@@ -136,9 +145,13 @@ export async function synthesizeText(
 
   switch (opts.provider) {
     case 'edge':
-      // Edge TTS: natural rate, speed up di-handle client-side
+      // Edge TTS: natural rate + pitch adjustment (server-side, pitch preserved saat speedup)
+      // Pitch format: '+0Hz' (natural), '-10Hz' (lebih bas), '+10Hz' (lebih tinggi)
       return {
-        audioBlob: await edgeTTS(text, opts.voice, { rate: opts.rate || '+0%' }),
+        audioBlob: await edgeTTS(text, opts.voice, {
+          rate: opts.rate || '+0%',
+          pitch: opts.pitch || '+0Hz',
+        }),
         mimeType: 'audio/mp3',
       }
     case 'kokoro': {
@@ -337,9 +350,10 @@ export async function narrateEntries(
         const crossfadeMs = opts.smartFitCrossfadeMs ?? 150
         const normalizeDbFS = opts.smartFitNormalizeDbFS ?? -2
 
-        // Pass 1: generate natural
+        // Pass 1: generate natural (dengan pitch adjustment user)
         const synth1 = await synthesizeText(text, {
           ...opts, rate: '+0%', openaiSpeed: 1.0, speed: 1.0,
+          pitch: opts.pitch,  // user pitch adjustment (-10Hz laki, +10Hz perempuan)
           onModelProgress: opts.onModelProgress,
         })
         const pass1 = await decodeMonoTrimResample(synth1, OUTPUT_SAMPLE_RATE, false)
@@ -358,6 +372,7 @@ export async function narrateEntries(
           if (opts.provider === 'edge') {
             const synth2 = await synthesizeText(text, {
               ...opts, rate: formatEdgeRate(audioRate),
+              pitch: opts.pitch,  // pitch preserved saat speedup (server-side)
               onModelProgress: opts.onModelProgress,
             })
             const pass2 = await decodeMonoTrimResample(synth2, OUTPUT_SAMPLE_RATE, false)
@@ -368,6 +383,7 @@ export async function narrateEntries(
             const synth2 = await synthesizeText(text, {
               ...opts, openaiSpeed: audioRate,
               speed: opts.provider === 'kokoro' ? audioRate : undefined,
+              pitch: opts.pitch,
               onModelProgress: opts.onModelProgress,
             })
             const pass2 = await decodeMonoTrimResample(synth2, OUTPUT_SAMPLE_RATE, false)

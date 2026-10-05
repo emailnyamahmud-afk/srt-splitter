@@ -74,6 +74,8 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
   // ON mode Smart Fit (default ON — strategi baru 5 Okt 2026, video = ground truth)
   const [onSmartFit, setOnSmartFit] = useState<boolean>(true)
   const [onSmartFitCap, setOnSmartFitCap] = useState<number>(2.0)  // default 2.0x (voicertool cap)
+  // Edge TTS pitch adjustment (user suggestion: -10Hz laki, +10Hz perempuan, agar tidak "standar")
+  const [edgePitch, setEdgePitch] = useState<string>('+0Hz')
   // Dubbing mode settings
   const [dubSpeed, setDubSpeed] = useState<number>(1.0)
   const [dubSmartFit, setDubSmartFit] = useState<boolean>(true)  // default ON: VoiceStudio fit_planner
@@ -190,6 +192,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
           offSpeed,
           smartFit: respectTiming && onSmartFit,
           smartFitAudioRateCap: onSmartFitCap,
+          pitch: provider === 'edge' ? edgePitch : undefined,  // pitch adjustment (Edge only)
           onModelProgress: provider === 'kokoro' ? (p) => setProgress(p) : undefined,
           onLineProgress: (current, total, text) => setLineProgress({ current, total, text }),
           onStage: (p) => setProgress(p),
@@ -207,7 +210,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
         setLineProgress(null)
       }
     },
-    [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, mode, speedMode, offSpeed, onSmartFit, onSmartFitCap, prefix, audioCache],
+    [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, mode, speedMode, offSpeed, onSmartFit, onSmartFitCap, edgePitch, prefix, audioCache],
   )
 
   // === DUBBING MODE: Generate audio natural + SRT baru + retime map (full SRT, all parts) ===
@@ -319,6 +322,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
           offSpeed,
           smartFit: respectTiming && onSmartFit,
           smartFitAudioRateCap: onSmartFitCap,
+          pitch: provider === 'edge' ? edgePitch : undefined,  // pitch adjustment (Edge only)
           onModelProgress: provider === 'kokoro' ? (p) => setProgress(p) : undefined,
           onLineProgress: (current, total, text) => setLineProgress({ current, total, text }),
           onStage: (p) => setProgress(p),
@@ -498,6 +502,20 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
                   <Label htmlFor="edge-voice" className="text-xs">Voice Edge TTS</Label>
                   <select id="edge-voice" value={edgeVoice} onChange={(e) => setEdgeVoice(e.target.value)} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1">
                     {EDGE_VOICES.map((v) => <option key={v.name} value={v.name}>{v.label}</option>)}
+                  </select>
+                </div>
+              )}
+              {provider === 'edge' && (
+                <div>
+                  <Label htmlFor="edge-pitch" className="text-xs">Pitch (nada) — agar tidak "standar"</Label>
+                  <select id="edge-pitch" value={edgePitch} onChange={(e) => setEdgePitch(e.target.value)} className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1">
+                    <option value="+0Hz">+0Hz — Natural (standar)</option>
+                    <option value="-10Hz">-10Hz — Lebih bas (★ laki-laki)</option>
+                    <option value="-15Hz">-15Hz — Lebih bas lagi (dramatis laki)</option>
+                    <option value="+10Hz">+10Hz — Lebih tinggi (★ perempuan)</option>
+                    <option value="+15Hz">+15Hz — Lebih tinggi lagi (dramatis perempuan)</option>
+                    <option value="-5Hz">-5Hz — Sedikit lebih bas (subtle)</option>
+                    <option value="+5Hz">+5Hz — Sedikit lebih tinggi (subtle)</option>
                   </select>
                 </div>
               )}
