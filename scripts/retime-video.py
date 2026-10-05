@@ -264,7 +264,7 @@ def build_segment_tasks(mandarin_entries, jawa_entries, mp4_duration):
 # Render 1 segment (worker function untuk parallel)
 # ============================================================
 
-def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, preset, has_audio_ori):
+def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, preset, has_audio_ori, encoder='libx264'):
     """
     Render 1 segment jadi file MP4 kecil.
     Dipanggil oleh ProcessPoolExecutor (parallel).
@@ -277,20 +277,20 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
     mp4_dur = mp4_end - mp4_start
     target_dur = task['target_duration']
     factor = task['factor']
-    cumulative_offset = task.get('cumulative_offset', 0.0)
 
     # Skip kalau sudah ada (resume support)
     if os.path.isfile(output_file) and os.path.getsize(output_file) > 1000:
         return {'index': seg_idx, 'output_file': output_file, 'status': 'skipped'}
 
-    # Strategi: TIMESTAMP AKUMULATIF
-    # Setiap segment punya timestamp mulai dari cumulative_offset (bukan 0)
-    # → saat concat di Pass 2, timestamp kontinyu, tidak overlap
-    # → Pass 2 bisa STREAM COPY (instant, 2 detik)
+    # Encoder params: libx264 (software) atau h264_videotoolbox (hardware M1)
+    if encoder == 'h264_videotoolbox':
+        enc_params = ['-c:v', 'h264_videotoolbox', '-b:v', '2M', '-realtime', '0']
+    else:
+        enc_params = ['-c:v', 'libx264', '-preset', preset, '-crf', '23']
+
     use_stream_copy = 0.95 <= factor <= 1.05 and task['type'] in ('gap', 'tail')
 
     if use_stream_copy:
-        # Stream copy: pakai -output_ts_offset untuk set timestamp awal
         cmd = [
             ffmpeg_path, '-y',
             '-ss', f'{mp4_start:.3f}',
@@ -298,24 +298,18 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
             '-t', f'{mp4_dur:.3f}',
             '-c:v', 'copy',
             '-an',
-            '-output_ts_offset', f'{cumulative_offset:.6f}',
             '-fflags', '+genpts',
             output_file,
         ]
     else:
-        # Re-encode: setpts untuk slow-mo, -output_ts_offset untuk timestamp akumulatif
-        # JANGAN pakai /TB (bug di FFmpeg 7+, output empty)
         cmd = [
             ffmpeg_path, '-y',
             '-i', mp4_path,
             '-ss', f'{mp4_start:.3f}',
             '-t', f'{target_dur:.3f}',
             '-vf', f'setpts=(PTS-STARTPTS)*{factor:.6f}',
-            '-c:v', 'libx264',
-            '-preset', preset,
-            '-crf', '23',
+            *enc_params,
             '-an',
-            '-output_ts_offset', f'{cumulative_offset:.6f}',
             '-fflags', '+genpts',
             output_file,
         ]
@@ -360,7 +354,7 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
 # Pass 1: Render semua segments (parallel)
 # ============================================================
 
-def render_all_segments(tasks, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, preset, workers=4):
+def render_all_segments(tasks, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, preset, workers=4, encoder='libx264'):
     """
     Render semua segments secara parallel.
     Pakai ProcessPoolExecutor untuk parallel FFmpeg processes.
@@ -375,7 +369,7 @@ def render_all_segments(tasks, mp4_path, segments_dir, ffmpeg_path, ffprobe_path
     with ProcessPoolExecutor(max_workers=workers) as executor:
         # Submit semua tasks
         futures = {
-            executor.submit(render_segment, task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, preset, True): task
+            executor.submit(render_segment, task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, preset, True, encoder): task
             for task in tasks
         }
 
@@ -423,7 +417,7 @@ def render_all_segments(tasks, mp4_path, segments_dir, ffmpeg_path, ffprobe_path
 # Pass 2: Concat semua segments + add audio Jawa
 # ============================================================
 
-def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_audio_ori, ducking_db, video_only=False):
+def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_audio_ori, ducking_db, video_only=False, encoder='libx264'):
     """
     Concat semua segment files menggunakan concat demuxer.
     Kalau video_only=True: output = video tanpa audio (user import audio terpisah di DaVinci).
@@ -446,21 +440,22 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
 
     print(f'  → Concat list: {concat_list} ({included} files, {skipped} skipped)')
 
+    # Encoder params untuk Pass 2 re-encode
+    if encoder == 'h264_videotoolbox':
+        enc_params = ['-c:v', 'h264_videotoolbox', '-b:v', '2M', '-realtime', '0']
+    else:
+        enc_params = ['-c:v', 'libx264', '-preset', 'fast', '-crf', '23']
+
     # Pass 2: RE-ENCODE (bukan stream copy)
-    # Stream copy = 491 DTS warnings (B-frames + setpts slow-mo = non-monotonic)
-    # Re-encode = 0 DTS warnings (regenerates semua timestamp)
-    # Tambah -fflags +genpts+igndts+discardcorrupt untuk handle corrupt input
     if video_only:
-        print(f'  → Mode: VIDEO ONLY (re-encode, tanpa audio)')
+        print(f'  → Mode: VIDEO ONLY (re-encode {encoder}, tanpa audio)')
         cmd = [
             ffmpeg_path, '-y',
             '-fflags', '+genpts+igndts+discardcorrupt',
             '-f', 'concat', '-safe', '0',
             '-i', concat_list,
             '-vf', 'setpts=PTS-STARTPTS',
-            '-c:v', 'libx264',
-            '-preset', 'fast',
-            '-crf', '23',
+            *enc_params,
             '-an',
             '-movflags', '+faststart',
             '-timecode', '00:00:00:00',
@@ -476,9 +471,7 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
             '-map', '0:v',
             '-map', '1:a',
             '-vf', 'setpts=PTS-STARTPTS',
-            '-c:v', 'libx264',
-            '-preset', 'fast',
-            '-crf', '23',
+            *enc_params,
             '-c:a', 'aac',
             '-b:a', '192k',
             '-movflags', '+faststart',
@@ -566,8 +559,9 @@ def main():
                         help='FFmpeg x264 preset (default: fast). medium=bagus tapi lama.')
     parser.add_argument('--workers', type=int, default=4,
                         help='Parallel FFmpeg processes (default 4, max 8 untuk M1/M2)')
-    parser.add_argument('--video-only', action='store_true',
-                        help='Pass 2: concat video saja, TIDAK mix audio Jawa. User import audio terpisah di DaVinci.')
+    parser.add_argument('--encoder', default='libx264',
+                        choices=['libx264', 'h264_videotoolbox'],
+                        help='Video encoder: libx264 (software, default) atau h264_videotoolbox (hardware M1/M2, 4x cepat)')
     args = parser.parse_args()
 
     # Validate inputs
@@ -614,6 +608,7 @@ def main():
     print(f'Audio streams di MP4: {len(audio_streams)}')
     print(f'SFX preserve: {"YA" if has_audio_ori else "TIDAK"}')
     print(f'Preset: {args.preset}')
+    print(f'Encoder: {args.encoder}')
     print(f'Workers: {args.workers}')
 
     # Build segment tasks
@@ -652,7 +647,7 @@ def main():
     # Pass 1: Render semua segments
     success = render_all_segments(
         tasks, args.mp4, segments_dir, ffmpeg, ffprobe,
-        preset=args.preset, workers=args.workers,
+        preset=args.preset, workers=args.workers, encoder=args.encoder,
     )
 
     if not success:
@@ -666,7 +661,7 @@ def main():
     success = concat_segments(
         tasks, segments_dir, args.audio_jawa, args.output,
         ffmpeg, has_audio_ori, args.sfx_ducking,
-        video_only=args.video_only,
+        video_only=args.video_only, encoder=args.encoder,
     )
 
     if not success:
