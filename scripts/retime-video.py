@@ -284,15 +284,18 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
 
     # Encoder params: libx264 (software) atau h264_videotoolbox (hardware M1)
     if encoder == 'h264_videotoolbox':
-        enc_params = ['-c:v', 'h264_videotoolbox', '-b:v', '2M', '-realtime', '0']
+        enc_params = ['-c:v', 'h264_videotoolbox', '-b:v', '5M', '-realtime', '0',
+                       '-bf', '0', '-profile:v', 'high']
     else:
-        enc_params = ['-c:v', 'libx264', '-preset', preset, '-crf', '23']
+        enc_params = ['-c:v', 'libx264', '-preset', preset, '-crf', '23',
+                       '-bf', '0', '-profile:v', 'high']
 
     use_stream_copy = 0.95 <= factor <= 1.05 and task['type'] in ('gap', 'tail')
 
     if use_stream_copy:
         cmd = [
             ffmpeg_path, '-y',
+            '-hwaccel', 'videotoolbox',  # Hardware decode (H.264/HEVC only, AV1 fallback software)
             '-ss', f'{mp4_start:.3f}',
             '-i', mp4_path,
             '-t', f'{mp4_dur:.3f}',
@@ -304,11 +307,14 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
     else:
         cmd = [
             ffmpeg_path, '-y',
+            '-hwaccel', 'videotoolbox',  # Hardware decode (H.264/HEVC only)
             '-i', mp4_path,
             '-ss', f'{mp4_start:.3f}',
             '-t', f'{target_dur:.3f}',
             '-vf', f'setpts=(PTS-STARTPTS)*{factor:.6f}',
             *enc_params,
+            '-fps_mode', 'cfr',                  # Constant frame rate (fix VFR)
+            '-video_track_timescale', '30000',   # Same timescale (fix DTS rounding)
             '-an',
             '-fflags', '+genpts',
             output_file,
@@ -442,20 +448,25 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
 
     # Encoder params untuk Pass 2 re-encode
     if encoder == 'h264_videotoolbox':
-        enc_params = ['-c:v', 'h264_videotoolbox', '-b:v', '2M', '-realtime', '0']
+        enc_params = ['-c:v', 'h264_videotoolbox', '-b:v', '5M', '-realtime', '0',
+                       '-bf', '0', '-profile:v', 'high']
     else:
-        enc_params = ['-c:v', 'libx264', '-preset', 'fast', '-crf', '23']
+        enc_params = ['-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+                       '-bf', '0', '-profile:v', 'high']
 
-    # Pass 2: RE-ENCODE (bukan stream copy)
+    # Pass 2: RE-ENCODE (bukan stream copy) dengan B-Frames disabled + CFR
     if video_only:
         print(f'  → Mode: VIDEO ONLY (re-encode {encoder}, tanpa audio)')
         cmd = [
             ffmpeg_path, '-y',
+            '-hwaccel', 'videotoolbox',
             '-fflags', '+genpts+igndts+discardcorrupt',
             '-f', 'concat', '-safe', '0',
             '-i', concat_list,
             '-vf', 'setpts=PTS-STARTPTS',
             *enc_params,
+            '-fps_mode', 'cfr',
+            '-video_track_timescale', '30000',
             '-an',
             '-movflags', '+faststart',
             '-timecode', '00:00:00:00',
@@ -464,6 +475,7 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
     else:
         cmd = [
             ffmpeg_path, '-y',
+            '-hwaccel', 'videotoolbox',
             '-fflags', '+genpts+igndts+discardcorrupt',
             '-f', 'concat', '-safe', '0',
             '-i', concat_list,
@@ -472,6 +484,8 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
             '-map', '1:a',
             '-vf', 'setpts=PTS-STARTPTS',
             *enc_params,
+            '-fps_mode', 'cfr',
+            '-video_track_timescale', '30000',
             '-c:a', 'aac',
             '-b:a', '192k',
             '-movflags', '+faststart',
@@ -562,6 +576,8 @@ def main():
     parser.add_argument('--encoder', default='libx264',
                         choices=['libx264', 'h264_videotoolbox'],
                         help='Video encoder: libx264 (software, default) atau h264_videotoolbox (hardware M1/M2, 4x cepat)')
+    parser.add_argument('--video-only', action='store_true',
+                        help='Pass 2: concat video saja, TIDAK mix audio Jawa. User import audio terpisah di DaVinci.')
     args = parser.parse_args()
 
     # Validate inputs
