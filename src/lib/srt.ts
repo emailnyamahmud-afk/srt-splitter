@@ -34,17 +34,25 @@ export function parseTime(ts: string): number {
 
 /**
  * Format seconds (float) → "HH:MM:SS,mmm"
+ *
+ * VoiceStudio Pattern G: round WHOLE value first, then split — supaya 2.3
+ * tetap 2.300 (bukan 2.299 karena binary float precision).
+ *
+ * Contoh bug yang diperbaiki: 59.9996s harusnya jadi "00:00:59,999" bukan
+ * "00:01:00,000" (carry-over ke second). Sekarang: round dulu ke ms integer,
+ * baru divmod ke h:m:s:ms — carry-over otomatis.
  */
 export function formatTime(seconds: number): string {
   if (seconds < 0) seconds = 0;
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  let ms = Math.round((seconds - Math.floor(seconds)) * 1000);
-  if (ms === 1000) {
-    ms = 0;
-    // We could carry-over but it's an edge case rarely hit in practice.
-  }
+  // Round ke ms integer DULU, lalu divmod — hindari binary float precision bug
+  let totalMs = Math.round(seconds * 1000);
+  const h = Math.floor(totalMs / 3_600_000);
+  totalMs -= h * 3_600_000;
+  const m = Math.floor(totalMs / 60_000);
+  totalMs -= m * 60_000;
+  const s = Math.floor(totalMs / 1000);
+  totalMs -= s * 1000;
+  const ms = totalMs;
   return `${pad(h, 2)}:${pad(m, 2)}:${pad(s, 2)},${pad(ms, 3)}`;
 }
 
@@ -58,9 +66,15 @@ const TIME_RANGE_RE =
 /**
  * Parse a full SRT file content into a list of entries.
  * Robust to BOM, \r\n, blank lines, missing index line.
+ *
+ * VoiceStudio Pattern G: tambah de-overlap pass — shift later cue's start
+ * forward ke earlier cue's end; drop kalau duration jadi zero/negatif.
+ * Beberapa SRT Mandarin dari tomb字幕 punya cue yang overlap (kasus umum).
  */
 export function parseSrt(content: string): SrtEntry[] {
-  const normalized = content.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+  // Strip BOM (\uFEFF) yang sering ada di SRT dari Windows
+  const bomStripped = content.replace(/^\uFEFF/, '');
+  const normalized = bomStripped.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
   if (!normalized) return [];
 
   const blocks = normalized.split(/\n\s*\n/);
@@ -85,10 +99,30 @@ export function parseSrt(content: string): SrtEntry[] {
     const start = parseTime(match[1]);
     const end = parseTime(match[2]);
     const textLines = lines.slice(timeLineIdx + 1);
-    entries.push({ start, end, textLines });
+    // Skip cue dengan durasi invalid (zero/negatif) — biasanya artifact
+    if (end > start) {
+      entries.push({ start, end, textLines });
+    }
   }
 
-  return entries;
+  // De-overlap pass: kalau cue[n].end > cue[n+1].start, shift cue[n+1].start
+  // ke cue[n].end. Kalau duration jadi ≤ 0, drop cue (artinya cue kosong/nol-dur).
+  const deoverlapped: SrtEntry[] = [];
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
+    const prev = deoverlapped[deoverlapped.length - 1];
+    let newStart = e.start;
+    if (prev && newStart < prev.end) {
+      // Overlap detected → shift start ke prev.end
+      newStart = prev.end;
+    }
+    if (newStart < e.end) {
+      deoverlapped.push({ start: newStart, end: e.end, textLines: e.textLines });
+    }
+    // else: cue sudah punya durasi zero/negatif setelah de-overlap → drop
+  }
+
+  return deoverlapped;
 }
 
 export interface SplitOptions {

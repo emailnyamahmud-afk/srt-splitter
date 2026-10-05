@@ -82,3 +82,7 @@ videolingo-*.json
 linly-*.json
 krillin-*.json
 softcat-*.json
+
+# VoiceStudio source reference (offline copy of github.com/debpalash/VoiceStudio)
+# Lihat worklog Task 7-a untuk list 36 file yang di-fetch untuk riset algoritma.
+/scripts/voicestudio-study/

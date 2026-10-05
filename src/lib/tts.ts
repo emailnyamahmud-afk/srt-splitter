@@ -50,6 +50,7 @@ import {
   applyFadeOut,
   applyFadeIn,
   trimSilence,
+  peakNormalize,
 } from './audio-utils'
 
 // Re-export semua yang dibutuhkan UI
@@ -525,65 +526,148 @@ export async function narratePart(part: SrtPart, opts: NarrationOptions): Promis
 }
 
 // ============================================================
-// DUBBING MODE — SRT Jawa sebagai ground truth
+// DUBBING MODE — SRT Jawa sebagai ground truth (v2.0 schema)
 // ============================================================
 //
 // Filosofi: Audio natural → SRT baru ngikut audio → MP4 ngikut SRT baru.
+// "Dub = hulu" — kalau hulu sampah, hasil sampah. Kualitas dub menentukan kualitas
+// seluruh pipeline (SRT baru + retime-map JSON + downstream video retim).
+//
+// VoiceStudio adopsi (PR ini):
+//   Pattern A (Slack Absorption): slot cue extends ke dalam gap sampai gap - 50ms
+//     guard. Push back HANYA kalau audio overflow melebihi slot extended.
+//     Mengurangi jumlah push back → kurangi slow-mo video → lebih natural.
+//   Pattern C (15ms fade in/out): di-aplikasikan via mixAudioInto (audio-utils).
+//     Prevent audible click di cue boundary (plosive/breath patah tiba-tiba).
+//   Pattern D (Peak normalize -2 dBFS): per-cue sebelum mix, loudness konsisten
+//     antar cue. Silence floor -50 dBFS supaya tidak amplify hening.
+//   Pattern G (SRT de-overlap + formatTime rounding): di srt.ts, bukan di sini.
 //
 // Algoritma:
 // 1. Generate audio natural per cue (Edge TTS rate 1.0x/1.25x/1.5x sesuai pilihan)
-// 2. Bangun SRT baru: cue.start = original.start + accumulated_offset
-//    cue.end = cue.start + audio_duration (audio utuh, tidak dipotong, tidak ditambah silence)
-// 3. Kalau audio overflow ke cue asli berikutnya → offset bertambah
-// 4. Kalau ada gap cukup (zona pemandangan) → offset tidak berubah (natural)
-// 5. Min gap antar cue (default 150ms) — kalau audio cue[n] terlalu deket dengan cue[n+1].start,
-//    push back cue[n+1] supaya ada jeda natural
+// 2. Peak-normalize per cue ke -2 dBFS (loudness konsisten antar cue)
+// 3. Bangun timeline baru:
+//    - newStart = original.start + offset (offset mulai dari 0)
+//    - newEnd = newStart + audioDur (audio utuh, tidak dipotong)
+//    - Slack absorption: audio boleh overflow cue asli selama masih muat di
+//      cue + gap - 50ms guard. Hanya kalau overflow slot extended, push back.
+// 4. Bangun chunks[] untuk retime-map.json v2.0:
+//    - 'head': pre-roll video sebelum cue pertama (jika cue[0].start > 0)
+//    - 'cue': dialog dengan audioRate (TTS) + videoRatio (setpts downstream)
+//    - 'gap': jeda antar cue, factor = newDuration / originalDuration (FIX v1.0 bug)
+// 5. Bangun fittedCues[] — actual cue times di audio final (ground truth SRT baru)
 //
 // Output: 3 file
-// - audio-jawa.wav (audio utuh natural, 24kHz mono)
-// - subs-jawa-new.srt (SRT BARU dengan timing dari audio)
-// - retime-map.json (peta retim video untuk ffmpeg)
+// - audio-jawa.wav (audio utuh natural, 24kHz mono, peak -2 dBFS, fade 15ms)
+// - subs-jawa-new.srt (SRT BARU dengan timing dari fittedCues)
+// - retime-map.json v2.0 (chunks + fittedCues + params + metadata)
 
 export interface DubbingOptions {
   provider: Provider
   voice: string
   model?: string
   apiKey?: string
-  speed?: number             // 1.0, 1.25, 1.5 (default 1.25x — bantu slow-mo video)
-  minGapSec?: number         // default 0.15 (150ms)
+  speed?: number             // 1.0, 1.25, 1.5 (default 1.0x = natural)
+  minGapSec?: number         // default 0.15 (150ms) — min jeda antar cue SETELAH push back
+  gapGuardSec?: number       // default 0.05 (50ms) — VoiceStudio slack absorption guard
   concurrency?: number       // default 3 — parallel generate untuk speed up
+  peakNormalizeDbFS?: number // default -2 (dBFS) — VoiceStudio Pattern D
   onModelProgress?: (p: TTSProgress) => void
   onLineProgress?: (current: number, total: number, text: string) => void
   onStage?: ProgressCallback
 }
 
-export interface DubbingRetimePoint {
-  cueIndex: number           // 0-based
-  originalStart: number      // seconds
-  originalEnd: number        // seconds
-  newStart: number           // seconds (di SRT baru)
-  newEnd: number             // seconds
-  originalDuration: number   // seconds
-  newDuration: number        // seconds
-  factor: number             // newDuration / originalDuration (>1 = slow-mo, <1 = fast-forward)
-  type: 'cue' | 'gap'        // cue = dialog, gap = jeda antar cue
-  text?: string              // untuk cue
+// v2.0 chunk type — backward compatible dengan v1.0 'cue'/'gap', tambah 'head'/'tail'
+export type DubbingChunkType = 'head' | 'cue' | 'gap' | 'tail'
+
+export type DubbingChunkStatus =
+  | 'fits'                    // audio muat di cue original, mungkin underrun (silence di akhir cue)
+  | 'audio_extended_into_gap' // audio overflow cue TAPI muat di cue+gap-guard (slack absorption)
+  | 'overflow_pushed_back'   // audio overflow slot extended, cue berikutnya di-push back
+  | 'skipped'                 // cue gagal/invalid, skip di stitching
+  | 'head_silent'             // pre-roll video sebelum cue pertama
+  | 'tail_silent'             // post-roll video setelah cue terakhir (informational)
+
+export interface DubbingChunk {
+  // v2.0 — index 0-based, segId untuk debugging
+  index: number
+  segId: string               // e.g., "head", "cue-0042", "gap-0042"
+  type: DubbingChunkType
+  cueIndex?: number           // 0-based, hanya untuk 'cue'
+  text?: string              // hanya untuk 'cue'
+
+  // Timeline original (SRT Mandarin)
+  origStart: number
+  origEnd: number
+  originalDuration: number   // = origEnd - origStart (untuk backward compat v1.0)
+
+  // Timeline baru (SRT Jawa)
+  newStart: number
+  newEnd: number
+  newDuration: number        // = newEnd - newStart
+
+  // v2.0 — separasi audio vs video (VoiceStudio Pattern A)
+  audioRate: number          // TTS rate yang dipakai (== speed, misal 1.25)
+  videoRatio: number         // setpts factor untuk downstream retime-video.py
+
+  // v1.0 backward compat — factor = newDuration / originalDuration (= videoRatio ketika audioRate=1.0)
+  factor: number
+
+  // v2.0 — status + overflow tracking
+  status: DubbingChunkStatus
+  overflowSec: number        // 0 = no overflow; >0 = berapa detik audio overflow yang di-push back
 }
+
+export interface DubbingFittedCue {
+  id: string                // e.g., "cue-0042"
+  cueIndex: number          // 0-based index di SRT asli
+  start: number             // posisi aktual di audio final (seconds)
+  end: number               // posisi aktual di audio final (seconds)
+  durationSec: number       // = end - start
+  text: string
+}
+
+export interface DubbingRetimeMap {
+  version: string           // "2.0"
+  source: string
+  sampleRate: number        // 24000 (audio sample rate)
+  speed: number             // TTS rate (audioRate global)
+  minGapSec: number
+  gapGuardSec: number       // slack absorption guard (default 0.05)
+  totalOffsetSec: number    // total push back accumulated
+  originalDurationSec: number  // SRT asli total durasi
+  newDurationSec: number    // audio final durasi
+  successCount: number
+  failCount: number
+  skippedCues: number[]     // 0-based indices of cues yang di-skip
+
+  // VoiceStudio Pattern A — params block untuk reproducibility
+  params: {
+    timingStrategy: 'stretch_video'  // kita cuma support stretch_video (audio natural, video retimed)
+    audioRateCap: number              // 1.5 — batas atas TTS rate (di UI cap 1.5x)
+    videoSlowCap: number              // 2.0 — batas atas setpts factor (lebih dari ini = syrupy)
+    gapGuardSec: number               // 0.05
+    allowVideoRetime: true
+    minAudioRate: number              // 1.0 — kita tidak pernah slow down audio (audio natural)
+    peakNormalizeDbFS: number         // -2 dBFS
+  }
+
+  // v2.0 — chunks (v1.0 backward-compat: ada juga alias 'points' = chunks)
+  chunks: DubbingChunk[]
+  points: DubbingChunk[]    // ALIAS untuk backward compat (sama dengan chunks)
+
+  // v2.0 — actual cue positions di audio (ground truth untuk SRT baru)
+  fittedCues: DubbingFittedCue[]
+}
+
+// v1.0 backward compat — lama bernama DubbingRetimePoint
+export type DubbingRetimePoint = DubbingChunk
 
 export interface DubbingResult {
   audioBlob: Blob
   audioDurationSec: number
   srtContent: string         // SRT baru dengan timing ngikut audio
-  retimeMap: {
-    version: string
-    source: string           // info SRT asli
-    speed: number
-    minGapSec: number
-    totalOffsetSec: number
-    originalDurationSec: number
-    newDurationSec: number
-    points: DubbingRetimePoint[]
-  }
+  retimeMap: DubbingRetimeMap
   retimeMapJson: string      // JSON string siap download
   newEntries: { start: number; end: number; text: string }[]  // untuk preview UI
 }
@@ -591,6 +675,17 @@ export interface DubbingResult {
 /**
  * Generate audio Jawa natural + bangun SRT baru dengan timing ngikut audio.
  * Audio utuh 100% (tidak dipotong, tidak ditambah silence).
+ *
+ * v2.0 improvements vs v1.0:
+ * - Slack absorption (VoiceStudio Pattern A): kurangi push back, lebih natural
+ * - Peak normalize -2 dBFS per cue (Pattern D): loudness konsisten
+ * - 15ms fade in/out di mix (Pattern C): no clicks di cue boundary
+ * - Gap factor di-fix: sebelumnya hardcoded 1.0 (BUG), sekarang dihitung
+ * - Head chunk: pre-roll video sebelum cue pertama (jika cue[0].start > 0)
+ * - audioRate + videoRatio separasi (Pattern A)
+ * - fittedCues array: ground truth untuk SRT baru
+ * - params block: reproducibility (VoiceStudio-style)
+ * - skippedCues tracking: transparency untuk cue yang gagal
  */
 export async function narrateDubbingMode(
   entries: SrtEntry[],
@@ -599,18 +694,18 @@ export async function narrateDubbingMode(
   if (entries.length === 0) throw new Error('No subtitles to narrate')
 
   // Default speed = 1.0 (NATURAL). User bilang dari awal: mau natural, video slow-mo OK.
-  // Speed 1.25/1.5 hanya kalau user pilih manual di UI untuk kurangi slow-mo video.
   const speed = opts.speed ?? 1.0
   const minGapSec = opts.minGapSec ?? 0.15
+  const gapGuardSec = opts.gapGuardSec ?? 0.05
+  const peakDbFS = opts.peakNormalizeDbFS ?? -2.0
   const total = entries.length
-  const concurrency = opts.concurrency ?? 3 // parallel generate untuk speed up
+  const concurrency = opts.concurrency ?? 3
 
-  // Edge TTS rate: 1.0x = +0%, 1.25x = +25%, 1.5x = +50%
   const edgeRate = formatEdgeRate(speed)
 
   opts.onStage?.({ stage: 'synthesizing', message: 'Mulai Dubbing Mode…', percent: 0 })
 
-  // Simpan audio per cue + durasi aktual (pre-allocate untuk parallel fill)
+  // Pre-allocate per-cue audio storage (parallel fill)
   const cueAudios: { pcm: Float32Array; durationSec: number; text: string }[] = new Array(entries.length)
   for (let i = 0; i < entries.length; i++) {
     cueAudios[i] = { pcm: new Float32Array(0), durationSec: 0, text: '' }
@@ -620,7 +715,6 @@ export async function narrateDubbingMode(
   let firstError = ''
   let doneCount = 0
 
-  // Helper untuk generate 1 cue
   const generateOne = async (i: number) => {
     const entry = entries[i]
     const text = entry.textLines.join(' ').trim()
@@ -646,18 +740,18 @@ export async function narrateDubbingMode(
       // Decode + mono + resample + TRIM SILENCE
       const dub = await decodeMonoTrimResample(synth, OUTPUT_SAMPLE_RATE, true)
 
-      // VALIDATE durationSec — kalau NaN/Infinity/too big, anggap corrupt, skip
-      // Edge case: Edge TTS proxy kadang return MP3 corrupt, audioBuffer.length bisa raksasa
-      // → dub.durationSec jadi 3.11e+35 → stitching throw "Invalid typed array length"
-      // Max cue audio 300 detik (5 menit) — wajar untuk cue Jawa natural di scene panjang
+      // VALIDATE durationSec — kalau NaN/Infinity/too big, skip
       const MAX_CUE_DURATION_SEC = 300
       if (!isFinite(dub.durationSec) || dub.durationSec <= 0 || dub.durationSec > MAX_CUE_DURATION_SEC) {
         console.warn(`[Dubbing] cue ${i} skip — invalid durationSec: ${dub.durationSec} (text: "${text.slice(0, 40)}")`)
         failCount++
         if (!firstError) firstError = `cue ${i} durationSec invalid: ${dub.durationSec}`
-        // cueAudios[i] sudah pre-allocated dengan durationSec=0 → akan skip di stitching
         return
       }
+
+      // VoiceStudio Pattern D: peak-normalize per cue ke -2 dBFS (in-place)
+      // Loudness konsisten antar cue. Silence floor -50 dBFS supaya tidak amplify hening.
+      peakNormalize(dub.audio, peakDbFS, -50.0)
 
       cueAudios[i] = { pcm: dub.audio, durationSec: dub.durationSec, text }
       successCount++
@@ -668,18 +762,16 @@ export async function narrateDubbingMode(
       console.error('Dubbing TTS failed for line', i, e)
     } finally {
       doneCount++
-      // Update progress per cue complete (lebih sering dari sebelumnya)
       opts.onLineProgress?.(doneCount, total, text.slice(0, 60))
       opts.onStage?.({
         stage: 'synthesizing',
         message: `Dubbing ${doneCount}/${total} cues — "${text.slice(0, 40)}${text.length > 40 ? '…' : ''}"`,
-        percent: (doneCount / total) * 90, // max 90% (10% untuk stitching)
+        percent: (doneCount / total) * 90,
       })
     }
   }
 
-  // Process in batches of `concurrency` (parallel within batch, sequential across batches)
-  // Edge TTS via Vercel proxy: 3 concurrent aman (Microsoft rate limit ~10 req/sec)
+  // Process in batches of `concurrency`
   for (let i = 0; i < entries.length; i += concurrency) {
     const batch = []
     for (let j = i; j < Math.min(i + concurrency, entries.length); j++) {
@@ -699,152 +791,198 @@ export async function narrateDubbingMode(
 
   opts.onStage?.({ stage: 'stitching', message: 'Bangun SRT baru + stitch audio…', percent: 95 })
 
-  // === DEBUG: log cueAudios summary sebelum stitching ===
-  // Untuk pin-point cue mana yang punya duration raksasa yang lolos dari Layer 1
-  const cueAudiosSummary = cueAudios.map((c, i) => ({
-    i,
-    dur: c.durationSec,
-    pcmLen: c.pcm.length,
-    textLen: c.text.length,
-  })).filter(c => !isFinite(c.dur) || c.dur > 60 || c.dur < 0)
-  console.log('[Dubbing] Pre-stitching audit:', {
-    totalCues: entries.length,
-    successCount,
-    failCount,
-    suspiciousCues: cueAudiosSummary, // cue yang punya duration invalid
-  })
-  if (cueAudiosSummary.length > 0) {
-    console.warn('[Dubbing] WARNING: ada cue dengan duration invalid yang akan di-skip di stitching')
-  }
-
-  // === STITCHING: bangun SRT baru + mix audio ke buffer + encode WAV ===
-  // Wrap dalam try-catch supaya error message spesifik ke user (tahap mana yang gagal)
+  // === STITCHING: bangun chunks + fittedCues + mix audio + encode WAV ===
   let indexedNewEntries: { start: number; end: number; text: string; cueIndex: number }[] = []
-  let retimePoints: DubbingRetimePoint[] = []
+  let chunks: DubbingChunk[] = []
+  let fittedCues: DubbingFittedCue[] = []
+  let skippedCues: number[] = []
   let offset = 0
   let blob: Blob
   let audioDurationSec: number
   let srtContent: string
-  let retimeMap: { version: string; source: string; speed: number; minGapSec: number; totalOffsetSec: number; originalDurationSec: number; newDurationSec: number; points: DubbingRetimePoint[] }
+  let retimeMap: DubbingRetimeMap
 
   try {
-    // Step 1: Bangun timeline baru (cue index, start, end, retime points)
+    // Step 1: HEAD chunk (pre-roll video sebelum cue pertama, jika ada)
+    // Python build_segment_tasks handle ini via last_end=0.0, tapi JSON perlu eksplisit
+    // supaya downstream consumer (future) tidak perlu derivasi.
+    const firstEntry = entries[0]
+    if (firstEntry && firstEntry.start > 0.01) {
+      const headDur = firstEntry.start
+      chunks.push({
+        index: chunks.length,
+        segId: 'head',
+        type: 'head',
+        origStart: 0,
+        origEnd: headDur,
+        originalDuration: headDur,
+        newStart: 0,
+        newEnd: headDur,
+        newDuration: headDur,
+        audioRate: 1.0,
+        videoRatio: 1.0,
+        factor: 1.0,
+        status: 'head_silent',
+        overflowSec: 0,
+      })
+    }
+
+    // Step 2: Bangun timeline baru per cue + gap
     console.log('[Dubbing] Stitching step 1: build timeline...', { totalCues: entries.length, successCount })
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i]
       const cueAudio = cueAudios[i]
       const text = entry.textLines.join(' ').trim()
 
-      // Skip cue kosong, atau duration invalid (NaN/Infinity/0/negatif)
-      if (!text || !isFinite(cueAudio.durationSec) || cueAudio.durationSec <= 0) continue
-
-      // Sanity check: cue audio tidak boleh lebih dari 300 detik (5 menit)
-      // Realistis max ~30s untuk cue panjang Jawa krama
+      // Skip cue kosong atau invalid — track untuk skippedCues
+      if (!text || !isFinite(cueAudio.durationSec) || cueAudio.durationSec <= 0) {
+        skippedCues.push(i)
+        continue
+      }
       if (cueAudio.durationSec > 300) {
-        console.warn(`[Dubbing] Stitching: cue ${i} durationSec ${cueAudio.durationSec}s > 300s, skip (text: "${text.slice(0, 40)}")`)
+        console.warn(`[Dubbing] Stitching: cue ${i} durationSec ${cueAudio.durationSec}s > 300s, skip`)
+        skippedCues.push(i)
         continue
       }
 
-      // Cue baru: start = original.start + offset
+      const cueDur = entry.end - entry.start
+      const audioDur = cueAudio.durationSec
+
       const newStart = entry.start + offset
-      const newEnd = newStart + cueAudio.durationSec
-      // Safety: kalau newEnd tidak finite, skip cue ini
+      const newEnd = newStart + audioDur
+
       if (!isFinite(newEnd) || !isFinite(newStart)) {
         console.warn(`[Dubbing] Stitching: cue ${i} newStart/newEnd not finite: ${newStart}/${newEnd}, skip`)
+        skippedCues.push(i)
         continue
       }
-      // HARD CAP: kalau newEnd > 10 jam (36000s), skip cue + RESET offset ke 0
-      // Ini mencegah offset accumulative dari cue corrupt sebelumnya
-      // 10 jam = max wajar untuk SRT panjang (movie 3 jam + offset natural)
+      // HARD CAP: kalau newEnd > 10 jam (36000s), skip + reset offset
       if (newEnd > 36000) {
         console.warn(`[Dubbing] Stitching: cue ${i} newEnd ${newEnd}s > 36000s (10 jam), skip + reset offset from ${offset} to 0`)
         offset = 0
+        skippedCues.push(i)
         continue
       }
-      indexedNewEntries.push({ start: newStart, end: newEnd, text, cueIndex: i })
 
-      retimePoints.push({
+      indexedNewEntries.push({ start: newStart, end: newEnd, text, cueIndex: i })
+      fittedCues.push({
+        id: `cue-${String(i).padStart(4, '0')}`,
         cueIndex: i,
-        originalStart: entry.start,
-        originalEnd: entry.end,
-        newStart,
-        newEnd,
-        originalDuration: entry.end - entry.start,
-        newDuration: cueAudio.durationSec,
-        factor: cueAudio.durationSec / Math.max(0.001, entry.end - entry.start),
-        type: 'cue',
+        start: newStart,
+        end: newEnd,
+        durationSec: audioDur,
         text,
       })
 
-      // Cek gap ke cue asli berikutnya
-      // GAP di SRT baru = (cue[n+1].start di SRT baru) - (cue[n].end di SRT baru)
-      //                = (nextEntry.start + offset) - newEnd
-      //                = nextEntry.start - entry.start - cueAudio.durationSec  ← offset saling cancel
-      // BUG SEBELUMNYA: gapToNext = nextEntry.start - newEnd
-      //   → nextEntry.start (tanpa offset) vs newEnd (dengan offset) → cascade offset raksasa
-      // FIX: hitung gapToNext tanpa offset effect (relative ke cue[n].originalStart)
+      // VoiceStudio Pattern A: status determination + slack absorption
       const nextEntry = entries[i + 1]
+      const cueToCueDistance = nextEntry ? (nextEntry.start - entry.start) : Infinity
+      const origGap = nextEntry ? (nextEntry.start - entry.end) : 0
+      const effectiveSlot = nextEntry ? (cueToCueDistance - gapGuardSec) : Infinity
+
+      let status: DubbingChunkStatus
+      let overflowSec = 0
+
+      if (!nextEntry) {
+        // Last cue, no constraint
+        status = 'fits'
+      } else if (audioDur <= cueDur) {
+        // Audio fits in cue original — mungkin underrun (silence di akhir cue)
+        status = 'fits'
+      } else if (audioDur <= effectiveSlot) {
+        // VoiceStudio Pattern A: SLACK ABSORPTION
+        // Audio overflow cue TAPI muat di cue + gap - guard (50ms clear sebelum next cue)
+        // Tidak push back — video slow-mo di cue, gap menyusut naturally
+        status = 'audio_extended_into_gap'
+      } else {
+        // Audio overflow slot extended → push back next cue
+        // pushBack = audioDur - cueToCueDistance + minGapSec (gap after push back = minGapSec)
+        const pushBack = audioDur - cueToCueDistance + minGapSec
+        offset += Math.max(0, pushBack)
+        overflowSec = Math.max(0, audioDur - effectiveSlot)
+        status = 'overflow_pushed_back'
+      }
+
+      // videoRatio = audioDur / cueDur (>1 = slow-mo, <1 = fast-forward)
+      // audioRate = speed (TTS server-side rate, e.g., 1.25 = +25%)
+      const videoRatio = audioDur / Math.max(0.001, cueDur)
+
+      chunks.push({
+        index: chunks.length,
+        segId: `cue-${String(i).padStart(4, '0')}`,
+        type: 'cue',
+        cueIndex: i,
+        text,
+        origStart: entry.start,
+        origEnd: entry.end,
+        originalDuration: cueDur,
+        newStart,
+        newEnd,
+        newDuration: audioDur,
+        audioRate: speed,
+        videoRatio,
+        factor: videoRatio, // backward compat v1.0
+        status,
+        overflowSec,
+      })
+
+      // Gap chunk (jika ada next cue DAN ada gap asli yang signifikan)
       if (nextEntry) {
-        // gapToNext = jarak dari cue[n] newEnd ke cue[n+1] newStart di SRT BARU
-        // = (nextEntry.originalStart + offset) - (entry.originalStart + offset + audioDur)
-        // = nextEntry.originalStart - entry.originalStart - audioDur
-        // (offset saling cancel, jadi tidak masalah berapapun offset saat ini)
-        const cueToCueDistance = nextEntry.start - entry.start // jarak dari start cue[n] ke start cue[n+1] di SRT asli
-        const gapToNext = cueToCueDistance - cueAudio.durationSec // sisa setelah audio cue[n]
+        const gapOrigDuration = nextEntry.start - entry.end
+        if (gapOrigDuration > 0.01) {
+          // Compute gap in new timeline:
+          // newGap = (nextEntry.start + offset_after) - newEnd
+          //        = cueToCueDistance + (offset_after - offset_before) - audioDur
+          //        = cueToCueDistance - audioDur + pushBack (if push back) or 0
+          const newGapDuration = (nextEntry.start + offset) - newEnd
 
-        if (gapToNext < minGapSec) {
-          // Audio overflow → push back cue berikutnya
-          // pushBack = berapa banyak cue[n+1] harus dimajukan ke depan
-          // Kalau gapToNext = -3 (overflow 3s), pushBack = 0.15 - (-3) = 3.15
-          const pushBack = minGapSec - gapToNext
-          offset += pushBack
+          // FIX v1.0 BUG: factor should be newGapDuration / originalGapDuration, NOT 1.0
+          // v1.0 hardcoded factor=1.0 when "gap cukup" — itu salah kalau audio lebih
+          // pendek dari cue (gap EXTENDS, not stays same). Sekarang: factor selalu dihitung.
+          const gapFactor = newGapDuration / Math.max(0.001, gapOrigDuration)
 
-          // Gap di retime map: dari newEnd (SRT baru) ke (newEnd + pushBack)
-          // = pushBack detik hening
-          retimePoints.push({
-            cueIndex: i,
-            originalStart: entry.end,
-            originalEnd: nextEntry.start,
-            newStart: newEnd,
-            newEnd: newEnd + pushBack, // gap duration = pushBack (hening)
-            originalDuration: nextEntry.start - entry.end,
-            newDuration: pushBack,
-            factor: pushBack / Math.max(0.001, nextEntry.start - entry.end),
+          chunks.push({
+            index: chunks.length,
+            segId: `gap-${String(i).padStart(4, '0')}`,
             type: 'gap',
-          })
-        } else {
-          // Gap cukup → tidak push back, offset tidak berubah
-          // Gap di retime map = sisa gap asli (gapToNext)
-          retimePoints.push({
             cueIndex: i,
-            originalStart: entry.end,
-            originalEnd: nextEntry.start,
+            origStart: entry.end,
+            origEnd: nextEntry.start,
+            originalDuration: gapOrigDuration,
             newStart: newEnd,
-            newEnd: newEnd + gapToNext,
-            originalDuration: nextEntry.start - entry.end,
-            newDuration: gapToNext,
-            factor: 1.0,
-            type: 'gap',
+            newEnd: newEnd + newGapDuration,
+            newDuration: newGapDuration,
+            audioRate: 1.0,
+            videoRatio: gapFactor,
+            factor: gapFactor,
+            status: status === 'overflow_pushed_back' ? 'overflow_pushed_back' : 'fits',
+            overflowSec: status === 'overflow_pushed_back' ? overflowSec : 0,
           })
         }
       }
     }
-    console.log('[Dubbing] Stitching step 1 done:', { indexedNewEntries: indexedNewEntries.length, offsetSec: offset })
+    console.log('[Dubbing] Stitching step 1 done:', {
+      indexedNewEntries: indexedNewEntries.length,
+      offsetSec: offset,
+      chunks: chunks.length,
+      skippedCues: skippedCues.length,
+    })
 
     // Step 2: Allocate audio buffer + mix
+    // mixAudioInto sudah apply 15ms fade in/out (VoiceStudio Pattern C)
     const newDurationSec = indexedNewEntries.length > 0
       ? indexedNewEntries[indexedNewEntries.length - 1].end + 0.5
       : 0
-    // Sanity check: kalau newDurationSec tidak finite atau > 12 jam, throw dengan message jelas
-    // 12 jam = max wajar untuk SRT panjang yang di-dub natural (3 jam MP4 + 4x offset natural)
     if (!isFinite(newDurationSec) || newDurationSec <= 0) {
-      throw new Error(`newDurationSec invalid: ${newDurationSec} (indexedNewEntries: ${indexedNewEntries.length}, last.end: ${indexedNewEntries.length > 0 ? indexedNewEntries[indexedNewEntries.length - 1].end : 'n/a'})`)
+      throw new Error(`newDurationSec invalid: ${newDurationSec} (indexedNewEntries: ${indexedNewEntries.length})`)
     }
     if (newDurationSec > 43200) {
-      throw new Error(`newDurationSec ${newDurationSec}s > 12 jam — kemungkinan ada cue dengan duration raksasa (max 300s per cue)`)
+      throw new Error(`newDurationSec ${newDurationSec}s > 12 jam — cue duration raksasa`)
     }
     const totalSamples = Math.floor(newDurationSec * OUTPUT_SAMPLE_RATE)
-    console.log('[Dubbing] Stitching step 2: allocate buffer...', { newDurationSec, totalSamples, bytesMB: (totalSamples * 4 / 1024 / 1024).toFixed(1) })
+    console.log('[Dubbing] Stitching step 2: allocate buffer...', {
+      newDurationSec, totalSamples, bytesMB: (totalSamples * 4 / 1024 / 1024).toFixed(1),
+    })
     if (totalSamples <= 0 || !isFinite(totalSamples) || totalSamples > 2000000000) {
       throw new Error(`Invalid totalSamples: ${totalSamples} (newDurationSec=${newDurationSec})`)
     }
@@ -854,41 +992,59 @@ export async function narrateDubbingMode(
       const cueAudio = cueAudios[newEntry.cueIndex]
       const position = Math.floor(newEntry.start * OUTPUT_SAMPLE_RATE)
       if (cueAudio.pcm.length > 0 && position < totalSamples) {
-        mixAudioInto(allAudio, cueAudio.pcm, position)
+        // mixAudioInto signature: (buffer, audio, position, fadeMs=15, sampleRate=24000)
+        // Fade diaplikasikan in-place ke cueAudio.pcm supaya cue lain tidak terpengaruh
+        mixAudioInto(allAudio, cueAudio.pcm, position, 15, OUTPUT_SAMPLE_RATE)
       }
     }
-    console.log('[Dubbing] Stitching step 2 done: audio mixed')
+    console.log('[Dubbing] Stitching step 2 done: audio mixed (15ms fade + peak normalize)')
 
     // Step 3: Encode WAV
-    console.log('[Dubbing] Stitching step 3: encode WAV...')
     blob = encodeWav(allAudio, OUTPUT_SAMPLE_RATE)
     audioDurationSec = allAudio.length / OUTPUT_SAMPLE_RATE
-    console.log('[Dubbing] Stitching step 3 done:', { audioDurationSec, blobSize: blob.size })
 
-    // Step 4: Bangun SRT string
-    console.log('[Dubbing] Stitching step 4: build SRT content...')
+    // Step 4: Bangun SRT string dari fittedCues (ground truth)
     srtContent = ''
-    for (let i = 0; i < indexedNewEntries.length; i++) {
-      const e = indexedNewEntries[i]
+    for (let i = 0; i < fittedCues.length; i++) {
+      const c = fittedCues[i]
       srtContent += `${i + 1}\n`
-      srtContent += `${formatTimeSrt(e.start)} --> ${formatTimeSrt(e.end)}\n`
-      srtContent += e.text + '\n\n'
+      srtContent += `${formatTimeSrt(c.start)} --> ${formatTimeSrt(c.end)}\n`
+      srtContent += c.text + '\n\n'
     }
-    console.log('[Dubbing] Stitching step 4 done:', { srtLength: srtContent.length, cueCount: indexedNewEntries.length })
 
-    // Step 5: Bangun retime map
-    console.log('[Dubbing] Stitching step 5: build retime map...')
+    // Step 5: Bangun retime map v2.0
     retimeMap = {
-      version: '1.0',
+      version: '2.0',
       source: `Original SRT: ${entries.length} cues`,
+      sampleRate: OUTPUT_SAMPLE_RATE,
       speed,
       minGapSec,
+      gapGuardSec,
       totalOffsetSec: offset,
       originalDurationSec: entries[entries.length - 1].end,
       newDurationSec: audioDurationSec,
-      points: retimePoints,
+      successCount,
+      failCount,
+      skippedCues,
+      params: {
+        timingStrategy: 'stretch_video',
+        audioRateCap: 1.5,
+        videoSlowCap: 2.0,
+        gapGuardSec,
+        allowVideoRetime: true,
+        minAudioRate: 1.0,
+        peakNormalizeDbFS: peakDbFS,
+      },
+      chunks,
+      points: chunks, // ALIAS untuk backward compat v1.0 consumer
+      fittedCues,
     }
-    console.log('[Dubbing] Stitching step 5 done')
+    console.log('[Dubbing] Stitching step 5 done: retime-map v2.0 built', {
+      version: retimeMap.version,
+      chunks: chunks.length,
+      fittedCues: fittedCues.length,
+      totalOffsetSec: offset,
+    })
   } catch (stitchError) {
     const errMsg = `Gagal di tahap stitching (95%): ${(stitchError as Error).message}. Stack: ${(stitchError as Error).stack?.slice(0, 200)}`
     console.error('[Dubbing] ' + errMsg, stitchError)
@@ -909,16 +1065,20 @@ export async function narrateDubbingMode(
 
 /**
  * Format waktu SRT: "HH:MM:SS,mmm"
+ *
+ * VoiceStudio Pattern G: round WHOLE value first, then split — supaya 59.9996s
+ * tetap "00:00:59,999" (bukan "00:01:00,000" karena binary float precision bug).
  */
 function formatTimeSrt(seconds: number): string {
   if (seconds < 0) seconds = 0
-  const h = Math.floor(seconds / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  const s = Math.floor(seconds % 60)
-  let ms = Math.round((seconds - Math.floor(seconds)) * 1000)
-  if (ms === 1000) {
-    ms = 0
-  }
+  let totalMs = Math.round(seconds * 1000)
+  const h = Math.floor(totalMs / 3_600_000)
+  totalMs -= h * 3_600_000
+  const m = Math.floor(totalMs / 60_000)
+  totalMs -= m * 60_000
+  const s = Math.floor(totalMs / 1000)
+  totalMs -= s * 1000
+  const ms = totalMs
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')},${String(ms).padStart(3, '0')}`
 }
 

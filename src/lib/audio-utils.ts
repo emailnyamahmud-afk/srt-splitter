@@ -70,16 +70,87 @@ export function applyFadeIn(audio: Float32Array, fadeStart: number, fadeEnd: num
  * Mix (overlay) audio segment into a buffer at a given position.
  * Samples are ADDED (not overwritten) — this allows crossfade overlap.
  *
+ * VoiceStudio Pattern C: 15ms linear fade in/out applied per-cue sebelum mix
+ * untuk prevent audible click di cue boundary (plosive/breath patah tiba-tiba).
+ * Fade diaplikasikan ke `audio` IN-PLACE sebelum di-mix.
+ * Kalau audio lebih pendek dari 2× fade, fade di-skip (tidak ada ruang).
+ *
  * @param buffer Target buffer (will be modified in-place)
- * @param audio Source audio to mix in
+ * @param audio Source audio to mix in (akan di-fade in-place)
  * @param position Start position in target buffer (in samples)
+ * @param fadeMs Fade duration in milliseconds (default 15ms — VoiceStudio standard)
+ * @param sampleRate Sample rate (default 24000)
  */
-export function mixAudioInto(buffer: Float32Array, audio: Float32Array, position: number): void {
+export function mixAudioInto(
+  buffer: Float32Array,
+  audio: Float32Array,
+  position: number,
+  fadeMs: number = 15,
+  sampleRate: number = 24000,
+): void {
+  // VoiceStudio Pattern C: 15ms fade in/out untuk prevent clicks
+  // Diaplikasikan in-place ke audio (bukan ke buffer) supaya cue lain tidak terpengaruh
+  const fadeSamples = Math.floor((fadeMs / 1000) * sampleRate)
+  if (audio.length > fadeSamples * 2 && fadeSamples > 0) {
+    // Fade in: 0 → 1 linear
+    for (let i = 0; i < fadeSamples; i++) {
+      audio[i] *= i / fadeSamples
+    }
+    // Fade out: 1 → 0 linear
+    for (let i = 0; i < fadeSamples; i++) {
+      audio[audio.length - fadeSamples + i] *= (fadeSamples - i) / fadeSamples
+    }
+  }
+
   const endPos = Math.min(position + audio.length, buffer.length)
   const copyLength = endPos - position
   if (copyLength <= 0) return
   for (let i = 0; i < copyLength; i++) {
     buffer[position + i] += audio[i]
+  }
+}
+
+/**
+ * Peak-normalize audio ke target dBFS, dengan silence floor guard.
+ * Port dari VoiceStudio audio_dsp.normalize_audio (Pattern D).
+ *
+ * - Target default -2 dBFS (0.794 linear) — broadcast standar, headroom untuk limiter.
+ * - Silence floor -50 dBFS (0.00316 linear) — kalau audio di bawah ini, dianggap hening,
+ *   JANGAN di-amplify (anti "blank noise boost" bug).
+ * - Operasi in-place (audio di-modifikasi langsung).
+ *
+ * Use case: per-cue normalize sebelum mix supaya loudness konsisten antar cue.
+ * Tanpa ini, cue yang dirender pelan jadi tenggelam, cue kencang jadi mendominasi.
+ *
+ * @param audio Float32Array (akan di-modifikasi in-place)
+ * @param targetDbFS Target loudness dalam dBFS (default -2)
+ * @param silenceFloorDbFS Floor di bawah ini = jangan normalize (default -50)
+ */
+export function peakNormalize(
+  audio: Float32Array,
+  targetDbFS: number = -2.0,
+  silenceFloorDbFS: number = -50.0,
+): void {
+  if (audio.length === 0) return
+
+  // Cari peak absolute
+  let maxVal = 0
+  for (let i = 0; i < audio.length; i++) {
+    const abs = Math.abs(audio[i])
+    if (abs > maxVal) maxVal = abs
+  }
+
+  // Silence floor guard — kalau peak di bawah floor, skip normalize
+  const silenceFloor = Math.pow(10, silenceFloorDbFS / 20) // -50dB → 0.00316
+  if (maxVal <= silenceFloor) return
+
+  // Hitung gain untuk capai target
+  const targetAmp = Math.pow(10, targetDbFS / 20) // -2dB → 0.794
+  const gain = targetAmp / maxVal
+
+  // Apply gain in-place
+  for (let i = 0; i < audio.length; i++) {
+    audio[i] *= gain
   }
 }
 

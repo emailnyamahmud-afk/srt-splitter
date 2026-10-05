@@ -224,3 +224,145 @@ Pesan closing dari user:
 "ada uang atau tidak ada uang, tetap akan user kerjakan, tapi step by step.
 dan semua terdokumentasi rapi. yg bahkan diawali dengan iseng dub dracin ke jawa
 dan jangan lupa, indonesia punya 700 bahasa."
+
+---
+Task ID: 7-a
+Agent: research sub-agent (general-purpose)
+Task: Riset VoiceStudio open-source (github.com/debpalash/VoiceStudio) — identifikasi algoritma TTS / audio-stitching / timing-alignment yang bisa diadopsi di web app kita (Mandarin→Jawa dubbing). Fokus: TTS-side + audio stitching + retime-map JSON schema. Eksklusif: JANGAN riset video retiming (PR berikutnya), encoder tuning, NLE integration.
+
+Work Log:
+- Baca worklog.md (Task 1-6) untuk konteks: project ini Next.js web app split SRT → dubbing Mandarin→Jawa. Sudah ada 3 mode (ON / OFF / Dubbing). Dubbing Mode pakai Edge TTS rate 1.25x default, push-back cue kalau overflow, output 3 file (WAV + SRT baru + retime-map.json v1.0)
+- API GitHub rate-limited → ambil tarball codeload (44.5MB) → extract /tmp/vs_extract/VoiceStudio-main/
+- Reproducibility: latest commit main = 990f0627ba14dbb309b88c0051ebb953d3101800 (2026-10-05T03:06:23Z, merge PR #2611 "fix(cpu): scale default generation compute-time budget on CPU hosts")
+- Salin 36 file relevan ke /home/z/my-project/scripts/voicestudio-study/ (services/ 22 file, routers/ 4 file, docs/ 4 file, schemas/ 1 file, root 4 file)
+- Baca high-priority files:
+  * services/fit_planner.py (231 baris) — Smart Fit planner: slack absorption + 4-step decision (fit/audio_stretched/hybrid/overflow_trimmed) + geometric 50/50 audio+video split
+  * services/duration_planner.py (329 baris) — pre-synthesis prediction, self-calibrating CPS (median, min 3 samples), classify fits/tight/impossible, optional LLM condense
+  * services/fitted_subtitles.py (65 baris) — map original timeline ke fitted timeline via plan chunks
+  * services/dub_background.py (130 baris) — surgical background preservation: original outside dialogue, separated bed inside, 10ms crossfade
+  * services/audio_dsp.py (301 baris) — MASTERING_CHAIN, normalize_audio(-2dBFS, -50dBFS silence floor), trim_speech_padding (50ms context, -50dBFS), trim_trailing_silence, EFFECT_PRESETS (pedalboard)
+  * services/loudness.py (68 baris) — two-pass loudnorm measure (EBU R128 via ffmpeg), never raises
+  * services/onset_align.py (291 baris) — snap segment starts to actual speech onset (sustained 160ms within 300ms window, forward-only, max 1.5s, source-aware: separated vocals only)
+  * services/prosody_mirror.py (406 baris) — speaker-relative z-scores → direction tokens (urgent/calm/quick/whispered), F0 via autocorrelation
+  * services/speech_rate.py (429 baris) — per-language CPS table (jv/id=14, ja=10, zh=6, en=15), LLM slot-fit loop (max 3 attempts, divergence guard against original text)
+  * services/dub_qc.py (142 baris) — second-pass ASR, WER via Levenshtein, CJK per-codepoint tokens, flag drift ≥ 0.5
+  * services/srt_parser.py (370 baris) — lenient (BOM/CRLF/dot separator), anti-ReDoS ([^\S\n]*), de-overlap pass, format_cue_timestamp (round whole first), CUE_SOURCE_ID provenance
+  * services/ssml_lite.py (155 baris) — inline [slow]/[fast]/[emphasis]/[spell] tags, speeds 0.85/1.15/0.92, ReDoS-safe regex
+  * services/chunked_tts.py (511 baris) — long text chunking (800 char default, dense-script aware CJK×2.5), trim_edge_silence (-40dBFS, 40ms keep), concatenate_audio_chunks (linear crossfade, pre-compute length)
+  * services/ffmpeg_utils.py (967 baris, audio-relevant only) — bed_mix_filter (force stereo + amix normalize=0 + alimiter), _atempo_chain (cascading 0.5/2.0 breakpoints), _pitch_preserving_stretch
+  * routers/dub_generate.py (2197 baris) — main orchestrator: 4 timing strategies (concise/strict_slot/stretch_video/smart_fit), per-cue TTS + mix loop dengan 15ms fade in/out, memmap float32 mix_audio, atomic WAV write, fit_plan + fitted_cues persisted
+  * routers/dub_translate.py (1392 baris) — FLORES_CODES includes jv/jw → jav_Latn (NLLB-200 support Javanese), _apply_fit_pass LLM slot-fit after translation
+
+Temuan utama (analisis lengkap di laporan ke user):
+- VoiceStudio punya 4 timing strategy; kita cuma 1 (mirip stretch_video). Bisa tambah concise/strict_slot untuk short cue yang nggak punya gap.
+- Slack absorption (extend slot ke silent gap, keep 0.05s guard) — kita belum ada. minGapSec kita cuma untuk push-back, bukan slot extension.
+- Geometric 50/50 audio+video split: audio_rate = sqrt(need), video_ratio = need/audio_rate — untuk cue yang mustahil fit natural. Cocok untuk retime-map.json v2.0: pisahkan audioRate (TTS server-side rate) dari videoRatio (setpts).
+- Pre-synthesis duration prediction (CPS calibration) — kita bisa predict durasi TTS Jawa sebelum generate, badge fits/tight/impossible. Untuk SRT user (5+ kata/detik), sebagian besar akan "impossible" → validasi temuan Task 5 dengan data nyata.
+- 15ms fade in/out per cue untuk hindari pop/click — kita belum ada. Murah, seharusnya tambah.
+- Peak-normalize ke -2 dBFS dengan -50 dBFS silence floor — kita belum normalize per-cue, bisa uneven loudness.
+- amix normalize=0 + force stereo + alimiter (ducking pattern) — relevan kalau nanti extract MP4 audio di browser. Bukan v1.
+- Surgical background preservation (original outside dialogue, separated bed inside) — butuh Demucs, bukan v1.
+- Onset-align (snap starts ke sustained onset) — butuh separated vocals, bukan v1.
+- Two-pass ASR QC (WER measurement) — butuh Whisper WASM, berat, bukan v1.
+
+Rekomendasi retime-map.json v2.0 (utk PR berikutnya konsumsi retime-video.py):
+- Tambah params: {timingStrategy, maxAudioOnlyRate=1.2, audioRateCap=1.5, videoSlowCap=2.0, gapGuardSec=0.05, allowVideoRetime=true, minAudioRate=0.85}
+- Rename points[] → chunks[], tambah audioRate + videoRatio (pisah dari factor)
+- Tambah status: 'fits'|'audio_stretched'|'audio_slowed'|'hybrid'|'overflow_trimmed'
+- Tambah overflowSec per chunk
+- Tambah fittedCues[] (cue times from ACTUAL stretched samples — ground truth untuk SRT export)
+- Keep v1.0 fields untuk backward compat (factor = videoRatio alias)
+
+Stage Summary:
+- 36 file VoiceStudio berhasil di-fetch dan dibaca (tarball 44.5MB → /tmp + /home/z/my-project/scripts/voicestudio-study/)
+- Latest commit main: 990f0627ba14dbb309b88c0051ebb953d3101800 (2026-10-05)
+- VoiceStudio repositori besar: 108 service files, 4 dub routers (~8000 baris total)
+- 15 algorithm pattern teridentifikasi; 8 worth adopting untuk web app kita (slack absorption, CPS calibration, 15ms fade, peak normalize, ssml_lite, 4-strategy menu, SRT parser robustness, retime-map v2.0 schema)
+- 7 pattern NOT to adopt (desktop/GPU/Demucs/ASR/pedalboard-dependent)
+- Reproducibility document lengkap di laporan ke user (commit hash + tarball URL + file list)
+- File baru: 36 file di /home/z/my-project/scripts/voicestudio-study/ (research-only, no app code change)
+- File TIDAK berubah: src/lib/tts.ts, src/lib/audio-utils.ts, src/lib/edge-tts.ts, src/components/tts-panel.tsx
+- Pending: implementasi pola yang diadopsi → PR terpisah (retime-map.json v2.0 schema + 15ms fade + peak normalize + CPS calibration)
+
+---
+Task ID: 7-b
+Agent: main
+Task: Implementasi dub web (VoiceStudio adoption) + perbaiki logika retime-map JSON. User: "implementasi dub web, lalu nanti aku buat dub baru, dan AI juga perbaiki logika map json. karena dub = hulu. soal render video itu PR berikutnya. kalau hulu sampah = hasil sampah, kalau hulu baik = hasil baik. garbage in garbage out."
+
+Work Log:
+- Baca hasil riset Task 7-a (VoiceStudio 36 file, 15 pattern, 8 worth adopting)
+- Pilih 4 pattern untuk adopt di PR ini (web TTS side, bukan video render):
+  * Pattern A — Slack Absorption (kurangi push back, lebih natural)
+  * Pattern C — 15ms fade in/out per cue (prevent click di cue boundary)
+  * Pattern D — Peak normalize -2 dBFS per cue (loudness konsisten)
+  * Pattern G — SRT de-overlap + formatTime rounding fix (anti binary float bug)
+- Skip pattern yang butuh desktop/GPU/Demucs/ASR (sesuai user: "render video PR berikutnya")
+- File berubah: src/lib/audio-utils.ts, src/lib/tts.ts, src/lib/srt.ts
+
+- src/lib/audio-utils.ts (+87 baris):
+  * mixAudioInto: tambah fadeMs parameter (default 15ms — VoiceStudio standard)
+  * mixAudioInto: apply 15ms linear fade in/out IN-PLACE ke audio sebelum mix (Pattern C)
+  * Tambah peakNormalize(audio, targetDbFS=-2, silenceFloorDbFS=-50) — Pattern D
+  * peakNormalize: cari peak, jika di bawah silence floor (-50 dBFS) skip (anti "blank noise boost")
+  * peakNormalize: apply gain in-place supaya loudness konsisten antar cue
+
+- src/lib/srt.ts (refactor):
+  * formatTime: ganti ke divmod approach (round dulu ke ms, baru split) — Pattern G
+  * formatTime: fix bug 59.9996s jadi "00:01:00,000" (sebelumnya buggy carry-over)
+  * parseSrt: strip BOM (\uFEFF) di awal (sering ada di SRT Windows)
+  * parseSrt: drop cue dengan duration ≤ 0 (artifact)
+  * parseSrt: tambah de-overlap pass — shift cue[n+1].start ke cue[n].end kalau overlap (Pattern G)
+
+- src/lib/tts.ts (+385 baris, rewrite Dubbing Mode):
+  * Import peakNormalize dari audio-utils
+  * Schema v2.0 — DubbingRetimeMap interface (backward compat dengan v1.0):
+    - Tambah: sampleRate, gapGuardSec, successCount, failCount, skippedCues
+    - Tambah: params block (timingStrategy, audioRateCap, videoSlowCap, gapGuardSec, minAudioRate, peakNormalizeDbFS) — VoiceStudio-style reproducibility
+    - Rename: points[] → chunks[] (dengan points = chunks alias untuk v1.0 consumer)
+    - Tambah: fittedCues[] array (actual cue times di audio — ground truth untuk SRT export)
+  * DubbingChunk interface (v2.0):
+    - Tambah: index, segId (untuk debugging)
+    - Tambah: origStart/origEnd (rename dari originalStart/originalEnd — lebih pendek, lebih jelas)
+    - Tambah: audioRate (TTS rate, misal 1.25) + videoRatio (setpts factor downstream)
+    - Tetap: factor (v1.0 alias = videoRatio) untuk backward compat
+    - Tambah: status ('fits'|'audio_extended_into_gap'|'overflow_pushed_back'|'skipped'|'head_silent'|'tail_silent')
+    - Tambah: overflowSec (detik overflow yang di-push back)
+  * DubbingFittedCue interface (baru): id, cueIndex, start, end, durationSec, text
+  * narrateDubbingMode v2.0:
+    - Peak normalize per cue ke -2 dBFS sebelum mix (Pattern D)
+    - Slack absorption (Pattern A): effectiveSlot = cueToCueDistance - gapGuardSec
+    - Status determination: 'fits' / 'audio_extended_into_gap' / 'overflow_pushed_back'
+    - Push back hanya jika audioDur > effectiveSlot (BUKAN audioDur > cueToCue - minGapSec seperti v1.0)
+    - HEAD chunk: tambah jika cue[0].start > 0.01 (pre-roll video sebelum cue pertama)
+    - FIX v1.0 BUG: gap factor sebelumnya hardcoded 1.0 — sekarang dihitung sebagai newGap/origGap
+    - Skip gap chunk jika originalGap ≤ 0.01 (back-to-back cues)
+    - skippedCues tracking: 0-based indices untuk cue yang gagal/invalid
+    - SRT baru ditulis dari fittedCues (ground truth dari audio aktual)
+    - formatTimeSrt: juga di-fix (rounding carry-over, sama dengan formatTime)
+
+- scripts/test-dubbing-v2-schema.py (NEW, 200 baris):
+  * Sanity test untuk verifikasi v2.0 logic secara konseptual (Python port dari stitching step 1)
+  * Test 1: Audio shorter than cue → gap extends (factor 2.0, bukan 1.0 — v1.0 bug confirmed & fixed)
+  * Test 2: Audio overflows cue tapi fits di extended slot → slack absorption, no push back
+  * Test 3: Audio overflows extended slot → push back by 3.15s, gap after = minGapSec
+  * Test 4: First cue start > 0 → head chunk present
+  * Test 5: Back-to-back cues (no original gap) → no gap chunk emitted
+  * Test 6: Schema backward compat (points = chunks alias)
+  * ALL 6 TESTS PASSED
+
+- Build verify: npx next build → ✓ Compiled successfully in 8.2s (no TypeScript errors)
+- UI tidak berubah (tts-panel.tsx TIDAK diubah) — semua field lama tetap ada (audioBlob, srtContent, retimeMapJson, retimeMap.totalOffsetSec, retimeMap.originalDurationSec, newEntries, audioDurationSec)
+- Python retime-video.py TIDAK diubah (sesuai user: "soal render video itu PR berikutnya")
+
+Stage Summary:
+- "Dub = hulu" filosofi diterapkan: kualitas dub web sekarang improved (peak normalize, fade, slack absorption) → downstream pipeline (SRT baru + JSON + video retim) dapat input yang lebih baik
+- 4 VoiceStudio pattern diadopsi: A (slack absorption), C (15ms fade), D (peak normalize), G (SRT robustness + formatTime rounding)
+- retime-map.json v2.0 schema: backward compat (points alias), new fields (chunks, fittedCues, params, sampleRate, gapGuardSec, successCount, failCount, skippedCues, audioRate, videoRatio, status, overflowSec, head/tail types)
+- v1.0 gap factor bug (hardcoded 1.0) FIXED — sekarang selalu dihitung sebagai newGap/origGap
+- HEAD chunk ditambahkan (pre-roll video sebelum cue pertama, jika cue[0].start > 0)
+- Test suite: 6/6 tests pass — schema valid, slack absorption active, gap factor fix confirmed
+- File berubah: src/lib/audio-utils.ts (+87), src/lib/tts.ts (+385 rewrite Dubbing Mode), src/lib/srt.ts (refactor)
+- File baru: scripts/test-dubbing-v2-schema.py (200 baris sanity test)
+- File TIDAK berubah: scripts/retime-video.py (Python, sesuai user), src/components/tts-panel.tsx (UI)
+- Pending: user push ke GitHub (sandbox tidak ada credential) — commit lokal siap
+- Pending berikutnya (PR terpisah): render video (retime-video.py konsumsi JSON v2.0 chunks[].videoRatio + fittedCues)
