@@ -454,3 +454,34 @@ Stage Summary:
 - File baru: 10 snippets + RESEARCH_NOTES.md + raw cached files (index.html, setting.js, srt.js, voices.json) di /home/z/my-project/upload/voicertool-research/
 - File TIDAK berubah: src/lib/tts.ts, src/lib/audio-utils.ts, src/lib/edge-tts.ts, src/components/tts-panel.tsx — research-only, no app code change (sesuai task instruction)
 - Pending: PR terpisah untuk adopt asymmetric trim + eksplisit cap konstanta + 3-desimal precision (kalau user setuju)
+
+---
+Task ID: 9
+Agent: main
+Task: Milestone workflow end-to-end SUKSES — Demucs + mode ON + Smart Fit + mix-audio-dub.py
+
+User feedback (6 Okt 2026 01:00 WIB):
+"luar biasa, user sudah lihat VLC, outputnya benar-benar mp4 profesional.
+SFX sangat bersih, audio Dub sangat bersih, 10000% Sync.
+AI update dokumentasi dan progres. push github.
+user akan ke web u generate drt durasi full, 2jam30m"
+
+Work Log:
+- Test #25 workflow end-to-end (Demucs + mode ON + mix) = MILESTONE SUKSES
+- Demucs MPS: 61 detik untuk 7.5 menit audio (7.30s/s processing)
+- Mix FFmpeg: 6.81 detik (sidechain compression, video stream copy)
+- Output: mp4-id-final.mp4, 115.5 MB, 428.23s, 0 DTS warnings
+- User rating: 10000% sync, MP4 profesional, SFX bersih, audio dub bersih
+- User lanjut test full season S7-id (2.5 jam) — generate TTS di web
+
+Stage Summary:
+- WORKFLOW END-TO-END SUKSES setelah 25 test (20x render video gagal + 5x mode ON + mix)
+- 3 fase: Demucs (61s) + web mode ON (TTS) + mix (7s) = ~68 detik untuk 7.5 menit
+- Filosofi: video = ground truth, audio dub fit SRT ori, SFX bersih dari Demucs
+- Pitch control: -15Hz laki-laki (user rating 9/10)
+- Smart Fit: cap 2.0x, asymmetric trim, crossfade 150ms, no truncate
+- 0 DTS warnings, 0 stop-motion, 100% video ori sync
+- Repo audit: 162 → 108 tracked files (54 sampah di-untrack)
+- File baru: demucs-tui.py, mix-audio-dub.py (update --sfx-wav), tutor-demucs-setup.md
+- File deprecated: retime-video.py (tetap di repo sebagai backup)
+- Next: test full season S7-id (2.5 jam) → kamus Jawa JSON

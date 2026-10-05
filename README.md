@@ -17,21 +17,25 @@ Aplikasi web untuk split SRT, translate subtitle, dan **dubbing Mandarin → Jaw
 |---|---|
 | **Split SRT** | By durasi (5m-5jam) atau by karakter (max 5000) |
 | **Translate** | EN→ID, ID→Jawa, Jawa→ID (gratis Google Translate atau premium OpenAI) |
-| **TTS Audio (ON mode)** | Sync ke SRT, crossfade, durasi = SRT, audio utuh |
-| **TTS Audio (OFF mode)** | Natural alami, sequential, speed control (1.0x-2.0x) |
-| **🔴 Dubbing Mode** | Audio natural → SRT baru → MP4 retimed (filosofi: SRT = ground truth) |
+| **TTS Mode ON + Smart Fit** ⭐ | Per-cue dynamic TTS speed (cap 2.0x, pitch preserved), asymmetric trim, crossfade, video = ground truth (100% sync) |
+| **TTS Pitch Control** | -10Hz laki (lebih bas), +10Hz perempuan (lebih tinggi) — agar tidak "standar" |
+| **TTS Mode ON Classic** | Speed up only / Speed up and slow down (Voicertool klasik) |
+| **TTS Mode OFF** | Natural sequential, speed 1.0x-2.0x |
+| **🔴 Dubbing Mode v2.0** | Audio natural → SRT baru → MP4 retimed (deprecated, 20x test gagal) |
 
 ### Python Scripts (lokal, untuk produksi final)
 
 | Script | Fungsi |
 |---|---|
+| **`demucs-tui.py`** ⭐ | TUI Demucs SFX separation (MPS acceleration, ~1 menit untuk 7.5 menit audio) |
+| **`mix-audio-dub.py`** ⭐ | Mix SFX bersih + audio dub dengan ducking sidechain (~7 detik, 0 DTS warnings) |
 | `scripts/rapikan-jawa.py` | Rapikan ejaan Jawa di 1 file SRT |
 | `scripts/rapikan-jawa-semua-season.py` | Rapikan semua season S1-S6 |
 | `scripts/tambah-krama.py` | Tambah sentuhan krama di bagian formal |
 | `scripts/srt-to-audio.py` | Generate audio dari SRT (Edge TTS, ON/OFF mode) |
 | `scripts/split_srt.py` | Split SRT by durasi |
-| `scripts/retime-video.py` | **Retime MP4 Mandarin → SRT Jawa** (FFmpeg + SFX preserve) |
-| `scripts/separate-audio-sfx.py` | **Pisahkan vocals + SFX dari MP4** (Demucs) |
+| `scripts/retime-video.py` | Retime MP4 (deprecated, 20x test gagal, backup) |
+| `scripts/separate-audio-sfx.py` | Pisahkan vocals + SFX (Demucs CLI) |
 | `scripts/analyze-srt-density.py` | Analisis distribusi cue + estimasi robot ratio |
 
 ---

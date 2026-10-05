@@ -2,7 +2,7 @@
 
 Dokumen ini catatan status project untuk AI / developer next time baca. Update setiap sesi kerja.
 
-**Last updated:** 5 Oktober 2026, 20:50 WIB
+**Last updated:** 6 Oktober 2026, 01:00 WIB
 
 ---
 
@@ -10,18 +10,53 @@ Dokumen ini catatan status project untuk AI / developer next time baca. Update s
 
 | Item | Status |
 |---|---|
-| Web app (srt-splitter.vercel.app) — v2.0 schema | ✅ Production ready |
-| **Mode ON + Smart Fit (strategi baru, video = ground truth)** | ✅ Working, user rating 8/10 (cap 2.0x) |
-| Dubbing Mode v2.0 (VoiceStudio adoptions) | ✅ Working, tapi render video 20x test gagal (deprecated approach) |
-| Python `mix-audio-dub.py` (strategi baru: SFX preserve + ducking) | ✅ Working, ~10 detik, 100% sync |
+| Web app (srt-splitter.vercel.app) — v2.0 schema + Smart Fit + pitch control | ✅ Production ready |
+| **Mode ON + Smart Fit (video = ground truth)** | ✅ User rating 9/10 (cap 2.0x, pitch -15Hz laki) |
+| **Python `demucs-tui.py` (SFX separation TUI, MPS acceleration)** | ✅ Working, M1 16GB, ~1 menit untuk 7.5 menit audio |
+| **Python `mix-audio-dub.py` (SFX preserve + ducking + --sfx-wav)** | ✅ Working, ~7 detik, 0 DTS warnings |
+| **Test #25 workflow end-to-end (Demucs + mode ON + mix)** | ✅ **MILESTONE: 10000% sync, SFX bersih, audio dub bersih, MP4 profesional** |
+| Dubbing Mode v2.0 (VoiceStudio adoptions) | ✅ Working, tapi render video 20x test gagal (deprecated) |
 | Python `retime-video.py` v6 (deprecated, untuk Dubbing Mode) | ⚠️ 20x test gagal, tetap di repo sebagai backup |
-| Python `separate-audio-sfx.py` (Demucs) | ✅ Working (belum user test) |
 | Standar nama file | ✅ Diterapkan di web + docs + Python |
-| **Test #22 mode ON Smart Fit (cap 2.0x)** | ✅ User rating 8/10 (audio natural, no truncate) |
-| **Test #23 mode ON Smart Fit (cap 1.25/1.5/2.0)** | ❌ User rating buruk (semua 3 cap) |
-| **Test #24 mode ON Smart Fit (revert ke 8/10)** | ⏳ In progress (Vercel deploy) |
-| Kamus Jawa JSON | 🔜 Next step (setelah workflow mode ON stabil) |
+| Repo audit (54 file sampah di-untrack) | ✅ 162 → 108 tracked files |
+| Pitch control (Edge TTS -10Hz laki, +10Hz perempuan) | ✅ Working, user pakai -15Hz |
+| **Test full season S7-id (2.5 jam)** | ⏳ In progress (user generate TTS di web) |
+| Kamus Jawa JSON | 🔜 Next step |
 | Workflow multi-bahasa (Jawa/Sunda/dll) | 🔜 Next step |
+
+---
+
+## 🎉 MILESTONE: Workflow end-to-end SUKSES (Test #25, 6 Okt 2026 01:00 WIB)
+
+**User feedback: "luar biasa, outputnya benar-benar mp4 profesional. SFX sangat bersih, audio Dub sangat bersih, 10000% Sync."**
+
+### Workflow yang berhasil (3 fase):
+```
+Fase 0: demucs-tui.py → no_vocals.wav (SFX bersih, 61 detik MPS)
+Fase 1: Web app mode ON + Smart Fit + pitch -15Hz → audio-id-dub.wav (9/10, 100% sync)
+Fase 2: mix-audio-dub.py --sfx-wav → mp4-id-final.mp4 (7 detik, 0 DTS warnings)
+```
+
+### Test #25 metrics:
+| Metric | Hasil |
+|---|---|
+| Demucs waktu | 61 detik (MPS, 7.30s/s processing) |
+| Mix waktu | 6.81 detik (FFmpeg sidechain compression) |
+| Total waktu | ~68 detik untuk 7.5 menit video |
+| DTS warnings | 0 (clean stream copy, no concat) |
+| Video sync | 100% ori (stream copy, no re-encode) |
+| SFX | Bersih dari Demucs (no Mandarin vocals) |
+| Dialog | Smart Fit + pitch -15Hz (9/10 user rating) |
+| Ducking | 12dB saat dialog bicara |
+| Output | 115.5 MB, 428.23s (7:08) |
+| Stop-motion | Tidak ada (video tidak di-retim) |
+
+### Perbandingan dengan semua test sebelumnya:
+| Test # | Strategi | Hasil |
+|---|---|---|
+| #1-#20 | Dubbing Mode + retime-video.py | GAGAL (stop-motion, DTS warnings, drift) |
+| #21-#24 | Mode ON + Smart Fit (audio dub saja) | 8/10 (audio OK, tapi belum mix SFX) |
+| **#25** | **Demucs + mode ON + mix** | **10000% sync, MP4 profesional** |
 
 ---
 
