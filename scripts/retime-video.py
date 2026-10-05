@@ -269,7 +269,18 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, preset, encoder):
             output_file,
         ]
     else:
-        # Re-encode: setpts × factor (slow-mo). Factor > 2x = stop-motion (frame ada).
+        # Re-encode: setpts × factor (slow-mo) + fps=30 SETELAH setpts (CFR output)
+        #
+        # FIX bug #28 (test #18, 5 Okt): stop-motion "patah-patah" di mayoritas cue.
+        # Sebelumnya: 'fps=30,setpts=...' — fps=30 SEBELUM setpts = no-op untuk source 30fps.
+        # setpts × factor bikin output VFR (20fps untuk factor 1.5x, 10fps untuk 3x).
+        # Pass 2 concat stream copy → frame rate berubah-ubah di tengah video → VLC/DaVinci
+        # tidak handle → "patah-patah".
+        #
+        # FIX: fps=30 SETELAH setpts. Setiap segment CFR 30fps, frame duplikasi smooth.
+        # VoiceStudio pattern: out_fps resample di akhir (post-concat).
+        # Kita pakai per-segment karena Pass 2 stream copy (tidak ada filter).
+        #
         # tpad GAGAL di h264_videotoolbox (PTS overflow, test #16) → jangan pakai tpad.
         cmd = [
             ffmpeg_path, '-y',
@@ -277,7 +288,7 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, preset, encoder):
             '-ss', f'{mp4_start:.3f}',
             '-i', mp4_path,
             '-t', f'{mp4_dur:.3f}',
-            '-vf', f'fps=30,setpts=(PTS-STARTPTS)*{factor:.6f}',
+            '-vf', f'setpts=(PTS-STARTPTS)*{factor:.6f},fps=30',
             *enc_params,
             '-output_ts_offset', f'{cumulative_offset:.6f}',
             '-an', '-fflags', '+genpts',
