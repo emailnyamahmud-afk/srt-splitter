@@ -71,6 +71,9 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
   const respectTiming = mode === 'on'
   const [speedMode, setSpeedMode] = useState<'speedup-only' | 'speedup-slowdown'>('speedup-slowdown')
   const [offSpeed, setOffSpeed] = useState<number>(1.0)
+  // ON mode Smart Fit (default ON — strategi baru 5 Okt 2026, video = ground truth)
+  const [onSmartFit, setOnSmartFit] = useState<boolean>(true)
+  const [onSmartFitCap, setOnSmartFitCap] = useState<number>(1.5)
   // Dubbing mode settings
   const [dubSpeed, setDubSpeed] = useState<number>(1.0)
   const [dubSmartFit, setDubSmartFit] = useState<boolean>(true)  // default ON: VoiceStudio fit_planner
@@ -185,6 +188,8 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
           respectTiming,
           speedMode,
           offSpeed,
+          smartFit: respectTiming && onSmartFit,
+          smartFitAudioRateCap: onSmartFitCap,
           onModelProgress: provider === 'kokoro' ? (p) => setProgress(p) : undefined,
           onLineProgress: (current, total, text) => setLineProgress({ current, total, text }),
           onStage: (p) => setProgress(p),
@@ -202,7 +207,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
         setLineProgress(null)
       }
     },
-    [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, mode, speedMode, offSpeed, prefix, audioCache],
+    [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, mode, speedMode, offSpeed, onSmartFit, onSmartFitCap, prefix, audioCache],
   )
 
   // === DUBBING MODE: Generate audio natural + SRT baru + retime map (full SRT, all parts) ===
@@ -312,6 +317,8 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
           respectTiming,
           speedMode,
           offSpeed,
+          smartFit: respectTiming && onSmartFit,
+          smartFitAudioRateCap: onSmartFitCap,
           onModelProgress: provider === 'kokoro' ? (p) => setProgress(p) : undefined,
           onLineProgress: (current, total, text) => setLineProgress({ current, total, text }),
           onStage: (p) => setProgress(p),
@@ -338,7 +345,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
       setActivePart(null)
       setLineProgress(null)
     }
-  }, [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, mode, speedMode, offSpeed, prefix, audioCache],
+  }, [splitResult, provider, edgeVoice, openaiVoice, openrouterVoice, openrouterModel, openaiKey, openrouterKey, mode, speedMode, offSpeed, onSmartFit, onSmartFitCap, prefix, audioCache],
   )
 
   const downloadPartAudio = useCallback(
@@ -620,17 +627,53 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
               </div>
 
               {mode === 'on' && (
-                <div className="mt-2">
-                  <Label htmlFor="speed-mode" className="text-xs">Speed mode (seperti Voicertool)</Label>
-                  <select
-                    id="speed-mode"
-                    value={speedMode}
-                    onChange={(e) => setSpeedMode(e.target.value as 'speedup-only' | 'speedup-slowdown')}
-                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
-                  >
-                    <option value="speedup-slowdown">Speed up and slow down — audio selalu fit ke cue (speed up kalau lebih panjang, slow down kalau lebih pendek)</option>
-                    <option value="speedup-only">Speed up only — speed up kalau lebih panjang, biarkan silence kalau lebih pendek</option>
-                  </select>
+                <div className="mt-2 space-y-2">
+                  <div>
+                    <Label htmlFor="on-smartfit" className="text-xs">Smart Fit (per-cue dynamic TTS speed) ★ rekomendasi</Label>
+                    <select
+                      id="on-smartfit"
+                      value={onSmartFit ? 'smart' : 'classic'}
+                      onChange={(e) => setOnSmartFit(e.target.value === 'smart')}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
+                    >
+                      <option value="smart">★ Smart Fit — Per-cue dynamic (VoiceStudio fit_planner + voicertool asymmetric trim). Audio fit ke SRT ori, video = ground truth. Tidak perlu render video.</option>
+                      <option value="classic">Classic (lama) — Speed up only / Speed up and slow down (Voicertool klasik). Asymmetric trim OFF.</option>
+                    </select>
+                  </div>
+                  {onSmartFit && (
+                    <div>
+                      <Label htmlFor="on-smartfit-cap" className="text-xs">Smart Fit audio rate cap (pitch preserved)</Label>
+                      <select
+                        id="on-smartfit-cap"
+                        value={onSmartFitCap}
+                        onChange={(e) => setOnSmartFitCap(Number(e.target.value))}
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
+                      >
+                        <option value={1.25}>1.25x — Paling natural (cap rendah, banyak cue mungkin crossfade)</option>
+                        <option value={1.5}>1.5x — Balanced ★ rekomendasi (cap sedang, natural + fit)</option>
+                        <option value={2.0}>2.0x — Voicertool cap (cap tinggi, mungkin agak cepat tapi fit)</option>
+                      </select>
+                    </div>
+                  )}
+                  {!onSmartFit && (
+                    <div>
+                      <Label htmlFor="speed-mode" className="text-xs">Speed mode (seperti Voicertool, classic)</Label>
+                      <select
+                        id="speed-mode"
+                        value={speedMode}
+                        onChange={(e) => setSpeedMode(e.target.value as 'speedup-only' | 'speedup-slowdown')}
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
+                      >
+                        <option value="speedup-slowdown">Speed up and slow down — audio selalu fit ke cue (speed up kalau lebih panjang, slow down kalau lebih pendek)</option>
+                        <option value="speedup-only">Speed up only — speed up kalau lebih panjang, biarkan silence kalau lebih pendek</option>
+                      </select>
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    <strong>Filosofi Smart Fit:</strong> Audio TTS di-speedup per-cue (pitch preserved di server Edge TTS, BUKAN atempo robot).
+                    Video = ground truth (SRT ori 100% sync, tidak di-retim). Crossfade 150ms kalau audio overflow cue.
+                    Workflow simpel: download audio dub → mix dengan audio ori MP4 (ducking SFX) → selesai.
+                  </p>
                 </div>
               )}
 

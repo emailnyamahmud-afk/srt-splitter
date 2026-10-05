@@ -50,6 +50,7 @@ import {
   applyFadeOut,
   applyFadeIn,
   trimSilence,
+  trimSilenceAsymmetric,
   peakNormalize,
 } from './audio-utils'
 
@@ -89,6 +90,17 @@ export interface NarrationOptions {
   respectTiming: boolean
   speedMode?: 'speedup-only' | 'speedup-slowdown'
   offSpeed?: number // OFF mode: kecepatan multiplier (1.0 = natural, 1.25, 1.5, 2.0)
+
+  // === SMART FIT (mode ON) — adopsi VoiceStudio fit_planner + voicertool.com ===
+  // Generate natural → measure → kalau overflow, re-generate dengan audioRate (TTS server-side, pitch preserved).
+  // Video tetap 100% sync SRT ori (tidak di-retim). Crossfade kalau audio masih overflow.
+  // Filosofi: audio dub fit ke SRT ori, video = ground truth (mode ON klasik).
+  smartFit?: boolean                // default false. true: aktifkan Smart Fit per-cue dynamic speed.
+  smartFitAudioRateCap?: number     // default 1.5 — batas atas TTS speed (pitch preserved). Voicertool: 2.0.
+  smartFitUseAsymmetricTrim?: boolean // default true — voicertool pattern: head -40dB aggressive, tail -49dB gentle.
+  smartFitCrossfadeMs?: number       // default 150 — crossfade kalau audio overflow cue (tumpang tindih smooth ke cue next).
+  smartFitNormalizeDbFS?: number     // default -2 — per-cue peak normalize untuk loudness konsisten.
+
   onModelProgress?: (p: TTSProgress) => void
   onLineProgress?: (current: number, total: number, text: string) => void
   onStage?: ProgressCallback
@@ -299,8 +311,90 @@ export async function narrateEntries(
       let finalAudio: Float32Array
       let position: number
 
-      if (opts.respectTiming) {
-        // === ON MODE: TRIM SILENCE → NATURAL-FIRST + speed up only kalau tabrakan ===
+      if (opts.respectTiming && opts.smartFit) {
+        // === ON MODE + SMART FIT (VoiceStudio fit_planner + voicertool asymmetric trim) ===
+        // Strategi baru (5 Okt 2026, setelah 20x test render gagal):
+        // Video = ground truth (SRT ori). Audio dub fit ke SRT ori dengan Smart Fit.
+        // Tidak perlu render video, video 100% sync.
+        //
+        // Algoritma:
+        // 1. Generate natural TTS (speed 1.0)
+        // 2. Asymmetric trim (head -40dB aggressive, tail -49dB gentle, voicertool pattern)
+        // 3. Compute need = naturalDur / cueDur
+        // 4. Kalau need <= 1.0 → pakai natural (no speedup)
+        // 5. Kalau need > 1.0 → re-generate dengan audioRate = min(need, cap)
+        //    - Edge TTS server-side rate (pitch preserved, BUKAN atempo robot)
+        //    - Voicertool: cap 2.0. Kita: cap 1.5 (default, lebih konservatif natural)
+        // 6. Kalau audio masih overflow cue (jarang, kalau cap < need):
+        //    - Crossfade 150ms ke cue next (tumpang tindih smooth)
+        //    - Atau kalau cue terakhir, potong audio ke cueEnd (accept truncation)
+        // 7. Peak normalize -2 dBFS (loudness konsisten antar cue)
+        const cueDuration = entry.end - entry.start
+        const cueStartSamples = Math.floor(entry.start * OUTPUT_SAMPLE_RATE)
+        const cueEndSamples = Math.floor(entry.end * OUTPUT_SAMPLE_RATE)
+        const audioRateCap = opts.smartFitAudioRateCap ?? 1.5
+        const useAsymTrim = opts.smartFitUseAsymmetricTrim ?? true
+        const crossfadeMs = opts.smartFitCrossfadeMs ?? 150
+        const normalizeDbFS = opts.smartFitNormalizeDbFS ?? -2
+
+        // Pass 1: generate natural
+        const synth1 = await synthesizeText(text, {
+          ...opts, rate: '+0%', openaiSpeed: 1.0, speed: 1.0,
+          onModelProgress: opts.onModelProgress,
+        })
+        const pass1 = await decodeMonoTrimResample(synth1, OUTPUT_SAMPLE_RATE, false)
+        const naturalAudio = useAsymTrim
+          ? trimSilenceAsymmetric(pass1.audio, OUTPUT_SAMPLE_RATE, 30)
+          : trimSilence(pass1.audio, -30, OUTPUT_SAMPLE_RATE, 50)
+        const naturalDur = naturalAudio.length / OUTPUT_SAMPLE_RATE
+        const need = naturalDur / Math.max(0.001, cueDuration)
+
+        if (need <= 1.0) {
+          // Cue muat natural — pakai natural
+          finalAudio = naturalAudio
+        } else {
+          // Smart Fit: re-generate dengan audioRate = min(need, cap)
+          const audioRate = Math.min(need, audioRateCap)
+          if (opts.provider === 'edge') {
+            const synth2 = await synthesizeText(text, {
+              ...opts, rate: formatEdgeRate(audioRate),
+              onModelProgress: opts.onModelProgress,
+            })
+            const pass2 = await decodeMonoTrimResample(synth2, OUTPUT_SAMPLE_RATE, false)
+            finalAudio = useAsymTrim
+              ? trimSilenceAsymmetric(pass2.audio, OUTPUT_SAMPLE_RATE, 30)
+              : trimSilence(pass2.audio, -30, OUTPUT_SAMPLE_RATE, 50)
+          } else {
+            const synth2 = await synthesizeText(text, {
+              ...opts, openaiSpeed: audioRate,
+              speed: opts.provider === 'kokoro' ? audioRate : undefined,
+              onModelProgress: opts.onModelProgress,
+            })
+            const pass2 = await decodeMonoTrimResample(synth2, OUTPUT_SAMPLE_RATE, false)
+            finalAudio = useAsymTrim
+              ? trimSilenceAsymmetric(pass2.audio, OUTPUT_SAMPLE_RATE, 30)
+              : trimSilence(pass2.audio, -30, OUTPUT_SAMPLE_RATE, 50)
+          }
+        }
+
+        // Peak normalize (VoiceStudio Pattern D, opsional kalau normalizeDbFS = 0)
+        if (normalizeDbFS < 0) {
+          peakNormalize(finalAudio, normalizeDbFS, -50.0)
+        }
+
+        // Truncate audio ke cueEnd + crossfade allowance (kalau audio masih overflow)
+        // Crossfade region: 150ms sebelum cueEnd, overlap dengan cue next
+        const crossfadeSamples = Math.floor(crossfadeMs * OUTPUT_SAMPLE_RATE / 1000)
+        const maxAllowedSamples = (cueEndSamples - cueStartSamples) + crossfadeSamples
+        if (finalAudio.length > maxAllowedSamples) {
+          // Audio masih lebih panjang dari cue + crossfade allowance — truncate
+          finalAudio = finalAudio.slice(0, maxAllowedSamples)
+        }
+
+        position = cueStartSamples
+        cursor = position + finalAudio.length
+      } else if (opts.respectTiming) {
+        // === ON MODE LAMA: TRIM SILENCE → NATURAL-FIRST + speed up only kalau tabrakan ===
         // Port dari ThioJoe audio_builder.py:
         // 1. Generate TTS natural
         // 2. TRIM SILENCE di awal/akhir (detect_leading_silence -30dB + 50ms padding)

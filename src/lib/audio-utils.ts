@@ -239,6 +239,63 @@ export function trimSilence(
   return audio.slice(paddedStart, paddedEnd)
 }
 
+/**
+ * Asymmetric silence trim — port dari voicertool.com function W().
+ *
+ * Head trim lebih AGRESIF (-40 dBFS): buang hening awal dengan tegas.
+ * Tail trim lebih GENTLE (-49 dBFS): preserve trailing consonants/breath
+ * yang penting untuk natural speech (kalau tail -40 dBFS, "ss" "th" "ng"
+ * di akhir kata bisa terpotong).
+ *
+ * Voicertool riset: threshold 0.0036 linear = -49 dBFS untuk tail,
+ * 0.01 linear = -40 dBFS untuk head. Asymmetric = natural sounding.
+ *
+ * @param audio Float32Array PCM mono
+ * @param sampleRate Sample rate (default 24000)
+ * @param paddingMs Padding di awal/akhir (default 30ms — lebih kecil dari symmetric
+ *                 karena asymmetric sudah preserve trailing)
+ */
+export function trimSilenceAsymmetric(
+  audio: Float32Array,
+  sampleRate: number = 24000,
+  paddingMs: number = 30,
+): Float32Array {
+  if (audio.length === 0) return audio
+
+  const headThresholdDb = -40  // aggressive
+  const tailThresholdDb = -49  // gentle
+
+  // Trim leading silence (aggressive)
+  const start = detectLeadingSilence(audio, headThresholdDb, 10, sampleRate)
+
+  // Trim trailing silence (gentle)
+  const tailThreshold = Math.pow(10, tailThresholdDb / 20)
+  const chunkSize = Math.floor(sampleRate * 10 / 1000) // 10ms
+  let end = audio.length
+  for (let i = audio.length; i > 0; i -= chunkSize) {
+    const chunkStart = Math.max(0, i - chunkSize)
+    let found = false
+    for (let j = chunkStart; j < i; j++) {
+      if (Math.abs(audio[j]) > tailThreshold) {
+        end = i
+        found = true
+        break
+      }
+    }
+    if (found) break
+  }
+
+  if (start >= end) {
+    return audio.slice(0, Math.min(audio.length, Math.floor(sampleRate * 0.05)))
+  }
+
+  const paddingSamples = Math.floor(sampleRate * paddingMs / 1000)
+  const paddedStart = Math.max(0, start - paddingSamples)
+  const paddedEnd = Math.min(audio.length, end + paddingSamples)
+
+  return audio.slice(paddedStart, paddedEnd)
+}
+
 
 /**
  * Encode Float32Array PCM ke 16-bit WAV Blob (mono).
