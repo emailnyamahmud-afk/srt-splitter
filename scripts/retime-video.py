@@ -270,38 +270,31 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, preset, encoder):
             output_file,
         ]
     else:
-        # Re-encode: setpts × factor (slow-mo) + minterpolate (frame blending)
+        # Re-encode: setpts × factor (slow-mo)
         #
-        # Test #19 (5 Okt): fps=30 SETELAH setpts = no-op (source sudah 30fps).
-        # Stop-motion bukan karena VFR — itu memang nature setpts × factor
-        # (60 frame di spread 90 frame = 30 frame diulang = "kayak foto").
+        # Test #20 (5 Okt): minterpolate mi_mode=blend + setpts + fps=30 = NO-OP.
+        # Sandbox test konfirmasi: A (setpts,minterpolate,fps=30) vs B (minterpolate,setpts,fps=30)
+        # hasil IDENTIK (454KB, 117 frames). minterpolate butuh fps > source fps untuk
+        # generate frame antara. Setelah setpts + fps=30, input minterpolate = 30fps,
+        # output 30fps = no frame baru untuk di-blend.
         #
-        # FIX bug #29 (5 Okt): minterpolate untuk frame blending (motion interpolation).
-        # minterpolate bikin frame antara, jadi slow-mo smooth (bukan frame diulang).
+        # VoiceStudio TIDAK pakai minterpolate. Mereka pakai setpts × ratio saja.
+        # Stop-motion itu expected behavior untuk slow-mo. Mereka cap slow-mo di 2x
+        # lewat fit_planner, jadi stop-motion jarang terlihat.
         #
-        # FIX bug #30 (5 Okt): pakai mi_mode=blend (lighter) bukan mci (heavy).
-        # blend = crossfade antar frame, CPU ringan, compatible dengan h264_videotoolbox.
-        # mci = motion compensated (5-10x lebih berat, tidak worth untuk 233 segments).
+        # Filosofi kita: "audio bebas dari penjara SRT" = TIDAK boleh atempo (robot)
+        # atau LLM condense (kembali ke penjara). Stop-motion di cue factor > 1.5x
+        # adalah trade-off yang diterima.
         #
-        # Hardware encoder tetap dipakai (h264_videotoolbox) — minterpolate jalan di CPU
-        # tapi encoder jalan di GPU. M1/M2 handle ini dengan baik (CPU+GPU paralel).
-        #
-        # Hanya untuk cue dengan factor > 1.1x (slow-mo signifikan).
-        # Factor ≤ 1.1x = imperceptible, no minterpolate (cepat).
-        if factor > 1.1:
-            # Slow-mo dengan minterpolate blend (frame blending, smooth, CPU ringan)
-            vf = f'setpts=(PTS-STARTPTS)*{factor:.6f},minterpolate=mi_mode=blend:fps=30'
-        else:
-            # Factor ≤ 1.1x: tidak ada slow-mo signifikan, no minterpolate (cepat)
-            vf = f'setpts=(PTS-STARTPTS)*{factor:.6f},fps=30'
-
+        # tpad GAGAL di h264_videotoolbox (PTS overflow, test #16) → jangan pakai tpad.
+        # minterpolate no-op dengan fps=30 SETELAH setpts → jangan pakai minterpolate.
         cmd = [
             ffmpeg_path, '-y',
             *hwaccel_args,
             '-ss', f'{mp4_start:.3f}',
             '-i', mp4_path,
             '-t', f'{mp4_dur:.3f}',
-            '-vf', vf,
+            '-vf', f'setpts=(PTS-STARTPTS)*{factor:.6f},fps=30',
             *enc_params,
             '-output_ts_offset', f'{cumulative_offset:.6f}',
             '-an', '-fflags', '+genpts',
