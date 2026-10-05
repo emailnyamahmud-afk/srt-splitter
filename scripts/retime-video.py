@@ -335,35 +335,20 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
         # Re-encode: setpts untuk slow-mo + output_ts_offset untuk timestamp akumulatif
         # fps=30 filter SEBELUM setpts (VFR guard, dari riset VoiceStudio)
         #
-        # FIX slow-mo ekstrim (test #15, 5 Okt 2026):
-        # Untuk factor > 2x (cue pendek → audio panjang), setpts * factor bikin
-        # frame diulang ekstrim (5 frame diulang 14x = "foto berhenti" weird).
-        # Solusi: cap slow-mo di 2x + tpad freeze last frame untuk sisa durasi.
-        # Hasil: 0.34s slow-mo 2x (smooth, 10 frame) + 2.05s freeze di last frame.
-        # Lebih halus daripada 5 frame diulang 14x.
-        MAX_SLOWMO_FACTOR = 2.0  # cap slow-mo di 2x, sisanya freeze
-        if factor > MAX_SLOWMO_FACTOR and task['type'] == 'cue':
-            # Cap slow-mo di 2x, freeze sisanya dengan tpad=stop_mode=clone
-            # setpts * 2 → video 2x lebih panjang (mp4_dur * 2)
-            # tpad stop_duration → freeze last frame untuk fill ke target_dur
-            capped_dur = mp4_dur * MAX_SLOWMO_FACTOR
-            freeze_dur = target_dur - capped_dur
-            if freeze_dur > 0:
-                vf = f'fps=30,setpts=(PTS-STARTPTS)*{MAX_SLOWMO_FACTOR:.6f},tpad=stop_mode=clone:stop_duration={freeze_dur:.6f}'
-            else:
-                # Edge case: factor 2x tapi freeze_dur negatif (tidak mungkin, tapi just in case)
-                vf = f'fps=30,setpts=(PTS-STARTPTS)*{factor:.6f}'
-        else:
-            # Normal: setpts * factor (untuk gap, tail, atau cue dengan factor ≤ 2x)
-            vf = f'fps=30,setpts=(PTS-STARTPTS)*{factor:.6f}'
-
+        # Catatan test #16 (5 Okt 2026): tpad=stop_mode=clone untuk cap slow-mo 2x
+        # GAGAL — PTS overflow (DTS 141670994490979984, INT64_MAX/1000) di h264_videotoolbox.
+        # Cloned frames dapet PTS yang overflow saat di-mux → Pass 2 drop frames invalid.
+        # 16 cue dengan factor > 2x sekarang frame hilang (lebih buruk dari stop-motion).
+        # Keputusan: REVERT tpad. Slow-mo factor > 2x kembali ke setpts * factor (stop-motion,
+        # tapi frame ada). Skip threshold 100B tetap (fix #16 yang bagus).
+        # Future: kalau mau smooth slow-mo > 2x, pakai minterpolate (CPU heavy).
         cmd = [
             ffmpeg_path, '-y',
             '-hwaccel', 'videotoolbox',
             '-i', mp4_path,
             '-ss', f'{mp4_start:.3f}',
             '-t', f'{target_dur:.3f}',
-            '-vf', vf,
+            '-vf', f'fps=30,setpts=(PTS-STARTPTS)*{factor:.6f}',
             *enc_params,
             '-output_ts_offset', f'{cumulative_offset:.6f}',
             '-an',
