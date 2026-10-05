@@ -73,7 +73,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
   const [offSpeed, setOffSpeed] = useState<number>(1.0)
   // ON mode Smart Fit (default ON — strategi baru 5 Okt 2026, video = ground truth)
   const [onSmartFit, setOnSmartFit] = useState<boolean>(true)
-  const [onSmartFitCap, setOnSmartFitCap] = useState<number>(1.5)
+  const [onSmartFitCap, setOnSmartFitCap] = useState<number>(2.0)  // default 2.0x (voicertool cap)
   // Dubbing mode settings
   const [dubSpeed, setDubSpeed] = useState<number>(1.0)
   const [dubSmartFit, setDubSmartFit] = useState<boolean>(true)  // default ON: VoiceStudio fit_planner
@@ -650,8 +650,8 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
                         className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
                       >
                         <option value={1.25}>1.25x — Paling natural (cap rendah, banyak cue mungkin crossfade)</option>
-                        <option value={1.5}>1.5x — Balanced ★ rekomendasi (cap sedang, natural + fit)</option>
-                        <option value={2.0}>2.0x — Voicertool cap (cap tinggi, mungkin agak cepat tapi fit)</option>
+                        <option value={1.5}>1.5x — Balanced (cap sedang, natural + fit)</option>
+                        <option value={2.0}>2.0x — Voicertool cap ★ rekomendasi (cap tinggi, fit paling banyak cue, sedikit crossfade)</option>
                       </select>
                     </div>
                   )}

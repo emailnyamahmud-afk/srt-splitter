@@ -96,7 +96,7 @@ export interface NarrationOptions {
   // Video tetap 100% sync SRT ori (tidak di-retim). Crossfade kalau audio masih overflow.
   // Filosofi: audio dub fit ke SRT ori, video = ground truth (mode ON klasik).
   smartFit?: boolean                // default false. true: aktifkan Smart Fit per-cue dynamic speed.
-  smartFitAudioRateCap?: number     // default 1.5 — batas atas TTS speed (pitch preserved). Voicertool: 2.0.
+  smartFitAudioRateCap?: number     // default 2.0 — batas atas TTS speed (pitch preserved). Voicertool cap.
   smartFitUseAsymmetricTrim?: boolean // default true — voicertool pattern: head -40dB aggressive, tail -49dB gentle.
   smartFitCrossfadeMs?: number       // default 150 — crossfade kalau audio overflow cue (tumpang tindih smooth ke cue next).
   smartFitNormalizeDbFS?: number     // default -2 — per-cue peak normalize untuk loudness konsisten.
@@ -332,7 +332,7 @@ export async function narrateEntries(
         const cueDuration = entry.end - entry.start
         const cueStartSamples = Math.floor(entry.start * OUTPUT_SAMPLE_RATE)
         const cueEndSamples = Math.floor(entry.end * OUTPUT_SAMPLE_RATE)
-        const audioRateCap = opts.smartFitAudioRateCap ?? 1.5
+        const audioRateCap = opts.smartFitAudioRateCap ?? 2.0
         const useAsymTrim = opts.smartFitUseAsymmetricTrim ?? true
         const crossfadeMs = opts.smartFitCrossfadeMs ?? 150
         const normalizeDbFS = opts.smartFitNormalizeDbFS ?? -2
@@ -382,14 +382,21 @@ export async function narrateEntries(
           peakNormalize(finalAudio, normalizeDbFS, -50.0)
         }
 
-        // Truncate audio ke cueEnd + crossfade allowance (kalau audio masih overflow)
-        // Crossfade region: 150ms sebelum cueEnd, overlap dengan cue next
-        const crossfadeSamples = Math.floor(crossfadeMs * OUTPUT_SAMPLE_RATE / 1000)
-        const maxAllowedSamples = (cueEndSamples - cueStartSamples) + crossfadeSamples
-        if (finalAudio.length > maxAllowedSamples) {
-          // Audio masih lebih panjang dari cue + crossfade allowance — truncate
-          finalAudio = finalAudio.slice(0, maxAllowedSamples)
-        }
+        // JANGAN truncate audio ke cue + crossfade allowance.
+        // FIX user feedback (5 Okt 2026): "banyak cue terpotong di akhir".
+        // Sebelumnya truncate ke maxAllowedSamples = cue + 150ms crossfade.
+        // Kalau audio Smart Fit (1.5x) masih 2x lebih panjang dari cue (need > 3.0),
+        // audio dipotong → "terpotong di akhir".
+        //
+        // Sekarang: biarkan audio utuh. Crossfade di stitch step akan handle overlap.
+        // Audio yang overflow ke cue next akan:
+        // - Fade out di region overlap (150ms sebelum cue next start)
+        // - Cue next fade in di awal
+        // - Mix additive → tumpang tindih smooth
+        //
+        // Trade-off: kalau audio sangat panjang (need >> cap), bisa overlap banyak cue.
+        // Tapi lebih baik tumpang tindih (user dengar dua cue sebentar) daripada terpotong.
+        // User: "tumpang tindih kecil, tapi ini harga yg harus dibayar jika tak mau repot render."
 
         position = cueStartSamples
         cursor = position + finalAudio.length
