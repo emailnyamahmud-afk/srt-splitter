@@ -29,6 +29,7 @@ import { toast } from 'sonner'
 import { TtsPanel } from '@/components/tts-panel'
 import { TtsTextPanel } from '@/components/tts-text-panel'
 import { TranslatePanel } from '@/components/translate-panel'
+import { RapikanJawaPanel } from '@/components/rapikan-jawa-panel'
 import {
   parseSrt,
   splitEntries,
@@ -597,6 +598,13 @@ export default function Home() {
                 setEntries(translatedEntries)
                 toast.success(`Subtitle di-translate. Sekarang bisa split + download atau generate TTS.`)
               }}
+            />
+
+            {/* Rapikan SRT Jawa Panel — editor inline + kamus check + toggle ngoko/krama */}
+            <RapikanJawaPanel
+              entries={entries}
+              onUpdated={(updatedEntries) => setEntries(updatedEntries)}
+              prefix={prefix}
             />
 
             {/* TTS Panel - convert subtitles to audio */}

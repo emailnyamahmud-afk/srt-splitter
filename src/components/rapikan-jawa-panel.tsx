@@ -1,0 +1,320 @@
+'use client'
+
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { FileText, Download, Eraser, BookOpen, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { toast } from 'sonner'
+import { parseSrt, serializePart, downloadTextFile, type SrtEntry, type SrtPart } from '@/lib/srt'
+import {
+  loadKamusJawa,
+  checkUnknownWords,
+  stripAksenFromEntries,
+  suggestRegister,
+  getRegisterLabel,
+  getRegisterColor,
+  type KamusJawa,
+  type CueRegister,
+  type RapikanResult,
+} from '@/lib/rapikan-jawa'
+
+interface RapikanJawaPanelProps {
+  entries: SrtEntry[]
+  onUpdated: (entries: SrtEntry[]) => void
+  prefix: string
+}
+
+export function RapikanJawaPanel({ entries, onUpdated, prefix }: RapikanJawaPanelProps) {
+  const [kamus, setKamus] = useState<KamusJawa | null>(null)
+  const [loadingKamus, setLoadingKamus] = useState(true)
+  const [rapikanResult, setRapikanResult] = useState<RapikanResult | null>(null)
+  const [cueRegisters, setCueRegisters] = useState<Record<number, CueRegister>>({})
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [editedText, setEditedText] = useState<string>('')
+  const [showUnknownWords, setShowUnknownWords] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  // Load kamus on mount
+  useEffect(() => {
+    loadKamusJawa().then(k => {
+      setKamus(k)
+      setLoadingKamus(false)
+      if (k) {
+        toast.success(`Kamus Jawa loaded: ${k.words.length} entri`)
+      } else {
+        toast.error('Gagal load kamus Jawa')
+      }
+    })
+  }, [])
+
+  // Check unknown words when entries change
+  const runCheck = useCallback(() => {
+    if (entries.length === 0 || !kamus) return
+    const result = checkUnknownWords(entries, kamus)
+    setRapikanResult(result)
+  }, [entries, kamus])
+
+  useEffect(() => {
+    if (kamus && entries.length > 0) {
+      runCheck()
+    }
+  }, [kamus, entries, runCheck])
+
+  // Strip aksén from all entries
+  const handleStripAksen = useCallback(() => {
+    if (entries.length === 0) return
+    const newEntries = entries.map(e => ({
+      ...e,
+      textLines: [...e.textLines],
+    }))
+    const count = stripAksenFromEntries(newEntries)
+    onUpdated(newEntries)
+    if (count > 0) {
+      toast.success(`${count} aksén Jawa dihapus (é→e, è→e, ê→e)`)
+    } else {
+      toast.info('Tidak ada aksén Jawa yang perlu dihapus')
+    }
+    runCheck()
+  }, [entries, onUpdated, runCheck])
+
+  // Edit cue inline
+  const startEdit = useCallback((index: number) => {
+    setEditingIndex(index)
+    setEditedText(entries[index].textLines.join('\n'))
+  }, [entries])
+
+  const saveEdit = useCallback(() => {
+    if (editingIndex === null) return
+    const newEntries = [...entries]
+    newEntries[editingIndex] = {
+      ...newEntries[editingIndex],
+      textLines: editedText.split('\n'),
+    }
+    onUpdated(newEntries)
+    setEditingIndex(null)
+    toast.success(`Cue ${editingIndex + 1} diperbarui`)
+    runCheck()
+  }, [editingIndex, editedText, entries, onUpdated, runCheck])
+
+  const cancelEdit = useCallback(() => {
+    setEditingIndex(null)
+    setEditedText('')
+  }, [])
+
+  // Toggle register per cue
+  const toggleRegister = useCallback((index: number, register: CueRegister) => {
+    setCueRegisters(prev => ({
+      ...prev,
+      [index]: prev[index] === register ? '' : register,
+    }))
+  }, [])
+
+  // Auto-suggest registers for all cues
+  const autoSuggestRegisters = useCallback(() => {
+    if (!kamus || entries.length === 0) return
+    const newRegisters: Record<number, CueRegister> = {}
+    for (let i = 0; i < entries.length; i++) {
+      const text = entries[i].textLines.join(' ')
+      const suggested = suggestRegister(text, kamus)
+      if (suggested) newRegisters[i] = suggested
+    }
+    setCueRegisters(newRegisters)
+    toast.success(`Auto-suggest: ${Object.keys(newRegisters).length} cues detected`)
+  }, [entries, kamus])
+
+  // Download SRT rapi
+  const handleDownload = useCallback(() => {
+    if (entries.length === 0) return
+    const part: SrtPart = {
+      index: 1,
+      entries,
+      startSec: entries[0].start,
+      endSec: entries[entries.length - 1].end,
+      durationSec: entries[entries.length - 1].end - entries[0].start,
+      entryCount: entries.length,
+    }
+    const content = serializePart(part, false)
+    downloadTextFile(`${prefix}-jw-rapi.srt`, content)
+    toast.success('SRT Jawa rapi didownload')
+  }, [entries, prefix])
+
+  if (entries.length === 0) return null
+
+  return (
+    <Card className="mt-4 border-amber-200 dark:border-amber-800">
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <BookOpen className="size-5 text-amber-600" />
+          Rapikan SRT Jawa
+        </CardTitle>
+        <CardDescription>
+          Edit SRT Jawa manual + toggle ngoko/krama per cue + kamus check
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Kamus status */}
+        <div className="flex items-center gap-2 text-xs">
+          {loadingKamus ? (
+            <><Loader2 className="size-3.5 animate-spin" /> Loading kamus...</>
+          ) : kamus ? (
+            <Badge variant="outline" className="bg-amber-50 dark:bg-amber-950/30">
+              <CheckCircle2 className="size-3 mr-1" /> Kamus: {kamus.words.length} entri
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="bg-red-50 dark:bg-red-950/30">
+              <AlertTriangle className="size-3 mr-1" /> Kamus tidak loaded
+            </Badge>
+          )}
+          {rapikanResult && (
+            <>
+              <Badge variant="outline" className="bg-green-50 dark:bg-green-950/30">
+                ✓ {rapikanResult.knownWords} kata dikenal
+              </Badge>
+              {rapikanResult.unknownWords > 0 && (
+                <Badge variant="outline" className="bg-red-50 dark:bg-red-950/30 cursor-pointer"
+                  onClick={() => setShowUnknownWords(!showUnknownWords)}>
+                  <AlertTriangle className="size-3 mr-1" /> {rapikanResult.unknownWords} kata asing
+                </Badge>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" onClick={handleStripAksen}>
+            <Eraser className="size-3.5 mr-1" /> Hapus Aksén (é→e)
+          </Button>
+          <Button size="sm" variant="outline" onClick={autoSuggestRegisters} disabled={!kamus}>
+            <CheckCircle2 className="size-3.5 mr-1" /> Auto-suggest Register
+          </Button>
+          <Button size="sm" onClick={handleDownload}>
+            <Download className="size-3.5 mr-1" /> Download SRT Rapi
+          </Button>
+        </div>
+
+        {/* Unknown words report */}
+        {showUnknownWords && rapikanResult && rapikanResult.unknownWordsList.length > 0 && (
+          <div className="rounded-md border border-red-200 dark:border-red-800 p-3 bg-red-50/30 dark:bg-red-950/10">
+            <p className="text-xs font-medium text-red-700 dark:text-red-400 mb-2">
+              Kata tidak dikenal di kamus ({rapikanResult.unknownWords} kata):
+            </p>
+            <ScrollArea className="h-32">
+              <div className="space-y-1 text-xs">
+                {rapikanResult.unknownWordsList.slice(0, 100).map((w, i) => (
+                  <div key={i} className="flex gap-2">
+                    <span className="font-mono font-bold text-red-600 dark:text-red-400">{w.word}</span>
+                    <span className="text-muted-foreground">— cue {w.cueIndex + 1}: "{w.context}"</span>
+                  </div>
+                ))}
+                {rapikanResult.unknownWordsList.length > 100 && (
+                  <p className="text-muted-foreground italic">
+                    ...dan {rapikanResult.unknownWordsList.length - 100} lainnya
+                  </p>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
+        )}
+
+        {/* SRT Editor */}
+        <div className="rounded-md border p-3 space-y-2 max-h-[500px] overflow-y-auto">
+          {entries.map((entry, i) => {
+            const register = cueRegisters[i] || ''
+            const suggested = kamus ? suggestRegister(entry.textLines.join(' '), kamus) : ''
+            const isEditing = editingIndex === i
+            const text = entry.textLines.join(' ')
+            // Highlight unknown words
+            const words = text.split(' ')
+            const highlightedText = words.map((word, wi) => {
+              const cleanWord = word.replace(/[^\w]/g, '')
+              const isKnown = kamus ? kamus.words.some(e => e.word.toLowerCase() === cleanWord.toLowerCase()) : true
+              return isKnown ? word : `<span class="text-red-600 dark:text-red-400 font-semibold">${word}</span>`
+            }).join(' ')
+
+            return (
+              <div key={i} className={`rounded p-2 ${isEditing ? 'border-2 border-amber-400 bg-amber-50/30 dark:bg-amber-950/10' : 'border'}`}>
+                <div className="flex items-start gap-2">
+                  {/* Cue number + timestamp */}
+                  <div className="text-xs text-muted-foreground shrink-0 w-20">
+                    <div className="font-mono font-bold">{i + 1}</div>
+                    <div className="font-mono">
+                      {Math.floor(entry.start / 60)}:{String(Math.floor(entry.start % 60)).padStart(2, '0')}
+                    </div>
+                  </div>
+
+                  {/* Text */}
+                  <div className="flex-1 min-w-0">
+                    {isEditing ? (
+                      <div className="space-y-2">
+                        <textarea
+                          value={editedText}
+                          onChange={e => setEditedText(e.target.value)}
+                          className="w-full text-sm border rounded p-2 bg-background"
+                          rows={Math.min(4, editedText.split('\n').length)}
+                          autoFocus
+                        />
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={saveEdit} className="h-7 text-xs">Simpan</Button>
+                          <Button size="sm" variant="outline" onClick={cancelEdit} className="h-7 text-xs">Batal</Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p
+                        className="text-sm cursor-text hover:bg-muted/30 rounded px-1 py-0.5"
+                        onClick={() => startEdit(i)}
+                        dangerouslySetInnerHTML={{ __html: highlightedText }}
+                      />
+                    )}
+                  </div>
+
+                  {/* Register toggle */}
+                  <div className="shrink-0 flex flex-col gap-1">
+                    <Badge
+                      className={`text-xs cursor-pointer ${register === 'ngoko' ? getRegisterColor('ngoko') : 'bg-gray-100 text-gray-400 dark:bg-gray-800'}`}
+                      onClick={() => toggleRegister(i, 'ngoko')}
+                    >
+                      N
+                    </Badge>
+                    <Badge
+                      className={`text-xs cursor-pointer ${register === 'krama' ? getRegisterColor('krama') : 'bg-gray-100 text-gray-400 dark:bg-gray-800'}`}
+                      onClick={() => toggleRegister(i, 'krama')}
+                    >
+                      K
+                    </Badge>
+                    <Badge
+                      className={`text-xs cursor-pointer ${register === 'krama_inggil' ? getRegisterColor('krama_inggil') : 'bg-gray-100 text-gray-400 dark:bg-gray-800'}`}
+                      onClick={() => toggleRegister(i, 'krama_inggil')}
+                    >
+                      KI
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Suggested register */}
+                {!isEditing && suggested && !register && (
+                  <div className="ml-22 text-xs text-muted-foreground mt-1 pl-22">
+                    <span className="italic">Suggest: </span>
+                    <span className={`font-medium ${getRegisterColor(suggested)} px-1 rounded`}>
+                      {getRegisterLabel(suggested)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Info */}
+        <p className="text-xs text-muted-foreground">
+          <strong>Cara pakai:</strong> Klik cue untuk edit inline. Toggle N=ngoko, K=krama, KI=krama inggil.
+          Kata merah = tidak dikenal di kamus. Klik "Hapus Aksén" untuk hapus é/è/ê (Edge TTS tidak bisa baca).
+          Setelah selesai, klik "Download SRT Rapi" → lanjut ke TTS mode ON + Smart Fit.
+        </p>
+      </CardContent>
+    </Card>
+  )
+}
