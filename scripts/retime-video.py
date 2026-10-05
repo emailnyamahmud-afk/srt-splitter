@@ -454,7 +454,8 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
         enc_params = ['-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
                        '-bf', '0', '-profile:v', 'high']
 
-    # Pass 2: RE-ENCODE (bukan stream copy) dengan B-Frames disabled + CFR
+    # Pass 2: RE-ENCODE (bukan stream copy) dengan B-Frames disabled
+    # JANGAN pakai -fps_mode cfr di Pass 2 → konflik dengan setpts, cause frame duplikasi massal
     if video_only:
         print(f'  → Mode: VIDEO ONLY (re-encode {encoder}, tanpa audio)')
         cmd = [
@@ -465,8 +466,6 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
             '-i', concat_list,
             '-vf', 'setpts=PTS-STARTPTS',
             *enc_params,
-            '-fps_mode', 'cfr',
-            '-video_track_timescale', '30000',
             '-an',
             '-movflags', '+faststart',
             '-timecode', '00:00:00:00',
@@ -484,8 +483,6 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
             '-map', '1:a',
             '-vf', 'setpts=PTS-STARTPTS',
             *enc_params,
-            '-fps_mode', 'cfr',
-            '-video_track_timescale', '30000',
             '-c:a', 'aac',
             '-b:a', '192k',
             '-movflags', '+faststart',
