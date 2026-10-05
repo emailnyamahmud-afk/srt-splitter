@@ -2,13 +2,21 @@
 """
 mix-tui.py — TUI interaktif untuk mix SFX + audio dub + MP4
 
-Workflow 3 fase:
+Workflow 3 fase (mode cepat):
   Fase 0: demucs-tui.py → no_vocals.wav (SFX bersih)
   Fase 1: Web app mode ON + Smart Fit → audio-id-dub.wav (dialog)
   Fase 2: mix-tui.py → mp4-id-final.mp4 (video ori + SFX + dub)
 
-Mode cepat (TUI): mix otomatis dengan ducking sidechain
-Mode manual (DaVinci): user tarik mp4 ori + SFX + dub ke timeline, edit sendiri
+Mode manual (DaVinci Resolve):
+  1. Tarik mp4 ori ke timeline
+  2. Tarik wav SFX (no_vocals.wav) ke timeline
+  3. Tarik wav dub (laki + perempuan) ke timeline
+  4. Edit manual: mana suara laki, mana perempuan
+
+Tips durasi:
+  - Full season (2.5 jam): MP4 full + SFX full + dub full → 1 output
+  - Pecah per episode (30 menit): split SRT dulu, generate per episode, mix per episode
+  - Mix durasi penuh: output = MP4 durasi (bukan dub durasi). Setelah dub selesai, SFX tetap bermain.
 
 Install: pip3 install questionary (di venv)
 Usage: python3 mix-tui.py (pilih file pakai arrow keys)
