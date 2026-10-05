@@ -334,14 +334,36 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
     else:
         # Re-encode: setpts untuk slow-mo + output_ts_offset untuk timestamp akumulatif
         # fps=30 filter SEBELUM setpts (VFR guard, dari riset VoiceStudio)
-        # JANGAN pakai -fps_mode cfr atau -video_track_timescale sebagai output option
+        #
+        # FIX slow-mo ekstrim (test #15, 5 Okt 2026):
+        # Untuk factor > 2x (cue pendek → audio panjang), setpts * factor bikin
+        # frame diulang ekstrim (5 frame diulang 14x = "foto berhenti" weird).
+        # Solusi: cap slow-mo di 2x + tpad freeze last frame untuk sisa durasi.
+        # Hasil: 0.34s slow-mo 2x (smooth, 10 frame) + 2.05s freeze di last frame.
+        # Lebih halus daripada 5 frame diulang 14x.
+        MAX_SLOWMO_FACTOR = 2.0  # cap slow-mo di 2x, sisanya freeze
+        if factor > MAX_SLOWMO_FACTOR and task['type'] == 'cue':
+            # Cap slow-mo di 2x, freeze sisanya dengan tpad=stop_mode=clone
+            # setpts * 2 → video 2x lebih panjang (mp4_dur * 2)
+            # tpad stop_duration → freeze last frame untuk fill ke target_dur
+            capped_dur = mp4_dur * MAX_SLOWMO_FACTOR
+            freeze_dur = target_dur - capped_dur
+            if freeze_dur > 0:
+                vf = f'fps=30,setpts=(PTS-STARTPTS)*{MAX_SLOWMO_FACTOR:.6f},tpad=stop_mode=clone:stop_duration={freeze_dur:.6f}'
+            else:
+                # Edge case: factor 2x tapi freeze_dur negatif (tidak mungkin, tapi just in case)
+                vf = f'fps=30,setpts=(PTS-STARTPTS)*{factor:.6f}'
+        else:
+            # Normal: setpts * factor (untuk gap, tail, atau cue dengan factor ≤ 2x)
+            vf = f'fps=30,setpts=(PTS-STARTPTS)*{factor:.6f}'
+
         cmd = [
             ffmpeg_path, '-y',
             '-hwaccel', 'videotoolbox',
             '-i', mp4_path,
             '-ss', f'{mp4_start:.3f}',
             '-t', f'{target_dur:.3f}',
-            '-vf', f'fps=30,setpts=(PTS-STARTPTS)*{factor:.6f}',
+            '-vf', vf,
             *enc_params,
             '-output_ts_offset', f'{cumulative_offset:.6f}',
             '-an',
@@ -449,7 +471,7 @@ def render_all_segments(tasks, mp4_path, segments_dir, ffmpeg_path, ffprobe_path
 
 
 # ============================================================
-# Pass 2: Concat semua segments + add audio Jawa
+# Pass 2: Concat semua segments + add audio dub
 # ============================================================
 
 def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_audio_ori, ducking_db, video_only=False, encoder='libx264'):
@@ -459,15 +481,19 @@ def concat_segments(tasks, segments_dir, audio_jawa, output, ffmpeg_path, has_au
     """
     print(f'\n=== Pass 2: Concat segments + mix audio ===')
 
-    # Build concat list file — skip segments yang gagal (file tidak ada atau < 1KB)
+    # Build concat list file — skip segments yang gagal (file tidak ada atau terlalu kecil)
+    # FIX test #15: threshold 1000 bytes terlalu tinggi, segment pendek (gap 0.05s, cue 0.17s)
+    # bisa hasilkan file < 1KB → di-skip → gap di video → "berhenti lama" di VLC/DaVinci.
+    # Lower ke 100 bytes supaya segment pendek tetap masuk concat.
+    MIN_SEGMENT_SIZE = 100  # bytes (sebelumnya 1000)
     concat_list = os.path.join(segments_dir, 'concat_list.txt')
     included = 0
     skipped = 0
     with open(concat_list, 'w') as f:
         for task in tasks:
             seg_file = os.path.join(segments_dir, f'seg_{task["index"]:05d}.mp4')
-            # Skip kalau file tidak ada atau terlalu kecil (segment gagal)
-            if os.path.isfile(seg_file) and os.path.getsize(seg_file) > 1000:
+            # Skip kalau file tidak ada atau terlalu kecil (segment gagal total)
+            if os.path.isfile(seg_file) and os.path.getsize(seg_file) > MIN_SEGMENT_SIZE:
                 f.write(f"file '{seg_file}'\n")
                 included += 1
             else:
