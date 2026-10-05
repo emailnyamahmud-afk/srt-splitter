@@ -238,11 +238,15 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, preset, encoder):
     if os.path.isfile(output_file) and os.path.getsize(output_file) > 100:
         return {'index': seg_idx, 'status': 'skipped'}
 
-    # Encoder params
+    # Encoder params + hwaccel
+    # FIX bug #12: -hwaccel videotoolbox hanya untuk h264_videotoolbox (Mac M1/M2 hardware).
+    # Untuk libx264 (software), JANGAN pakai -hwaccel videotoolbox (gagal di Linux/non-Mac).
     if encoder == 'h264_videotoolbox':
+        hwaccel_args = ['-hwaccel', 'videotoolbox']
         enc_params = ['-c:v', 'h264_videotoolbox', '-b:v', '5M',
                       '-realtime', '0', '-bf', '0', '-profile:v', 'high']
     else:
+        hwaccel_args = []  # software decode untuk libx264
         enc_params = ['-c:v', 'libx264', '-preset', preset, '-crf', '23',
                       '-bf', '0', '-profile:v', 'high']
 
@@ -255,7 +259,7 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, preset, encoder):
     if use_stream_copy:
         cmd = [
             ffmpeg_path, '-y',
-            '-hwaccel', 'videotoolbox',
+            *hwaccel_args,
             '-ss', f'{mp4_start:.3f}',
             '-i', mp4_path,
             '-t', f'{mp4_dur:.3f}',
@@ -269,7 +273,7 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, preset, encoder):
         # tpad GAGAL di h264_videotoolbox (PTS overflow, test #16) → jangan pakai tpad.
         cmd = [
             ffmpeg_path, '-y',
-            '-hwaccel', 'videotoolbox',
+            *hwaccel_args,
             '-ss', f'{mp4_start:.3f}',
             '-i', mp4_path,
             '-t', f'{mp4_dur:.3f}',
