@@ -269,26 +269,36 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, preset, encoder):
             output_file,
         ]
     else:
-        # Re-encode: setpts × factor (slow-mo) + fps=30 SETELAH setpts (CFR output)
+        # Re-encode: setpts × factor (slow-mo) + minterpolate (frame blending untuk smooth)
         #
-        # FIX bug #28 (test #18, 5 Okt): stop-motion "patah-patah" di mayoritas cue.
-        # Sebelumnya: 'fps=30,setpts=...' — fps=30 SEBELUM setpts = no-op untuk source 30fps.
-        # setpts × factor bikin output VFR (20fps untuk factor 1.5x, 10fps untuk 3x).
-        # Pass 2 concat stream copy → frame rate berubah-ubah di tengah video → VLC/DaVinci
-        # tidak handle → "patah-patah".
+        # Test #19 (5 Okt): fps=30 SETELAH setpts = no-op (source sudah 30fps).
+        # Stop-motion bukan karena VFR — itu memang nature setpts × factor
+        # (60 frame di spread 90 frame = 30 frame diulang = "kayak foto").
         #
-        # FIX: fps=30 SETELAH setpts. Setiap segment CFR 30fps, frame duplikasi smooth.
-        # VoiceStudio pattern: out_fps resample di akhir (post-concat).
-        # Kita pakai per-segment karena Pass 2 stream copy (tidak ada filter).
+        # FIX bug #29: tambah minterpolate untuk frame blending (motion interpolation).
+        # minterpolate bikin frame antara, jadi slow-mo smooth (bukan frame diulang).
+        # Hanya untuk cue dengan factor > 1.1x (slow-mo). Factor ≤ 1.1x = imperceptible.
+        #
+        # Trade-off: minterpolate CPU heavy (5-10x lebih lama per segment).
+        # Tapi untuk 233 segments × 5 menit video, estimasi masih feasible di M1.
         #
         # tpad GAGAL di h264_videotoolbox (PTS overflow, test #16) → jangan pakai tpad.
+        if factor > 1.1:
+            # Slow-mo dengan minterpolate (frame blending, smooth)
+            # mi_mode=mcd = motion compensated, mc_mode=aobmc = overlap blocks
+            # vsbmc=1 = smooth block motion compensation
+            vf = f'setpts=(PTS-STARTPTS)*{factor:.6f},minterpolate=mi_mode=mci:mc_mode=aobmc:vsbmc=1,fps=30'
+        else:
+            # Factor ≤ 1.1x: tidak ada slow-mo signifikan, no minterpolate (cepat)
+            vf = f'setpts=(PTS-STARTPTS)*{factor:.6f},fps=30'
+
         cmd = [
             ffmpeg_path, '-y',
             *hwaccel_args,
             '-ss', f'{mp4_start:.3f}',
             '-i', mp4_path,
             '-t', f'{mp4_dur:.3f}',
-            '-vf', f'setpts=(PTS-STARTPTS)*{factor:.6f},fps=30',
+            '-vf', vf,
             *enc_params,
             '-output_ts_offset', f'{cumulative_offset:.6f}',
             '-an', '-fflags', '+genpts',
