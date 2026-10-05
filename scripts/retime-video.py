@@ -345,7 +345,7 @@ def render_all_segments(tasks, mp4_path, segments_dir, ffmpeg_path, preset, work
 # Pass 2: Concat semua segments + add audio dub
 # ============================================================
 
-def concat_segments(tasks, segments_dir, audio_dub, output, ffmpeg_path, encoder):
+def concat_segments(tasks, segments_dir, audio_dub, output, ffmpeg_path):
     """Concat semua segment files + mix audio dub. Stream copy video, AAC audio."""
     print(f'\n=== Pass 2: Concat segments + mix audio ===')
 
@@ -502,7 +502,7 @@ def main():
         sys.exit(1)
 
     # Pass 2: Concat + mix audio
-    success = concat_segments(tasks, segments_dir, args.audio_dub, args.output, ffmpeg, args.encoder)
+    success = concat_segments(tasks, segments_dir, args.audio_dub, args.output, ffmpeg)
     if not success:
         print('\n❌ Pass 2 gagal.')
         if not args.keep_temp:
