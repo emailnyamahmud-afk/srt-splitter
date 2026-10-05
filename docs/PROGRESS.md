@@ -2,7 +2,7 @@
 
 Dokumen ini catatan status project untuk AI / developer next time baca. Update setiap sesi kerja.
 
-**Last updated:** 5 Oktober 2026, 02:55 WIB
+**Last updated:** 5 Oktober 2026, 08:30 WIB
 
 ---
 
@@ -13,21 +13,123 @@ Dokumen ini catatan status project untuk AI / developer next time baca. Update s
 | Web app (srt-splitter.vercel.app) | ✅ Production ready |
 | Dubbing Mode (SRT = ground truth) | ✅ Working, tested user |
 | Python `dubbing-tui.py` (TUI) | ✅ Working, user tested |
-| Python `retime-video.py` v3 (two-pass) | ✅ Working, user tested |
+| Python `retime-video.py` v5 (M1 optimized) | ⏳ In progress (testing) |
 | Python `separate-audio-sfx.py` (Demucs) | ✅ Working (belum user test) |
-| User test render S7-id.mp4 (2.5 jam) | ✅ **SUKSES! 5 Okt 2026 02:54 WIB** |
+| User test render S7-id.mp4 (2.5 jam AV1) | ✅ SUKSES 5 Okt 02:54 — tapi video rusak (DTS) |
+| User test render 5min H.264 + VideoToolbox | ⏳ In progress (test #6) |
 | Kamus Jawa JSON | 🔜 Next step (riset) |
 | Workflow multi-bahasa (Jawa/Sunda/dll) | 🔜 Next step |
 
 ---
 
-## 🎉 MILESTONE: First Successful End-to-End Render (5 Okt 2026)
+## 🐛 BUG HISTORY: Video Retaimed Rusak (5 Okt 03:00-08:00 WIB)
 
-### Test Case
-- Source: `mandarin.mp4` (1.94 GB, 2h 23m, 1440x2560 portrait, S7 bahasa Indonesia)
-- SRT source: dari sumber eksternal (timing Mandarin = "penjara")
-- DUB mode: speed 1.25x, min gap 100ms → audio Indonesia natural + SRT baru
-- Render: TUI mode, preset `fast`, 4 workers, two-pass rendering
+### Gejala
+- VLC: frame berhenti, suara TTS ada
+- DaVinci: video merah (Media Offline), audio waveform OK
+- SRT terlihat 3 jam 35 menit di DaVinci (sebenarnya 2 jam 36 menit)
+
+### Root Cause
+**FFmpeg concat dengan stream copy + B-frames = non-monotonic DTS**
+
+B-frames (bidirectional frames) punya DTS yang bisa mundur (menengok frame setelahnya). Saat `setpts` slow-mo, timestamp jadi non-monotonic → FFmpeg warning → video patah/diulang.
+
+### Timeline Debug (8 iterasi fix)
+
+| Test # | Strategi | Hasil | Penyebab Gagal |
+|---|---|---|---|
+| #1 | Filter complex inline (8268 segments) | frame=0, stuck | Memory 40GB, FFmpeg swap |
+| #2 | Two-pass rendering (file-based segments) | Sukses, tapi video rusak | Stream copy + B-frames |
+| #3 | Cumulative offset + stream copy | 491 DTS warnings | B-frames tetap bermasalah |
+| #4 | Re-encode Pass 2 + source 360p rusak | Frame berhenti lama | Source video rusak (AV1→H.264 360p) |
+| #5 | Re-encode + source 5min stream copy | Masih DTS warnings | jsDelivr cache, user dapat versi lama |
+| #6 | H.264 source + VideoToolbox + `-bf 0` | ⏳ In progress | - |
+
+### 8 Fix yang Diimplementasi di `retime-video.py`
+
+| # | Fix | Dari Riset | Dampak |
+|---|---|---|---|
+| 1 | Two-pass rendering (file-based segments) | Memory issue | Pass 1 parallel, Pass 2 concat |
+| 2 | `-filter_complex_script_filename` → `-/filter_complex` | FFmpeg 7+ compat | Fix "Unrecognized option" |
+| 3 | Filter segments di luar range video input | Test video pendek | Fix 8267/8267 gagal |
+| 4 | Hapus `-reset_ts zero` (invalid di FFmpeg 7+) | Sandbox test | Fix "Unrecognized option" |
+| 5 | Hapus `-vsync cfr` (deprecated FFmpeg 5.1+) | Sandbox test | Fix "Unrecognized option" |
+| 6 | `setpts=(PTS-STARTPTS)*factor` (bukan `/factor`) | Sandbox test | Fix slow-mo jadi fast-forward |
+| 7 | `-t target_dur` (bukan `mp4_dur`) | Sandbox test | Fix output terpotong |
+| 8 | **M1 Optimization**: `-hwaccel videotoolbox` + `-bf 0` + `-fps_mode cfr` + `-video_track_timescale 30000` | ffmpeg-micro blog + OBS user | Hardware decode/encode + fix DTS |
+
+### M1 Optimization Detail
+
+Dari screenshot OBS user:
+- Encoder: `Apple VT H264 Hardware Encoder` = `h264_videotoolbox` di FFmpeg
+- B-Frames: dicentang = **root cause non-monotonic DTS**
+- Bitrate: 2500 Kbps (untuk live stream, sinyal lemah)
+
+Fix di script:
+```python
+# Pass 1 (re-encode segments):
+'-hwaccel', 'videotoolbox',      # Hardware decode (H.264/HEVC)
+'-c:v', 'h264_videotoolbox',     # Hardware encode
+'-b:v', '5M',                    # Bitrate 5 Mbps (offline quality)
+'-bf', '0',                      # DISABLE B-frames (fix DTS!)
+'-fps_mode', 'cfr',              # Constant frame rate
+'-video_track_timescale', '30000', # Same timescale (fix DTS rounding)
+
+# Pass 2 (concat + re-encode):
+# Same flags + setpts=PTS-STARTPTS + -shortest
+```
+
+### Source Codec Impact
+
+| Source | Decode | M1 Hardware? | Pass 1 Speed |
+|---|---|---|---|
+| AV1 | libdav1d | ❌ Software | ~1709s (28 menit, 233 segments) |
+| H.264 | videotoolbox | ✅ Hardware | ~600s (10 menit, 233 segments) |
+| HEVC | videotoolbox | ✅ Hardware | ~600s (estimasi) |
+
+**Rekomendasi**: Download YouTube dengan H.264 (bukan AV1) untuk render cepat:
+```bash
+yt-dlp -f "137+140" --merge-output-format mp4 -o mandarin.mp4 "URL"
+# 137 = 1080p H.264, 140 = audio m4a
+```
+
+### Estimasi Waktu Render (H.264 source + VideoToolbox)
+
+| Video | Pass 1 | Pass 2 | Total |
+|---|---|---|---|
+| 5 menit (233 segments) | ~10 menit | ~1-2 menit | ~12 menit |
+| 30 menit (~1400 segments) | ~30 menit | ~5 menit | ~35 menit |
+| 1 jam (~2800 segments) | ~50 menit | ~10 menit | ~60 menit |
+| 2.5 jam (~8268 segments) | ~90 menit | ~20 menit | ~110 menit |
+
+### Riset Referensi
+
+| Sumber | Insight yang Diadopsi |
+|---|---|
+| **ffmpeg-micro blog** (Javid Jamae, Aug 2026) | `-fps_mode cfr` (pengganti `-vsync cfr`), `-video_track_timescale 30000`, strategi audio stretch vs video retimed |
+| **ThioJoe ASTD** | Trim silence, two-pass TTS, `atempo` + `adelay` + `amix` |
+| **pyVideoTrans** (19.2k stars) | Multi-role dubbing, voice cloning, sync strategi |
+| **OBS user screenshot** | `Apple VT H264 Hardware Encoder`, B-frames dicentang = root cause |
+| **Voice-Clone-Studio** (GitHub) | Multi-model voice cloning + voice design |
+
+### Filosofi yang Dipertahankan
+
+> "atempo = jalan buntu. PUNCAK AUDIO ADALAH BEBAS DARI PENJARA = DUB YG ADA DI WEB KITA"
+
+- atempo (audio stretch) = robot ekstrem untuk cue pendek
+- DUB mode (SRT = ground truth) = audio natural, video slow-mo
+- SRT + WAV = ground truth, MP4 ngikut SRT
+
+### DaVinci Resolve Timecode Offset
+
+DaVinci default "Start Timecode" = `01:00:00:00` (SMPTE standar).
+User lihat 3 jam 35 menit di DaVinci = offset +1 jam dari timecode setting.
+
+**Fix di DaVinci**: Project Settings → Master Settings → "Start Timecode" = `00:00:00:00`
+
+**Fix di script**: `-timecode 00:00:00:00` di output MP4.
+
+---
 
 ### Output
 - `S7-id.mp4` — **3806.1 MB (3.8 GB)**
