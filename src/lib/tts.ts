@@ -95,8 +95,19 @@ export interface NarrationOptions {
   // Generate natural → measure → kalau overflow, re-generate dengan audioRate (TTS server-side, pitch preserved).
   // Video tetap 100% sync SRT ori (tidak di-retim). Crossfade kalau audio masih overflow.
   // Filosofi: audio dub fit ke SRT ori, video = ground truth (mode ON klasik).
+  //
+  // Algoritma Smart Fit (flexible, user feedback 5 Okt 2026):
+  // 1. Generate natural (1.0x), measure
+  // 2. Kalau need ≤ 1.0 → pakai natural
+  // 3. Kalau need > 1.0:
+  //    - Coba audioRate = need (exact fit, no overflow, no crossfade)
+  //    - Cap di smartFitAudioRateCap (default 2.0, bisa 1.25/1.5/2.0/2.5)
+  //    - Kalau need ≤ cap → audioRate = need (exact fit)
+  //    - Kalau need > cap → audioRate = cap (audio lebih pendek dari need, sisa crossfade)
+  // 4. Prioritas: TIDAK truncate. Crossfade handle overflow.
   smartFit?: boolean                // default false. true: aktifkan Smart Fit per-cue dynamic speed.
   smartFitAudioRateCap?: number     // default 2.0 — batas atas TTS speed (pitch preserved). Voicertool cap.
+                                    // Flexible: audioRate = min(need, cap). need ≤ cap → exact fit.
   smartFitUseAsymmetricTrim?: boolean // default true — voicertool pattern: head -40dB aggressive, tail -49dB gentle.
   smartFitCrossfadeMs?: number       // default 150 — crossfade kalau audio overflow cue (tumpang tindih smooth ke cue next).
   smartFitNormalizeDbFS?: number     // default -2 — per-cue peak normalize untuk loudness konsisten.
@@ -332,7 +343,7 @@ export async function narrateEntries(
         const cueDuration = entry.end - entry.start
         const cueStartSamples = Math.floor(entry.start * OUTPUT_SAMPLE_RATE)
         const cueEndSamples = Math.floor(entry.end * OUTPUT_SAMPLE_RATE)
-        const audioRateCap = opts.smartFitAudioRateCap ?? 2.0
+        const audioRateCap = opts.smartFitAudioRateCap ?? 1.25  // default 1.25x (paling natural, user feedback)
         const useAsymTrim = opts.smartFitUseAsymmetricTrim ?? true
         const crossfadeMs = opts.smartFitCrossfadeMs ?? 150
         const normalizeDbFS = opts.smartFitNormalizeDbFS ?? -2

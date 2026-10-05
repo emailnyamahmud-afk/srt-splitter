@@ -73,7 +73,13 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
   const [offSpeed, setOffSpeed] = useState<number>(1.0)
   // ON mode Smart Fit (default ON — strategi baru 5 Okt 2026, video = ground truth)
   const [onSmartFit, setOnSmartFit] = useState<boolean>(true)
-  const [onSmartFitCap, setOnSmartFitCap] = useState<number>(2.0)  // default 2.0x (voicertool cap)
+  // Cap default 1.25x (user feedback: '2x sangat cepat, bisa tidak dibuat fleksibel? default 1.25?')
+  // Algoritma: audioRate = min(need, cap). Kalau need ≤ cap → exact fit (no overflow).
+  // Kalau need > cap → cap + crossfade (overflow ke cue next, smooth).
+  // 1.25x: paling natural, banyak cue crossfade kalau need > 1.25
+  // 1.5x: balanced, beberapa cue crossfade
+  // 2.0x: voicertool cap, paling sedikit crossfade tapi agak cepat
+  const [onSmartFitCap, setOnSmartFitCap] = useState<number>(1.25)
   // Dubbing mode settings
   const [dubSpeed, setDubSpeed] = useState<number>(1.0)
   const [dubSmartFit, setDubSmartFit] = useState<boolean>(true)  // default ON: VoiceStudio fit_planner
@@ -642,17 +648,21 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
                   </div>
                   {onSmartFit && (
                     <div>
-                      <Label htmlFor="on-smartfit-cap" className="text-xs">Smart Fit audio rate cap (pitch preserved)</Label>
+                      <Label htmlFor="on-smartfit-cap" className="text-xs">Smart Fit audio rate cap (pitch preserved, flexible)</Label>
                       <select
                         id="on-smartfit-cap"
                         value={onSmartFitCap}
                         onChange={(e) => setOnSmartFitCap(Number(e.target.value))}
                         className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
                       >
-                        <option value={1.25}>1.25x — Paling natural (cap rendah, banyak cue mungkin crossfade)</option>
-                        <option value={1.5}>1.5x — Balanced (cap sedang, natural + fit)</option>
-                        <option value={2.0}>2.0x — Voicertool cap ★ rekomendasi (cap tinggi, fit paling banyak cue, sedikit crossfade)</option>
+                        <option value={1.25}>1.25x — Paling natural ★ rekomendasi (cap rendah, crossfade halus kalau perlu)</option>
+                        <option value={1.5}>1.5x — Balanced (cap sedang, lebih sedikit crossfade)</option>
+                        <option value={2.0}>2.0x — Voicertool cap (cap tinggi, paling sedikit crossfade, agak cepat)</option>
                       </select>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Algoritma: audioRate = min(need, cap). Kalau cue muat natural (need ≤ 1.0) → pakai natural.
+                        Kalau perlu speedup → naik ke butuhnya (max cap). Tidak ada truncate, crossfade handle overflow.
+                      </p>
                     </div>
                   )}
                   {!onSmartFit && (
