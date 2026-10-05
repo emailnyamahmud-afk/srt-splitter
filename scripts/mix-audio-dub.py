@@ -115,7 +115,7 @@ def mix_audio_dub(mp4_path, audio_dub_path, output_path, ffmpeg, ducking_db, sfx
             '-i', mp4_path, '-i', audio_dub_path,
             '-map', '0:v', '-map', '1:a',
             '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
-            '-shortest', '-movflags', '+faststart',
+            '-movflags', '+faststart',
             output_path,
         ]
     elif ducking_db <= 0:
@@ -129,7 +129,7 @@ def mix_audio_dub(mp4_path, audio_dub_path, output_path, ffmpeg, ducking_db, sfx
                 '-filter_complex', filter_complex,
                 '-map', '0:v', '-map', '[aout]',
                 '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
-                '-shortest', '-movflags', '+faststart',
+                '-movflags', '+faststart',
                 output_path,
             ]
         else:
@@ -141,7 +141,7 @@ def mix_audio_dub(mp4_path, audio_dub_path, output_path, ffmpeg, ducking_db, sfx
                 '-filter_complex', filter_complex,
                 '-map', '0:v', '-map', '[aout]',
                 '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
-                '-shortest', '-movflags', '+faststart',
+                '-movflags', '+faststart',
                 output_path,
             ]
     else:
@@ -153,7 +153,7 @@ def mix_audio_dub(mp4_path, audio_dub_path, output_path, ffmpeg, ducking_db, sfx
                 f'[1:a]volume=1[sfx];'
                 f'[2:a]volume=1,asplit=2[dub][sidechain];'
                 f'[sfx][sidechain]sidechaincompress='
-                f'threshold=0.05:ratio={ratio}:attack=5:release=300:makeup={ducking_db}'
+                f'threshold=0.05:ratio={ratio}:attack=5:release=300:makeup=0'
                 f'[ducked_sfx];'
                 f'[ducked_sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
             )
@@ -163,7 +163,7 @@ def mix_audio_dub(mp4_path, audio_dub_path, output_path, ffmpeg, ducking_db, sfx
                 '-filter_complex', filter_complex,
                 '-map', '0:v', '-map', '[aout]',
                 '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
-                '-shortest', '-movflags', '+faststart',
+                '-movflags', '+faststart',
                 output_path,
             ]
         else:
@@ -172,7 +172,7 @@ def mix_audio_dub(mp4_path, audio_dub_path, output_path, ffmpeg, ducking_db, sfx
                 f'[0:a]volume=1[sfx];'
                 f'[1:a]volume=1,asplit=2[dub][sidechain];'
                 f'[sfx][sidechain]sidechaincompress='
-                f'threshold=0.05:ratio={ratio}:attack=5:release=300:makeup={ducking_db}'
+                f'threshold=0.05:ratio={ratio}:attack=5:release=300:makeup=0'
                 f'[ducked_sfx];'
                 f'[ducked_sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
             )
@@ -182,7 +182,7 @@ def mix_audio_dub(mp4_path, audio_dub_path, output_path, ffmpeg, ducking_db, sfx
                 '-filter_complex', filter_complex,
                 '-map', '0:v', '-map', '[aout]',
                 '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
-                '-shortest', '-movflags', '+faststart',
+                '-movflags', '+faststart',
                 output_path,
             ]
 
@@ -245,7 +245,7 @@ def main():
     print(f'Audio dub durasi: {dub_dur:.2f}s')
     if dub_dur > mp4_dur + 1.0:
         print(f'⚠ Audio dub ({dub_dur:.1f}s) lebih panjang dari MP4 ({mp4_dur:.1f}s).')
-        print(f'  Output akan dipotong ke MP4 durasi (-shortest).')
+        print(f'  Output = MP4 durasi penuh ({mp4_dur:.1f}s). Setelah dub selesai ({dub_dur:.1f}s), hanya SFX bermain.')
         print(f'  Tips: pakai MP4 source yang lebih panjang, atau audio dub yang lebih pendek.')
 
     # Mix
