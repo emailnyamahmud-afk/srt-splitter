@@ -366,3 +366,91 @@ Stage Summary:
 - File TIDAK berubah: scripts/retime-video.py (Python, sesuai user), src/components/tts-panel.tsx (UI)
 - Pending: user push ke GitHub (sandbox tidak ada credential) — commit lokal siap
 - Pending berikutnya (PR terpisah): render video (retime-video.py konsumsi JSON v2.0 chunks[].videoRatio + fittedCues)
+
+---
+Task ID: 8
+Agent: research sub-agent (general-purpose)
+Task: Riset voicertool.com/subs/id — reverse-engineer algoritma "Speed up only" dan "Speed up and slow down" mode (audio fit SRT cue timing). Adaptasi untuk mode ON di web app (SRT dubbing Mandarin→Indonesia). Research-only — JANGAN tulis application code.
+
+Work Log:
+- Baca worklog Task 1-7-b untuk konteks: project Next.js SRT dubbing Mandarin→Jawa/Indonesia, mode ON/OFF/Dubbing, Edge TTS provider, retime-map.json v2.0 schema, VoiceStudio patterns (slack absorption, 15ms fade, peak normalize, CPS calibration)
+- Fetch https://voicertool.com/subs/id via curl (200 OK, 132KB HTML, PHP/Cloudflare, no bot detection, PHPSESSID cookie)
+- Identifikasi stack: PHP backend (BUKAN Next.js SPA), inline JS di index.html + 2 external JS module (`setting.js?v=1.0.21`, `srt.js?v=1.0.21`) di-load on-demand
+- Fetch setting.js (247KB, obfuscated javascript-obfuscator dengan string-array rotation) — UI/voice-picker code (BUKAN algoritma inti)
+- Fetch srt.js (142KB, obfuscated sama) — **ALGORITMA INTI** (TTS + atempo + mixing)
+- Deobfuscate partial: extract string arrays m() (setting.js, 2197 tokens) dan u() (srt.js, 673 tokens), search keyword, follow helper functions i/s/l/Y/etc yang resolve ke chunk index
+- Decode algoritma utama dari srt.js:
+  * **TTS provider**: Microsoft Edge TTS (variabel `EDGE_SPEECH_URL` confirmed, Azure Speech SDK pattern `context.synthesis.audio.metadataoptions + outputFormat`)
+  * **SSML**: `<speak version="1.0" xmlns="..."><voice name="..."><prosody pitch="X%" rate="Y%" volume="Z%">text</prosody></voice></speak>` via `prosodyTemplate()` + `speakTemplate()`
+  * **Per-cue pipeline**: TTS → decodeAudioData → silence trim (function W, asymmetric: head -40dBFS, tail -49dBFS) → compute ratio (function y, lihat bawah) → ffmpeg.wasm atempo (function C) → wrap ke AudioBuffer → return {audioBuffer, offsetSeconds=cue.start}
+  * **Speed setting algorithm (function y)**:
+    - `o = audioDur / cueDur` (raw ratio, diukur SETELAH silence trim)
+    - speed_setting="1" (Speed up only): `o = clamp(o, 1.0, 2.0)` — floor 1.0 (never slow down), cap 2.0 (max 2x speed up)
+    - speed_setting="2" (Speed up and slow down): `o = clamp(o, 0.68, 2.0)` — floor 0.68 (max slowdown ~1.47x), cap 2.0 (max 2x speed up)
+    - default: `o = 1` (no change)
+    - Konstanta kunci: **1.0** (floor speedup-only), **0.68** (floor speedup-slowdown), **2.0** (cap both modes)
+  * **ffmpeg.wasm command**: `ffmpeg -f f32le -ar 24000 -ac 1 -i in_X.f32 -af atempo=<ratio.toFixed(3)> -f f32le out_X.f32`
+    - Format I/O: f32le (32-bit float PCM), mono, 24000 Hz (Edge TTS native)
+    - atempo preserves pitch otomatis (built-in ffmpeg)
+    - Presisi: 3 desimal (e.g., `atempo=1.234`)
+    - Virtual FS filenames: `in_<chunkIdx>.f32`, `out_<chunkIdx>.f32`
+  * **Mixing**: `OfflineAudioContext(1, totalSamples, sampleRate)` + per-cue `BufferSource.start(cue.start)` → `startRendering()` → WAV (manual RIFF/WAVE/fmt/data header via setUint16/32/8)
+  * **Sequential processing**: batch size 1 (`O.slice(i, i+1)`) — tidak parallel (Edge TTS rate limit aware)
+  * **Min buffer length floor**: `Math.max(audio.length, ceil(audio.duration * 0.2))` — anti zero-length buffer
+  * **NO slack absorption**: hanya `cue.end - cue.start` (tidak extend ke gap ke cue berikutnya)
+  * **NO crossfade**: additive mix pada overlap (OfflineAudioContext sum)
+  * **NO per-cue normalization**: TTS amplitude as-is
+  * **NO server-side rate change**: Edge TTS rate selalu "0" (no SSML prosody rate override) — semua speed adjustment via client-side ffmpeg.wasm atempo (POST-TTS)
+- Search "speed_setting" di index.html dan setting.js dan srt.js → 0 match (string di-obfuscate). Konfirmasi algoritma via konstanta 1, 2, 0.68 di function y() yang match speed_setting branches.
+
+- Perbandingan dengan src/lib/tts.ts narrateEntries (mode ON):
+  * Provider: sama (Edge TTS)
+  * Speed adjustment: Voicertool = client-side ffmpeg.wasm atempo; kita = server-side Edge TTS rate (formatEdgeRate). Trade-off: Voicertool universal (any voice sama), kita Edge-specific (lighter, no 30MB ffmpeg.wasm download).
+  * Slack absorption: Voicertool NO (hanya cue.end-cue.start); kita YES (availableDuration = nextCueStart - cue.start, extends ke silent gap). KITA LEBIH BAIK.
+  * Crossfade: Voicertool NO (additive mix); kita YES (15ms fade Pattern C VoiceStudio). KITA LEBIH BAIK.
+  * Per-cue normalization: Voicertool NO; kita YES (peakNormalize -2 dBFS Pattern D VoiceStudio). KITA LEBIH BAIK.
+  * Silence trim: Voicertool asymmetric (head -40dBFS, tail -49dBFS); kita symmetric (-30dBFS + 50ms padding). Voicertool preserve trailing consonants lebih baik.
+  * Mode 1 floor: Voicertool 1.0 (never slow down); kita tidak ada floor eksplisit (Edge rate bisa < 1.0 tapi natural flow).
+  * Mode 2 floor: Voicertool 0.68; kita MIN_SLOWDOWN_RATIO=0.7 (mirip, kita sedikit lebih konservatif).
+  * Cap: Voicertool 2.0 (eksplisit, semua mode); kita audioRateCap=1.5 (Smart Fit saja), tidak ada cap eksplisit di mode ON. Voicertool lebih eksplisit.
+  * atempo precision: Voicertool 3 desimal (toFixed(3)); kita integer percent (formatEdgeRate). Voicertool lebih presisi.
+  * Mixing: Voicertool OfflineAudioContext BufferSource.start(offsetSeconds); kita manual mixAudioInto ADD dengan fade. OfflineAudioContext lebih native (browser-optimized), kita lebih kontrol (push-back, fittedCues tracking).
+
+- ADOPT dari Voicertool:
+  1. Eksplisit speed caps (MAX_SPEEDUP_RATIO=2.0, MIN_SLOWDOWN_RATIO sudah 0.7) — buat konstanta terdefinisi di NarrationOptions, bukan hardcoded
+  2. Asymmetric silence trim (head lebih agresif -40dBFS, tail lebih gentle -49dBFS) — preserve trailing consonants. Update decodeMonoTrimResample.
+  3. 3-desimal precision untuk ratio (kalau pakai atempo path) atau float percent untuk Edge rate (e.g., "+12.3%" bukan "+12%")
+  4. Server-side rate=0 default + client-side atempo fallback (decouple TTS dari speed adjustment, avoid 2x TTS cost) — adopt kalau bisa容忍 ffmpeg.wasm ~30MB initial download (cached via Cache API)
+  5. Min buffer length floor (anti zero-length AudioBuffer yang break AudioContext)
+- SKIP dari Voicertool (kita sudah lebih baik):
+  - Slack absorption — keep availableDuration approach
+  - Crossfade — keep 15ms fade (Pattern C VoiceStudio)
+  - Per-cue normalization — keep peakNormalize -2 dBFS (Pattern D VoiceStudio)
+  - Push-back / fittedCues / retime-map v2.0 — keep Dubbing Mode logic
+  - ffmpeg.wasm dependency — keep server-side Edge rate (lighter, no 30MB deps, pitch preserved server-side)
+- WHY beda: Voicertool generic tool (300+ voices, semua Edge, butuh algoritma universal yang tidak tergantung Edge-specific rate). Kita Mandarin→Indonesia focus Edge TTS — bisa pakai Edge-specific rate (lebih ringan, tanpa ffmpeg.wasm).
+
+- Reproducibility:
+  * Semua fetch via curl dengan UA `Mozilla/5.0 Chrome/120` dan Referer header — 200 OK, no bot detection
+  * Files cached di /home/z/my-project/upload/voicertool-research/: index.html (132KB), setting.js (247KB), srt.js (142KB), voices.json (33KB), jquery-3.7.1.min.js (88KB)
+  * 10 snippets (raw obfuscated + decoded algorithm di comment) di /home/z/my-project/upload/voicertool-research/snippets/:
+    - 01_prosodyTemplate.js — SSML `<prosody pitch rate volume>` builder
+    - 02_speakTemplate.js — SSML `<speak><voice>` wrapper
+    - 03_speedSettingRatio_y.js — function y() — SPEED SETTING RATIO COMPUTATION (algoritma inti)
+    - 04_silenceTrim_W.js — function W() — silence trim -40/-49 dBFS asymmetric
+    - 05_atempoApply_C.js — async function C() — ffmpeg.wasm atempo application
+    - 06_perCueOrchestration_map.js — per-cue map (TTS → trim → ratio → atempo → wrap)
+    - 07_mixing_OfflineAudioContext.js — OfflineAudioContext mixing
+    - 08_wavWriter.js — manual RIFF/WAVE header writer
+    - 09_getreplica_srtParser.js — SRT parser
+    - 10_edgeTtsUrl.js — EDGE_SPEECH_URL context (confirms Edge TTS provider)
+  * RESEARCH_NOTES.md — comprehensive summary dengan comparison table ke tts.ts kita
+
+Stage Summary:
+- Voicertool.com berhasil di-reverse-engineer penuh: TTS = Edge TTS, algoritma = ffmpeg.wasm atempo client-side dengan clamp [1, 2] (speedup-only) atau [0.68, 2] (speedup-slowdown), silence trim asymmetric -40/-49 dBFS, mixing via OfflineAudioContext, sequential batch=1
+- Speed setting algorithm decoded: konstanta 1.0/0.68/2.0 confirmed via 2 lokasi di srt.js (offset 63393 dan function y di offset 132749)
+- 5 pola Voicertool worth adopting (asymmetric trim, eksplisit cap, 3-desimal precision, server-rate=0 default + client atempo fallback, min buffer floor)
+- 4 pola Voicertool NOT to adopt (no slack absorption, no crossfade, no normalize, no push-back) — kita sudah lebih baik via VoiceStudio patterns (Task 7-b)
+- File baru: 10 snippets + RESEARCH_NOTES.md + raw cached files (index.html, setting.js, srt.js, voices.json) di /home/z/my-project/upload/voicertool-research/
+- File TIDAK berubah: src/lib/tts.ts, src/lib/audio-utils.ts, src/lib/edge-tts.ts, src/components/tts-panel.tsx — research-only, no app code change (sesuai task instruction)
+- Pending: PR terpisah untuk adopt asymmetric trim + eksplisit cap konstanta + 3-desimal precision (kalau user setuju)
