@@ -241,6 +241,7 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, preset, encoder):
     # Encoder params + hwaccel
     # FIX bug #12: -hwaccel videotoolbox hanya untuk h264_videotoolbox (Mac M1/M2 hardware).
     # Untuk libx264 (software), JANGAN pakai -hwaccel videotoolbox (gagal di Linux/non-Mac).
+    # User M1/M2: pakai h264_videotoolbox (hardware, 4x cepat). Default ke hardware.
     if encoder == 'h264_videotoolbox':
         hwaccel_args = ['-hwaccel', 'videotoolbox']
         enc_params = ['-c:v', 'h264_videotoolbox', '-b:v', '5M',
@@ -269,25 +270,27 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, preset, encoder):
             output_file,
         ]
     else:
-        # Re-encode: setpts × factor (slow-mo) + minterpolate (frame blending untuk smooth)
+        # Re-encode: setpts × factor (slow-mo) + minterpolate (frame blending)
         #
         # Test #19 (5 Okt): fps=30 SETELAH setpts = no-op (source sudah 30fps).
         # Stop-motion bukan karena VFR — itu memang nature setpts × factor
         # (60 frame di spread 90 frame = 30 frame diulang = "kayak foto").
         #
-        # FIX bug #29: tambah minterpolate untuk frame blending (motion interpolation).
+        # FIX bug #29 (5 Okt): minterpolate untuk frame blending (motion interpolation).
         # minterpolate bikin frame antara, jadi slow-mo smooth (bukan frame diulang).
-        # Hanya untuk cue dengan factor > 1.1x (slow-mo). Factor ≤ 1.1x = imperceptible.
         #
-        # Trade-off: minterpolate CPU heavy (5-10x lebih lama per segment).
-        # Tapi untuk 233 segments × 5 menit video, estimasi masih feasible di M1.
+        # FIX bug #30 (5 Okt): pakai mi_mode=blend (lighter) bukan mci (heavy).
+        # blend = crossfade antar frame, CPU ringan, compatible dengan h264_videotoolbox.
+        # mci = motion compensated (5-10x lebih berat, tidak worth untuk 233 segments).
         #
-        # tpad GAGAL di h264_videotoolbox (PTS overflow, test #16) → jangan pakai tpad.
+        # Hardware encoder tetap dipakai (h264_videotoolbox) — minterpolate jalan di CPU
+        # tapi encoder jalan di GPU. M1/M2 handle ini dengan baik (CPU+GPU paralel).
+        #
+        # Hanya untuk cue dengan factor > 1.1x (slow-mo signifikan).
+        # Factor ≤ 1.1x = imperceptible, no minterpolate (cepat).
         if factor > 1.1:
-            # Slow-mo dengan minterpolate (frame blending, smooth)
-            # mi_mode=mcd = motion compensated, mc_mode=aobmc = overlap blocks
-            # vsbmc=1 = smooth block motion compensation
-            vf = f'setpts=(PTS-STARTPTS)*{factor:.6f},minterpolate=mi_mode=mci:mc_mode=aobmc:vsbmc=1,fps=30'
+            # Slow-mo dengan minterpolate blend (frame blending, smooth, CPU ringan)
+            vf = f'setpts=(PTS-STARTPTS)*{factor:.6f},minterpolate=mi_mode=blend:fps=30'
         else:
             # Factor ≤ 1.1x: tidak ada slow-mo signifikan, no minterpolate (cepat)
             vf = f'setpts=(PTS-STARTPTS)*{factor:.6f},fps=30'
