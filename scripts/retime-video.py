@@ -283,11 +283,19 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, preset, encoder):
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
         if result.returncode != 0:
+            # FIX audit: stderr FFmpeg sering cuma print "Error opening output file"
+            # tanpa root cause. Cari baris dengan "Error", "Device", "Cannot", "Failed" juga.
             stderr_lines = result.stderr.split('\n')
             err_lines = [l for l in stderr_lines
-                         if any(k in l.lower() for k in ['error', 'invalid', 'not found', 'no such'])]
+                         if any(k in l.lower() for k in
+                                ['error', 'invalid', 'not found', 'no such',
+                                 'cannot', 'device', 'failed', 'no device'])]
             err = err_lines[0] if err_lines else stderr_lines[-5:]
-            return {'index': seg_idx, 'status': 'failed', 'error': f'code={result.returncode} | {str(err)[:200]}'}
+            # Print stderr LENGKAP untuk debugging (last 500 chars)
+            stderr_tail = result.stderr[-500:] if result.stderr else ''
+            return {'index': seg_idx, 'status': 'failed',
+                    'error': f'code={result.returncode} | {str(err)[:200]}',
+                    'stderr_tail': stderr_tail}
         return {'index': seg_idx, 'status': 'ok'}
     except subprocess.TimeoutExpired:
         return {'index': seg_idx, 'status': 'failed', 'error': 'timeout (300s)'}
@@ -320,6 +328,9 @@ def render_all_segments(tasks, mp4_path, segments_dir, ffmpeg_path, preset, work
                 if result['status'] == 'failed':
                     failed += 1
                     print(f'  ✗ Segment {result["index"]} gagal: {result.get("error", "unknown")[:100]}')
+                    # Print stderr tail untuk debugging root cause (mis. "No device" untuk videotoolbox)
+                    if result.get('stderr_tail'):
+                        print(f'    stderr: {result["stderr_tail"][-200:].strip()}')
                 if completed % 50 == 0 or completed == total:
                     elapsed = time.time() - start_time
                     rate = completed / elapsed if elapsed > 0 else 0
