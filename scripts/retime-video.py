@@ -173,7 +173,15 @@ def get_mp4_duration(ffprobe: str, mp4_path: str) -> float:
         '-of', 'default=noprint_wrappers=1:nokey=1',
         mp4_path,
     ], capture_output=True, text=True)
-    return float(result.stdout.strip())
+    if result.returncode != 0:
+        raise RuntimeError(f'ffprobe gagal baca durasi MP4: {result.stderr.strip()[:200]}')
+    dur_str = result.stdout.strip()
+    if not dur_str:
+        raise RuntimeError(f'ffprobe return durasi kosong untuk: {mp4_path}')
+    try:
+        return float(dur_str)
+    except ValueError:
+        raise RuntimeError(f'ffprobe return durasi invalid "{dur_str}" untuk: {mp4_path}')
 
 
 def get_mp4_audio_streams(ffprobe: str, mp4_path: str) -> list:
@@ -329,6 +337,7 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
 
     if use_stream_copy:
         # Stream copy: -ss sebelum -i (fast seek), -t pakai mp4_dur (input durasi)
+        # Output duration = mp4_dur (factor=1.0, no setpts)
         cmd = [
             ffmpeg_path, '-y',
             '-hwaccel', 'videotoolbox',
@@ -342,9 +351,15 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
             output_file,
         ]
     else:
-        # Re-encode: -ss sebelum -i (fast seek), -t pakai mp4_dur (input durasi, BUKAN target_dur)
+        # Re-encode: -ss sebelum -i (fast seek), -t pakai mp4_dur EXACT (bukan +margin!)
         # Filter: fps=30 (VFR guard) → setpts * factor (slow-mo)
-        # Output duration ditentukan oleh filter (mp4_dur * factor = target_dur)
+        #
+        # FIX audit 5 Okt (Bug #27, KRITIKAL):
+        # Sebelumnya: -t {mp4_dur + 0.1} + setpts * factor = output (mp4_dur + 0.1) * factor
+        # Untuk factor=14x: segment 1.4s lebih panjang dari target!
+        # Cumulative offset drift = 0.1 * factor per cue = ~35s untuk 233 segments
+        # → ini penyebab "berhenti lama" di test #15, BUKAN skip 24 seg atau slow-mo 14x
+        # Sekarang: -t {mp4_dur} exact → output = mp4_dur * factor = target_dur (exact match)
         #
         # Catatan test #16 (5 Okt 2026): tpad=stop_mode=clone GAGAL — PTS overflow di h264_videotoolbox.
         # Slow-mo factor > 2x tetap pakai setpts * factor (stop-motion, frame ada).
@@ -353,7 +368,7 @@ def render_segment(task, mp4_path, segments_dir, ffmpeg_path, ffprobe_path, pres
             '-hwaccel', 'videotoolbox',
             '-ss', f'{mp4_start:.3f}',
             '-i', mp4_path,
-            '-t', f'{mp4_dur + 0.1:.3f}',  # +100ms margin untuk akurasi trim
+            '-t', f'{mp4_dur:.3f}',  # EXACT, no margin — output = mp4_dur × factor = target_dur
             '-vf', f'fps=30,setpts=(PTS-STARTPTS)*{factor:.6f}',
             *enc_params,
             '-output_ts_offset', f'{cumulative_offset:.6f}',
@@ -789,3 +804,13 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print('\n\n⏹ Dibatalkan user.')
         sys.exit(130)
+    except RuntimeError as e:
+        # Error dari ffprobe / ffmpeg helper (mis. MP4 corrupt, durasi invalid)
+        print(f'\n❌ Error: {e}', file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        # Catch-all supaya user lihat error message jelas, bukan stack trace jelek
+        print(f'\n❌ Error tidak terduga: {e}', file=sys.stderr)
+        import traceback
+        print(f'\nStack trace (untuk debugging):\n{traceback.format_exc()[:1000]}', file=sys.stderr)
+        sys.exit(1)
