@@ -1,0 +1,396 @@
+   encoder         : Lavf63.1.102
+  Duration: 02:23:07.60, start: 0.000000, bitrate: 2089 kb/s
+  Stream #0:0[0x1](und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, bt709, progressive), 1080x1920 [SAR 1:1 DAR 9:16], 1953 kb/s, 30 fps, 30 tbr, 15360 tbn (default)
+    Metadata:
+      handler_name    : ISO Media file produced by Google Inc.
+  Stream #0:1[0x2](und): Audio: aac (LC) (mp4a / 0x6134706D), 44100 Hz, stereo, fltp, 127 kb/s (default)
+    Metadata:
+      handler_name    : ISO Media file produced by Google Inc.
+Stream mapping:
+  Stream #0:0 -> #0:0 (copy)
+  Stream #0:1 -> #0:1 (copy)
+Output #0, mp4, to 'mandarin-test-5min.mp4':
+  Metadata:
+    major_brand     : isom
+    minor_version   : 512
+    compatible_brands: isomiso2avc1mp41
+    encoder         : Lavf63.1.102
+  Stream #0:0(und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, bt709, progressive), 1080x1920 [SAR 1:1 DAR 9:16], q=2-31, 1953 kb/s, 30 fps, 30 tbr, 15360 tbn (default)
+    Metadata:
+      handler_name    : ISO Media file produced by Google Inc.
+  Stream #0:1(und): Audio: aac (LC) (mp4a / 0x6134706D), 44100 Hz, stereo, fltp, 127 kb/s (default)
+    Metadata:
+      handler_name    : ISO Media file produced by Google Inc.
+Press [q] to stop, [?] for help
+[out#0/mp4 @ 0xc79058300] video:86763KiB audio:4688KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.300396%
+frame= 9001 fps=0.0 q=-1.0 Lsize=   91725KiB time=00:05:00.07 bitrate=2504.1kbits/s speed=4.12e+03x elapsed=0:00:00.07    
+macbookpro@MacBooks-MacBook-Pro-4 Dubbing % python3 retime-video.py \
+  --mp4 mandarin-test-5min.mp4 \
+  --srt-mandarin original.srt \
+  --srt-jawa subs-jawa-new.srt \
+  --audio-jawa audio-jawa.wav \
+  --output S7-5min-test-sfx.mp4 \
+  --sfx-ducking 12 \
+  --encoder h264_videotoolbox \
+  --workers 4
+ffmpeg: /opt/homebrew/bin/ffmpeg
+ffprobe: /opt/homebrew/bin/ffprobe
+
+SRT Mandarin: 4135 cues
+SRT Jawa: 4132 cues
+MP4 durasi: 00:05:00.033
+Audio streams di MP4: 1
+SFX preserve: YA
+Preset: fast
+Encoder: h264_videotoolbox
+Workers: 4
+  → Stop di cue 116 (mp4_start=305.40s ≥ mp4_duration=300.03s)
+
+Total segments: 233
+  Cue segments: 116
+  Gap segments: 116
+  Tail segments: 1
+  Re-encode (slow-mo/fast): 212
+  Stream copy (instant): 21
+
+Work directory: /var/folders/vh/_gn50cj11hbb9js56k_1sz240000gn/T/retime-v3-69kkwnsq
+Segments directory: /var/folders/vh/_gn50cj11hbb9js56k_1sz240000gn/T/retime-v3-69kkwnsq/segments
+
+=== Pass 1: Render 233 segments (parallel 4 workers) ===
+  → 50/233 segments (21.5%) — elapsed 63s, ETA 232s, failed 0
+  → 100/233 segments (42.9%) — elapsed 262s, ETA 348s, failed 0
+  → 150/233 segments (64.4%) — elapsed 548s, ETA 303s, failed 0
+  → 200/233 segments (85.8%) — elapsed 920s, ETA 152s, failed 0
+  → 233/233 segments (100.0%) — elapsed 1191s, ETA 0s, failed 0
+
+=== Pass 1 selesai ===
+  Total: 233 segments
+  Sukses: 233
+  Gagal: 0
+  Waktu: 1191s
+
+=== Pass 2: Concat segments + mix audio ===
+  → Concat list: /var/folders/vh/_gn50cj11hbb9js56k_1sz240000gn/T/retime-v3-69kkwnsq/segments/concat_list.txt (209 files, 24 skipped)
+  → Concat + mix audio...
+  Command: /opt/homebrew/bin/ffmpeg -y -hwaccel videotoolbox -fflags ...
+ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers
+  built with Apple clang version 21.0.0 (clang-2100.3.34.2)
+  configuration: --prefix=/opt/homebrew/Cellar/ffmpeg/9.0.2 --enable-shared --enable-pthreads --enable-version3 --cc=clang --host-cflags= --host-ldflags= --enable-ffplay --enable-gpl --enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d --enable-libvmaf --enable-libvpx --enable-libx265 --enable-openssl --enable-videotoolbox --enable-audiotoolbox --enable-neon
+  libavutil      61.  1.102 / 61.  1.102
+  libavcodec     63.  1.102 / 63.  1.102
+  libavformat    63.  1.102 / 63.  1.102
+  libavdevice    63.  1.102 / 63.  1.102
+  libavfilter    12.  1.102 / 12.  1.102
+  libswscale     10.  1.102 / 10.  1.102
+  libswresample   7.  1.102 /  7.  1.102
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738c20280] Auto-inserting h264_mp4toannexb bitstream filter
+Input #0, concat, from '/var/folders/vh/_gn50cj11hbb9js56k_1sz240000gn/T/retime-v3-69kkwnsq/segments/concat_list.txt':
+  Duration: N/A, start: 0.000000, bitrate: 2632 kb/s
+  Stream #0:0(und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, bt709, progressive), 1080x1920 [SAR 1:1 DAR 9:16], 2632 kb/s, 30 fps, 30 tbr, 15360 tbn
+    Metadata:
+      handler_name    : ISO Media file produced by Google Inc.
+[aist#1:0/pcm_s16le @ 0x739008600] Guessed Channel Layout: mono
+Input #1, wav, from 'audio-jawa.wav':
+  Duration: 02:35:56.53, bitrate: 384 kb/s
+  Stream #1:0: Audio: pcm_s16le ([1][0][0][0] / 0x0001), 24000 Hz, mono, s16, 384 kb/s
+[out#0/mp4 @ 0x738c24840] Codec AVOption gop_timecode (MPEG GOP Timecode in hh:mm:ss[:;.]ff format. Overrides timecode_frame_start.) has not been used for any stream. The most likely reason is either wrong type (e.g. a video option with no video streams) or that it is a private option of some decoder which was not actually used for any stream.
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_videotoolbox))
+  Stream #1:0 -> #0:1 (pcm_s16le (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x738ce8380] Too many bits 8192.000000 > 6144 per frame requested, clamping to max
+[h264 @ 0x738c89f80] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c89f80] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+Output #0, mp4, to 'S7-5min-test-sfx.mp4':
+  Metadata:
+    timecode        : 00:00:00:00
+    encoder         : Lavf63.1.102
+  Stream #0:0(und): Video: h264 (avc1 / 0x31637661), nv12(tv, bt709, progressive), 1080x1920 [SAR 1:1 DAR 9:16], q=2-31, 5000 kb/s, 30 fps, 30k tbn
+    Metadata:
+      encoder         : Lavc63.1.102 h264_videotoolbox
+      handler_name    : ISO Media file produced by Google Inc.
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 24000 Hz, mono, fltp, 144 kb/s
+    Metadata:
+      encoder         : Lavc63.1.102 aac
+frame=   56 fps=0.0 q=-0.0 size=    1024KiB time=00:00:02.04 bitrate=4096.2kbits/s speed=4.09x elapsed=0:[h264 @ 0x738c8b480] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8b480] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame=  160 fps=159 q=-0.0 size=    3072KiB time=00:00:05.54 bitrate=4537.2kbits/s speed=5.52x elapsed=0:[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9b80] Auto-inserting h264_mp4toannexb bitstream filter
+frame=  264 fps=175 q=-0.0 size=    4608KiB time=00:00:09.00 bitrate=4193.1kbits/s dup=197 drop=0 speed=5[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9b80] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=  308 fps=153 q=-0.0 size=    5120KiB time=00:00:10.41 bitrate=4028.9kbits/s dup=271 drop=0 speed=5[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9b80] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=  395 fps=157 q=-0.0 size=    6400KiB time=00:00:13.26 bitrate=3951.2kbits/s dup=344 drop=0 speed=5[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9b80] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=  499 fps=165 q=-0.0 size=    8960KiB time=00:00:16.72 bitrate=4388.6kbits/s dup=395 drop=0 speed=5[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9b80] Auto-inserting h264_mp4toannexb bitstream filter
+frame=  603 fps=171 q=-0.0 size=   10240KiB time=00:00:20.13 bitrate=4165.4kbits/s dup=446 drop=0 speed=[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9b80] Auto-inserting h264_mp4toannexb bitstream filter
+frame=  707 fps=175 q=-0.0 size=   13056KiB time=00:00:23.72 bitrate=4508.6kbits/s dup=496 drop=0 speed=5[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9b80] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=  811 fps=179 q=-0.0 size=   15616KiB time=00:00:27.13 bitrate=4714.3kbits/s dup=547 drop=0 speed=5[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9b80] Auto-inserting h264_mp4toannexb bitstream filter
+frame=  915 fps=181 q=-0.0 size=   18176KiB time=00:00:30.72 bitrate=4846.9kbits/s dup=598 drop=0 speed=6[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9b80] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 1019 fps=184 q=-0.0 size=   20224KiB time=00:00:34.13 bitrate=4853.8kbits/s dup=649 drop=0 speed=6[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9b80] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 1123 fps=185 q=-0.0 size=   22528KiB time=00:00:37.63 bitrate=4904.1kbits/s dup=699 drop=0 speed=6[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9b80] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 1227 fps=187 q=-0.0 size=   24832KiB time=00:00:41.13 bitrate=4945.8kbits/s dup=750 drop=0 speed=6frame= 1331 fps=188 q=-0.0 size=   26368KiB time=00:00:44.45 bitrate=4858.6kbits/s dup=801 drop=0 speed=6frame= 1435 fps=190 q=-0.0 size=   28416KiB time=00:00:47.87 bitrate=4862.6kbits/s dup=852 drop=0 speed=6frame= 1539 fps=191 q=-0.0 size=   30976KiB time=00:00:51.49 bitrate=4927.4kbits/s dup=903 drop=0 speed=6[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9b80] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 1643 fps=192 q=-0.0 size=   33024KiB time=00:00:54.95 bitrate=4922.8kbits/s dup=953 drop=0 speed=6[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9b80] Auto-inserting h264_mp4toannexb bitstream filter
+[vf#0:0 @ 0x738ce4000] More than 1000 frames duplicated
+frame= 1747 fps=192 q=-0.0 size=   34816KiB time=00:00:58.32 bitrate=4890.0kbits/s dup=1004 drop=0 speed=[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9b80] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+[h264 @ 0x738c8bb80] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8bb80] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame= 1850 fps=193 q=-0.0 size=   37632KiB time=00:01:01.86 bitrate=4983.0kbits/s dup=1052 drop=0 speed=frame= 1855 fps=184 q=-0.0 size=   37888KiB time=00:01:01.95 bitrate=5010.0kbits/s dup=1054 drop=19 speed[h264 @ 0x738c8b100] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8b100] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738c21680] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 1855 fps=175 q=-0.0 size=   37888KiB time=00:01:01.95 bitrate=5010.0kbits/s dup=1054 drop=144 speeframe= 1959 fps=177 q=-0.0 size=   38912KiB time=00:01:05.26 bitrate=4884.1kbits/s dup=1351 drop=151 speeframe= 2063 fps=178 q=-0.0 size=   39680KiB time=00:01:08.73 bitrate=4729.3kbits/s dup=1351 drop=151 speeframe= 2159 fps=178 q=-0.0 size=   42240KiB time=00:01:11.93 bitrate=4810.4kbits/s dup=1354 drop=151 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee8a00] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 2262 fps=179 q=-0.0 size=   44544KiB time=00:01:15.52 bitrate=4831.9kbits/s dup=1406 drop=151 speeframe= 2366 fps=181 q=-0.0 size=   45568KiB time=00:01:19.10 bitrate=4719.0kbits/s dup=1457 drop=151 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee8a00] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 2 times
+frame= 2470 fps=181 q=-0.0 size=   47104KiB time=00:01:22.43 bitrate=4681.1kbits/s dup=1508 drop=151 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee8a00] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 2573 fps=182 q=-0.0 size=   50944KiB time=00:01:25.93 bitrate=4856.6kbits/s dup=1558 drop=151 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee8a00] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 2676 fps=183 q=-0.0 size=   54016KiB time=00:01:29.42 bitrate=4948.0kbits/s dup=1608 drop=151 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee8a00] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 2780 fps=184 q=-0.0 size=   56064KiB time=00:01:32.84 bitrate=4946.8kbits/s dup=1659 drop=151 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee8a00] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 2 times
+frame= 2884 fps=185 q=-0.0 size=   58112KiB time=00:01:36.25 bitrate=4945.7kbits/s dup=1709 drop=151 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee8a00] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 2986 fps=185 q=-0.0 size=   60672KiB time=00:01:39.58 bitrate=4991.0kbits/s dup=1759 drop=151 speeframe= 3090 fps=186 q=-0.0 size=   62208KiB time=00:01:43.16 bitrate=4939.6kbits/s dup=1808 drop=151 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee8a00] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+[h264 @ 0x738c8b800] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8b800] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame= 3188 fps=186 q=-0.0 size=   64512KiB time=00:01:46.41 bitrate=4966.4kbits/s dup=1852 drop=151 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 3210 fps=182 q=-0.0 size=   65280KiB time=00:01:47.13 bitrate=4991.5kbits/s dup=1875 drop=154 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 2 times
+frame= 3313 fps=183 q=-0.0 size=   67328KiB time=00:01:50.50 bitrate=4991.1kbits/s dup=1925 drop=154 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+[h264 @ 0x738c8b100] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8b100] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame= 3398 fps=182 q=-0.0 size=   68864KiB time=00:01:53.40 bitrate=4974.4kbits/s dup=1960 drop=154 spee[h264 @ 0x738c8a680] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8a680] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame= 3398 fps=177 q=-0.0 size=   68864KiB time=00:01:53.40 bitrate=4974.4kbits/s dup=1960 drop=264 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 3450 fps=176 q=-0.0 size=   69632KiB time=00:01:54.96 bitrate=4961.7kbits/s dup=2292 drop=323 speeframe= 3555 fps=176 q=-0.0 size=   69632KiB time=00:01:58.46 bitrate=4815.1kbits/s dup=2292 drop=323 speeframe= 3658 fps=177 q=-0.0 size=   69632KiB time=00:02:01.90 bitrate=4679.5kbits/s dup=2292 drop=323 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 3761 fps=178 q=-0.0 size=   75264KiB time=00:02:05.52 bitrate=4911.9kbits/s dup=2313 drop=323 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 2 times
+frame= 3865 fps=178 q=-0.0 size=   76544KiB time=00:02:09.02 bitrate=4859.9kbits/s dup=2363 drop=323 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 3969 fps=179 q=-0.0 size=   77824KiB time=00:02:12.52 bitrate=4810.8kbits/s dup=2414 drop=323 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+[h264 @ 0x738c8b480] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8b480] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame= 4072 fps=180 q=-0.0 size=   80384KiB time=00:02:15.85 bitrate=4847.3kbits/s dup=2459 drop=323 spee[h264 @ 0x738c8aa00] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8aa00] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame= 4072 fps=176 q=-0.0 size=   80384KiB time=00:02:15.85 bitrate=4847.3kbits/s dup=2459 drop=387 speeframe= 4072 fps=172 q=-0.0 size=   80384KiB time=00:02:15.85 bitrate=4847.3kbits/s dup=2459 drop=511 spee[h264 @ 0x738c89f80] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c89f80] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 4145 fps=171 q=-0.0 size=   80896KiB time=00:02:18.13 bitrate=4797.5kbits/s dup=2906 drop=550 speeframe= 4249 fps=172 q=-0.0 size=   81408KiB time=00:02:21.60 bitrate=4709.7kbits/s dup=2906 drop=550 speeframe= 4353 fps=173 q=-0.0 size=   81920KiB time=00:02:25.06 bitrate=4626.1kbits/s dup=2906 drop=550 speeframe= 4456 fps=173 q=-0.0 size=   83456KiB time=00:02:28.50 bitrate=4603.9kbits/s dup=2906 drop=550 speeframe= 4545 fps=174 q=-0.0 size=   90624KiB time=00:02:31.63 bitrate=4895.8kbits/s dup=2924 drop=550 speeframe= 4649 fps=174 q=-0.0 size=   91392KiB time=00:02:35.00 bitrate=4830.0kbits/s dup=2974 drop=550 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 4753 fps=175 q=-0.0 size=   92160KiB time=00:02:38.63 bitrate=4759.2kbits/s dup=3025 drop=550 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 3 times
+frame= 4857 fps=175 q=-0.0 size=   93696KiB time=00:02:42.04 bitrate=4736.6kbits/s dup=3076 drop=550 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 4961 fps=176 q=-0.0 size=   96000KiB time=00:02:45.46 bitrate=4753.0kbits/s dup=3126 drop=550 speeframe= 5066 fps=176 q=-0.0 size=   97536KiB time=00:02:49.04 bitrate=4726.6kbits/s dup=3176 drop=550 speeframe= 5169 fps=177 q=-0.0 size=  101120KiB time=00:02:52.28 bitrate=4808.1kbits/s dup=3228 drop=550 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 2 times
+frame= 5272 fps=177 q=-0.0 size=  105728KiB time=00:02:55.78 bitrate=4927.1kbits/s dup=3278 drop=550 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+[h264 @ 0x738c89f80] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c89f80] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame= 5326 fps=176 q=-0.0 size=  108032KiB time=00:02:57.66 bitrate=4981.3kbits/s dup=3298 drop=550 spee[h264 @ 0x738c8b480] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8b480] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame= 5326 fps=173 q=-0.0 size=  108032KiB time=00:02:57.66 bitrate=4981.3kbits/s dup=3298 drop=658 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 5406 fps=173 q=-0.0 size=  108544KiB time=00:03:00.16 bitrate=4935.4kbits/s dup=3570 drop=688 speeframe= 5511 fps=174 q=-0.0 size=  108800KiB time=00:03:03.66 bitrate=4852.8kbits/s dup=3570 drop=688 speeframe= 5596 fps=174 q=-0.0 size=  113664KiB time=00:03:06.50 bitrate=4992.7kbits/s dup=3572 drop=688 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 5705 fps=174 q=-0.0 size=  115200KiB time=00:03:10.29 bitrate=4959.3kbits/s dup=3627 drop=688 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 5809 fps=175 q=-0.0 size=  115968KiB time=00:03:13.79 bitrate=4902.2kbits/s dup=3678 drop=688 speeframe= 5913 fps=175 q=-0.0 size=  117504KiB time=00:03:17.29 bitrate=4879.1kbits/s dup=3727 drop=688 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 6016 fps=176 q=-0.0 size=  121856KiB time=00:03:20.53 bitrate=4977.9kbits/s dup=3779 drop=688 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 3 times
+frame= 6120 fps=176 q=-0.0 size=  124160KiB time=00:03:24.11 bitrate=4983.0kbits/s dup=3830 drop=688 spee[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+[h264 @ 0x738c8a680] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8a680] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame= 6214 fps=176 q=-0.0 size=  126464KiB time=00:03:27.27 bitrate=4998.2kbits/s dup=3869 drop=688 spee[h264 @ 0x738c8bb80] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8bb80] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame= 6214 fps=174 q=-0.0 size=  126464KiB time=00:03:27.27 bitrate=4998.2kbits/s dup=3869 drop=776 spee[h264 @ 0x738c8b100] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8b100] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame= 6214 fps=171 q=-0.0 size=  126464KiB time=00:03:27.27 bitrate=4998.2kbits/s dup=3869 drop=920 speeframe= 6214 fps=169 q=-0.0 size=  126464KiB time=00:03:27.27 bitrate=4998.2kbits/s dup=3869 drop=1040 spe[h264 @ 0x738c8a680] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8a680] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 6257 fps=168 q=-0.0 size=  126720KiB time=00:03:28.53 bitrate=4978.1kbits/s dup=4707 drop=1116 speframe= 6361 fps=168 q=-0.0 size=  126976KiB time=00:03:32.00 bitrate=4906.5kbits/s dup=4707 drop=1116 speframe= 6465 fps=169 q=-0.0 size=  126976KiB time=00:03:35.46 bitrate=4827.6kbits/s dup=4707 drop=1116 speframe= 6569 fps=169 q=-0.0 size=  127744KiB time=00:03:38.93 bitrate=4779.9kbits/s dup=4707 drop=1116 speframe= 6673 fps=170 q=-0.0 size=  130048KiB time=00:03:42.40 bitrate=4790.3kbits/s dup=4707 drop=1116 speframe= 6776 fps=170 q=-0.0 size=  132096KiB time=00:03:45.83 bitrate=4791.7kbits/s dup=4707 drop=1116 speframe= 6878 fps=171 q=-0.0 size=  133376KiB time=00:03:49.23 bitrate=4766.4kbits/s dup=4707 drop=1116 speframe= 6982 fps=171 q=-0.0 size=  135168KiB time=00:03:52.70 bitrate=4758.5kbits/s dup=4707 drop=1116 speframe= 7071 fps=171 q=-0.0 size=  141824KiB time=00:03:55.77 bitrate=4927.7kbits/s dup=4722 drop=1116 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 7175 fps=172 q=-0.0 size=  143360KiB time=00:03:59.27 bitrate=4908.2kbits/s dup=4773 drop=1116 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 7279 fps=172 q=-0.0 size=  145152KiB time=00:04:02.85 bitrate=4896.2kbits/s dup=4824 drop=1116 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 2 times
+frame= 7382 fps=172 q=-0.0 size=  147712KiB time=00:04:06.27 bitrate=4913.5kbits/s dup=4873 drop=1116 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 7486 fps=173 q=-0.0 size=  151552KiB time=00:04:09.72 bitrate=4971.5kbits/s dup=4925 drop=1116 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 7589 fps=173 q=-0.0 size=  153856KiB time=00:04:13.18 bitrate=4978.2kbits/s dup=4975 drop=1116 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 7693 fps=173 q=-0.0 size=  156416KiB time=00:04:16.59 bitrate=4993.7kbits/s dup=5026 drop=1116 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 2 times
+frame= 7797 fps=174 q=-0.0 size=  158976KiB time=00:04:20.01 bitrate=5008.8kbits/s dup=5076 drop=1116 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 7901 fps=174 q=-0.0 size=  161024KiB time=00:04:23.50 bitrate=5005.9kbits/s dup=5127 drop=1116 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 8005 fps=175 q=-0.0 size=  163328KiB time=00:04:27.00 bitrate=5011.0kbits/s dup=5178 drop=1116 speframe= 8108 fps=175 q=-0.0 size=  165888KiB time=00:04:30.50 bitrate=5023.7kbits/s dup=5228 drop=1116 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 8212 fps=175 q=-0.0 size=  168192KiB time=00:04:33.83 bitrate=5031.6kbits/s dup=5279 drop=1116 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 2 times
+frame= 8314 fps=175 q=-0.0 size=  170240KiB time=00:04:37.41 bitrate=5027.1kbits/s dup=5328 drop=1116 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 2 times
+[h264 @ 0x738c8bb80] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8bb80] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame= 8420 fps=176 q=-0.0 size=  171776KiB time=00:04:40.83 bitrate=5010.8kbits/s dup=5376 drop=1116 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 8477 fps=175 q=-0.0 size=  172544KiB time=00:04:42.70 bitrate=4999.8kbits/s dup=5431 drop=1139 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 8581 fps=176 q=-0.0 size=  175360KiB time=00:04:46.20 bitrate=5019.3kbits/s dup=5480 drop=1139 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 8684 fps=176 q=-0.0 size=  177408KiB time=00:04:49.45 bitrate=5021.0kbits/s dup=5532 drop=1139 speframe= 8788 fps=176 q=-0.0 size=  179712KiB time=00:04:53.03 bitrate=5024.0kbits/s dup=5583 drop=1139 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 2 times
+frame= 8892 fps=176 q=-0.0 size=  181504KiB time=00:04:56.61 bitrate=5012.8kbits/s dup=5634 drop=1139 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 8996 fps=177 q=-0.0 size=  183808KiB time=00:05:00.03 bitrate=5018.6kbits/s dup=5685 drop=1139 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+[h264 @ 0x738c89f80] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c89f80] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame= 9069 fps=176 q=-0.0 size=  184576KiB time=00:05:02.42 bitrate=4999.8kbits/s dup=5715 drop=1149 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 9121 fps=176 q=-0.0 size=  185344KiB time=00:05:04.00 bitrate=4994.5kbits/s dup=5860 drop=1212 speframe= 9217 fps=176 q=-0.0 size=  187648KiB time=00:05:07.20 bitrate=5003.9kbits/s dup=5863 drop=1212 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 2 times
+frame= 9324 fps=176 q=-0.0 size=  190208KiB time=00:05:10.86 bitrate=5012.3kbits/s dup=5918 drop=1212 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 9428 fps=176 q=-0.0 size=  192256KiB time=00:05:14.45 bitrate=5008.6kbits/s dup=5968 drop=1212 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame= 9532 fps=177 q=-0.0 size=  194048KiB time=00:05:17.95 bitrate=4999.6kbits/s dup=6019 drop=1212 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+[h264 @ 0x738c8b800] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8b800] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame= 9606 fps=176 q=-0.0 size=  196352KiB time=00:05:20.34 bitrate=5021.3kbits/s dup=6049 drop=1226 spe[h264 @ 0x738c8ad80] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8ad80] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 9622 fps=175 q=-0.0 size=  196608KiB time=00:05:20.76 bitrate=5021.1kbits/s dup=6275 drop=1327 speframe= 9726 fps=175 q=-0.0 size=  197376KiB time=00:05:24.16 bitrate=4987.9kbits/s dup=6275 drop=1327 speframe= 9829 fps=176 q=-0.0 size=  197888KiB time=00:05:27.60 bitrate=4948.4kbits/s dup=6278 drop=1327 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame= 9922 fps=176 q=-0.0 size=  202752KiB time=00:05:30.92 bitrate=5019.1kbits/s dup=6322 drop=1327 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 2 times
+frame=10026 fps=176 q=-0.0 size=  204032KiB time=00:05:34.42 bitrate=4998.0kbits/s dup=6375 drop=1327 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=10130 fps=176 q=-0.0 size=  205312KiB time=00:05:37.66 bitrate=4981.0kbits/s dup=6426 drop=1327 spe[h264 @ 0x738c8b100] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8b100] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=10203 fps=176 q=-0.0 size=  207360KiB time=00:05:40.06 bitrate=4995.2kbits/s dup=6477 drop=1343 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 2 times
+frame=10307 fps=176 q=-0.0 size=  210432KiB time=00:05:43.72 bitrate=5015.3kbits/s dup=6528 drop=1343 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame=10411 fps=177 q=-0.0 size=  212736KiB time=00:05:47.13 bitrate=5020.3kbits/s dup=6579 drop=1343 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=10515 fps=177 q=-0.0 size=  215040KiB time=00:05:50.63 bitrate=5024.1kbits/s dup=6630 drop=1343 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=10618 fps=177 q=-0.0 size=  217088KiB time=00:05:54.04 bitrate=5023.0kbits/s dup=6680 drop=1343 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame=10721 fps=177 q=-0.0 size=  219136KiB time=00:05:57.54 bitrate=5020.8kbits/s dup=6730 drop=1343 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=10826 fps=178 q=-0.0 size=  220928KiB time=00:06:01.04 bitrate=5012.8kbits/s dup=6781 drop=1343 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame=10930 fps=178 q=-0.0 size=  222720KiB time=00:06:04.37 bitrate=5007.3kbits/s dup=6832 drop=1343 speframe=11033 fps=178 q=-0.0 size=  225536KiB time=00:06:07.87 bitrate=5022.4kbits/s dup=6883 drop=1343 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame=11137 fps=178 q=-0.0 size=  228096KiB time=00:06:11.41 bitrate=5031.0kbits/s dup=6933 drop=1343 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame=11241 fps=178 q=-0.0 size=  230144KiB time=00:06:14.78 bitrate=5030.5kbits/s dup=6984 drop=1343 speframe=11345 fps=179 q=-0.0 size=  232192KiB time=00:06:18.28 bitrate=5028.3kbits/s dup=7035 drop=1343 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 2 times
+frame=11448 fps=179 q=-0.0 size=  234496KiB time=00:06:21.78 bitrate=5031.7kbits/s dup=7085 drop=1343 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame=11552 fps=179 q=-0.0 size=  237056KiB time=00:06:25.28 bitrate=5040.4kbits/s dup=7136 drop=1343 speframe=11656 fps=179 q=-0.0 size=  238592KiB time=00:06:28.50 bitrate=5031.0kbits/s dup=7187 drop=1343 speframe=11759 fps=179 q=-0.0 size=  241152KiB time=00:06:32.14 bitrate=5037.7kbits/s dup=7237 drop=1343 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=11862 fps=180 q=-0.0 size=  242944KiB time=00:06:35.52 bitrate=5031.9kbits/s dup=7287 drop=1343 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+frame=11966 fps=180 q=-0.0 size=  245504KiB time=00:06:39.01 bitrate=5040.3kbits/s dup=7338 drop=1343 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+[h264 @ 0x738c8ad80] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8ad80] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame=12069 fps=180 q=-0.0 size=  247552KiB time=00:06:42.34 bitrate=5040.3kbits/s dup=7388 drop=1343 spe[h264 @ 0x738c8a300] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8a300] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame=12082 fps=179 q=-0.0 size=  247808KiB time=00:06:42.85 bitrate=5039.1kbits/s dup=7388 drop=1383 speframe=12082 fps=178 q=-0.0 size=  247808KiB time=00:06:42.85 bitrate=5039.1kbits/s dup=7388 drop=1503 spe[h264 @ 0x738c8b800] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8b800] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame=12082 fps=176 q=-0.0 size=  247808KiB time=00:06:42.85 bitrate=5039.1kbits/s dup=7388 drop=1620 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738c22300] Auto-inserting h264_mp4toannexb bitstream filter
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eea800] Auto-inserting h264_mp4toannexb bitstream filter
+frame=12147 fps=176 q=-0.0 size=  248064KiB time=00:06:44.86 bitrate=5019.3kbits/s dup=8023 drop=1665 speframe=12250 fps=176 q=-0.0 size=  248064KiB time=00:06:48.30 bitrate=4977.1kbits/s dup=8023 drop=1665 speframe=12352 fps=176 q=-0.0 size=  248320KiB time=00:06:51.70 bitrate=4941.1kbits/s dup=8023 drop=1665 speframe=12455 fps=177 q=-0.0 size=  248832KiB time=00:06:55.13 bitrate=4910.3kbits/s dup=8023 drop=1665 speframe=12557 fps=177 q=-0.0 size=  251392KiB time=00:06:58.53 bitrate=4920.5kbits/s dup=8023 drop=1665 speframe=12660 fps=177 q=-0.0 size=  252928KiB time=00:07:01.96 bitrate=4910.3kbits/s dup=8023 drop=1665 speframe=12724 fps=177 q=-0.0 size=  259072KiB time=00:07:04.36 bitrate=5001.2kbits/s dup=8027 drop=1665 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eea800] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=12828 fps=177 q=-0.0 size=  260864KiB time=00:07:07.69 bitrate=4996.6kbits/s dup=8083 drop=1665 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eea800] Auto-inserting h264_mp4toannexb bitstream filter
+frame=12931 fps=177 q=-0.0 size=  262656KiB time=00:07:11.18 bitrate=4990.1kbits/s dup=8132 drop=1665 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eea800] Auto-inserting h264_mp4toannexb bitstream filter
+frame=13034 fps=177 q=-0.0 size=  264448KiB time=00:07:14.51 bitrate=4985.7kbits/s dup=8183 drop=1665 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eea800] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 2 times
+frame=13137 fps=177 q=-0.0 size=  267776KiB time=00:07:18.10 bitrate=5007.1kbits/s dup=8234 drop=1665 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eea800] Auto-inserting h264_mp4toannexb bitstream filter
+[h264 @ 0x738c8ad80] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8ad80] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame=13198 fps=177 q=-0.0 size=  269312KiB time=00:07:20.06 bitrate=5013.4kbits/s dup=8256 drop=1679 spe[h264 @ 0x738c8a300] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8a300] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738c21680] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9b80] Auto-inserting h264_mp4toannexb bitstream filter
+frame=13218 fps=176 q=-0.0 size=  269312KiB time=00:07:20.56 bitrate=5007.7kbits/s dup=8473 drop=1775 speframe=13322 fps=176 q=-0.0 size=  269824KiB time=00:07:24.03 bitrate=4978.0kbits/s dup=8473 drop=1775 speframe=13421 fps=176 q=-0.0 size=  275200KiB time=00:07:27.57 bitrate=5037.0kbits/s dup=8477 drop=1775 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9b80] Auto-inserting h264_mp4toannexb bitstream filter
+[h264 @ 0x738c8b800] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8b800] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame=13480 fps=176 q=-0.0 size=  276480KiB time=00:07:29.45 bitrate=5039.3kbits/s dup=8507 drop=1794 spe[h264 @ 0x738c8ad80] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8ad80] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee9b80] Auto-inserting h264_mp4toannexb bitstream filter
+[h264 @ 0x738c8a300] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8a300] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame=13480 fps=175 q=-0.0 size=  276480KiB time=00:07:29.45 bitrate=5039.3kbits/s dup=8507 drop=1884 spe[h264 @ 0x738c8b800] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8b800] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame=13480 fps=174 q=-0.0 size=  276480KiB time=00:07:29.45 bitrate=5039.3kbits/s dup=8507 drop=1992 speframe=13480 fps=173 q=-0.0 size=  276480KiB time=00:07:29.45 bitrate=5039.3kbits/s dup=8507 drop=2111 spe[h264 @ 0x738c8ad80] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8ad80] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738c21900] Auto-inserting h264_mp4toannexb bitstream filter
+frame=13516 fps=172 q=-0.0 size=  276736KiB time=00:07:30.50 bitrate=5032.2kbits/s dup=9324 drop=2190 speframe=13621 fps=172 q=-0.0 size=  276992KiB time=00:07:34.00 bitrate=4998.1kbits/s dup=9324 drop=2190 speframe=13725 fps=172 q=-0.0 size=  277248KiB time=00:07:37.46 bitrate=4964.8kbits/s dup=9324 drop=2190 speframe=13828 fps=173 q=-0.0 size=  277504KiB time=00:07:40.90 bitrate=4932.3kbits/s dup=9324 drop=2190 speframe=13931 fps=173 q=-0.0 size=  278016KiB time=00:07:44.33 bitrate=4904.9kbits/s dup=9324 drop=2190 speframe=14035 fps=173 q=-0.0 size=  280064KiB time=00:07:47.80 bitrate=4904.4kbits/s dup=9324 drop=2190 speframe=14139 fps=173 q=-0.0 size=  282112KiB time=00:07:51.26 bitrate=4903.9kbits/s dup=9324 drop=2190 speframe=14242 fps=173 q=-0.0 size=  283648KiB time=00:07:54.70 bitrate=4895.0kbits/s dup=9324 drop=2190 speframe=14302 fps=173 q=-0.0 size=  288000KiB time=00:07:56.70 bitrate=4949.2kbits/s dup=9327 drop=2190 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738c21900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=14408 fps=173 q=-0.0 size=  290048KiB time=00:08:00.42 bitrate=4945.8kbits/s dup=9380 drop=2190 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738c21900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 2 times
+frame=14512 fps=174 q=-0.0 size=  291584KiB time=00:08:03.75 bitrate=4937.7kbits/s dup=9431 drop=2190 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738c21900] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=14616 fps=174 q=-0.0 size=  293376KiB time=00:08:07.25 bitrate=4932.4kbits/s dup=9482 drop=2190 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738c21900] Auto-inserting h264_mp4toannexb bitstream filter
+frame=14718 fps=174 q=-0.0 size=  297728KiB time=00:08:10.75 bitrate=4969.9kbits/s dup=9532 drop=2190 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738c21900] Auto-inserting h264_mp4toannexb bitstream filter
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738ee8a00] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+[h264 @ 0x738c8ad80] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8ad80] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame=14821 fps=174 q=-0.0 size=  301312KiB time=00:08:14.16 bitrate=4995.0kbits/s dup=9582 drop=2190 speframe=14836 fps=173 q=-0.0 size=  301568KiB time=00:08:14.67 bitrate=4994.1kbits/s dup=9584 drop=2306 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738c22f80] Auto-inserting h264_mp4toannexb bitstream filter
+frame=14929 fps=173 q=-0.0 size=  302848KiB time=00:08:17.60 bitrate=4985.8kbits/s dup=9830 drop=2315 speframe=15034 fps=173 q=-0.0 size=  303104KiB time=00:08:21.10 bitrate=4955.2kbits/s dup=9830 drop=2315 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=15127 fps=174 q=-0.0 size=  309760KiB time=00:08:24.40 bitrate=5030.8kbits/s dup=9855 drop=2315 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+frame=15231 fps=174 q=-0.0 size=  311552KiB time=00:08:27.90 bitrate=5025.0kbits/s dup=9906 drop=2315 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=15335 fps=174 q=-0.0 size=  313088KiB time=00:08:31.31 bitrate=5016.1kbits/s dup=9958 drop=2315 spe[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+[h264 @ 0x738c8b480] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8b480] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+frame=15410 fps=174 q=-0.0 size=  314880KiB time=00:08:33.79 bitrate=5020.5kbits/s dup=9992 drop=2350 spe[vf#0:0 @ 0x738ce4000] More than 10000 frames duplicated
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=15517 fps=174 q=-0.0 size=  317952KiB time=00:08:37.37 bitrate=5034.4kbits/s dup=10084 drop=2352 sp[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=15620 fps=174 q=-0.0 size=  320768KiB time=00:08:40.78 bitrate=5045.7kbits/s dup=10134 drop=2352 sp[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=15725 fps=174 q=-0.0 size=  322560KiB time=00:08:44.28 bitrate=5040.0kbits/s dup=10186 drop=2352 sp[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+[h264 @ 0x738c8ad80] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8ad80] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame=15796 fps=174 q=-0.0 size=  323584KiB time=00:08:46.67 bitrate=5033.1kbits/s dup=10215 drop=2352 sp[h264 @ 0x738c8a300] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8a300] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame=15796 fps=173 q=-0.0 size=  323584KiB time=00:08:46.67 bitrate=5033.1kbits/s dup=10215 drop=2473 sp[h264 @ 0x738c8b800] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8b800] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=15821 fps=173 q=-0.0 size=  323584KiB time=00:08:47.33 bitrate=5026.8kbits/s dup=10657 drop=2576 spframe=15925 fps=173 q=-0.0 size=  323840KiB time=00:08:50.80 bitrate=4997.9kbits/s dup=10657 drop=2576 spframe=16029 fps=173 q=-0.0 size=  323840KiB time=00:08:54.26 bitrate=4965.5kbits/s dup=10657 drop=2576 spframe=16133 fps=173 q=-0.0 size=  324608KiB time=00:08:57.73 bitrate=4945.2kbits/s dup=10657 drop=2576 spframe=16236 fps=173 q=-0.0 size=  326912KiB time=00:09:01.16 bitrate=4948.7kbits/s dup=10659 drop=2576 spframe=16314 fps=173 q=-0.0 size=  334080KiB time=00:09:04.00 bitrate=5030.9kbits/s dup=10697 drop=2576 sp[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+frame=16418 fps=173 q=-0.0 size=  336128KiB time=00:09:07.32 bitrate=5030.9kbits/s dup=10748 drop=2576 sp[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+[h264 @ 0x738c8aa00] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8aa00] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame=16490 fps=173 q=-0.0 size=  337408KiB time=00:09:09.80 bitrate=5027.3kbits/s dup=10781 drop=2576 sp[h264 @ 0x738c89f80] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c89f80] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+frame=16518 fps=173 q=-0.0 size=  337664KiB time=00:09:10.56 bitrate=5024.2kbits/s dup=11014 drop=2693 spframe=16622 fps=173 q=-0.0 size=  338176KiB time=00:09:14.03 bitrate=5000.3kbits/s dup=11014 drop=2693 spframe=16724 fps=173 q=-0.0 size=  338432KiB time=00:09:17.43 bitrate=4973.6kbits/s dup=11016 drop=2693 sp[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+frame=16816 fps=173 q=-0.0 size=  345088KiB time=00:09:20.72 bitrate=5041.6kbits/s dup=11060 drop=2693 sp[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+[h264 @ 0x738c89f80] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c89f80] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame=16905 fps=173 q=-0.0 size=  346880KiB time=00:09:23.62 bitrate=5041.7kbits/s dup=11099 drop=2695 sp[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 1 times
+frame=16980 fps=173 q=-0.0 size=  347392KiB time=00:09:25.96 bitrate=5028.3kbits/s dup=11208 drop=2748 sp[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+frame=17081 fps=173 q=-0.0 size=  350976KiB time=00:09:29.42 bitrate=5049.3kbits/s dup=11245 drop=2748 sp[mov,mp4,m4a,3gp,3g2,mj2 @ 0x738eead00] Auto-inserting h264_mp4toannexb bitstream filter
+    Last message repeated 2 times
+[h264 @ 0x738c8aa00] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c8aa00] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame=17185 fps=173 q=-0.0 size=  353792KiB time=00:09:32.92 bitrate=5058.7kbits/s dup=11296 drop=2748 spframe=17197 fps=172 q=-0.0 size=  354048KiB time=00:09:33.35 bitrate=5058.6kbits/s dup=11299 drop=2812 sp[h264 @ 0x738c89f80] Late SEI is not implemented. Update your FFmpeg version to the newest one from Git.If the problem still occurs, it means that your file has a feature which has not been implemented.
+[h264 @ 0x738c89f80] If you want to help, upload a sample of this file to https://streams.videolan.org/upload/ and contact the ffmpeg-devel mailing list. (ffmpeg-devel@ffmpeg.org)
+frame=17304 fps=173 q=-0.0 size=  355072KiB time=00:09:36.93 bitrate=5041.7kbits/s dup=11299 drop=2825 spframe=17407 fps=173 q=-0.0 size=  357632KiB time=00:09:40.43 bitrate=5047.4kbits/s dup=11299 drop=2825 sp[mp4 @ 0x738c20a00] Starting second pass: moving the moov atom to the beginning of the file
+[out#0/mp4 @ 0x738c24840] video:355183KiB audio:4825KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.086893%
+frame=17502 fps=172 q=-0.0 Lsize=  360320KiB time=00:09:43.38 bitrate=5059.7kbits/s dup=11299 drop=2825 speed=5.75x elapsed=0:01:41.50    
+[aac @ 0x738ce8380] Qavg: 65482.633
+  ✓ Pass 2 selesai
+
+✅ Output: S7-5min-test-sfx.mp4
+   Size: 351.9 MB
+   Duration: 00:09:43.399
+
+   → Buka di DaVinci Resolve untuk editing final.
+   (Temp files dihapus. Pakai --keep-temp untuk debugging.)
+macbookpro@MacBooks-MacBook-Pro-4 Dubbing % 
