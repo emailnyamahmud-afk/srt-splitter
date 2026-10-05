@@ -79,93 +79,112 @@ def get_audio_duration(ffprobe: str, path: str) -> float:
         raise RuntimeError(f'ffprobe return durasi invalid "{dur_str}" untuk: {path}')
 
 
-def mix_audio_dub(mp4_path, audio_dub_path, output_path, ffmpeg, ducking_db, sfx_only):
+def mix_audio_dub(mp4_path, audio_dub_path, output_path, ffmpeg, ducking_db, sfx_only, sfx_wav=None):
     """
-    Mix audio ori MP4 + audio dub WAV dengan ducking (sidechain compression).
+    Mix SFX (dari MP4 ori atau Demucs no_vocals.wav) + audio dub WAV dengan ducking.
 
     Strategi:
-    - Kalau --sfx-only: buang audio ori, hanya audio dub (fallback simple)
-    - Kalau --no-ducking: SFX + dub sama keras (additive mix)
-    - Kalau --ducking N: SFX di-duck N dB saat dialog dub bicara (sidechain gate)
-
-    FFmpeg filter kompleks untuk ducking:
-    [ori_audio]volume=1[sfx];                     # SFX dengan volume penuh
-    [dub_audio]volume=1,asplit=2[dub][sidechain]; # dub + sidechain trigger
-    [sfx][sidechain]sidechaincompress=threshold=0.05:ratio=10:attack=5:release=200[ducked_sfx];
-    [ducked_sfx][dub]amix=inputs=2:duration=longest:normalize=0[out]
-
-    threshold=0.05 (~-26dB) = saat dub di atas ini, SFX di-duck
-    ratio=10 = ducking kuat (10:1 compression)
-    attack=5ms = cepat duck saat dub mulai
-    release=200ms = lambat recover setelah dub selesai (natural)
+    - --sfx-wav: pakai SFX bersih dari Demucs (no_vocals.wav, tanpa Mandarin vocals)
+    - --sfx-only: buang audio ori, hanya audio dub (fallback simple)
+    - --no-ducking: SFX + dub sama keras (additive mix)
+    - --ducking N: SFX di-duck N dB saat dialog dub bicara (sidechain gate)
     """
     print(f'\n=== Mix audio dub + SFX preserve ===')
-    print(f'  MP4 ori: {mp4_path}')
+    print(f'  MP4 ori (video): {mp4_path}')
     print(f'  Audio dub: {audio_dub_path}')
+    if sfx_wav:
+        print(f'  SFX bersih (Demucs): {sfx_wav}')
+    else:
+        print(f'  SFX: dari MP4 ori (audio ori, dengan vocals ori)')
     print(f'  Output: {output_path}')
-    print(f'  Mode: {"SFX only (buang audio ori)" if sfx_only else f"Ducking {ducking_db}dB"}')
 
     if sfx_only:
-        # Mode sfx-only: buang audio ori, hanya audio dub
+        mode = 'sfx-only (buang audio ori, hanya dub)'
+    elif ducking_db <= 0:
+        mode = 'no-ducking (SFX + dub sama keras)'
+    else:
+        mode = f'ducking {ducking_db}dB (SFX pelan saat dialog)'
+    print(f'  Mode: {mode}')
+
+    # Build inputs: always -i mp4 (video), -i dub, optionally -i sfx_wav
+    # Kalau sfx_wav: SFX dari Demucs (input 2), dub (input 1)
+    # Kalau tidak: SFX dari MP4 ori (input 0), dub (input 1)
+    if sfx_only:
         cmd = [
             ffmpeg, '-y',
-            '-i', mp4_path,        # input 0: video + audio ori
-            '-i', audio_dub_path,   # input 1: audio dub
-            '-map', '0:v',          # video dari MP4 ori (stream copy)
-            '-map', '1:a',          # audio dari dub (encode AAC)
-            '-c:v', 'copy',
-            '-c:a', 'aac', '-b:a', '192k',
-            '-shortest',
-            '-movflags', '+faststart',
+            '-i', mp4_path, '-i', audio_dub_path,
+            '-map', '0:v', '-map', '1:a',
+            '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
+            '-shortest', '-movflags', '+faststart',
             output_path,
         ]
     elif ducking_db <= 0:
-        # No ducking: SFX + dub sama keras (additive)
-        cmd = [
-            ffmpeg, '-y',
-            '-i', mp4_path,
-            '-i', audio_dub_path,
-            '-filter_complex',
-            '[0:a]volume=1[sfx];[1:a]volume=1[dub];[sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]',
-            '-map', '0:v',
-            '-map', '[aout]',
-            '-c:v', 'copy',
-            '-c:a', 'aac', '-b:a', '192k',
-            '-shortest',
-            '-movflags', '+faststart',
-            output_path,
-        ]
+        # No ducking: additive mix
+        if sfx_wav:
+            # SFX dari Demucs (input 1), dub (input 2)
+            filter_complex = '[1:a]volume=1[sfx];[2:a]volume=1[dub];[sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
+            cmd = [
+                ffmpeg, '-y',
+                '-i', mp4_path, '-i', sfx_wav, '-i', audio_dub_path,
+                '-filter_complex', filter_complex,
+                '-map', '0:v', '-map', '[aout]',
+                '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
+                '-shortest', '-movflags', '+faststart',
+                output_path,
+            ]
+        else:
+            # SFX dari MP4 ori (input 0 audio), dub (input 1)
+            filter_complex = '[0:a]volume=1[sfx];[1:a]volume=1[dub];[sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
+            cmd = [
+                ffmpeg, '-y',
+                '-i', mp4_path, '-i', audio_dub_path,
+                '-filter_complex', filter_complex,
+                '-map', '0:v', '-map', '[aout]',
+                '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
+                '-shortest', '-movflags', '+faststart',
+                output_path,
+            ]
     else:
-        # Ducking: SFX di-duck saat dialog dub bicara (sidechain compression)
-        # Konversi dB ke linear ratio (mis. -12dB → 0.251)
-        duck_linear = 10 ** (-ducking_db / 20)
-        # Sidechain threshold: ~-26dB (0.05 linear) — saat dub di atas ini, SFX di-duck
-        # Make-up gain: +ducking_db (kompensasi untuk ducking)
-        filter_complex = (
-            f'[0:a]volume=1[sfx];'
-            f'[1:a]volume=1,asplit=2[dub][sidechain];'
-            f'[sfx][sidechain]sidechaincompress='
-            f'threshold=0.05:'  # saat dub > -26dB, trigger ducking
-            f'ratio={10 if ducking_db >= 10 else 5}:'  # 10:1 untuk ducking kuat
-            f'attack=5:'  # 5ms attack (cepat duck saat dub mulai bicara)
-            f'release=300:'  # 300ms release (lambat recover, natural)
-            f'makeup={ducking_db}:'  # make-up gain untuk kompensasi
-            f'[ducked_sfx];'
-            f'[ducked_sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
-        )
-        cmd = [
-            ffmpeg, '-y',
-            '-i', mp4_path,
-            '-i', audio_dub_path,
-            '-filter_complex', filter_complex,
-            '-map', '0:v',
-            '-map', '[aout]',
-            '-c:v', 'copy',
-            '-c:a', 'aac', '-b:a', '192k',
-            '-shortest',
-            '-movflags', '+faststart',
-            output_path,
-        ]
+        # Ducking: sidechain compression
+        ratio = 10 if ducking_db >= 10 else 5
+        if sfx_wav:
+            # SFX dari Demucs (input 1), dub (input 2)
+            filter_complex = (
+                f'[1:a]volume=1[sfx];'
+                f'[2:a]volume=1,asplit=2[dub][sidechain];'
+                f'[sfx][sidechain]sidechaincompress='
+                f'threshold=0.05:ratio={ratio}:attack=5:release=300:makeup={ducking_db}'
+                f'[ducked_sfx];'
+                f'[ducked_sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
+            )
+            cmd = [
+                ffmpeg, '-y',
+                '-i', mp4_path, '-i', sfx_wav, '-i', audio_dub_path,
+                '-filter_complex', filter_complex,
+                '-map', '0:v', '-map', '[aout]',
+                '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
+                '-shortest', '-movflags', '+faststart',
+                output_path,
+            ]
+        else:
+            # SFX dari MP4 ori (input 0 audio), dub (input 1)
+            filter_complex = (
+                f'[0:a]volume=1[sfx];'
+                f'[1:a]volume=1,asplit=2[dub][sidechain];'
+                f'[sfx][sidechain]sidechaincompress='
+                f'threshold=0.05:ratio={ratio}:attack=5:release=300:makeup={ducking_db}'
+                f'[ducked_sfx];'
+                f'[ducked_sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
+            )
+            cmd = [
+                ffmpeg, '-y',
+                '-i', mp4_path, '-i', audio_dub_path,
+                '-filter_complex', filter_complex,
+                '-map', '0:v', '-map', '[aout]',
+                '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
+                '-shortest', '-movflags', '+faststart',
+                output_path,
+            ]
 
     print(f'  → Running FFmpeg...')
     result = subprocess.run(cmd)
@@ -189,6 +208,8 @@ def main():
                         help='Output MP4 final. Standar: mp4-{lang}-final.mp4')
     parser.add_argument('--ffmpeg', help='Path kustom ke ffmpeg')
     parser.add_argument('--ffprobe', help='Path kustom ke ffprobe')
+    parser.add_argument('--sfx-wav',
+                        help='SFX bersih dari Demucs (no_vocals.wav). Opsional: pakai SFX tanpa vocals ori.')
     parser.add_argument('--ducking', type=float, default=12.0,
                         help='Volume SFX turun N dB saat dialog dub bicara (default 12)')
     parser.add_argument('--no-ducking', action='store_true',
@@ -202,6 +223,9 @@ def main():
         if not os.path.isfile(path):
             print(f'Error: {label} tidak ditemukan: {path}', file=sys.stderr)
             sys.exit(1)
+    if args.sfx_wav and not os.path.isfile(args.sfx_wav):
+        print(f'Error: SFX WAV tidak ditemukan: {args.sfx_wav}', file=sys.stderr)
+        sys.exit(1)
 
     # Find tools
     try:
@@ -229,6 +253,7 @@ def main():
         args.mp4, args.audio_dub, args.output,
         ffmpeg, args.ducking if not args.no_ducking else 0,
         args.sfx_only,
+        sfx_wav=args.sfx_wav,
     )
     if not success:
         print('\n❌ Mix gagal.')
