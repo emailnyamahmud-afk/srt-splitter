@@ -567,7 +567,13 @@ export interface DubbingOptions {
   voice: string
   model?: string
   apiKey?: string
-  speed?: number             // 1.0, 1.25, 1.5 (default 1.0x = natural)
+  speed?: number             // 1.0, 1.25, 1.5 (default 1.0x = natural). Ignored jika smartFit=true.
+  smartFit?: boolean         // default false. Jika true: per-cue dynamic TTS speed (VoiceStudio fit_planner).
+                              // Generate natural → measure → kalau overflow, re-generate dengan
+                              // audioRate = min(sqrt(need), 1.5) (pitch preserved, bukan atempo robot).
+                              // Video slow-mo capped di 2.0x. Stop-motion minimal.
+  smartFitAudioRateCap?: number   // default 1.5 — batas atas TTS speed (pitch preserved)
+  smartFitVideoSlowCap?: number   // default 2.0 — batas atas video slow-mo (setpts × ratio)
   minGapSec?: number         // default 0.15 (150ms) — min jeda antar cue SETELAH push back
   gapGuardSec?: number       // default 0.05 (50ms) — VoiceStudio slack absorption guard
   concurrency?: number       // default 3 — parallel generate untuk speed up
@@ -702,22 +708,29 @@ export async function narrateDubbingMode(
   const concurrency = opts.concurrency ?? 3
 
   const edgeRate = formatEdgeRate(speed)
+  const smartFit = opts.smartFit ?? false
+  const audioRateCap = opts.smartFitAudioRateCap ?? 1.5
+  const videoSlowCap = opts.smartFitVideoSlowCap ?? 2.0
 
-  opts.onStage?.({ stage: 'synthesizing', message: 'Mulai Dubbing Mode…', percent: 0 })
+  opts.onStage?.({ stage: 'synthesizing', message: smartFit ? 'Mulai Dubbing Smart Fit…' : 'Mulai Dubbing Mode…', percent: 0 })
 
   // Pre-allocate per-cue audio storage (parallel fill)
-  const cueAudios: { pcm: Float32Array; durationSec: number; text: string }[] = new Array(entries.length)
+  // audioRate: TTS speed yang dipakai (1.0 = natural, 1.5 = 50% cepat pitch preserved)
+  // Smart Fit: audioRate dynamic per cue. Default: speed global.
+  const cueAudios: { pcm: Float32Array; durationSec: number; text: string; audioRate: number }[] = new Array(entries.length)
   for (let i = 0; i < entries.length; i++) {
-    cueAudios[i] = { pcm: new Float32Array(0), durationSec: 0, text: '' }
+    cueAudios[i] = { pcm: new Float32Array(0), durationSec: 0, text: '', audioRate: smartFit ? 1.0 : speed }
   }
   let successCount = 0
   let failCount = 0
   let firstError = ''
   let doneCount = 0
+  let smartFitRegenCount = 0  // statistik: berapa cue yang di-regenerate dengan Smart Fit
 
   const generateOne = async (i: number) => {
     const entry = entries[i]
     const text = entry.textLines.join(' ').trim()
+    const cueDur = entry.end - entry.start
 
     if (!text) {
       doneCount++
@@ -726,48 +739,105 @@ export async function narrateDubbingMode(
     }
 
     try {
-      const synth = await synthesizeText(text, {
-        provider: opts.provider,
-        voice: opts.voice,
-        model: opts.model,
-        apiKey: opts.apiKey,
-        rate: opts.provider === 'edge' ? edgeRate : undefined,
-        openaiSpeed: opts.provider !== 'edge' ? speed : undefined,
-        speed: opts.provider === 'kokoro' ? speed : undefined,
-        onModelProgress: opts.onModelProgress,
-      })
+      let finalAudio: Float32Array
+      let finalDurationSec: number
+      let finalAudioRate: number
 
-      // Decode + mono + resample + TRIM SILENCE
-      const dub = await decodeMonoTrimResample(synth, OUTPUT_SAMPLE_RATE, true)
+      if (smartFit) {
+        // === SMART FIT (VoiceStudio fit_planner adopsi) ===
+        // Pass 1: generate natural (speed 1.0), measure actual duration
+        const synth1 = await synthesizeText(text, {
+          provider: opts.provider, voice: opts.voice, model: opts.model, apiKey: opts.apiKey,
+          rate: opts.provider === 'edge' ? '+0%' : undefined,
+          openaiSpeed: opts.provider !== 'edge' ? 1.0 : undefined,
+          speed: opts.provider === 'kokoro' ? 1.0 : undefined,
+          onModelProgress: opts.onModelProgress,
+        })
+        const dub1 = await decodeMonoTrimResample(synth1, OUTPUT_SAMPLE_RATE, true)
+        const naturalDur = dub1.durationSec
 
-      // VALIDATE durationSec — kalau NaN/Infinity/too big, skip
+        // Compute need: rasio natural audio vs cue ori
+        const need = naturalDur / Math.max(0.001, cueDur)
+
+        if (need <= 1.05) {
+          // Cue muat natural — pakai natural (no speedup)
+          finalAudio = dub1.audio
+          finalDurationSec = naturalDur
+          finalAudioRate = 1.0
+        } else {
+          // VoiceStudio fit_planner: geometric split
+          // audioRate = min(sqrt(need), cap) — TTS server-side rate (pitch preserved, BUKAN atempo)
+          // videoRatio = need / audioRate (akan dihitung di stitching)
+          // Sisa overflow (need > audioRate × videoSlowCap) → tetap push back di stitching
+          const audioRate = Math.min(Math.sqrt(need), audioRateCap)
+          // Re-generate dengan audioRate (pitch preserved di server Edge TTS)
+          if (opts.provider === 'edge') {
+            const synth2 = await synthesizeText(text, {
+              provider: opts.provider, voice: opts.voice, model: opts.model, apiKey: opts.apiKey,
+              rate: formatEdgeRate(audioRate),
+              onModelProgress: opts.onModelProgress,
+            })
+            const dub2 = await decodeMonoTrimResample(synth2, OUTPUT_SAMPLE_RATE, true)
+            finalAudio = dub2.audio
+            finalDurationSec = dub2.durationSec
+            finalAudioRate = audioRate
+            smartFitRegenCount++
+          } else {
+            // OpenAI/OpenRouter/Kokoro: pakai speed parameter
+            const synth2 = await synthesizeText(text, {
+              provider: opts.provider, voice: opts.voice, model: opts.model, apiKey: opts.apiKey,
+              openaiSpeed: audioRate,
+              speed: opts.provider === 'kokoro' ? audioRate : undefined,
+              onModelProgress: opts.onModelProgress,
+            })
+            const dub2 = await decodeMonoTrimResample(synth2, OUTPUT_SAMPLE_RATE, true)
+            finalAudio = dub2.audio
+            finalDurationSec = dub2.durationSec
+            finalAudioRate = audioRate
+            smartFitRegenCount++
+          }
+        }
+      } else {
+        // === MODE LAMA: global speed (1.0, 1.25, 1.5) ===
+        const synth = await synthesizeText(text, {
+          provider: opts.provider, voice: opts.voice, model: opts.model, apiKey: opts.apiKey,
+          rate: opts.provider === 'edge' ? edgeRate : undefined,
+          openaiSpeed: opts.provider !== 'edge' ? speed : undefined,
+          speed: opts.provider === 'kokoro' ? speed : undefined,
+          onModelProgress: opts.onModelProgress,
+        })
+        const dub = await decodeMonoTrimResample(synth, OUTPUT_SAMPLE_RATE, true)
+        finalAudio = dub.audio
+        finalDurationSec = dub.durationSec
+        finalAudioRate = speed
+      }
+
+      // VALIDATE durationSec
       const MAX_CUE_DURATION_SEC = 300
-      if (!isFinite(dub.durationSec) || dub.durationSec <= 0 || dub.durationSec > MAX_CUE_DURATION_SEC) {
-        console.warn(`[Dubbing] cue ${i} skip — invalid durationSec: ${dub.durationSec} (text: "${text.slice(0, 40)}")`)
+      if (!isFinite(finalDurationSec) || finalDurationSec <= 0 || finalDurationSec > MAX_CUE_DURATION_SEC) {
+        console.warn(`[Dubbing] cue ${i} skip — invalid durationSec: ${finalDurationSec}`)
         failCount++
-        if (!firstError) firstError = `cue ${i} durationSec invalid: ${dub.durationSec}`
+        if (!firstError) firstError = `cue ${i} durationSec invalid: ${finalDurationSec}`
         return
       }
 
       // VoiceStudio Pattern D: peak-normalize per cue ke -2 dBFS (in-place)
-      // Loudness konsisten antar cue. Silence floor -50 dBFS supaya tidak amplify hening.
-      peakNormalize(dub.audio, peakDbFS, -50.0)
+      peakNormalize(finalAudio, peakDbFS, -50.0)
 
-      cueAudios[i] = { pcm: dub.audio, durationSec: dub.durationSec, text }
+      cueAudios[i] = { pcm: finalAudio, durationSec: finalDurationSec, text, audioRate: finalAudioRate }
       successCount++
     } catch (e) {
       failCount++
       if (!firstError) firstError = (e as Error).message
-      cueAudios[i] = { pcm: new Float32Array(0), durationSec: 0, text }
+      cueAudios[i] = { pcm: new Float32Array(0), durationSec: 0, text, audioRate: smartFit ? 1.0 : speed }
       console.error('Dubbing TTS failed for line', i, e)
     } finally {
       doneCount++
+      const msg = smartFit && cueAudios[i].audioRate > 1.0
+        ? `Smart Fit ${doneCount}/${total} — "${text.slice(0, 30)}…" (${cueAudios[i].audioRate.toFixed(2)}x)`
+        : `Dubbing ${doneCount}/${total} — "${text.slice(0, 40)}${text.length > 40 ? '…' : ''}"`
       opts.onLineProgress?.(doneCount, total, text.slice(0, 60))
-      opts.onStage?.({
-        stage: 'synthesizing',
-        message: `Dubbing ${doneCount}/${total} cues — "${text.slice(0, 40)}${text.length > 40 ? '…' : ''}"`,
-        percent: (doneCount / total) * 90,
-      })
+      opts.onStage?.({ stage: 'synthesizing', message: msg, percent: (doneCount / total) * 90 })
     }
   }
 
@@ -904,8 +974,16 @@ export async function narrateDubbingMode(
       }
 
       // videoRatio = audioDur / cueDur (>1 = slow-mo, <1 = fast-forward)
-      // audioRate = speed (TTS server-side rate, e.g., 1.25 = +25%)
-      const videoRatio = audioDur / Math.max(0.001, cueDur)
+      // Smart Fit: audioRate dynamic per cue (dari cueAudios[i].audioRate)
+      // Smart Fit: videoRatio capped di videoSlowCap (default 2.0) — sisanya push back di stitching
+      const cueAudioRate = cueAudios[i].audioRate
+      let videoRatio = audioDur / Math.max(0.001, cueDur)
+      if (smartFit && videoRatio > videoSlowCap) {
+        // Smart Fit: video slow-mo di-cap. Audio sudah di-speedup (audioRate),
+        // video tetap slow-mo tapi capped. Sisa: audio lebih panjang dari video
+        // bisa → akan di-handle push back di bawah (overflow_pushed_back).
+        videoRatio = videoSlowCap
+      }
 
       chunks.push({
         index: chunks.length,
@@ -919,7 +997,7 @@ export async function narrateDubbingMode(
         newStart,
         newEnd,
         newDuration: audioDur,
-        audioRate: speed,
+        audioRate: cueAudioRate,
         videoRatio,
         factor: videoRatio, // backward compat v1.0
         status,

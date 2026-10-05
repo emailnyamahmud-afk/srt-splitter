@@ -73,6 +73,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
   const [offSpeed, setOffSpeed] = useState<number>(1.0)
   // Dubbing mode settings
   const [dubSpeed, setDubSpeed] = useState<number>(1.0)
+  const [dubSmartFit, setDubSmartFit] = useState<boolean>(true)  // default ON: VoiceStudio fit_planner
   const [dubMinGap, setDubMinGap] = useState<number>(0.15)
   const [dubbingResult, setDubbingResult] = useState<DubbingResult | null>(null)
   const [isDubbing, setIsDubbing] = useState<boolean>(false)
@@ -240,6 +241,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
         model: provider === 'openrouter' ? openrouterModel : undefined,
         apiKey,
         speed: dubSpeed,
+        smartFit: dubSmartFit,
         minGapSec: dubMinGap,
         onModelProgress: provider === 'kokoro' ? (p) => setProgress(p) : undefined,
         onLineProgress: (current, total, text) => setLineProgress({ current, total, text }),
@@ -656,36 +658,50 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
                 <div className="mt-2 rounded-md border border-amber-200 dark:border-amber-800 p-3 bg-amber-50/30 dark:bg-amber-950/10 space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label htmlFor="dub-speed" className="text-xs">Kecepatan audio (default 1.0x = natural, 100% no robot)</Label>
+                      <Label htmlFor="dub-smartfit" className="text-xs">Smart Fit (per-cue dynamic TTS speed)</Label>
+                      <select
+                        id="dub-smartfit"
+                        value={dubSmartFit ? 'smart' : 'fixed'}
+                        onChange={(e) => setDubSmartFit(e.target.value === 'smart')}
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
+                      >
+                        <option value="smart">★ Smart Fit — Per-cue dynamic (VoiceStudio fit_planner). Audio pitch preserved, video slow-mo max 2x. Stop-motion minimal.</option>
+                        <option value="fixed">Fixed speed (lama) — Global speed 1.0x/1.25x/1.5x. Stop-motion di cue pendek.</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label htmlFor="dub-speed" className="text-xs">Kecepatan audio (hanya jika Smart Fit OFF)</Label>
                       <select
                         id="dub-speed"
                         value={dubSpeed}
                         onChange={(e) => setDubSpeed(Number(e.target.value))}
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
+                        disabled={dubSmartFit}
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1 disabled:opacity-50"
                       >
-                        <option value={1.0}>1.0x — Natural ★ rekomendasi (paling natural, video paling banyak slow-mo)</option>
+                        <option value={1.0}>1.0x — Natural (paling natural, video paling banyak slow-mo)</option>
                         <option value={1.25}>1.25x — Cepat sedikit (kurangi slow-mo video)</option>
-                        <option value={1.5}>1.5x — Cepat (paling sedikit slow-mo, mungkin terdengar sedikit robot)</option>
-                      </select>
-                    </div>
-                    <div>
-                      <Label htmlFor="dub-mingap" className="text-xs">Min gap antar cue</Label>
-                      <select
-                        id="dub-mingap"
-                        value={dubMinGap}
-                        onChange={(e) => setDubMinGap(Number(e.target.value))}
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
-                      >
-                        <option value={0.1}>100ms — cepat (radio)</option>
-                        <option value={0.15}>150ms — natural percakapan (rekomendasi)</option>
-                        <option value={0.2}>200ms — jeda drama Jawa krama</option>
-                        <option value={0.3}>300ms — jeda teatrikal</option>
+                        <option value={1.5}>1.5x — Cepat (paling sedikit slow-mo, mungkin sedikit robot)</option>
                       </select>
                     </div>
                   </div>
+                  <div>
+                    <Label htmlFor="dub-mingap" className="text-xs">Min gap antar cue</Label>
+                    <select
+                      id="dub-mingap"
+                      value={dubMinGap}
+                      onChange={(e) => setDubMinGap(Number(e.target.value))}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs mt-1"
+                    >
+                      <option value={0.1}>100ms — cepat (radio)</option>
+                      <option value={0.15}>150ms — natural percakapan (rekomendasi)</option>
+                      <option value={0.2}>200ms — jeda drama Jawa krama</option>
+                      <option value={0.3}>300ms — jeda teatrikal</option>
+                    </select>
+                  </div>
                   <p className="text-xs text-muted-foreground">
-                    <strong>Filosofi Dubbing:</strong> Audio natural 1.25x → SRT baru timing ngikut audio → video MP4 nanti di-retim dengan Python (Fase 3).
-                    Setiap cue SRT Jawa = audio utuh (tidak ada hening). Video akan slow-mo di cue dialog pendek — itu wajar, sudah dibantu oleh audio 1.25x.
+                    <strong>Filosofi Smart Fit:</strong> Audio TTS di-speedup per-cue (pitch preserved di server Edge TTS, BUKAN atempo robot).
+                    Video slow-mo di-cap 2.0x — stop-motion minimal. Cue yang masih overflow di-push back.
+                    Filosofi "audio bebas dari penjara SRT" tetap utuh — audio tidak di-stretch, melainkan di-generate ulang dengan rate beda.
                   </p>
                 </div>
               )}
