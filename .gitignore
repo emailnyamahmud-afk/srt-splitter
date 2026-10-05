@@ -67,6 +67,11 @@ server.log
 /download/    # generated split SRT outputs
 /tool-results/ # debug output from Read tool
 
+# Python bytecode cache (auto-generated, jangan commit)
+__pycache__/
+*.pyc
+*.pyo
+
 # Build artifacts that aren't needed in repo
 Caddyfile
 
