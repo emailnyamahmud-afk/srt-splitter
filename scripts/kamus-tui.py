@@ -562,7 +562,12 @@ def main_menu(data):
             show_stats(data)
         elif 'Search' in selected:
             search_menu(data)
-        elif 'SIAP UPLOAD' in selected:
+        elif '☁' in selected and 'Upload' in selected:
+            # Upload ke Supabase — check PERTAMA (sebelum 'SIAP UPLOAD' matching)
+            # karena menu upload text-nya mengandung 'SIAP UPLOAD' juga
+            upload_to_supabase()
+        elif '🚀' in selected and 'SIAP UPLOAD' in selected:
+            # Browse SIAP UPLOAD (ngoko+krama+arti lengkap)
             ready_entries = [(i, w) for i, w in enumerate(data['words']) if w.get('status') == 'ready']
             browse_list(data, ready_entries, f'🚀 Siap Upload ({len(ready_entries)} entri lengkap)')
         elif 'krama mapping' in selected:
@@ -578,10 +583,8 @@ def main_menu(data):
             ).ask()
             if reg_selected and 'Kembali' not in reg_selected:
                 browse_by_register(data, reg_selected)
-        elif 'Set Supabase .env' in selected:
+        elif '🔑' in selected and 'Supabase .env' in selected:
             edit_env_file()
-        elif 'Upload' in selected:
-            upload_to_supabase()
         elif 'Save JSON' in selected:
             save_kamus(data)
             print('\n  ✅ JSON disimpan')
