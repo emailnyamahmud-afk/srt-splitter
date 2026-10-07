@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 """
-parse-wiktionary-jv.py v2 — Parse Wiktionary Jawa XML → kamus-jawa-full.json
+parse-wiktionary-jv.py v3 — Parse Wiktionary Jawa XML → kamus-jawa-full.json
 
-Format sederhana (user 6 Okt 2026):
-  Tiap entri: ngoko, krama, id (arti Indonesia)
-  krama = prioritas: krama_inggil kalau ada, kalau tidak krama
+Format lengkap (user 6 Okt 2026):
+  Tiap entri: word (ngoko), krama, id (arti), aksara, keterangan (register tag dari source)
+  krama = kosong untuk sebagian besar (Wiktionary tidak punya pasangan ngoko-krama)
+  User isi krama manual di web Kamus Editor (simpan ke Supabase, status draft→clean)
 
-Logic:
-  1. Cari entry dengan {{basa|jv}} (bahasa Jawa)
-  2. Cari definisi (arti) di section {{-def-|jv}}
-  3. Tag {{kn}} = ngoko, arti Jawa di # baris
-  4. Untuk krama: cari di kamus kecil (kamus-jawa.json) yang punya krama/krama_inggil field
-  5. Kalau tidak ada pasangan krama di kamus kecil, krama = kosong (user isi manual nanti)
+Register tags dari Wiktionary:
+  {{kn}} = ngoko (22.464 entri)
+  {{kr}} = krama (0 entri — Wiktionary Jawa jarang pakai)
+  {{ki}} = krama inggil (254 entri)
+  {{ak}} = kawi (6.088 entri)
+  (tanpa tag) = umum (tidak ada tag register)
+
+Aksara Jawa di-extract dari {{sirah|jv|alt=ꦲꦧ}}
 """
 
 import xml.etree.ElementTree as ET
@@ -26,8 +29,14 @@ OUTPUT_JSON = sys.argv[2] if len(sys.argv) > 2 else '/home/z/my-project/public/k
 NS = {'mw': 'http://www.mediawiki.org/xml/export-0.11/'}
 
 
+def extract_aksara(wikitext):
+    m = re.search(r'\{\{sirah\|jv[^}]*alt=([^\s|}]+)', wikitext)
+    if m:
+        return m.group(1)
+    return ''
+
+
 def extract_definitions(wikitext):
-    """Extract definisi dari section {{basa|jv}}."""
     jv_start = wikitext.find('{{basa|jv}}')
     if jv_start == -1:
         return []
@@ -68,7 +77,6 @@ def extract_definitions(wikitext):
 
 
 def load_small_kamus():
-    """Load kamus kecil untuk mapping ngoko→krama."""
     try:
         with open('/home/z/my-project/public/kamus-jawa.json', encoding='utf-8') as f:
             data = json.load(f)
@@ -77,7 +85,6 @@ def load_small_kamus():
             word = w['word'].lower()
             krama = w.get('krama', '')
             krama_inggil = w.get('krama_inggil', '')
-            # Prioritas: krama_inggil kalau ada, kalau tidak krama
             krama_val = krama_inggil if krama_inggil else krama
             if krama_val:
                 mapping[word] = krama_val
@@ -91,12 +98,12 @@ def parse_xml_to_json(xml_path, output_path):
     tree = ET.parse(xml_path)
     root = tree.getroot()
 
-    # Load kamus kecil untuk mapping ngoko → krama
     krama_map = load_small_kamus()
     print(f'Kamus kecil mapping: {len(krama_map)} pasangan ngoko→krama')
 
     words = []
-    stats = {'total': 0, 'jv': 0, 'with_defs': 0, 'with_krama': 0}
+    stats = {'total': 0, 'jv': 0, 'with_defs': 0, 'with_krama': 0, 'with_aksara': 0}
+    register_count = {'ngoko': 0, 'krama': 0, 'krama_inggil': 0, 'umum': 0, 'kawi': 0}
 
     for page in root.findall('.//mw:page', NS):
         stats['total'] += 1
@@ -118,45 +125,60 @@ def parse_xml_to_json(xml_path, output_path):
             continue
 
         stats['jv'] += 1
+
+        # Extract aksara
+        aksara = extract_aksara(wikitext)
+        if aksara:
+            stats['with_aksara'] += 1
+
+        # Extract definitions
         defs = extract_definitions(wikitext)
 
+        # Determine register (from tags)
+        register = 'umum'
+        if defs:
+            register = defs[0]['register']  # pakai register dari definisi pertama
+        register_count[register] = register_count.get(register, 0) + 1
+
+        # Get meaning (first definition)
+        meaning = defs[0]['meaning'] if defs else ''
+
+        # Get krama from small kamus mapping
+        krama_val = krama_map.get(title_text.lower(), '')
+        if krama_val:
+            stats['with_krama'] += 1
+
         if not defs:
-            # Entry tanpa definisi
-            krama_val = krama_map.get(title_text.lower(), '')
             words.append({
                 'word': title_text,
                 'krama': krama_val,
                 'id': '',
+                'aksara': aksara,
+                'keterangan': register,
             })
-            if krama_val:
-                stats['with_krama'] += 1
             continue
 
         stats['with_defs'] += 1
-
-        # Ambil definisi pertama sebagai arti (id)
-        meaning = defs[0]['meaning'] if defs else ''
-
-        # Cari krama dari kamus kecil
-        krama_val = krama_map.get(title_text.lower(), '')
-        if krama_val:
-            stats['with_krama'] += 1
 
         words.append({
             'word': title_text,
             'krama': krama_val,
             'id': meaning,
+            'aksara': aksara,
+            'keterangan': register,  # ngoko, krama, krama_inggil, kawi, umum
         })
 
-    # Sort by word
     words.sort(key=lambda w: w['word'])
 
     output = {
         'metadata': {
-            'version': '2.0',
+            'version': '3.0',
             'source': 'jv.wiktionary.org (Wikisastra)',
             'entries': len(words),
-            'note': 'Format sederhana: word (ngoko), krama (prioritas krama_inggil), id (arti). Aksén Jawa tidak dipakai.',
+            'register_breakdown': register_count,
+            'with_aksara': stats['with_aksara'],
+            'with_krama': stats['with_krama'],
+            'note': 'Format: word (ngoko), krama (kosong=belum ada, user isi manual), id (arti Jawa), aksara (Jawa script), keterangan (register tag dari Wiktionary). Aksén Jawa tidak dipakai untuk TTS.',
         },
         'words': words,
     }
@@ -168,8 +190,12 @@ def parse_xml_to_json(xml_path, output_path):
     print(f'   Total pages: {stats["total"]}')
     print(f'   Jawa entries: {stats["jv"]}')
     print(f'   With definitions: {stats["with_defs"]}')
+    print(f'   With aksara: {stats["with_aksara"]}')
     print(f'   With krama mapping: {stats["with_krama"]}')
     print(f'   Total in JSON: {len(words)}')
+    print(f'   Register breakdown:')
+    for r, c in sorted(register_count.items(), key=lambda x: -x[1]):
+        print(f'     {r}: {c}')
     print(f'   Output: {output_path}')
     print(f'   Size: {Path(output_path).stat().st_size / 1024 / 1024:.1f} MB')
 
