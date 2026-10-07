@@ -67,15 +67,24 @@ def load_kamus():
 
 def save_kamus(data):
     """Save ke JSON file (preserve formatting + add status field kalau belum ada)"""
-    # Pastikan semua entry punya field 'status'
+    # Status logic:
+    # - 'clean' = user BENAR-BENAR edit manual (arti diisi, atau edit via edit_entry)
+    # - 'draft' = belum di-edit user (termasuk yang auto-fill krama dari template Wikisastra)
+    #
+    # CARA DETEKSI user edit:
+    # - arti diisi → user pasti edit (Wiktionary tidak pernah isi arti Indonesia)
+    # - ada flag 'user_edited: true' di entry → user edit via edit_entry
+    #
+    # Yang BUKAN user edit (auto-fill dari template) → tetap 'draft':
+    # - krama diisi dari {{krama|X}} atau {{ngoko|X}} template (Wikisastra auto-fill)
+    # - krama_inggil diisi dari {{ki|X}} template atau detect_register
+    # - register dari tag {{kn}}/{{ki}}/{{ak}}
     for w in data['words']:
         if 'status' not in w:
-            # Status default: 'clean' kalau sudah ada krama/arti (auto-filled juga clean untuk upload)
-            # 'draft' kalau belum ada apa-apa
-            krama = (w.get('krama') or '').strip()
             arti = (w.get('arti') or '').strip()
-            ki = (w.get('krama_inggil') or '').strip()
-            w['status'] = 'clean' if (krama or arti or ki) else 'draft'
+            user_edited = w.get('user_edited', False)
+            # Status 'clean' HANYA kalau user edit manual (arti diisi atau flag user_edited)
+            w['status'] = 'clean' if (arti or user_edited) else 'draft'
     path = get_kamus_path()
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
@@ -211,8 +220,9 @@ def edit_entry(data, idx):
     elif 'krama_inggil' in entry:
         del entry['krama_inggil']
     entry['arti'] = new_arti
-    # Set status = clean (sudah di-edit user)
+    # Set status = clean + flag user_edited = true (sudah di-edit user manual)
     entry['status'] = 'clean'
+    entry['user_edited'] = True
 
     save_kamus(data)
     print(f'\n  ✅ Disimpan: ngoko={new_ngoko} → krama={new_krama} → arti={new_arti}')
@@ -463,22 +473,24 @@ print(f"\\n  → Load kamus: {KAMUS_PATH}")
 with open(KAMUS_PATH, "r", encoding="utf-8") as f:
     data = json.load(f)
 
-# Filter entri yang sudah di-edit user (status=clean)
-# ATAU yang sudah ada krama mapping (auto-filled dari template)
+# Filter: HANYA upload yang user BENAR-BENAR edit manual
+# (status='clean' — arti diisi, atau edit via edit_entry dengan flag user_edited=true)
+# Yang auto-fill dari template Wikisastra (krama mapping tanpa arti) TIDAK di-upload
+# karena bukan user edit — itu cuma parse ulang dari XML, bisa re-generate kapan saja.
 edited = []
 for entry in data.get("words", []):
     status = entry.get("status", "draft")
-    krama = (entry.get("krama") or "").strip()
+    user_edited = entry.get("user_edited", False)
     arti = (entry.get("arti") or "").strip()
-    ki = (entry.get("krama_inggil") or "").strip()
-    register = (entry.get("register") or "").strip()
 
-    # Upload kalau:
-    # 1. status=clean (user sudah edit)
-    # 2. ATAU ada krama mapping (auto-filled dari template — supaya web app bisa pakai)
-    if status == "clean" or krama or ki or arti:
+    # Upload HANYA kalau:
+    # 1. status='clean' (user edit via TUI edit_entry), ATAU
+    # 2. arti diisi (user pasti edit — Wiktionary tidak pernah isi arti Indonesia)
+    if status == "clean" or user_edited or arti:
+        krama = (entry.get("krama") or "").strip()
+        ki = (entry.get("krama_inggil") or "").strip()
+        register = (entry.get("register") or "").strip()
         # SEMUA row harus punya keys yang sama (Supabase PGRST102: all keys must match)
-        # krama_inggil + register selalu di-include (kosong string kalau tidak ada)
         row = {
             "ngoko": entry.get("ngoko", ""),
             "aksara": entry.get("aksara", ""),
@@ -488,7 +500,7 @@ for entry in data.get("words", []):
             "keterangan": entry.get("keterangan", ""),
             "register": register,      # selalu include (kosong/umum kalau tidak ada)
             "sumber": entry.get("sumber", "jv.wiktionary.org"),
-            "status": "clean" if status == "clean" else "draft",
+            "status": "clean",  # user edit = clean
         }
         edited.append(row)
 
@@ -564,17 +576,25 @@ def main():
     if not data:
         sys.exit(1)
 
-    # Pastikan semua entry punya field 'status'
-    changed = False
+    # RESET status untuk entries yang BUKAN user edit (auto-fill dari template)
+    # Bug fix v2 (8 Okt 2026): sebelumnya status='clean' di-set ke semua entries yang
+    # ada krama (auto-fill dari template Wikisastra), padahal user belum edit manual.
+    # Sekarang: 'clean' HANYA kalau arti diisi (Wiktionary tidak isi arti) atau flag user_edited.
+    reset_count = 0
     for w in data['words']:
-        if 'status' not in w:
-            krama = (w.get('krama') or '').strip()
-            arti = (w.get('arti') or '').strip()
-            ki = (w.get('krama_inggil') or '').strip()
-            w['status'] = 'clean' if (krama or arti or ki) else 'draft'
-            changed = True
-    if changed:
+        old_status = w.get('status', 'draft')
+        arti = (w.get('arti') or '').strip()
+        user_edited = w.get('user_edited', False)
+        # Status 'clean' HANYA kalau user edit manual
+        new_status = 'clean' if (arti or user_edited) else 'draft'
+        if old_status != new_status:
+            w['status'] = new_status
+            reset_count += 1
+    if reset_count > 0:
         save_kamus(data)
+        print(f'  ⚠ Reset status: {reset_count} entries (dari clean → draft)')
+        print(f'    (auto-fill dari template BUKAN user edit, tidak perlu upload)')
+        print()
 
     main_menu(data)
 
