@@ -1,28 +1,59 @@
 #!/usr/bin/env python3
 """
-parse-wiktionary-jv.py v4 — Parse Wiktionary Jawa XML → kamus-jawa-full.json
+parse-wiktionary-jv.py v5 — Parse Wiktionary Jawa XML → kamus-jawa-full.json
 
-Format BENAR (user 6 Okt 2026, AI ceroboh sebelumnya):
+FIX v5 (8 Okt 2026, user feedback 'kamus json membingungkan = semua kosakata
+didestinasikan sebagai ngoko, padahal ada kosakata yg krama'):
+
+Bug v4: title SELALU di field ngoko, walau Wiktionary tagged {{kr}} (krama)
+       atau {{ki}} (krama inggil). Register info dihitung statistik tapi
+       tidak disimpan ke JSON.
+
+Fix v5:
+  1. Save register tag ({{kn}}, {{kr}}, {{ki}}, {{ak}}) ke field baru 'register'
+  2. Put title di field yang benar sesuai register:
+       {{kn}}  → ngoko field
+       {{kr}}  → krama field
+       {{ki}}  → krama_inggil field (NEW)
+       {{ak}}  → kawi field (NEW, info saja)
+       (umum) → ngoko field (default — tidak ada tag)
+  3. Parse cross-references '*Jawa ngoko: [[sapa]]' / '*Jawa krama: [[sinten]]'
+     untuk auto-fill mapping kebalikannya.
+  4. Tambah kolom krama_inggil + kawi + register
+
+Format BENAR v5:
   Tiap entri:
-    ngoko      = kata ngoko + alias (dipisah koma). Dari XML title.
-    aksara     = aksara Jawa. Dari XML {{sirah|jv|alt=...}}.
-    krama      = kata krama + alias. KOSONG (user isi manual di Kamus Editor).
-    id         = terjemahan Indonesia. KOSONG (user isi manual).
-    keterangan = definisi dari XML (bahasa JAWA, bukan Indonesia).
-                 JANGAN HAPUS — membantu user untuk isi id.
-    sumber     = sumber data (mis. jv.wiktionary.org)
+    ngoko         = kata ngoko + alias (atau KOSONG kalau entry ini krama/krama_inggil)
+    aksara        = aksara Jawa
+    krama         = kata krama + alias (atau KOSONG kalau entry ini ngoko)
+    krama_inggil  = kata krama inggil + alias (NEW)
+    kawi          = kata kawi (NEW, info saja)
+    arti          = terjemahan Indonesia. KOSONG (user isi manual).
+    keterangan    = definisi dari XML (bahasa JAWA, bukan Indonesia). JANGAN HAPUS.
+    register      = register asli dari Wiktionary: 'ngoko'|'krama'|'krama_inggil'|'kawi'|'umum'
+    sumber        = sumber data (mis. jv.wiktionary.org)
 
-User sejak awal bilang:
-  'kamus ada ngoko, krama, id, keterangan, aksara'
-  'belum semua translate' (id kosong, user isi manual)
-  'keterangan dari XML yg ai salah kaprah tulis sebagai id'
-  'INI JANGAN HAPUS, KARENA MEMBANTU USER UNTUK ISI ID'
+Sebelum v5 (44.585 entri semua di ngoko):
+  Entry "sinten" (Wiktionary tag {{kr}}) → {ngoko: "sinten", krama: ""}  ❌
+  Entry "kula"   (Wiktionary tag {{kr}}) → {ngoko: "kula", krama: ""}    ❌
+  Entry "panjenengan" (Wiktionary tag {{ki}}) → {ngoko: "panjenengan", krama: ""}  ❌
 
-Register tags dari XML Wiktionary:
-  {{kn}} = ngoko (22.240 entri) → keterangan = definisi Jawa
-  {{ki}} = krama inggil (77 entri) → keterangan = definisi Jawa
-  {{ak}} = kawi (2.352 entri) → keterangan = definisi Jawa
-  (tanpa tag) = umum → keterangan = definisi Jawa
+Sesudah v5:
+  Entry "sinten" → {ngoko: "", krama: "sinten", register: "krama"}        ✓
+  Entry "kula"   → {ngoko: "", krama: "kula", register: "krama"}          ✓
+  Entry "panjenengan" → {ngoko: "", krama_inggil: "panjenengan", register: "krama_inggil"}  ✓
+  Entry "aku"    → {ngoko: "aku", krama: "", register: "ngoko"}            ✓
+
+Plus cross-reference (kalau entry "sinten" punya baris '*Jawa ngoko: [[sapa]]'):
+  Entry "sinten" → {ngoko: "sapa", krama: "sinten", register: "krama",
+                    keterangan: "...", sumber: "jv.wiktionary.org + xref"}  ✓ bonus mapping!
+
+Usage:
+  python3 parse-wiktionary-jv.py [input.xml] [output.json]
+
+Default:
+  input  = /home/z/my-project/upload/wiktionary/wiktionary-jv
+  output = /home/z/my-project/public/kamus-jawa-full.json
 """
 
 import xml.etree.ElementTree as ET
@@ -58,19 +89,9 @@ def extract_definitions(wikitext):
 
     definitions = []
     lines = jv_section.split('\n')
-    current_register = 'umum'
 
     for line in lines:
         line = line.strip()
-        if '{{kn}}' in line:
-            current_register = 'ngoko'
-        elif '{{kr}}' in line and '{{ki}}' not in line:
-            current_register = 'krama'
-        elif '{{ki}}' in line:
-            current_register = 'krama_inggil'
-        elif '{{ak}}' in line:
-            current_register = 'kawi'
-
         if line.startswith('#'):
             def_text = line[1:].strip()
             def_text = re.sub(r'\{\{[^}]*\}\}', '', def_text)
@@ -83,14 +104,153 @@ def extract_definitions(wikitext):
     return definitions
 
 
+def detect_register(wikitext):
+    """Deteksi register dari tag Wiktionary di section Jawa.
+
+    Returns:
+      'ngoko'         — kalau ada {{kn}} di section Jawa
+      'krama'         — kalau ada {{kr}} TAPI tidak ada {{ki}}
+      'krama_inggil'  — kalau ada {{ki}}
+      'kawi'          — kalau ada {{ak}} TAPI tidak ada {{kn}}/{{kr}}/{{ki}}
+      'umum'          — tidak ada tag
+    """
+    jv_start = wikitext.find('{{basa|jv}}')
+    if jv_start == -1:
+        return 'umum'
+
+    jv_section = wikitext[jv_start:]
+    sikil = jv_section.find('{{sikil}}')
+    if sikil != -1:
+        jv_section = jv_section[:sikil]
+
+    if '{{kn}}' in jv_section:
+        return 'ngoko'
+    if '{{ki}}' in jv_section:
+        return 'krama_inggil'
+    if '{{kr}}' in jv_section:
+        return 'krama'
+    if '{{ak}}' in jv_section:
+        return 'kawi'
+    return 'umum'
+
+
+def extract_cross_references(wikitext):
+    """Parse cross-references '*Jawa ngoko: [[sapa]]' / '*Jawa krama: [[sinten]]'.
+
+    Cari di SELURUH wikitext (bukan hanya section Jawa), karena cross-references
+    biasanya muncul di section 'Basa liyane' (other languages translations).
+
+    Returns dict dengan keys: ngoko, krama, krama_inggil (masing-masing list of words).
+    """
+    refs = {'ngoko': [], 'krama': [], 'krama_inggil': []}
+
+    patterns = [
+        (r'\*\s*Jawa\s+ngoko\s*:\s*\[\[([^\]]+)\]\]', 'ngoko'),
+        (r'\*\s*Jawa\s+krama\s+inggil\s*:\s*\[\[([^\]]+)\]\]', 'krama_inggil'),
+        (r'\*\s*Jawa\s+krama\s*:\s*\[\[([^\]]+)\]\]', 'krama'),
+    ]
+
+    for pattern, ref_type in patterns:
+        for m in re.finditer(pattern, wikitext, re.IGNORECASE):
+            word = m.group(1).strip()
+            # Filter: skip words with '|' (e.g., [[sapa|sapa]])
+            if '|' in word:
+                word = word.split('|')[0].strip()
+            # Skip non-Jawa (e.g., [[:jv:wétan]] — prefixed with namespace)
+            if word.startswith(':'):
+                continue
+            if word and word not in refs[ref_type]:
+                refs[ref_type].append(word)
+
+    return refs
+
+
 def parse_xml_to_json(xml_path, output_path):
     print(f'Parsing {xml_path}...')
     tree = ET.parse(xml_path)
     root = tree.getroot()
 
     words = []
-    stats = {'total': 0, 'jv': 0, 'with_defs': 0, 'with_aksara': 0}
-    register_count = {'ngoko': 0, 'krama': 0, 'krama_inggil': 0, 'umum': 0, 'kawi': 0}
+    stats = {
+        'total': 0, 'jv': 0, 'with_defs': 0, 'with_aksara': 0,
+        'with_xref': 0, 'with_xref_filled': 0, 'wikisastra_pages': 0,
+    }
+    register_count = {'ngoko': 0, 'krama': 0, 'krama_inggil': 0, 'kawi': 0, 'umum': 0}
+
+    # === Phase 1: Process Wikisastra:Bausastra Jawa/* pages — build xref map ===
+    # Pages seperti "Wikisastra:Bausastra Jawa/sapa" berisi cross-reference
+    # '*Jawa ngoko: [[sapa]]' + '*Jawa krama: [[sinten]]' → mapping ngoko↔krama
+    xref_map = {}  # ngoko_word → {krama: [...], krama_inggil: [...]}
+
+    for page in root.findall('.//mw:page', NS):
+        title = page.find('mw:title', NS)
+        if title is None or not title.text:
+            continue
+        title_text = title.text
+
+        # Hanya proses "Wikisastra:Bausastra Jawa/<word>" pages
+        if 'Wikisastra:Bausastra Jawa/' not in title_text:
+            continue
+
+        text_elem = page.find('.//mw:text', NS)
+        if text_elem is None or not text_elem.text:
+            continue
+
+        wikitext = text_elem.text
+        stats['wikisastra_pages'] += 1
+
+        # Extract source word dari title (e.g., "Wikisastra:Bausastra Jawa/sapa" → "sapa")
+        source_word = title_text.split('Wikisastra:Bausastra Jawa/')[-1].strip()
+        if not source_word or ':' in source_word or '/' in source_word:
+            continue
+
+        xrefs = extract_cross_references(wikitext)
+
+        # Build xref map: prefer using the ngoko word from xref as the KEY
+        # (kalau xref punya "*Jawa ngoko: [[sapa]]", pakai "sapa" sebagai key,
+        #  bukan source_word dari title — karena title bisa berupa kata Indonesia
+        #  seperti "siapa" padahal ngoko asli = "sapa")
+        krama_list = xrefs['krama']
+        krama_inggil_list = xrefs['krama_inggil']
+        ngoko_list = xrefs['ngoko']
+
+        # Tentukan ngoko key:
+        # - Kalau ada xref ngoko → pakai xref ngoko word (lebih reliable)
+        # - Kalau tidak ada xref ngoko → pakai source_word dari title (asumsi: source = ngoko)
+        if ngoko_list:
+            # Pakai xref ngoko sebagai key (bukan source_word dari title)
+            for ngoko_word in ngoko_list:
+                if ngoko_word not in xref_map:
+                    xref_map[ngoko_word] = {'krama': [], 'krama_inggil': []}
+                for krama_word in krama_list:
+                    if krama_word and krama_word not in xref_map[ngoko_word]['krama']:
+                        xref_map[ngoko_word]['krama'].append(krama_word)
+                for ki_word in krama_inggil_list:
+                    if ki_word and ki_word not in xref_map[ngoko_word]['krama_inggil']:
+                        xref_map[ngoko_word]['krama_inggil'].append(ki_word)
+        else:
+            # Tidak ada xref ngoko — pakai source_word dari title sebagai ngoko
+            if source_word not in xref_map:
+                xref_map[source_word] = {'krama': [], 'krama_inggil': []}
+            for krama_word in krama_list:
+                if krama_word and krama_word not in xref_map[source_word]['krama']:
+                    xref_map[source_word]['krama'].append(krama_word)
+            for ki_word in krama_inggil_list:
+                if ki_word and ki_word not in xref_map[source_word]['krama_inggil']:
+                    xref_map[source_word]['krama_inggil'].append(ki_word)
+
+    print(f'   Wikisastra xref map: {len(xref_map)} ngoko entries with krama mapping')
+
+    # === Phase 2: Process ns=0 pages (utama — definisi kata Jawa) ===
+    # Build reverse lookup: krama_word → ngoko_word, krama_inggil_word → ngoko_word
+    # (untuk deteksi: kalau title di ns=0 ada di krama/krama_inggil xref, register harusnya krama/krama_inggil)
+    krama_to_ngoko = {}
+    krama_inggil_to_ngoko = {}
+    for ngoko_word, xref in xref_map.items():
+        for krama_word in xref['krama']:
+            krama_to_ngoko[krama_word] = ngoko_word
+        for ki_word in xref['krama_inggil']:
+            krama_inggil_to_ngoko[ki_word] = ngoko_word
 
     for page in root.findall('.//mw:page', NS):
         stats['total'] += 1
@@ -121,59 +281,98 @@ def parse_xml_to_json(xml_path, output_path):
         # Extract definitions (KETERANGAN — definisi dalam bahasa JAWA, bukan Indonesia)
         defs = extract_definitions(wikitext)
 
-        # Determine register tag dari XML
-        register = 'umum'
-        if defs:
-            # Cari tag di section Jawa
-            jv_start = wikitext.find('{{basa|jv}}')
-            jv_section = wikitext[jv_start:]
-            sikil = jv_section.find('{{sikil}}')
-            if sikil != -1:
-                jv_section = jv_section[:sikil]
-            if '{{kn}}' in jv_section:
-                register = 'ngoko'
-            elif '{{kr}}' in jv_section and '{{ki}}' not in jv_section:
+        # Detect register dari tag Wiktionary
+        register = detect_register(wikitext)
+
+        # FIX: kalau register='umum' TAPI title ada di krama_to_ngoko atau krama_inggil_to_ngoko,
+        # berarti title ini sebenarnya adalah kata krama/krama_inggil (bukan ngoko)
+        # Override register ke krama/krama_inggil
+        if register == 'umum':
+            if title_text in krama_to_ngoko:
                 register = 'krama'
-            elif '{{ki}}' in jv_section:
+            elif title_text in krama_inggil_to_ngoko:
                 register = 'krama_inggil'
-            elif '{{ak}}' in jv_section:
-                register = 'kawi'
 
         register_count[register] = register_count.get(register, 0) + 1
+
+        # Format v5: put title di field yang benar sesuai register
+        ngoko = ''
+        krama = ''
+        krama_inggil = ''
+
+        if register == 'ngoko' or register == 'umum':
+            ngoko = title_text
+        elif register == 'krama':
+            krama = title_text
+        elif register == 'krama_inggil':
+            krama_inggil = title_text
+
+        # Bonus: pakai xref_map (dari Wikisastra pages) untuk auto-fill mapping
+        # Kalau title adalah ngoko (atau umum) dan ada di xref_map, isi krama/krama_inggil
+        sumber_mod = SOURCE_NAME
+        if ngoko and ngoko in xref_map:
+            xref = xref_map[ngoko]
+            if xref['krama'] and not krama:
+                krama = ', '.join(xref['krama'])
+                sumber_mod = f'{SOURCE_NAME} + xref'
+                stats['with_xref_filled'] += 1
+            if xref['krama_inggil'] and not krama_inggil:
+                krama_inggil = ', '.join(xref['krama_inggil'])
+                sumber_mod = f'{SOURCE_NAME} + xref'
+                stats['with_xref_filled'] += 1
+        # Kalau title adalah krama, cek reverse: ada ngoko yang map ke title ini?
+        elif krama and krama in krama_to_ngoko:
+            ngoko = krama_to_ngoko[krama]
+            sumber_mod = f'{SOURCE_NAME} + xref'
+            stats['with_xref_filled'] += 1
+        elif krama_inggil and krama_inggil in krama_inggil_to_ngoko:
+            ngoko = krama_inggil_to_ngoko[krama_inggil]
+            sumber_mod = f'{SOURCE_NAME} + xref'
+            stats['with_xref_filled'] += 1
 
         # KETERANGAN = definisi JAWA dari XML (JANGAN HAPUS, membantu user isi id)
         keterangan = '; '.join(defs) if defs else ''
         if defs:
             stats['with_defs'] += 1
 
-        # Format BENAR:
-        # ngoko      = title (kata Jawa dari XML)
-        # aksara     = aksara Jawa
-        # krama      = KOSONG (user isi manual)
-        # id         = KOSONG (user isi manual, terjemahan Indonesia)
-        # keterangan = definisi JAWA dari XML (membantu user untuk isi id)
-        # sumber     = jv.wiktionary.org
-        words.append({
-            'ngoko': title_text,
+        # Format BENAR v5
+        entry = {
+            'ngoko': ngoko,
             'aksara': aksara,
-            'krama': '',           # KOSONG — user isi manual
-            'id': '',              # KOSONG — user isi manual (terjemahan Indonesia)
+            'krama': krama,
+            'arti': '',              # KOSONG — user isi manual (terjemahan Indonesia)
             'keterangan': keterangan,
-            'sumber': SOURCE_NAME,
-        })
+            'register': register,
+            'sumber': sumber_mod,
+        }
+        # Hanya simpan krama_inggil kalau tidak kosong (hemat space)
+        if krama_inggil:
+            entry['krama_inggil'] = krama_inggil
+        words.append(entry)
 
-    # Sort by ngoko
-    words.sort(key=lambda w: w['ngoko'])
+    # Sort by register priority (ngoko dulu, lalu krama, lalu krama_inggil, lalu kawi, lalu umum)
+    register_order = {'ngoko': 0, 'umum': 1, 'krama': 2, 'krama_inggil': 3, 'kawi': 4}
+    words.sort(key=lambda w: (
+        register_order.get(w.get('register', 'umum'), 99),
+        w.get('ngoko') or w.get('krama') or w.get('krama_inggil') or w.get('kawi') or '',
+    ))
 
     output = {
         'metadata': {
-            'version': '4.0',
+            'version': '5.0',
             'source': SOURCE_NAME,
             'entries': len(words),
             'register_breakdown': register_count,
             'with_aksara': stats['with_aksara'],
             'with_keterangan': stats['with_defs'],
-            'note': 'Format: ngoko, aksara, krama (kosong=user isi), id (kosong=user isi), keterangan (definisi JAWA dari XML, JANGAN HAPUS), sumber. Aksén Jawa tidak dipakai untuk TTS.',
+            'with_xref': stats['with_xref'],
+            'with_xref_filled': stats['with_xref_filled'],
+            'note': (
+                'Format v5: ngoko/krama/krama_inggil di field yang benar sesuai register tag Wiktionary. '
+                'Cross-reference auto-fill (mis. entry "sinten" dengan xref "*Jawa ngoko: [[sapa]]" → '
+                '{ngoko:"sapa", krama:"sinten"}). Aksén Jawa tidak dipakai untuk TTS (auto-strip). '
+                'arti kosong — user isi manual. keterangan = definisi JAWA dari XML (JANGAN HAPUS).'
+            ),
         },
         'words': words,
     }
@@ -181,17 +380,17 @@ def parse_xml_to_json(xml_path, output_path):
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
-    print(f'\n✅ Parsed v4:')
+    print(f'\n✅ Parsed v5:')
     print(f'   Total pages: {stats["total"]}')
     print(f'   Jawa entries: {stats["jv"]}')
     print(f'   With keterangan (def Jawa): {stats["with_defs"]}')
     print(f'   With aksara: {stats["with_aksara"]}')
+    print(f'   With xref: {stats["with_xref"]} ({stats["with_xref_filled"]} auto-filled mapping)')
     print(f'   Total in JSON: {len(words)}')
-    print(f'   Register breakdown:')
+    print(f'   Register breakdown (TITLE register, bukan total mapping):')
     for r, c in sorted(register_count.items(), key=lambda x: -x[1]):
-        print(f'     {r}: {c}')
-    print(f'   krama: 0 (kosong, user isi manual)')
-    print(f'   id: 0 (kosong, user isi manual)')
+        print(f'     {r:15s}: {c:6d}')
+    print(f'   arti: 0 (kosong, user isi manual)')
     print(f'   Output: {output_path}')
     print(f'   Size: {Path(output_path).stat().st_size / 1024 / 1024:.1f} MB')
 

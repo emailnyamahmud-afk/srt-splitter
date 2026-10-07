@@ -10,11 +10,13 @@
 // Output: SRT Jawa yang siap untuk TTS (mode ON + Smart Fit)
 
 export interface KamusEntry {
-  ngoko: string       // kata ngoko + alias (dipisah koma, mis. "aku, inyong, nyong")
+  ngoko: string       // kata ngoko + alias (dipisah koma, mis. "aku, inyong, nyong"). KOSONG kalau entry ini krama/krama_inggil
   aksara: string      // aksara Jawa
-  krama: string       // kata krama + alias (dipisah koma). Kosong = belum ada
-  id: string          // terjemahan Indonesia. Kosong = belum ada
+  krama: string       // kata krama + alias (dipisah koma). KOSONG kalau entry ini ngoko
+  krama_inggil: string  // kata krama inggil + alias. KOSONG kalau tidak ada (v5)
+  id: string          // terjemahan Indonesia. Kosong = belum ada (Supabase kolom 'arti')
   keterangan: string  // definisi JAWA dari XML (membantu user isi id). JANGAN HAPUS
+  register: string    // register asli dari Wiktionary: 'ngoko'|'krama'|'krama_inggil'|'kawi'|'umum' (v5)
   sumber: string      // sumber data (mis. jv.wiktionary.org)
 }
 
@@ -54,7 +56,7 @@ export async function loadKamusJawa(): Promise<KamusJawa | null> {
     // Load kamus dari Supabase (limit 10000 untuk performance)
     const { data, error } = await client
       .from('kamus')
-      .select('ngoko, aksara, krama, arti, keterangan, sumber')
+      .select('ngoko, aksara, krama, krama_inggil, arti, keterangan, register, sumber')
       .limit(10000)
       .order('ngoko', { ascending: true })
 
@@ -64,12 +66,14 @@ export async function loadKamusJawa(): Promise<KamusJawa | null> {
     }
 
     // Map Supabase 'arti' → JSON 'id' (untuk konsisten dengan KamusEntry interface)
-    const mappedWords = data.map((d: { ngoko: string; aksara: string; krama: string; arti: string; keterangan: string; sumber: string }) => ({
-      ngoko: d.ngoko,
+    const mappedWords = data.map((d: { ngoko: string; aksara: string; krama: string; krama_inggil?: string; arti: string; keterangan: string; register?: string; sumber: string }) => ({
+      ngoko: d.ngoko || '',
       aksara: d.aksara || '',
       krama: d.krama || '',
+      krama_inggil: d.krama_inggil || '',  // v5 — kosong kalau kolom tidak ada (backward compat)
       id: d.arti || '',  // Supabase 'arti' → interface 'id'
       keterangan: d.keterangan || '',
+      register: d.register || 'umum',  // v5 — default 'umum' kalau kolom tidak ada
       sumber: d.sumber || '',
     }))
 
@@ -100,12 +104,16 @@ export function isWordInKamus(word: string, kamus: KamusJawa | null): boolean {
   const cleanWord = word.toLowerCase().replace(/[^\wàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ]/g, '')
   if (!cleanWord) return true
   return kamus.words.some(entry => {
-    // BIDIRECTIONAL: cek alias di ngoko DAN krama
+    // BIDIRECTIONAL: cek alias di ngoko, krama, DAN krama_inggil
     const ngokoVariants = entry.ngoko.split(',').map(n => n.trim().toLowerCase())
     if (ngokoVariants.includes(cleanWord)) return true
     if (entry.krama) {
       const kramaVariants = entry.krama.split(',').map(k => k.trim().toLowerCase())
       if (kramaVariants.includes(cleanWord)) return true
+    }
+    if (entry.krama_inggil) {
+      const kiVariants = entry.krama_inggil.split(',').map(k => k.trim().toLowerCase())
+      if (kiVariants.includes(cleanWord)) return true
     }
     return false
   })
@@ -223,7 +231,7 @@ export function suggestRegister(text: string, kamus: KamusJawa | null): CueRegis
   for (const word of words) {
     const cleanWord = word.replace(/[^\wàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ]/g, '')
     if (!cleanWord) continue
-    // BIDIRECTIONAL: cari entry yang ngoko-nya ATAU krama-nya cocok
+    // BIDIRECTIONAL: cari entry yang ngoko-nya, krama-nya, ATAU krama_inggil-nya cocok
     const entry = kamus.words.find(e => {
       const ngokoVariants = e.ngoko.split(',').map(n => n.trim().toLowerCase())
       if (ngokoVariants.includes(cleanWord)) return true
@@ -231,10 +239,20 @@ export function suggestRegister(text: string, kamus: KamusJawa | null): CueRegis
         const kramaVariants = e.krama.split(',').map(k => k.trim().toLowerCase())
         if (kramaVariants.includes(cleanWord)) return true
       }
+      if (e.krama_inggil) {
+        const kiVariants = e.krama_inggil.split(',').map(k => k.trim().toLowerCase())
+        if (kiVariants.includes(cleanWord)) return true
+      }
       return false
     })
-    if (entry && entry.krama) {
-      return 'krama'  // ada krama mapping → suggest krama
+    if (entry) {
+      // Suggest register berdasarkan field yang ada:
+      // - Kalau ada krama_inggil → suggest krama_inggil (paling sopan)
+      // - Kalau ada krama → suggest krama
+      // - Kalau ngoko saja → suggest ngoko
+      if (entry.krama_inggil) return 'krama_inggil'
+      if (entry.krama) return 'krama'
+      return 'ngoko'
     }
   }
   return 'ngoko'
@@ -257,29 +275,36 @@ export function convertRegister(
   if (!kamus || !toRegister) return text
   if (toRegister !== 'ngoko' && toRegister !== 'krama' && toRegister !== 'krama_inggil') return text
 
-  // Build lookup BIDIRECTIONAL: semua alias (ngoko + krama) → target word utama
-  // Mis. kamus: ngoko="aku, inyong, nyong", krama="kula, dalem"
+  // Build lookup BIDIRECTIONAL: semua alias (ngoko + krama + krama_inggil) → target word utama
+  // Mis. kamus: ngoko="aku, inyong, nyong", krama="kula, dalem", krama_inggil="dalem"
   //   toRegister=krama → {aku→kula, inyong→kula, nyong→kula, kula→kula, dalem→kula}
   //   toRegister=ngoko → {aku→aku, inyong→aku, nyong→aku, kula→aku, dalem→aku}
+  //   toRegister=krama_inggil → {aku→dalem, kula→dalem, dalem→dalem} (target = krama_inggil pertama)
   const lookup = new Map<string, string>()
   for (const entry of kamus.words) {
     const ngokoVariants = entry.ngoko.split(',').map(n => n.trim().toLowerCase()).filter(Boolean)
     const kramaVariants = entry.krama
       ? entry.krama.split(',').map(k => k.trim().toLowerCase()).filter(Boolean)
       : []
-    const allVariants = [...ngokoVariants, ...kramaVariants]
+    const kramaIngilVariants = entry.krama_inggil
+      ? entry.krama_inggil.split(',').map(k => k.trim().toLowerCase()).filter(Boolean)
+      : []
+    const allVariants = [...ngokoVariants, ...kramaVariants, ...kramaIngilVariants]
 
     // Target word utama sesuai register tujuan
     let targetWord = ''
     if (toRegister === 'ngoko') {
       targetWord = ngokoVariants[0] || ''
-    } else if (toRegister === 'krama' || toRegister === 'krama_inggil') {
+    } else if (toRegister === 'krama') {
       // Target = krama pertama. Kalau entry tidak punya krama, skip (tidak bisa convert ke krama)
       targetWord = kramaVariants[0] || ''
+    } else if (toRegister === 'krama_inggil') {
+      // Target = krama_inggil pertama. Kalau tidak ada, fallback ke krama pertama.
+      targetWord = kramaIngilVariants[0] || kramaVariants[0] || ''
     }
     if (!targetWord) continue
 
-    // Mapping: semua alias (ngoko + krama) → target word utama
+    // Mapping: semua alias (ngoko + krama + krama_inggil) → target word utama
     for (const variant of allVariants) {
       lookup.set(variant, targetWord)
     }
