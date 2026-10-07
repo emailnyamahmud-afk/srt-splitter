@@ -360,13 +360,11 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
     setJawaEntries(prev => {
       const updated = [...prev]
       const text = updated[index].textLines.join(' ')
-      if (register === 'krama') {
-        const converted = convertRegister(text, 'ngoko', 'krama', kamus)
-        updated[index] = { ...updated[index], textLines: converted.split('\n') }
-        markCueForSave(index, { text: converted, register: 'krama' })
-      } else if (register === 'ngoko') {
-        markCueForSave(index, { register: 'ngoko' })
-      }
+      // BIDIRECTIONAL: convert dari register apa pun ke target register
+      // Source "aku"/"inyong"/"kula"/"dalem" → convert ke ngoko atau krama utama
+      const converted = convertRegister(text, 'ngoko', register, kamus)
+      updated[index] = { ...updated[index], textLines: converted.split('\n') }
+      markCueForSave(index, { text: converted, register })
       return updated
     })
     setRegisters(prev => ({ ...prev, [index]: register }))
@@ -390,13 +388,10 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
       const updated = [...prev]
       for (let i = start; i < end; i++) {
         const text = updated[i].textLines.join(' ')
-        if (register === 'krama') {
-          const converted = convertRegister(text, 'ngoko', 'krama', kamus)
-          updated[i] = { ...updated[i], textLines: converted.split('\n') }
-          markCueForSave(i, { text: converted, register: 'krama' })
-        } else {
-          markCueForSave(i, { register: 'ngoko' })
-        }
+        // BIDIRECTIONAL: convert ke ngoko atau krama utama (source apapun)
+        const converted = convertRegister(text, 'ngoko', register, kamus)
+        updated[i] = { ...updated[i], textLines: converted.split('\n') }
+        markCueForSave(i, { text: converted, register })
         setRegisters(prev => ({ ...prev, [i]: register }))
       }
       return updated
@@ -414,13 +409,10 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
       const updated = [...prev]
       for (let i = 0; i < updated.length; i++) {
         const text = updated[i].textLines.join(' ')
-        if (register === 'krama') {
-          const converted = convertRegister(text, 'ngoko', 'krama', kamus)
-          updated[i] = { ...updated[i], textLines: converted.split('\n') }
-          markCueForSave(i, { text: converted, register: 'krama' })
-        } else {
-          markCueForSave(i, { register: 'ngoko' })
-        }
+        // BIDIRECTIONAL: convert ke ngoko atau krama utama (source apapun)
+        const converted = convertRegister(text, 'ngoko', register, kamus)
+        updated[i] = { ...updated[i], textLines: converted.split('\n') }
+        markCueForSave(i, { text: converted, register })
         setRegisters(prev => ({ ...prev, [i]: register }))
       }
       return updated
