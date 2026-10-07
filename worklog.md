@@ -874,3 +874,40 @@ Stage Summary:
 - Files: audio-cache.ts (NEW 274), tts.ts (+280 narrateSingleCue + stitchFullAudio), srt-editor-panel.tsx (+310 per-cue UI)
 - User bisa langsung coba setelah run migration v2 SQL di Supabase SQL Editor
 
+
+---
+Task ID: 16
+Agent: main
+Task: Update dokumentasi (README, PROGRESS, worklog) — sync dengan progress terbaru
+
+User request (8 Okt 2026 03:35 WIB):
+"update dokumentasi, progres dan konteks"
+
+Work Log:
+- Update docs/PROGRESS.md (352 → 280 lines rewrite)
+  * Quick status table: 16 item dengan status (✅/⏳/🔜)
+  * MILESTONE baru: Editor SRT Jawa project-based (8 Okt 2026)
+    - 6 sub-fitur dengan commit hash
+  * Supabase schema v1 → v2 → v3 (3 migration files)
+  * Kamus Jawa format v5 (schema + stats + files table)
+  * Web app architecture (komponen baru + layout)
+  * 16 catatan untuk AI next time
+  * Timeline update: 24 entries dari 4 Okt → 8 Okt 2026
+
+- Update README.md (211 → 200 lines rewrite)
+  * Editor SRT Jawa sebagai PRIMARY (project-based + per-cue preview + IndexedDB)
+  * Split/Translate/TTS sebagai SEKUNDER (workflow lama)
+  * 3 fase workflow (ganti dari 5 fase — Fase 0 opsional Demucs, Fase 1 Editor, Fase 2 Mix)
+  * Setup section: Supabase + Kamus download + Python lokal
+  * Kamus Jawa section dengan bidirectional lookup + edit workflow
+  * Struktur folder update (kamus JSON di public/, scripts Python + SQL)
+  * Environment variables (Supabase URL + anon key)
+  * Link ke docs/PROGRESS.md untuk status detail
+
+Stage Summary:
+- Dokumentasi sync dengan progress 8 Okt 2026
+- 3 file update: docs/PROGRESS.md, README.md, worklog.md
+- User next time baca PROGRESS.md → tahu status project
+- AI next time baca PROGRESS.md catatan → tahu konteks + filosofi
+- Tidak ada perubahan kode, hanya dokumentasi
+
