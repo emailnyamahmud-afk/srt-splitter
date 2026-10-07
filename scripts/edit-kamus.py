@@ -68,7 +68,13 @@ def get_supabase_config():
 
 
 def import_json_to_supabase():
-    """Import JSON lokal → Supabase (initial atau setelah edit)"""
+    """Import JSON lokal → Supabase (bertahap, upsert bukan replace all)
+
+    User edit 30 entri/hari di VSCode, import ke Supabase.
+    Yang sudah ada di Supabase: update kalau berubah.
+    Yang belum ada: insert baru.
+    Yang belum diedit (krama/id kosong): skip (jangan overwrite yang sudah ada).
+    """
     url, key = get_supabase_config()
     if not url or not key:
         print('❌ Supabase belum di-set.')
@@ -84,43 +90,67 @@ def import_json_to_supabase():
 
     if not json_path.exists():
         print(f'❌ File tidak ada: {json_path}')
-        print(f'   Download dari GitHub atau bikin baru.')
         return False
 
-    print(f'\n=== Import {json_path.name} → Supabase ===')
+    print(f'\n=== Import {json_path.name} → Supabase (bertahap, upsert) ===')
 
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
     entries = data.get('words', [])
-    print(f'  → {len(entries)} entries dari JSON')
+    print(f'  → {len(entries)} total entries di JSON')
 
     if len(entries) == 0:
-        print('  ⚠ JSON kosong. Tidak ada yang di-import.')
+        print('  ⚠ JSON kosong.')
         return False
 
     import urllib.request
+    import urllib.parse
     headers = {
         'apikey': key,
         'Authorization': f'Bearer {key}',
         'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates,return=minimal',  # upsert mode
     }
 
-    # Hapus semua data lama
-    print('  → Hapus kamus lama di Supabase...')
-    del_url = f'{url}/rest/v1/kamus?neq=ngoko'
-    del_req = urllib.request.Request(del_url, method='DELETE', headers=headers)
-    try:
-        urllib.request.urlopen(del_req)
-    except Exception as e:
-        print(f'  ⚠ Delete warning: {e}')
+    # Filter: hanya entri yang SUDAH DIEDIT (krama ATAU id tidak kosong)
+    # Entry yang krama+id kosong = belum diedit, skip (jangan overwrite Supabase)
+    edited_entries = []
+    skipped = 0
+    for entry in entries:
+        krama = (entry.get('krama') or '').strip()
+        id_val = (entry.get('id') or '').strip()
+        if krama or id_val:
+            # Pastikan field lengkap
+            edited_entries.append({
+                'ngoko': entry.get('ngoko', ''),
+                'aksara': entry.get('aksara', ''),
+                'krama': krama,
+                'id': id_val,
+                'keterangan': entry.get('keterangan', ''),
+                'sumber': entry.get('sumber', 'jv.wiktionary.org'),
+                'status': 'clean',  # sudah diedit user = clean
+            })
+        else:
+            skipped += 1
 
-    # Insert in batches (500 per batch)
+    if not edited_entries:
+        print(f'  ⚠ Tidak ada entri yang sudah diedit (krama/id kosong semua).')
+        print(f'     Edit dulu di VSCode: code {json_path}')
+        print(f'     Isi krama + id, lalu import lagi.')
+        return False
+
+    print(f'  → {len(edited_entries)} entri sudah diedit (akan di-upsert)')
+    print(f'  → {skipped} entri belum diedit (skip, jangan overwrite)')
+    print(f'  → Status: clean (approved user)')
+    print()
+
+    # Upsert in batches (500 per batch)
     batch_size = 500
     success = 0
     failed = 0
-    for i in range(0, len(entries), batch_size):
-        batch = entries[i:i + batch_size]
+    for i in range(0, len(edited_entries), batch_size):
+        batch = edited_entries[i:i + batch_size]
         batch_json = json.dumps(batch)
         ins_url = f'{url}/rest/v1/kamus'
         ins_req = urllib.request.Request(
@@ -132,14 +162,17 @@ def import_json_to_supabase():
         try:
             urllib.request.urlopen(ins_req)
             success += len(batch)
-            pct = 100 * success // len(entries)
-            print(f'  → Imported {success}/{len(entries)} ({pct}%)...', end='\r')
+            print(f'  → Upserted {success}/{len(edited_entries)}...', end='\r')
         except Exception as e:
             failed += len(batch)
             if failed <= 3:
                 print(f'\n  ⚠ Batch {i} failed: {e}')
 
-    print(f'\n✅ Import selesai: {success} sukses, {failed} gagal')
+    print(f'\n✅ Import bertahap selesai:')
+    print(f'   Upserted: {success} entri (status: clean)')
+    print(f'   Failed: {failed}')
+    print(f'   Skipped: {skipped} (belum diedit, tidak di-upload)')
+    print(f'   Supabase makin lengkap. Web app akan pakai yang clean.')
     return True
 
 
