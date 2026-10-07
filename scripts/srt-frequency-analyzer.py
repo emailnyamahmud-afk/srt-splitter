@@ -1,29 +1,34 @@
 #!/usr/bin/env python3
 """
-srt-frequency-analyzer.py — Analisis SRT Jawa, hitung frekuensi kata,
+srt-frequency-analyzer.py v2 — Analisis SRT Jawa, hitung frekuensi kata,
 daftar top kata yang BELUM ada di kamus (prioritas user isi arti).
 
 User story:
 - SRT Jawa (hasil Google Translate) = campuran ngoko + krama + alias
-- Kamus lokal = 44.585 entries (auto-fill ngoko-krama), tapi arti kosong semua
-- User mau tahu: kata apa yang sering muncul di SRT tapi belum ada di kamus?
+- Kamus ground of truth = Supabase DB (yang user upload, mulai dari 2 entries)
+- User mau tahu: kata apa yang sering muncul di SRT tapi belum ada di kamus DB?
   Itu prioritas untuk user isi arti + validasi krama mapping.
 
+Filosofi (8 Okt 2026):
+  - Supabase DB = ground of truth (yang user upload)
+  - Kamus JSON lokal 44.585 entries = working draft di MacBook (untuk TUI edit)
+  - Web app + analyzer HARUS pakai Supabase, bukan JSON lokal
+  - Jadi analyzer fetch kamus dari Supabase REST API, bukan dari file JSON
+
 Output:
-  1. Top 100 kata paling sering di SRT (sudah ada di kamus → ✓, belum → ⚠)
-  2. List kata yang belum ada di kamus, urut by frequency (paling sering di atas)
-  3. Save ke file: ~/Dubbing/srt-freq-report.txt (untuk referensi user)
+  1. Top 100 kata paling sering di SRT (sudah ada di DB → ✓, belum → ⚠)
+  2. List kata yang belum ada di DB, urut by frequency (paling sering di atas)
+  3. Save ke file: ~/Dubbing/srt-freq-report.txt
 
 Usage:
-  python3 srt-frequency-analyzer.py [srt-file] [--kamus kamus-jawa-full.json]
+  python3 srt-frequency-analyzer.py [srt-file]
   Default:
-    srt-file = ~/Dubbing/srt-id-srt-dub.srt (atau argumen pertama)
-    kamus = ~/Dubbing/kamus-jawa-full.json
+    srt-file = ~/Dubbing/srt-id-srt-dub.srt
+    Supabase credentials dari ~/Dubbing/.env (sama seperti kamus-tui.py)
 
 Contoh:
   python3 srt-frequency-analyzer.py
   python3 srt-frequency-analyzer.py ~/Dubbing/S1-jw.srt
-  python3 srt-frequency-analyzer.py ~/Dubbing/S1-jw.srt --kamus ~/Dubbing/kamus-jawa-full.json
 """
 
 import sys
@@ -31,12 +36,31 @@ import os
 import re
 import json
 import argparse
+import urllib.request
+import urllib.error
 from pathlib import Path
 from collections import Counter
 
 DEFAULT_SRT = Path.home() / 'Dubbing' / 'srt-id-srt-dub.srt'
-DEFAULT_KAMUS = Path.home() / 'Dubbing' / 'kamus-jawa-full.json'
 DEFAULT_OUTPUT = Path.home() / 'Dubbing' / 'srt-freq-report.txt'
+ENV_FILE = Path.home() / 'Dubbing' / '.env'
+
+
+def load_env_file():
+    """Load .env dari ~/Dubbing/.env (sama seperti kamus-tui.py)."""
+    if not ENV_FILE.exists():
+        return
+    with open(ENV_FILE, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            if '=' in line:
+                key, value = line.split('=', 1)
+                key = key.strip()
+                value = value.strip().strip('"').strip("'")
+                if key and key not in os.environ:
+                    os.environ[key] = value
 
 
 def parse_srt(srt_path):
@@ -48,20 +72,12 @@ def parse_srt(srt_path):
     with open(srt_path, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # Pattern: skip nomor cue, skip timestamp line, ambil text
-    # SRT format:
-    #   1
-    #   00:00:01,000 --> 00:00:05,000
-    #   Text line 1
-    #   Text line 2
-    #   <empty line>
     text_lines = []
     blocks = re.split(r'\n\s*\n', content.strip())
     for block in blocks:
         lines = block.strip().split('\n')
         if len(lines) < 3:
             continue
-        # Skip first 2 lines (nomor + timestamp)
         for line in lines[2:]:
             line = line.strip()
             if line and not line.isdigit() and '-->' not in line:
@@ -72,7 +88,6 @@ def parse_srt(srt_path):
 def tokenize(text_lines):
     """Tokenize text → list of kata (lowercase, strip punctuation)."""
     tokens = []
-    # Pattern: ambil word characters (termasuk aksen Jawa), strip punctuation
     word_pattern = re.compile(r"[àáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿa-zA-Z']+")
     for line in text_lines:
         words = word_pattern.findall(line)
@@ -83,70 +98,99 @@ def tokenize(text_lines):
     return tokens
 
 
-def load_kamus_set(kamus_path):
-    """Load kamus, return SET of all known words (ngoko + krama + krama_inggil + alias)."""
-    if not kamus_path.exists():
-        print(f'❌ Kamus tidak ada: {kamus_path}')
-        print(f'   Download: curl -L -o ~/Dubbing/kamus-jawa-full.json.gz \\')
-        print(f'     https://github.com/emailnyamahmud-afk/srt-splitter/raw/main/public/kamus-jawa-full.json.gz')
-        print(f'   gunzip ~/Dubbing/kamus-jawa-full.json.gz')
+def fetch_kamus_from_supabase():
+    """Fetch kamus dari Supabase REST API (GROUND OF TRUTH).
+    Returns: (set of known_words, list of entries_with_krama) atau (None, None) kalau gagal.
+    """
+    load_env_file()
+    URL = os.environ.get('NEXT_PUBLIC_SUPABASE_URL', '')
+    KEY = os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY', '')
+
+    if not URL or not KEY:
+        print(f'❌ Supabase belum di-set.')
+        print(f'   Set di ~/Dubbing/.env (atau via kamus-tui.py menu "🔑 Set Supabase .env"):')
+        print(f'     NEXT_PUBLIC_SUPABASE_URL=https://zdrgzbwjlrvyloxjdyfl.supabase.co')
+        print(f'     NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx...')
+        return None, None
+
+    print(f'☁  Fetch kamus dari Supabase: {URL[:40]}...')
+
+    headers = {
+        'apikey': KEY,
+        'Authorization': f'Bearer {KEY}',
+    }
+    # Select kolom yang diperlukan saja (hemat bandwidth)
+    select_url = f'{URL}/rest/v1/kamus?select=ngoko,krama,krama_inggil,arti,register&order=ngoko&limit=50000'
+
+    req = urllib.request.Request(select_url, headers=headers, method='GET')
+    try:
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode('utf-8', errors='replace')[:300]
+        print(f'❌ HTTP {e.code}: {error_body}')
+        return None, None
+    except Exception as e:
+        print(f'❌ Error: {e}')
+        return None, None
+
+    if not data:
+        print(f'⚠ Supabase tabel kamus kosong. Upload dulu via kamus-tui.py.')
         return set(), []
 
-    with open(kamus_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-
     known_words = set()
-    entries_with_krama = []  # entries yang punya krama mapping (auto-filled)
+    entries_with_krama = []
 
-    for entry in data.get('words', []):
-        # Tambah ngoko + alias ke known_words
+    for entry in data:
         ngoko = entry.get('ngoko', '') or ''
+        krama = entry.get('krama', '') or ''
+        ki = entry.get('krama_inggil', '') or ''
+        arti = entry.get('arti', '') or ''
+
+        # Tambah ngoko + alias ke known_words
         for n in ngoko.split(','):
             n = n.strip().lower()
             if n:
                 known_words.add(n)
-
         # Tambah krama + alias
-        krama = entry.get('krama', '') or ''
         for k in krama.split(','):
             k = k.strip().lower()
             if k:
                 known_words.add(k)
-
         # Tambah krama_inggil + alias
-        ki = entry.get('krama_inggil', '') or ''
         for k in ki.split(','):
             k = k.strip().lower()
             if k:
                 known_words.add(k)
 
-        # Track entries dengan krama mapping (untuk suggest user isi arti)
+        # Track entries dengan krama mapping (untuk display)
         if krama:
             entries_with_krama.append({
                 'ngoko': ngoko.split(',')[0].strip(),
                 'krama': krama,
-                'arti': entry.get('arti', ''),
+                'arti': arti,
                 'register': entry.get('register', 'umum'),
             })
 
     return known_words, entries_with_krama
 
 
-def analyze(srt_path, kamus_path, output_path):
+def analyze(srt_path, output_path):
     print(f'📁 SRT: {srt_path}')
-    print(f'📁 Kamus: {kamus_path}')
     print()
 
-    # Load kamus
-    known_words, entries_with_krama = load_kamus_set(kamus_path)
-    print(f'✓ Kamus: {len(known_words)} kata dikenal (ngoko + krama + alias)')
-    print(f'  Dengan krama mapping (auto-filled): {len(entries_with_krama)} entries')
+    # Fetch kamus dari Supabase (GROUND OF TRUTH)
+    known_words, entries_with_krama = fetch_kamus_from_supabase()
+    if known_words is None:
+        return
+
+    print(f'✓ Kamus DB (Supabase): {len(known_words)} kata dikenal (ngoko + krama + alias)')
+    print(f'  Total entries di DB: {len(entries_with_krama)} (yang punya krama mapping)')
     print()
 
     # Parse SRT
     text_lines = parse_srt(srt_path)
     if not text_lines:
-        print('❌ Tidak ada text di SRT')
         return
     print(f'✓ SRT: {len(text_lines)} text lines')
 
@@ -165,43 +209,45 @@ def analyze(srt_path, kamus_path, output_path):
     known_freq = {w: c for w, c in freq.items() if w in known_words}
     unknown_freq = {w: c for w, c in freq.items() if w not in known_words}
 
-    print(f'📊 Kata Dikenal kamus: {len(known_freq)} unique ({sum(known_freq.values())} total)')
+    print(f'📊 Kata Dikenal DB: {len(known_freq)} unique ({sum(known_freq.values())} total)')
     print(f'📊 Kata TIDAK dikenal: {len(unknown_freq)} unique ({sum(unknown_freq.values())} total)')
-    print(f'   Coverage: {100 * sum(known_freq.values()) / max(1, len(tokens)):.1f}% token, '
-          f'{100 * len(known_freq) / max(1, unique_words):.1f}% type')
+    if tokens:
+        coverage = 100 * sum(known_freq.values()) / len(tokens)
+        type_coverage = 100 * len(known_freq) / max(1, unique_words)
+        print(f'   Coverage: {coverage:.1f}% token, {type_coverage:.1f}% type')
     print()
 
-    # Top 50 kata yang dikenal (sudah ada di kamus)
+    # Top 50 kata yang dikenal (sudah ada di DB)
     print('=' * 70)
-    print('TOP 50 KATA DIKENAL KAMUS (paling sering muncul di SRT):')
+    print('TOP 50 KATA DIKENAL DB (paling sering muncul di SRT):')
     print('=' * 70)
     print(f'{"#":>4}  {"Freq":>5}  {"Kata":<20}  Status')
     print('-' * 70)
     for i, (word, count) in enumerate(sorted(known_freq.items(), key=lambda x: -x[1])[:50], 1):
         # Cek apakah ada krama mapping
-        has_krama = any(e['ngoko'].lower() == word or word in e['krama'].lower().split(',')
-                       for e in entries_with_krama if e['ngoko'].lower() == word)
+        has_krama = any(
+            e['ngoko'].lower() == word or word in [k.strip().lower() for k in e['krama'].split(',')]
+            for e in entries_with_krama
+        )
         status = '✓ krama mapping' if has_krama else '○ ngoko saja'
         print(f'{i:>4}  {count:>5}  {word:<20}  {status}')
     print()
 
     # Top 100 kata yang TIDAK dikenal (prioritas user add ke kamus)
     print('=' * 70)
-    print('TOP 100 KATA TIDAK DIKENAL (prioritas add ke kamus + isi arti):')
+    print('TOP 100 KATA TIDAK DIKENAL DB (prioritas add ke kamus + isi arti):')
     print('=' * 70)
     print(f'{"#":>4}  {"Freq":>5}  {"Kata":<25}  Suggestion')
     print('-' * 70)
 
     unknown_top = sorted(unknown_freq.items(), key=lambda x: -x[1])[:100]
     for i, (word, count) in enumerate(unknown_top, 1):
-        # Suggest: kalau kata mirip dengan yang ada di kamus (e.g. plural, reduplication)
+        # Suggest: cek apakah mirip dengan yang ada di kamus (base + suffix, reduplication)
         suggestion = ''
-        # Cek reduplication (mangan-mangan, sega-sega)
         if '-' in word:
             base = word.split('-')[0]
             if base in known_words:
-                suggestion = f'base "{base}" ada di kamus, mungkin reduplikasi'
-        # Cek plural/possessive (-ku, -mu, -ne, -e)
+                suggestion = f'base "{base}" ada di DB, mungkin reduplikasi'
         for suffix in ['-ku', '-mu', '-ne', '-e', '-na', '-ana', '-aken', '-an']:
             if word.endswith(suffix):
                 base = word[:-len(suffix)]
@@ -220,26 +266,37 @@ def analyze(srt_path, kamus_path, output_path):
         f.write(f'SRT Frequency Analyzer Report\n')
         f.write(f'============================\n\n')
         f.write(f'SRT: {srt_path}\n')
-        f.write(f'Kamus: {kamus_path}\n')
-        f.write(f'Tanggal: {Path().resolve()}\n\n')
+        f.write(f'Kamus source: Supabase DB (GROUND OF TRUTH)\n')
+        f.write(f'\n')
 
         f.write(f'STATS:\n')
         f.write(f'  Total kata di SRT: {len(tokens)}\n')
         f.write(f'  Unique words: {unique_words}\n')
-        f.write(f'  Kata dikenal kamus: {len(known_freq)} ({100 * sum(known_freq.values()) / max(1, len(tokens)):.1f}% token)\n')
-        f.write(f'  Kata TIDAK dikenal: {len(unknown_freq)} ({100 * sum(unknown_freq.values()) / max(1, len(tokens)):.1f}% token)\n')
-        f.write(f'  Coverage: {100 * len(known_freq) / max(1, unique_words):.1f}% type\n\n')
+        f.write(f'  Kata dikenal DB: {len(known_freq)}')
+        if tokens:
+            f.write(f' ({100 * sum(known_freq.values()) / max(1, len(tokens)):.1f}% token)\n')
+        else:
+            f.write(f'\n')
+        f.write(f'  Kata TIDAK dikenal: {len(unknown_freq)}')
+        if tokens:
+            f.write(f' ({100 * sum(unknown_freq.values()) / max(1, len(tokens)):.1f}% token)\n')
+        else:
+            f.write(f'\n')
+        f.write(f'  Coverage type: {100 * len(known_freq) / max(1, unique_words):.1f}%\n\n')
 
-        f.write(f'TOP 50 KATA DIKENAL KAMUS:\n')
+        f.write(f'TOP 50 KATA DIKENAL DB:\n')
         f.write(f'{"#":>4}  {"Freq":>5}  {"Kata":<20}  Status\n')
         f.write(f'-' * 70 + '\n')
         for i, (word, count) in enumerate(sorted(known_freq.items(), key=lambda x: -x[1])[:50], 1):
-            has_krama = any(e['ngoko'].lower() == word for e in entries_with_krama)
+            has_krama = any(
+                e['ngoko'].lower() == word or word in [k.strip().lower() for k in e['krama'].split(',')]
+                for e in entries_with_krama
+            )
             status = '✓ krama mapping' if has_krama else '○ ngoko saja'
             f.write(f'{i:>4}  {count:>5}  {word:<20}  {status}\n')
         f.write('\n')
 
-        f.write(f'TOP 200 KATA TIDAK DIKENAL (prioritas add ke kamus):\n')
+        f.write(f'TOP 200 KATA TIDAK DIKENAL DB (prioritas add ke kamus):\n')
         f.write(f'{"#":>4}  {"Freq":>5}  {"Kata":<25}  Suggestion\n')
         f.write(f'-' * 70 + '\n')
         for i, (word, count) in enumerate(sorted(unknown_freq.items(), key=lambda x: -x[1])[:200], 1):
@@ -247,7 +304,7 @@ def analyze(srt_path, kamus_path, output_path):
             if '-' in word:
                 base = word.split('-')[0]
                 if base in known_words:
-                    suggestion = f'base "{base}" ada di kamus'
+                    suggestion = f'base "{base}" ada di DB'
             for suffix in ['-ku', '-mu', '-ne', '-e', '-na', '-ana', '-aken', '-an']:
                 if word.endswith(suffix):
                     base = word[:-len(suffix)]
@@ -261,33 +318,32 @@ def analyze(srt_path, kamus_path, output_path):
     print()
     print(f'💡 Workflow berikutnya:')
     print(f'   1. Buka laporan: code {output_path}')
-    print(f'   2. Cari top kata "TIDAK dikenal" di kamus-tui.py')
-    print(f'   3. Add entry baru (ngoko + krama + arti) untuk kata tersebut')
-    print(f'   4. Upload ke Supabase')
-    print(f'   5. Reload Editor SRT Jawa → kamus refresh → kata sekarang dikenali')
+    print(f'   2. Cari top kata "TIDAK dikenal" — itu prioritas')
+    print(f'   3. Di kamus-tui.py: Search kata → edit entry (isi ngoko + krama + arti)')
+    print(f'   4. Upload ke Supabase (menu ☁ Upload)')
+    print(f'   5. Run analyzer lagi → kata sekarang dikenali → coverage naik')
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description='SRT Frequency Analyzer — prioritaskan kata untuk isi kamus',
+        description='SRT Frequency Analyzer — pakai Supabase DB sebagai ground of truth',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Contoh:
   python3 srt-frequency-analyzer.py
   python3 srt-frequency-analyzer.py ~/Dubbing/S1-jw.srt
-  python3 srt-frequency-analyzer.py ~/Dubbing/S1-jw.srt --kamus ~/Dubbing/kamus-jawa-full.json
+
+Note: Kamus di-fetch dari Supabase DB (yang user upload via kamus-tui.py).
+      Bukan dari kamus-jawa-full.json lokal (itu cuma working draft untuk TUI edit).
         """,
     )
     parser.add_argument('srt', nargs='?', default=str(DEFAULT_SRT),
                         help=f'File SRT (default: {DEFAULT_SRT})')
-    parser.add_argument('--kamus', default=str(DEFAULT_KAMUS),
-                        help=f'File kamus JSON (default: {DEFAULT_KAMUS})')
     parser.add_argument('--output', default=str(DEFAULT_OUTPUT),
                         help=f'Output report (default: {DEFAULT_OUTPUT})')
     args = parser.parse_args()
 
     srt_path = Path(args.srt).expanduser()
-    kamus_path = Path(args.kamus).expanduser()
     output_path = Path(args.output).expanduser()
 
     if not srt_path.exists():
@@ -295,7 +351,7 @@ Contoh:
         print(f'   Pakai: python3 srt-frequency-analyzer.py <srt-file>')
         sys.exit(1)
 
-    analyze(srt_path, kamus_path, output_path)
+    analyze(srt_path, output_path)
 
 
 if __name__ == '__main__':
