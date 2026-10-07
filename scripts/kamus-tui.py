@@ -44,88 +44,105 @@ def save_kamus(data):
 
 
 def upload_to_supabase():
-    """Upload entri yang sudah diedit (krama/id tidak kosong) ke Supabase"""
-    if not SUPABASE_URL or not SUPABASE_KEY:
-        print('\n  ⚠ Supabase belum di-set.')
-        print('   export NEXT_PUBLIC_SUPABASE_URL=...')
-        print('   export NEXT_PUBLIC_SUPABASE_ANON_KEY=...')
-        input('\n  Tekan Enter...')
-        return False
+    """Upload entri yang sudah diedit ke Supabase — buka subprocess supaya output tidak di-clear"""
+    import subprocess
+    import tempfile
 
-    print('\n  → Cek JSON untuk entri yang sudah diedit...')
+    # Buat script Python sementara untuk upload
+    script = '''
+import json, sys, os, urllib.request
 
-    if not KAMUS_JSON.exists():
-        print(f'  ❌ {KAMUS_JSON} tidak ada.')
-        input('\n  Tekan Enter...')
-        return False
+KAMUS_JSON = os.path.expanduser("~/Dubbing/kamus-jawa.json")
+URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
+KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY", "")
 
-    with open(KAMUS_JSON, 'r', encoding='utf-8') as f:
-        data = json.load(f)
+if not URL or not KEY:
+    print("\\n  ❌ Supabase belum di-set. Set env vars dulu.")
+    input("\\n  Tekan Enter...")
+    sys.exit(1)
 
-    edited = []
-    for entry in data.get('words', []):
-        krama = (entry.get('krama') or '').strip()
-        id_val = (entry.get('id') or '').strip()
-        if krama or id_val:
-            edited.append({
-                'ngoko': entry.get('ngoko', ''),
-                'aksara': entry.get('aksara', ''),
-                'krama': krama,
-                'arti': id_val,
-                'keterangan': entry.get('keterangan', ''),
-                'sumber': entry.get('sumber', 'jv.wiktionary.org'),
-                'status': 'clean',
-            })
+if not os.path.exists(KAMUS_JSON):
+    print(f"\\n  ❌ {KAMUS_JSON} tidak ada.")
+    input("\\n  Tekan Enter...")
+    sys.exit(1)
 
-    if not edited:
-        print('  ⚠ Tidak ada entri yang sudah diedit (krama/id kosong semua).')
-        print(f'     Edit dulu di TUI: browse → pilih entri → isi krama + id')
-        input('\n  Tekan Enter...')
-        return False
+print(f"\\n  → Cek JSON untuk entri yang sudah diedit...")
+with open(KAMUS_JSON, "r", encoding="utf-8") as f:
+    data = json.load(f)
 
-    print(f'  → {len(edited)} entri sudah diedit (akan di-upload)')
-    print(f'  → Supabase: {SUPABASE_URL[:40]}...')
-    print()
+edited = []
+for entry in data.get("words", []):
+    krama = (entry.get("krama") or "").strip()
+    id_val = (entry.get("id") or "").strip()
+    if krama or id_val:
+        edited.append({
+            "ngoko": entry.get("ngoko", ""),
+            "aksara": entry.get("aksara", ""),
+            "krama": krama,
+            "arti": id_val,
+            "keterangan": entry.get("keterangan", ""),
+            "sumber": entry.get("sumber", "jv.wiktionary.org"),
+            "status": "clean",
+        })
 
-    import urllib.request
-    headers = {
-        'apikey': SUPABASE_KEY,
-        'Authorization': f'Bearer {SUPABASE_KEY}',
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates,return=minimal',
-    }
+if not edited:
+    print("  ⚠ Tidak ada entri yang sudah diedit (krama/id kosong semua).")
+    print("     Edit dulu di TUI: browse → pilih entri → isi krama + id")
+    input("\\n  Tekan Enter...")
+    sys.exit(0)
 
-    # Upsert in batches (500 per batch)
-    batch_size = 500
-    success = 0
-    failed = 0
-    for i in range(0, len(edited), batch_size):
-        batch = edited[i:i + batch_size]
-        batch_json = json.dumps(batch)
-        ins_url = f'{SUPABASE_URL}/rest/v1/kamus'
-        ins_req = urllib.request.Request(
-            ins_url,
-            data=batch_json.encode('utf-8'),
-            headers=headers,
-            method='POST',
-        )
-        try:
-            resp = urllib.request.urlopen(ins_req)
-            success += len(batch)
-            print(f'  → {success}/{len(edited)}...', end='\r')
-        except urllib.error.HTTPError as e:
-            failed += len(batch)
-            error_body = e.read().decode('utf-8', errors='replace')[:300]
-            print(f'\n  ❌ HTTP {e.code}: {error_body}')
-            break
-        except Exception as e:
-            failed += len(batch)
-            print(f'\n  ❌ Error: {e}')
-            break
+print(f"  → {len(edited)} entri sudah diedit (akan di-upload)")
+print(f"  → Supabase: {URL[:40]}...")
+print()
 
-    print(f'\n  ✅ Upload: {success} sukses, {failed} gagal')
-    input('\n  Tekan Enter untuk kembali...')
-    return True
+headers = {
+    "apikey": KEY,
+    "Authorization": f"Bearer {KEY}",
+    "Content-Type": "application/json",
+    "Prefer": "resolution=merge-duplicates,return=minimal",
+}
+
+batch_size = 500
+success = 0
+failed = 0
+for i in range(0, len(edited), batch_size):
+    batch = edited[i:i + batch_size]
+    batch_json = json.dumps(batch)
+    ins_url = f"{URL}/rest/v1/kamus"
+    ins_req = urllib.request.Request(
+        ins_url,
+        data=batch_json.encode("utf-8"),
+        headers=headers,
+        method="POST",
+    )
+    try:
+        urllib.request.urlopen(ins_req)
+        success += len(batch)
+        print(f"  → {success}/{len(edited)}...", end="\\r")
+    except urllib.error.HTTPError as e:
+        failed += len(batch)
+        error_body = e.read().decode("utf-8", errors="replace")[:300]
+        print(f"\\n  ❌ HTTP {e.code}: {error_body}")
+        break
+    except Exception as e:
+        failed += len(batch)
+        print(f"\\n  ❌ Error: {e}")
+        break
+
+print(f"\\n  ✅ Upload: {success} sukses, {failed} gagal")
+input("\\n  Tekan Enter untuk kembali...")
+'''
+
+    # Tulis script sementara
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False, dir='/tmp') as f:
+        f.write(script)
+        temp_path = f.name
+
+    try:
+        # Jalankan di subprocess (terminal baru, output tidak di-clear oleh questionary)
+        subprocess.run([sys.executable, temp_path], cwd=os.path.dirname(KAMUS_JSON))
+    finally:
+        os.unlink(temp_path)
 
 
 def browse_kamus(data):
