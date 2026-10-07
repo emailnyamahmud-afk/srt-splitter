@@ -770,3 +770,107 @@ Stage Summary:
 - Files new: scripts/supabase-migration-v2.sql
 - Pending: user run migration v2 SQL di Supabase SQL Editor
 
+
+---
+Task ID: 15
+Agent: main
+Task: Per-cue preview + browser local audio cache (IndexedDB)
+
+User question (sebelum run migration v2 SQL):
+"sebelum user run scrip sql, ada yg user tanyakan.
+1. soal generate audio, di srt editor, ini perhalaman? atau langsung full?
+   user perlu reviuw per cue (play di browser)
+2. bisakah kalau srt sudah final, langsung generate full?
+   uplod ke mode on, dengan suara sudah terkurasi, antara dimas atau siti.
+   Atau generate tts multi suara, hanya bisa di srt editor?
+intinya user mau, srt editor juga ada reviuw di browser, srt wav tersimpan di lokal browser."
+
+Jawaban + implementasi:
+
+Sebelumnya:
+- 'Generate TTS' di editor langsung full (semua cue sekaligus), tidak ada per-cue review
+- Audio hanya di memory (URL.createObjectURL), hilang saat reload
+- Multi-voice (per-cue) hanya di editor, Split workflow pakai 1 voice global
+
+Sekarang:
+- Per-cue '▶ Preview' button → dengar 1 cue di browser (inline audio player)
+- Cache audio per cue di IndexedDB (persistent antar reload, survive browser close)
+- 'Generate Full' pakai cache kalau valid (no re-gen untuk cue yang sudah di-preview)
+- Full audio tersimpan di IndexedDB → reload page → audio auto-load
+- Split workflow tetap untuk SRT final single-voice (1 voice global, mode ON)
+
+Files:
+
+1. src/lib/audio-cache.ts (NEW, 274 lines)
+   - Database: 'srt-splitter-audio' (IndexedDB)
+   - 2 stores:
+     * cue-audio: key = `${projectId}:${cueIndex}` → { blob, sampleRate, durationSec, voice, voiceId, text, pitch, smartFitCap, generatedAt }
+     * full-audio: key = projectId → { blob, sampleRate, durationSec, cueCount, voiceSummary, generatedAt }
+   - Functions: initAudioDb, saveCueAudio, getCueAudio, deleteCueAudio,
+     listCachedCueIndices, saveFullAudio, getFullAudio, getCacheSizeForProject, clearAll
+   - Persistent: data survive browser close, reload, bahkan browser restart
+   - Storage limit: ratusan MB-GB (jauh lebih besar dari localStorage 5-10MB)
+
+2. src/lib/tts.ts (+280 lines)
+   - narrateSingleCue(entry, cueIndex, nextEntryStart, opts): SingleCueResult
+     * Generate audio untuk 1 cue saja dengan mode ON + Smart Fit logic
+     * Sama persis seperti loop body di narrateEntries
+     * Returns: { audio: Float32Array, fittedDurationSec, sampleRate, voiceUsed }
+     * NO stitching — caller bertanggung jawab stitch
+   - stitchFullAudio(entries, cachedAudios, opts, onProgress): NarrationResult
+     * Loop semua cue, pakai cache kalau valid (decode blob → Float32Array)
+     * Generate missing via narrateSingleCue
+     * Stitch dengan crossfade (sama seperti narrateEntries)
+     * Returns: { blob, sampleRate, durationSec, previewUrl }
+
+3. src/components/srt-editor-panel.tsx (+310 lines)
+   - Per-cue UI:
+     * Tombol '▶ Preview' di pojok kanan cue card (next to #index + timestamp)
+     * Klik → generate 1 cue TTS (narrateSingleCue) → encode WAV → save IndexedDB
+     * Inline audio player muncul di cue card (purple accent)
+     * Badge: ✓ 1.2s · siti (durasi + voice)
+     * Tombol ✕ untuk hapus cache cue ini
+   - TTS panel (purple section di atas cue list):
+     * 'Generate Full' button (rename dari 'Generate TTS')
+     * Cache status badges:
+       - 'Preview cache: 5/200 cue · 12.3 MB' (real-time count + size)
+       - '✓ Semua cue di-preview — Generate Full akan cepat (no re-gen)' kalau 100%
+       - 'Full audio tersimpan: 150.2s · siti:150, dimas:50' kalau sudah generate full
+     * Generate Full: cache-aware (hit/miss toast)
+     * Full audio player (auto-load dari IndexedDB kalau ada, no re-gen)
+   - Cache validation:
+     * Cache valid kalau: text sama + voiceId sama + pitch sama + smartFitCap sama
+     * User edit text → cache miss → re-generate saat Preview klik lagi
+     * User ganti voice/pitch/cap → cache miss → re-generate
+     * Semua sama → instant play dari cache (no API call, no Edge TTS)
+   - refreshAudioCache: load cache count + size + full audio saat load project
+
+Workflow baru (sistematis):
+1. Buat project (SRT ID + SRT Jawa)
+2. Edit cue: textarea, Ngoko/Krama, Voice (auto-save ke Supabase)
+3. Per-cue: klik '▶ Preview' → dengar di browser → cache ke IndexedDB
+4. Kalau suara kurang pas: edit text/voice → Preview lagi (re-generate, cache update)
+5. Setelah semua cue OK: klik 'Generate Full' → stitch semua cached audio
+6. Full audio tersimpan di IndexedDB → reload page → audio masih ada
+7. Tutup project → buka project lain → balik lagi → semua masih utuh
+
+Untuk SRT final single-voice (mode ON, 1 voice global):
+- Pakai Split workflow (TtsPanel lama di bawah editor)
+- Upload SRT final → pilih Edge voice (Dimas/Siti/Ardi/Gadis) → Generate TTS
+- Mode ON tetap aktif (respectTiming=true, smartFit=true)
+- Cocok untuk SRT yang tidak perlu multi-voice + tidak perlu per-cue review
+
+Verification:
+- Build: ✓ Compiled successfully 11.8s
+- Vercel deploy: ✓ (commit b30538c, ~60s)
+- VLM verify: ✓ '+ Project Baru' + 'Buka Project' + 8-step Cara pakai (termasuk step 6 '▶ Preview' + step 7 'Generate Full')
+
+Stage Summary:
+- Per-cue preview + browser cache sudah jadi (IndexedDB, persistent)
+- Generate Full pakai cache kalau valid (hemat API call Edge TTS)
+- Full audio tersimpan di browser → reload page → audio masih ada
+- Split workflow tetap untuk SRT final single-voice (1 voice global)
+- Commit: b30538c — pushed ke GitHub, Vercel auto-deploy
+- Files: audio-cache.ts (NEW 274), tts.ts (+280 narrateSingleCue + stitchFullAudio), srt-editor-panel.tsx (+310 per-cue UI)
+- User bisa langsung coba setelah run migration v2 SQL di Supabase SQL Editor
+
