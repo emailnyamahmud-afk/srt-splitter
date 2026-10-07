@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Upload, Download, ChevronLeft, ChevronRight, Loader2, CheckCircle2, Cloud, Mic, FolderOpen, Plus, Trash2, Wand2, X, Eraser } from 'lucide-react'
+import { Upload, Download, ChevronLeft, ChevronRight, Loader2, CheckCircle2, Cloud, Mic, FolderOpen, Plus, Trash2, Wand2, X, Eraser, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -22,6 +22,7 @@ import {
   convertRegister,
   stripAksenJawa,
   stripAksenFromEntries,
+  getTopUnknownWords,
   type KamusJawa,
   type CueRegister,
 } from '@/lib/rapikan-jawa'
@@ -77,6 +78,9 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
   const [ttsProvider, setTtsProvider] = useState<Provider>('edge')
   const [ttsPitch, setTtsPitch] = useState<string>('+0Hz')
   const [ttsSmartFitCap, setTtsSmartFitCap] = useState<number>(2.0)
+  // Unknown words panel (top N words not in kamus)
+  const [showUnknownPanel, setShowUnknownPanel] = useState(false)
+  const [unknownWords, setUnknownWords] = useState<{ word: string; freq: number; cueIndices: number[] }[]>([])
   // Per-cue preview state
   const [previewingCue, setPreviewingCue] = useState<number | null>(null)  // cue index being generated
   const [cueAudioCache, setCueAudioCache] = useState<Record<number, { url: string; durationSec: number; voice: string }>>({})  // cue_index → preview URL
@@ -105,6 +109,16 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
       }
     }
   }, [])
+
+  // Compute top unknown words saat jawaEntries atau kamus berubah
+  useEffect(() => {
+    if (jawaEntries.length === 0 || !kamus) {
+      setUnknownWords([])
+      return
+    }
+    const top = getTopUnknownWords(jawaEntries, kamus, 100)
+    setUnknownWords(top)
+  }, [jawaEntries, kamus])
 
   const refreshProjects = useCallback(async () => {
     if (!isSupabaseAvailable()) return
@@ -924,6 +938,83 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
             </Button>
           </div>
 
+          {/* Unknown Words Panel — top 100 kata tak dikenal kamus */}
+          {jawaEntries.length > 0 && (
+            <div className="rounded-md border border-amber-200 dark:border-amber-800 bg-amber-50/30 dark:bg-amber-950/10">
+              <button
+                onClick={() => setShowUnknownPanel(!showUnknownPanel)}
+                className="w-full flex items-center justify-between p-2.5 hover:bg-amber-100/50 dark:hover:bg-amber-950/30 transition-colors"
+              >
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <AlertCircle className="size-4 text-amber-600" />
+                  <span>Kata tak dikenal kamus</span>
+                  <Badge variant="outline" className="text-xs bg-amber-100 dark:bg-amber-950/40">
+                    {unknownWords.length} unique
+                  </Badge>
+                  {unknownWords.length > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      (top {Math.min(100, unknownWords.length)} — prioritas add ke kamus)
+                    </span>
+                  )}
+                </div>
+                {showUnknownPanel ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+              </button>
+              {showUnknownPanel && (
+                <div className="px-2.5 pb-2.5 space-y-2">
+                  {unknownWords.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-3">
+                      ✓ Semua kata di SRT dikenal kamus. Tidak ada yang perlu add.
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-xs text-muted-foreground">
+                        Kata berikut muncul di SRT tapi belum ada di kamus DB. Tambahkan di{' '}
+                        <code>kamus-tui.py</code> (TUI lokal) lalu upload ke Supabase.
+                        Klik kata untuk copy ke clipboard.
+                      </p>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1 max-h-[300px] overflow-y-auto">
+                        {unknownWords.map((item, i) => (
+                          <button
+                            key={i}
+                            onClick={() => {
+                              navigator.clipboard.writeText(item.word)
+                              toast.success(`Copied "${item.word}"`)
+                            }}
+                            className="flex items-center justify-between gap-2 px-2 py-1 rounded text-xs bg-background hover:bg-amber-100 dark:hover:bg-amber-950/40 border border-amber-200 dark:border-amber-800 transition-colors text-left"
+                            title={`Muncul di cue: ${item.cueIndices.slice(0, 5).map(i => i + 1).join(', ')}${item.cueIndices.length > 5 ? '...' : ''}`}
+                          >
+                            <span className="font-mono font-semibold text-amber-700 dark:text-amber-300 truncate">
+                              {item.word}
+                            </span>
+                            <span className="text-xs text-muted-foreground shrink-0">
+                              ×{item.freq}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-2 pt-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const text = unknownWords.map(w => w.word).join('\n')
+                            navigator.clipboard.writeText(text)
+                            toast.success(`${unknownWords.length} kata disalin ke clipboard`)
+                          }}
+                        >
+                          <Download className="size-3.5 mr-1" /> Copy all ({unknownWords.length})
+                        </Button>
+                        <span className="text-xs text-muted-foreground">
+                          Paste di kamus-tui.py → search satu-satu → add entry (ngoko + krama + arti)
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* TTS panel */}
           <div className="rounded-md border border-purple-200 dark:border-purple-800 p-3 bg-purple-50/30 dark:bg-purple-950/10 space-y-2">
             <div className="flex items-center justify-between flex-wrap gap-2">
@@ -1008,12 +1099,23 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
               const cueAudio = cueAudioCache[idx]
               const isPreviewing = previewingCue === idx
 
+              // Hitung kata tak dikenal di cue ini (untuk badge warning)
+              const cueUnknownCount = unknownWords
+                .filter(uw => uw.cueIndices.includes(idx))
+                .length
+
               return (
-                <div key={idx} className="rounded-lg border p-2.5 space-y-1.5 hover:border-indigo-300 transition-colors">
+                <div key={idx} className={`rounded-lg border p-2.5 space-y-1.5 transition-colors ${cueUnknownCount > 0 ? 'border-amber-300 dark:border-amber-700' : 'hover:border-indigo-300'}`}>
                   <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-bold">#{idx + 1}</span>
                       <span className="font-mono">{formatTs(entry.start)} → {formatTs(entry.end)}</span>
+                      {cueUnknownCount > 0 && (
+                        <Badge variant="outline" className="text-[10px] bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700">
+                          <AlertCircle className="size-2.5 mr-0.5" />
+                          {cueUnknownCount} tak dikenal
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-1">
                       <button

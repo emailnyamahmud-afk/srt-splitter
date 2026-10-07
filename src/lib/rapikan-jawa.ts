@@ -168,6 +168,58 @@ export function checkUnknownWords(
 }
 
 /**
+ * Hitung top N kata tak dikenal kamus (urut by frequency).
+ * Untuk display di Editor SRT Jawa: user tahu kata mana yang sering muncul
+ * tapi belum ada di kamus → prioritas add ke kamus.
+ *
+ * @param entries SRT entries
+ * @param kamus Kamus object (dari loadKamusJawa, in-memory)
+ * @param topN Default 100
+ * @returns Array of {word, freq, cueIndices: number[]} — urut by freq desc
+ */
+export function getTopUnknownWords(
+  entries: { textLines: string[] }[],
+  kamus: KamusJawa | null,
+  topN: number = 100,
+): { word: string; freq: number; cueIndices: number[] }[] {
+  if (!kamus) return []
+
+  const freqMap = new Map<string, { freq: number; cueIndices: Set<number> }>()
+
+  for (let i = 0; i < entries.length; i++) {
+    const text = entries[i].textLines.join(' ')
+    const words = text.split(/\s+/)
+    for (const word of words) {
+      const cleanWord = word.toLowerCase().replace(/[^\wàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ]/g, '')
+      if (!cleanWord) continue
+      // Skip kalau dikenal kamus
+      if (isWordInKamus(cleanWord, kamus)) continue
+      // Tambah ke freqMap
+      if (!freqMap.has(cleanWord)) {
+        freqMap.set(cleanWord, { freq: 0, cueIndices: new Set() })
+      }
+      const entry = freqMap.get(cleanWord)!
+      entry.freq++
+      entry.cueIndices.add(i)
+    }
+  }
+
+  // Sort by freq desc, lalu alphabet
+  const sorted = Array.from(freqMap.entries())
+    .map(([word, { freq, cueIndices }]) => ({
+      word,
+      freq,
+      cueIndices: Array.from(cueIndices).sort((a, b) => a - b),
+    }))
+    .sort((a, b) => {
+      if (b.freq !== a.freq) return b.freq - a.freq
+      return a.word.localeCompare(b.word)
+    })
+
+  return sorted.slice(0, topN)
+}
+
+/**
  * Hapus aksén Jawa (é, è, ê) → e polos
  * Edge TTS Jawa tidak bisa baca aksén dengan baik
  */
