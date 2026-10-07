@@ -471,26 +471,25 @@ for entry in data.get("words", []):
     krama = (entry.get("krama") or "").strip()
     arti = (entry.get("arti") or "").strip()
     ki = (entry.get("krama_inggil") or "").strip()
+    register = (entry.get("register") or "").strip()
 
     # Upload kalau:
     # 1. status=clean (user sudah edit)
     # 2. ATAU ada krama mapping (auto-filled dari template — supaya web app bisa pakai)
     if status == "clean" or krama or ki or arti:
+        # SEMUA row harus punya keys yang sama (Supabase PGRST102: all keys must match)
+        # krama_inggil + register selalu di-include (kosong string kalau tidak ada)
         row = {
             "ngoko": entry.get("ngoko", ""),
             "aksara": entry.get("aksara", ""),
             "krama": krama,
+            "krama_inggil": ki,        # selalu include (kosong kalau tidak ada)
             "arti": arti,
             "keterangan": entry.get("keterangan", ""),
+            "register": register,      # selalu include (kosong/umum kalau tidak ada)
             "sumber": entry.get("sumber", "jv.wiktionary.org"),
             "status": "clean" if status == "clean" else "draft",
         }
-        # Tambah kolom baru (migration v3) kalau ada
-        if ki:
-            row["krama_inggil"] = ki
-        register = entry.get("register", "")
-        if register:
-            row["register"] = register
         edited.append(row)
 
 if not edited:
