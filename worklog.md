@@ -911,3 +911,122 @@ Stage Summary:
 - AI next time baca PROGRESS.md catatan → tahu konteks + filosofi
 - Tidak ada perubahan kode, hanya dokumentasi
 
+
+---
+Task ID: 17
+Agent: main
+Task: Kamus-tui.py v2 + .env support + upload logic fix (8 Okt 2026 malam)
+
+User: 'pake jq manual = user pusing, mending AI edit TUI di kamus-tui.py pake menu-menu jq, yg user tinggal tab tab, arah panah. juga ada menu upload (hanya yg sudah diedit)'
+
+Work Log:
+- Rewrite kamus-tui.py v2 (387 → 540 lines):
+  * Main menu pre-built (arrow keys, no jq): Statistik, Search, Browse SIAP UPLOAD,
+    Browse krama mapping, Browse BELUM ada arti, Browse per register, Upload, Save, Keluar
+  * Browse list: pagination 20/page, ✓/○ status icon, search di list, edit per entry
+  * Edit entry: ngoko, krama, krama_inggil, arti (Indonesia), keterangan read-only
+  * .env file di ~/Dubbing/ untuk Supabase credentials (sekali set, jalan terus)
+  * Menu "🔑 Set Supabase .env" — input URL + anon key via questionary
+  * Auto-load .env saat start (sebelum SUPABASE_URL/KEY di-read)
+
+- Upload logic (iterasi 3x karena bug):
+  * v1: upload semua yang ada krama (auto-fill template) — BODOH, user cuma edit 2
+  * v2: upload hanya yang status='clean' (arti diisi) — masih bug karena auto-set clean
+  * v3 (FINAL): upload HANYA yang ngoko+krama+arti lengkap (3 field wajib)
+    krama_inggil opsional (tidak semua kata punya)
+    Yang auto-fill template tanpa arti → TIDAK di-upload (belum divalidasi user)
+
+- Bug fixes:
+  * Supabase PGRST102 (all keys must match) — semua row include krama_inggil + register
+  * Menu matching bug: '☁ Upload' bolak-balik ke edit (substring match) — fix pakai emoji prefix
+  * Hapus kamus-jawa.json lama (21KB draft v4) — bikin bingung user
+
+Stage Summary:
+- kamus-tui.py v2 production-ready dengan menu pre-built + .env support
+- Upload logic benar: 3 field wajib (ngoko+krama+arti), krama_inggil opsional
+- User bisa set Supabase credentials sekali, jalan terus walau update TUI
+- User test upload 2 entries → sukses
+
+---
+Task ID: 18
+Agent: main
+Task: Web app kamus audit + frequency analyzer pakai Supabase (8 Okt 2026 malam)
+
+User: 'Lalu ai audit code, jangan rusak kamus dengan code di web, tugas web cukup baca alias, sama merujuk ke kamus. Jadi kamus bisa translate, kaya gue = Kula (dalam krama), atau Nyong (dalam ngoko), karena di kamus alais sudah banyak.'
+
+Work Log:
+- Web app AUDIT — kamus READ-ONLY:
+  * kamus-editor-panel.tsx: hapus semua fungsi edit/save → read-only viewer
+    - Hapus tombol Edit, saveEdit function, edit mode UI
+    - Tambah badge "Read-only" di header
+    - Display: ngoko + krama + krama_inggil + arti + keterangan + status
+  * supabase.ts: hapus fungsi importKamus + updateKamusEntry (write functions)
+    - Sekarang cuma ada: searchKamus (read), countKamus (read)
+    - Comment: "Web app TIDAK edit kamus. Editing hanya via TUI lokal."
+  * Filosofi: editing kamus = TUI lokal → upload ke Supabase
+    Web app cuma baca + lookup alias
+    Validasi level 2: user edit langsung di DB Supabase (Table Editor)
+
+- Frequency analyzer v2 (pakai Supabase sebagai ground of truth):
+  * Hapus load_kamus_set(kamus_path) yang baca file JSON lokal
+  * Tambah fetch_kamus_from_supabase() yang query REST API
+  * Pakai credentials dari ~/Dubbing/.env (sama seperti kamus-tui.py)
+  * Hapus argumen --kamus (tidak perlu lagi)
+
+- Bug fix: web app Kamus Editor pakai kolom 'ngoko' (bukan 'word') + 'arti' (bukan 'id')
+  Konsisten dengan upload dari kamus-tui.py + loadKamusJawa di rapikan-jawa.ts
+
+- Naikkan limit kamus load: 10.000 → 50.000 (cukup untuk 5-10k entries user + auto-fill Wiktionary)
+
+Stage Summary:
+- Web app kamus READ-ONLY (audit selesai, hapus write functions)
+- Frequency analyzer pakai Supabase sebagai ground of truth
+- User test: upload 2 entries → web app search → ketemu (verified end-to-end)
+
+---
+Task ID: 19
+Agent: main
+Task: arti (Indonesia) jadi alias source + UI Top 100 Unknown Words (8 Okt 2026 malam)
+
+User complaint: 'AI SALAH, HARUSNYA AKU dikenal sebagai allias. user membuat kata ngoko adalah nyong dan aku sebagai alias. kalau di sumber srt ada kata saya, aku = seharusnya ngoko translate jadi Nyong dan krama translate jadi Kula'
+
+User request: 'di UI srt editor, bisa lihat misal 2000 kata tak dikenal, top 100 kata tak dikenal?'
+
+Work Log:
+- Bug fix: arti (Indonesia) TIDAK dipakai sebagai source alias
+  * KamusEntry.id (arti Indonesia): update comment — "terjemahan Indonesia + alias (dipisah koma, mis. saya, aku, gue, gua, ane). Dipakai sebagai alias source lookup juga."
+  * isWordInKamus: cek alias di ngoko + krama + krama_inggil + ARTI
+  * suggestRegister: cari entry yang ngoko/krama/krama_inggil/ARTI cocok
+  * convertRegister: allVariants include artiVariants
+    → lookup: {saya→nyong (ngoko) / saya→kula (krama), gue→nyong, ane→kula, ...}
+  * Test 9/9 PASS (saya → nyong/kula, gue → nyong, ane → kula, aku → kula, dst.)
+
+- UI panel "Top 100 Unknown Words" + badge per cue:
+  * getTopUnknownWords() di rapikan-jawa.ts:
+    - Analisis jawaEntries vs kamus (in-memory)
+    - Hitung frequency per kata tak dikenal
+    - Track cue indices (di cue mana kata itu muncul)
+    - Sort by freq desc, lalu alphabet
+    - Return top N (default 100)
+  * Panel amber collapsible di Editor SRT Jawa:
+    - Header: AlertCircle + count badge + "top 100 — prioritas add ke kamus"
+    - Body: list top 100 kata + frequency (×N)
+    - Klik kata → copy ke clipboard (paste di kamus-tui.py)
+    - Hover tooltip: "Muncul di cue: 1, 5, 12..."
+    - Tombol "Copy all (N)" untuk copy semua sekaligus
+    - Helper: "Paste di kamus-tui.py → search → add entry"
+    - Empty state: "✓ Semua kata di SRT dikenal kamus."
+  * Badge per cue "N tak dikenal" (amber border + AlertCircle icon):
+    - Hitung unknown words di cue itu
+    - Border cue card jadi amber kalau ada unknown words
+  * Auto-update: useEffect saat jawaEntries atau kamus berubah
+
+- User verifikasi: panel muncul dengan "100 unique" + top kata (sing ×125, ora ×124, iki ×111)
+  Workflow user: Copy all → paste di kamus-tui.py → add entry → upload → reload
+
+Stage Summary:
+- arti (Indonesia) jadi source alias: saya/aku/gue/ane → nyong/kula
+- UI panel Top 100 Unknown Words + badge per cue
+- User verified: panel muncul dengan 100 unique words, top kata sing ×125
+- Pipeline end-to-end siap: edit kamus bertahap → upload → test di Editor → iterasi
+
