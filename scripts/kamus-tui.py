@@ -66,25 +66,24 @@ def load_kamus():
 
 
 def save_kamus(data):
-    """Save ke JSON file (preserve formatting + add status field kalau belum ada)"""
-    # Status logic:
-    # - 'clean' = user BENAR-BENAR edit manual (arti diisi, atau edit via edit_entry)
-    # - 'draft' = belum di-edit user (termasuk yang auto-fill krama dari template Wikisastra)
-    #
-    # CARA DETEKSI user edit:
-    # - arti diisi → user pasti edit (Wiktionary tidak pernah isi arti Indonesia)
-    # - ada flag 'user_edited: true' di entry → user edit via edit_entry
-    #
-    # Yang BUKAN user edit (auto-fill dari template) → tetap 'draft':
-    # - krama diisi dari {{krama|X}} atau {{ngoko|X}} template (Wikisastra auto-fill)
-    # - krama_inggil diisi dari {{ki|X}} template atau detect_register
-    # - register dari tag {{kn}}/{{ki}}/{{ak}}
+    """Save ke JSON file + update status berdasarkan kelengkapan field.
+
+    Status logic (v3, 8 Okt 2026):
+    - 'ready' = ngoko + krama + arti SEMUA terisi → siap upload ke Supabase
+    - 'draft' = belum lengkap (perlu user isi arti dulu, atau validasi manual)
+
+    krama_inggil OPSIONAL — tidak semua kata Jawa punya krama inggil
+    (buktinya dari 44.585 entries, cuma 95 yang register=krama_inggil).
+
+    Upload HANYA entries dengan status='ready'.
+    """
     for w in data['words']:
         if 'status' not in w:
+            ngoko = (w.get('ngoko') or '').strip()
+            krama = (w.get('krama') or '').strip()
             arti = (w.get('arti') or '').strip()
-            user_edited = w.get('user_edited', False)
-            # Status 'clean' HANYA kalau user edit manual (arti diisi atau flag user_edited)
-            w['status'] = 'clean' if (arti or user_edited) else 'draft'
+            # 'ready' HANYA kalau 3 field wajib terisi
+            w['status'] = 'ready' if (ngoko and krama and arti) else 'draft'
     path = get_kamus_path()
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
@@ -105,6 +104,7 @@ def show_stats(data):
     with_ki = sum(1 for w in words if (w.get('krama_inggil') or '').strip())
     with_arti = sum(1 for w in words if (w.get('arti') or '').strip())
     both_ngoko_krama = sum(1 for w in words if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip())
+    ready_count = sum(1 for w in words if w.get('status') == 'ready')
 
     # Status
     status_count = Counter(w.get('status', 'draft') for w in words)
@@ -120,14 +120,15 @@ def show_stats(data):
         print(f'    {r:15s}: {c:6d}')
     print()
     print('  Mapping stats:')
-    print(f'    ngoko + krama (both filled):  {both_ngoko_krama:6d}  ⭐ (auto-filled)')
-    print(f'    krama filled:                {with_krama:6d}')
-    print(f'    krama_inggil filled:         {with_ki:6d}')
-    print(f'    arti (Indonesia) filled:      {with_arti:6d}  ⭐ (user edit manual)')
+    print(f'    ngoko + krama (auto-filled):    {both_ngoko_krama:6d}  ⭐ (dari template Wikisastra)')
+    print(f'    krama filled:                   {with_krama:6d}')
+    print(f'    krama_inggil filled:            {with_ki:6d}  (opsional)')
+    print(f'    arti (Indonesia) filled:        {with_arti:6d}  ⭐ (user edit manual)')
+    print(f'    SIAP UPLOAD (3 field lengkap): {ready_count:6d}  🚀')
     print()
     print('  Status (untuk upload):')
     for s, c in status_count.most_common():
-        icon = '✓' if s == 'clean' else '○'
+        icon = '🚀' if s == 'ready' else '○'
         print(f'    {icon} {s:10s}: {c:6d}')
     print()
     print(f'  Sumber file: {get_kamus_path()}')
@@ -220,12 +221,13 @@ def edit_entry(data, idx):
     elif 'krama_inggil' in entry:
         del entry['krama_inggil']
     entry['arti'] = new_arti
-    # Set status = clean + flag user_edited = true (sudah di-edit user manual)
-    entry['status'] = 'clean'
-    entry['user_edited'] = True
+    # Status auto-detect di save_kamus (ngoko+krama+arti semua terisi → 'ready')
 
     save_kamus(data)
+    # Status baru
+    new_status = 'ready' if (new_ngoko and new_krama and new_arti) else 'draft'
     print(f'\n  ✅ Disimpan: ngoko={new_ngoko} → krama={new_krama} → arti={new_arti}')
+    print(f'  Status: {new_status}' + (' (siap upload)' if new_status == 'ready' else ' (butuh arti dulu)'))
     input('\n  Tekan Enter...')
 
 
@@ -262,7 +264,7 @@ def browse_list(data, entries_with_idx, title):
             ki = entry.get('krama_inggil', '') or ''
             arti = entry.get('arti', '') or ''
             status = entry.get('status', 'draft')
-            icon = '✓' if status == 'clean' else '○'
+            icon = '✓' if status == 'ready' else '○'
 
             # Build unique label (idx sebagai prefix supaya unik)
             label = f'{icon} #{orig_idx + 1:5d}. {ngoko_display:25s}'
@@ -384,8 +386,8 @@ def main_menu(data):
         os.system('clear' if os.name != 'nt' else 'cls')
         words = data['words']
         total = len(words)
-        edited = sum(1 for w in words if (w.get('arti') or '').strip() or w.get('status') == 'clean')
-        with_krama = sum(1 for w in words if (w.get('krama') or '').strip())
+        ready = sum(1 for w in words if w.get('status') == 'ready')
+        with_arti = sum(1 for w in words if (w.get('arti') or '').strip())
         no_arti = sum(1 for w in words if not (w.get('arti') or '').strip())
 
         print('╔' + '═' * 60 + '╗')
@@ -394,17 +396,18 @@ def main_menu(data):
         print('╚' + '═' * 60 + '╝')
         print()
         print(f'  📂 {get_kamus_path()}')
-        print(f'  📊 Total: {total} | dengan krama: {with_krama} | belum ada arti: {no_arti}')
-        print(f'  ✅ User edited: {edited}')
+        print(f'  📊 Total: {total} | arti diisi: {with_arti} | belum ada arti: {no_arti}')
+        print(f'  🚀 Siap upload (ngoko+krama+arti lengkap): {ready}')
         print()
 
         choices = [
             '📊 Statistik kamus',
             '🔍 Search (cari kata di semua field)',
-            '⭐ Browse entries dengan krama mapping (auto-filled)',
+            '🚀 Browse SIAP UPLOAD (ngoko+krama+arti lengkap)',
+            '⭐ Browse entries dengan krama mapping (auto-filled, butuh arti)',
             '📝 Browse entries BELUM ada arti (Indonesia)',
             '🎯 Browse per register',
-            '☁  Upload ke Supabase (hanya yang sudah diedit)',
+            '☁  Upload ke Supabase (hanya yang SIAP UPLOAD)',
             '💾 Save JSON (manual)',
             '❌ Keluar',
         ]
@@ -422,6 +425,9 @@ def main_menu(data):
             show_stats(data)
         elif 'Search' in selected:
             search_menu(data)
+        elif 'SIAP UPLOAD' in selected:
+            ready_entries = [(i, w) for i, w in enumerate(data['words']) if w.get('status') == 'ready']
+            browse_list(data, ready_entries, f'🚀 Siap Upload ({len(ready_entries)} entri lengkap)')
         elif 'krama mapping' in selected:
             browse_with_krama(data)
         elif 'BELUM ada arti' in selected:
@@ -473,40 +479,39 @@ print(f"\\n  → Load kamus: {KAMUS_PATH}")
 with open(KAMUS_PATH, "r", encoding="utf-8") as f:
     data = json.load(f)
 
-# Filter: HANYA upload yang user BENAR-BENAR edit manual
-# (status='clean' — arti diisi, atau edit via edit_entry dengan flag user_edited=true)
-# Yang auto-fill dari template Wikisastra (krama mapping tanpa arti) TIDAK di-upload
-# karena bukan user edit — itu cuma parse ulang dari XML, bisa re-generate kapan saja.
+# Filter: HANYA upload entries yang SIAP UPLOAD
+# Yaitu: ngoko + krama + arti SEMUA terisi (3 field wajib lengkap)
+# krama_inggil OPSIONAL (include kalau ada)
+# Yang auto-fill krama tanpa arti TIDAK di-upload (belum divalidasi user)
 edited = []
 for entry in data.get("words", []):
-    status = entry.get("status", "draft")
-    user_edited = entry.get("user_edited", False)
+    ngoko = (entry.get("ngoko") or "").strip()
+    krama = (entry.get("krama") or "").strip()
     arti = (entry.get("arti") or "").strip()
 
-    # Upload HANYA kalau:
-    # 1. status='clean' (user edit via TUI edit_entry), ATAU
-    # 2. arti diisi (user pasti edit — Wiktionary tidak pernah isi arti Indonesia)
-    if status == "clean" or user_edited or arti:
-        krama = (entry.get("krama") or "").strip()
+    # 3 field wajib: ngoko + krama + arti semua harus terisi
+    if ngoko and krama and arti:
         ki = (entry.get("krama_inggil") or "").strip()
         register = (entry.get("register") or "").strip()
         # SEMUA row harus punya keys yang sama (Supabase PGRST102: all keys must match)
         row = {
-            "ngoko": entry.get("ngoko", ""),
+            "ngoko": ngoko,
             "aksara": entry.get("aksara", ""),
             "krama": krama,
-            "krama_inggil": ki,        # selalu include (kosong kalau tidak ada)
+            "krama_inggil": ki,        # opsional, kosong kalau tidak ada
             "arti": arti,
             "keterangan": entry.get("keterangan", ""),
-            "register": register,      # selalu include (kosong/umum kalau tidak ada)
+            "register": register,      # kosong/umum kalau tidak ada
             "sumber": entry.get("sumber", "jv.wiktionary.org"),
-            "status": "clean",  # user edit = clean
+            "status": "ready",
         }
         edited.append(row)
 
 if not edited:
-    print("  ⚠ Tidak ada entri yang sudah diedit atau punya krama mapping.")
-    print("     Edit dulu di TUI: browse → pilih entri → isi arti/krama")
+    print("  ⚠ Tidak ada entri yang SIAP UPLOAD.")
+    print("     Syarat: ngoko + krama + arti SEMUA terisi (3 field wajib).")
+    print("     krama_inggil opsional.")
+    print("     Edit dulu di TUI: browse → pilih entri → isi arti Indonesia")
     input("\\n  Tekan Enter...")
     sys.exit(0)
 
@@ -576,24 +581,26 @@ def main():
     if not data:
         sys.exit(1)
 
-    # RESET status untuk entries yang BUKAN user edit (auto-fill dari template)
-    # Bug fix v2 (8 Okt 2026): sebelumnya status='clean' di-set ke semua entries yang
-    # ada krama (auto-fill dari template Wikisastra), padahal user belum edit manual.
-    # Sekarang: 'clean' HANYA kalau arti diisi (Wiktionary tidak isi arti) atau flag user_edited.
+    # Update status semua entries berdasarkan kelengkapan field
+    # Status 'ready' = ngoko + krama + arti semua terisi
+    # Status 'draft' = belum lengkap
     reset_count = 0
     for w in data['words']:
-        old_status = w.get('status', 'draft')
+        ngoko = (w.get('ngoko') or '').strip()
+        krama = (w.get('krama') or '').strip()
         arti = (w.get('arti') or '').strip()
-        user_edited = w.get('user_edited', False)
-        # Status 'clean' HANYA kalau user edit manual
-        new_status = 'clean' if (arti or user_edited) else 'draft'
+        old_status = w.get('status', 'draft')
+        new_status = 'ready' if (ngoko and krama and arti) else 'draft'
         if old_status != new_status:
             w['status'] = new_status
             reset_count += 1
     if reset_count > 0:
         save_kamus(data)
-        print(f'  ⚠ Reset status: {reset_count} entries (dari clean → draft)')
-        print(f'    (auto-fill dari template BUKAN user edit, tidak perlu upload)')
+        ready_count = sum(1 for w in data['words'] if w.get('status') == 'ready')
+        print(f'  ⚠ Update status: {reset_count} entries')
+        print(f'    Status: ready = ngoko+krama+arti lengkap (siap upload)')
+        print(f'           draft = belum lengkap (butuh arti)')
+        print(f'    Siap upload: {ready_count} entries')
         print()
 
     main_menu(data)
