@@ -30,6 +30,7 @@ import { TtsPanel } from '@/components/tts-panel'
 import { TtsTextPanel } from '@/components/tts-text-panel'
 import { TranslatePanel } from '@/components/translate-panel'
 import { RapikanJawaPanel } from '@/components/rapikan-jawa-panel'
+import { KamusEditorPanel } from '@/components/kamus-editor-panel'
 import {
   parseSrt,
   splitEntries,
@@ -614,6 +615,9 @@ export default function Home() {
 
         {/* TTS Text Panel — selalu tampil (tidak perlu upload SRT) */}
         <TtsTextPanel />
+
+        {/* Kamus Editor Panel — edit krama + arti permanen ke Supabase */}
+        <KamusEditorPanel />
 
         {/* Info section */}
         {!file && (

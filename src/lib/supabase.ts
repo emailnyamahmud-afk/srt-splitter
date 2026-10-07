@@ -353,12 +353,10 @@ export async function updateProject(
 
 export interface KamusEntry {
   id: string
-  word: string
-  register: string  // 'ngoko' | 'krama' | 'krama_inggil' | 'umum' | 'kawi'
-  meaning_jawa: string  // definisi dalam bahasa Jawa (dari Wiktionary)
-  meaning_id: string    // terjemahan Indonesia (user edit manual)
-  aksara: string        // aksara Jawa (opsional)
-  kelas: string         // kelas kata (opsional)
+  word: string          // kata ngoko
+  krama: string        // kata krama (prioritas: krama_inggil kalau ada)
+  id: string            // arti dalam bahasa Indonesia/Jawa
+  status: string        // 'draft' (belum diedit) | 'clean' (sudah fix, approved user)
   created_at: string
   updated_at: string
 }
@@ -367,7 +365,7 @@ export interface KamusEntry {
  * Bulk insert kamus entries ke Supabase (untuk initial import)
  */
 export async function importKamus(
-  entries: { word: string; register: string; meaning_jawa: string; meaning_id: string; aksara: string; kelas: string }[],
+  entries: { word: string; krama: string; id: string; status: string }[],
   batchSize: number = 500,
 ): Promise<{ success: number; failed: number }> {
   const client = getSupabase()
@@ -429,7 +427,7 @@ export async function searchKamus(
  */
 export async function updateKamusEntry(
   entryId: string,
-  updates: { meaning_id?: string; register?: string },
+  updates: { krama?: string; id?: string; status?: string },
 ): Promise<boolean> {
   const client = getSupabase()
   if (!client) return false
