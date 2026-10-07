@@ -43,26 +43,27 @@ def save_kamus(data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def upload_to_supabase(edited_count):
+def upload_to_supabase():
+    """Upload entri yang sudah diedit (krama/id tidak kosong) ke Supabase"""
     if not SUPABASE_URL or not SUPABASE_KEY:
-        print('\n  ⚠ Supabase belum di-set. Skip upload.')
+        print('\n  ⚠ Supabase belum di-set.')
         print('   export NEXT_PUBLIC_SUPABASE_URL=...')
         print('   export NEXT_PUBLIC_SUPABASE_ANON_KEY=...')
+        input('\n  Tekan Enter...')
         return False
 
-    if edited_count == 0:
-        print('\n  ⚠ Tidak ada entri yang diedit. Skip upload.')
+    print('\n  → Cek JSON untuk entri yang sudah diedit...')
+
+    if not KAMUS_JSON.exists():
+        print(f'  ❌ {KAMUS_JSON} tidak ada.')
+        input('\n  Tekan Enter...')
         return False
 
-    print(f'\n  → Upload {edited_count} entri ke Supabase...')
-
-    import urllib.request
-    # Load JSON lagi, filter yang sudah diedit
     with open(KAMUS_JSON, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
     edited = []
-    for entry in data['words']:
+    for entry in data.get('words', []):
         krama = (entry.get('krama') or '').strip()
         id_val = (entry.get('id') or '').strip()
         if krama or id_val:
@@ -70,18 +71,20 @@ def upload_to_supabase(edited_count):
                 'ngoko': entry.get('ngoko', ''),
                 'aksara': entry.get('aksara', ''),
                 'krama': krama,
-                'arti': id_val,  # JSON field 'id' → Supabase kolom 'arti' (bukan 'id', karena 'id' = UUID PK)
+                'arti': id_val,
                 'keterangan': entry.get('keterangan', ''),
                 'sumber': entry.get('sumber', 'jv.wiktionary.org'),
                 'status': 'clean',
             })
 
     if not edited:
-        print('  ⚠ Tidak ada entri clean. Skip.')
+        print('  ⚠ Tidak ada entri yang sudah diedit (krama/id kosong semua).')
+        print(f'     Edit dulu di TUI: browse → pilih entri → isi krama + id')
+        input('\n  Tekan Enter...')
         return False
 
     print(f'  → {len(edited)} entri sudah diedit (akan di-upload)')
-    print(f'  → Supabase URL: {SUPABASE_URL[:40]}...')
+    print(f'  → Supabase: {SUPABASE_URL[:40]}...')
     print()
 
     import urllib.request
@@ -200,7 +203,7 @@ def browse_kamus(data):
             continue
 
         if 'Upload' in selected:
-            upload_to_supabase(edited_count)
+            upload_to_supabase()
             continue
 
         # Edit entri yang dipilih
