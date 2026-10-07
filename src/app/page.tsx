@@ -31,6 +31,7 @@ import { TtsTextPanel } from '@/components/tts-text-panel'
 import { TranslatePanel } from '@/components/translate-panel'
 import { RapikanJawaPanel } from '@/components/rapikan-jawa-panel'
 import { KamusEditorPanel } from '@/components/kamus-editor-panel'
+import { DualSrtEditor } from '@/components/srt-editor-panel'
 import {
   parseSrt,
   splitEntries,
@@ -195,18 +196,16 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
       <header className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto max-w-5xl px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
-              <Scissors className="size-5 text-white" />
-            </div>
+        <div className="container mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <img src="/logo.svg" alt="SRT Splitter" className="size-8 rounded-lg" />
             <div>
-              <h1 className="text-xl font-bold tracking-tight">SRT Splitter</h1>
-              <p className="text-xs text-muted-foreground">Pemecah file subtitle tanpa upload server</p>
+              <h1 className="text-lg font-bold tracking-tight">SRT Splitter</h1>
+              <p className="text-[11px] text-muted-foreground">Dubbing Studio — Split, Translate, TTS, Editor Jawa</p>
             </div>
           </div>
           <Badge variant="secondary" className="hidden sm:flex">
-            <CheckCircle2 className="size-3 mr-1" /> 100% Offline
+            <CheckCircle2 className="size-3 mr-1" /> 100% Sync
           </Badge>
         </div>
       </header>
@@ -618,6 +617,9 @@ export default function Home() {
 
         {/* Kamus Editor Panel — edit krama + arti permanen ke Supabase */}
         <KamusEditorPanel />
+
+        {/* Dual SRT Editor — SRT ID (konteks) + SRT Jawa (editor) + voice + ngoko/krama */}
+        <DualSrtEditor prefix={prefix} />
 
         {/* Info section */}
         {!file && (

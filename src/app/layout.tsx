@@ -16,12 +16,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SRT Splitter — Pemecah File Subtitle + TTS",
-  description: "Pemecah file SRT menjadi beberapa bagian + konversi subtitle ke audio (TTS Kokoro-82M). 100% di browser, offline.",
-  keywords: ["SRT", "subtitle", "split", "pemecah", "subrip", "offline", "TTS", "Kokoro", "audio"],
+  title: "SRT Splitter — Dubbing Studio",
+  description: "Split SRT, translate, dubbing dengan TTS. Editor SRT Jawa dengan ngoko/krama. 100% sync video.",
+  keywords: ["SRT", "subtitle", "split", "dubbing", "TTS", "Jawa", "ngoko", "krama", "Indonesia"],
   authors: [{ name: "SRT Splitter" }],
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/logo.svg",
   },
 };
 
