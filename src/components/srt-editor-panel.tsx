@@ -23,7 +23,12 @@ import {
   type KamusJawa,
   type CueRegister,
 } from '@/lib/rapikan-jawa'
-import { narrateEntries, type NarrationResult, type NarrationOptions, type Provider, type TTSProgress } from '@/lib/tts'
+import { narrateSingleCue, stitchFullAudio, type NarrationResult, type NarrationOptions, type Provider, type TTSProgress } from '@/lib/tts'
+import { encodeWav } from '@/lib/audio-utils'
+import {
+  saveCueAudio, getCueAudio, deleteCueAudio, listCachedCueIndices,
+  saveFullAudio, getFullAudio, getCacheSizeForProject,
+} from '@/lib/audio-cache'
 
 interface DualSrtEditorProps {
   prefix: string
@@ -70,6 +75,12 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
   const [ttsProvider, setTtsProvider] = useState<Provider>('edge')
   const [ttsPitch, setTtsPitch] = useState<string>('+0Hz')
   const [ttsSmartFitCap, setTtsSmartFitCap] = useState<number>(2.0)
+  // Per-cue preview state
+  const [previewingCue, setPreviewingCue] = useState<number | null>(null)  // cue index being generated
+  const [cueAudioCache, setCueAudioCache] = useState<Record<number, { url: string; durationSec: number; voice: string }>>({})  // cue_index → preview URL
+  const [cachedCueCount, setCachedCueCount] = useState(0)  // count of cues cached in IndexedDB
+  const [cacheSizeMB, setCacheSizeMB] = useState(0)
+  const [savedFullAudio, setSavedFullAudio] = useState<{ url: string; durationSec: number; cueCount: number; voiceSummary: string } | null>(null)
   // Refs
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingNewProjectIdRef = useRef<HTMLInputElement>(null)
@@ -97,6 +108,35 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
     if (!isSupabaseAvailable()) return
     const projs = await listProjects()
     setProjects(projs)
+  }, [])
+
+  // Refresh per-cue audio cache count + cache size + full audio (untuk display)
+  const refreshAudioCache = useCallback(async (pid: string | null) => {
+    if (!pid) {
+      setCachedCueCount(0)
+      setCacheSizeMB(0)
+      setSavedFullAudio(null)
+      setCueAudioCache({})
+      return
+    }
+    try {
+      const { cueCount, totalBytes } = await getCacheSizeForProject(pid)
+      setCachedCueCount(cueCount)
+      setCacheSizeMB(totalBytes / (1024 * 1024))
+      const full = await getFullAudio(pid)
+      if (full) {
+        setSavedFullAudio({
+          url: URL.createObjectURL(full.blob),
+          durationSec: full.durationSec,
+          cueCount: full.cueCount,
+          voiceSummary: full.voiceSummary,
+        })
+      } else {
+        setSavedFullAudio(null)
+      }
+    } catch (e) {
+      console.warn('refreshAudioCache failed:', e)
+    }
   }, [])
 
   // === Create new project from 2 uploaded SRTs ===
@@ -156,7 +196,8 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
     localStorage.setItem(STORAGE_KEY_PROJECT, result.project.id)
     toast.success(`Project "${result.project.name}" dibuat (${minCues} cue)`)
     refreshProjects()
-  }, [newProjectName, newProjectIdSrt, newProjectJawaSrt, newProjectIdCount, newProjectJawaCount])
+    refreshAudioCache(result.project.id)
+  }, [newProjectName, newProjectIdSrt, newProjectJawaSrt, newProjectIdCount, newProjectJawaCount, refreshAudioCache])
 
   // === Load existing project from DB ===
   const loadProject = useCallback(async (pid: string) => {
@@ -201,7 +242,8 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
     setShowProjectList(false)
     localStorage.setItem(STORAGE_KEY_PROJECT, result.project.id)
     toast.success(`Project "${result.project.name}" loaded (${result.cues.length} cue)`)
-  }, [])
+    refreshAudioCache(result.project.id)
+  }, [refreshAudioCache])
 
   // === Close current project (back to "new project" screen) ===
   const handleCloseProject = useCallback(() => {
@@ -214,6 +256,10 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
     setCueIdMap({})
     setCurrentPage(0)
     setTtsResult(null)
+    setCueAudioCache({})
+    setSavedFullAudio(null)
+    setCachedCueCount(0)
+    setCacheSizeMB(0)
     localStorage.removeItem(STORAGE_KEY_PROJECT)
   }, [])
 
@@ -398,39 +444,160 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
   }, [jawaEntries, projectName, prefix])
 
   // === Generate TTS (mode ON + Smart Fit, per-cue voice) ===
+  // Build common NarrationOptions (dipakai oleh per-cue preview + Generate Full)
+  const buildTtsOpts = useCallback((onLineProgress?: (current: number, total: number, text: string) => void): NarrationOptions => {
+    const defaultVoice = 'jv-ID-SitiNeural'
+    const voiceResolver = (_entry: SrtEntry, idx: number) => {
+      const voiceId = voices[idx]
+      if (!voiceId) return defaultVoice
+      const v = VOICES.find(x => x.id === voiceId)
+      return v ? v.voice : defaultVoice
+    }
+    return {
+      provider: ttsProvider,
+      voice: defaultVoice,
+      voiceResolver,
+      respectTiming: true,  // MODE ON — fit ke SRT ori
+      smartFit: true,
+      smartFitAudioRateCap: ttsSmartFitCap,
+      smartFitUseAsymmetricTrim: true,
+      smartFitCrossfadeMs: 150,
+      smartFitNormalizeDbFS: -2,
+      pitch: ttsProvider === 'edge' ? ttsPitch : undefined,
+      onLineProgress,
+      onStage: (p) => setTtsStage(p),
+    }
+  }, [voices, ttsProvider, ttsPitch, ttsSmartFitCap])
+
+  // === Per-cue preview: generate 1 cue TTS + play inline + cache ke IndexedDB ===
+  const handlePreviewCue = useCallback(async (cueIndex: number) => {
+    if (!projectId) return
+    const entry = jawaEntries[cueIndex]
+    if (!entry) return
+    const text = entry.textLines.join(' ').trim()
+    if (!text) {
+      toast.info('Cue kosong, tidak ada yang di-preview')
+      return
+    }
+
+    // Voice for this cue
+    const voiceId = voices[cueIndex] || ''
+    const voiceShort = voiceId || 'siti'  // default Siti
+    const voiceFull = VOICES.find(v => v.id === voiceShort)?.voice || 'jv-ID-SitiNeural'
+
+    // Check existing cache — kalau text + voice + pitch + cap sama, langsung play (no regen)
+    try {
+      const cached = await getCueAudio(projectId, cueIndex)
+      if (cached && cached.text === text && cached.voiceId === voiceShort && cached.pitch === ttsPitch && cached.smartFitCap === ttsSmartFitCap) {
+        // Cache valid — load ke memory cache + play
+        const url = URL.createObjectURL(cached.blob)
+        setCueAudioCache(prev => ({ ...prev, [cueIndex]: { url, durationSec: cached.durationSec, voice: cached.voiceId } }))
+        toast.success(`Cue #${cueIndex + 1} dari cache (${cached.durationSec.toFixed(1)}s)`)
+        return
+      }
+    } catch (e) {
+      console.warn('getCueAudio failed:', e)
+    }
+
+    // Generate new audio
+    setPreviewingCue(cueIndex)
+    try {
+      const nextEntryStart = (cueIndex + 1 < jawaEntries.length) ? jawaEntries[cueIndex + 1].start : entry.end
+      const opts = buildTtsOpts()
+      const result = await narrateSingleCue(entry, cueIndex, nextEntryStart, opts)
+
+      // Encode WAV
+      const blob = encodeWav(result.audio, result.sampleRate)
+
+      // Save to IndexedDB
+      await saveCueAudio(projectId, cueIndex, blob, {
+        sampleRate: result.sampleRate,
+        durationSec: result.fittedDurationSec,
+        voice: voiceFull,
+        voiceId: voiceShort,
+        text,
+        pitch: ttsPitch,
+        smartFitCap: ttsSmartFitCap,
+      })
+
+      // Update memory cache + UI
+      const url = URL.createObjectURL(blob)
+      setCueAudioCache(prev => ({ ...prev, [cueIndex]: { url, durationSec: result.fittedDurationSec, voice: voiceShort } }))
+      refreshAudioCache(projectId)
+      toast.success(`Cue #${cueIndex + 1} preview ready (${result.fittedDurationSec.toFixed(1)}s, ${voiceShort})`)
+    } catch (e) {
+      console.error(e)
+      toast.error(`Preview cue #${cueIndex + 1} gagal: ${(e as Error).message}`)
+    } finally {
+      setPreviewingCue(null)
+    }
+  }, [projectId, jawaEntries, voices, ttsPitch, ttsSmartFitCap, buildTtsOpts, refreshAudioCache])
+
+  // === Generate Full Audio (Mode ON + Smart Fit, pakai cache kalau valid) ===
   const handleGenerateTts = useCallback(async () => {
-    if (jawaEntries.length === 0) return
+    if (jawaEntries.length === 0 || !projectId) return
     setIsGeneratingTts(true)
     setTtsProgress({ current: 0, total: jawaEntries.length, text: 'Mulai...' })
     setTtsResult(null)
     try {
-      // Default voice untuk cue yang belum di-assign: Siti (perempuan Jawa)
-      const defaultVoice = 'jv-ID-SitiNeural'
-      const voiceResolver = (_entry: SrtEntry, idx: number) => {
-        const voiceId = voices[idx]
-        if (!voiceId) return defaultVoice
-        const v = VOICES.find(x => x.id === voiceId)
-        return v ? v.voice : defaultVoice
+      const opts = buildTtsOpts((current, total, text) => {
+        setTtsProgress({ current, total, text: text.slice(0, 60) })
+      })
+
+      // Build cached audios map (Float32Array per cue) — pakai cache kalau valid
+      const cachedAudios = new Map<number, Float32Array>()
+      const cachedIndices = await listCachedCueIndices(projectId)
+      let cacheHits = 0
+      let cacheMiss = 0
+      for (let i = 0; i < jawaEntries.length; i++) {
+        const entry = jawaEntries[i]
+        const text = entry.textLines.join(' ').trim()
+        if (!text) continue
+        const voiceId = voices[i] || ''
+        const voiceShort = voiceId || 'siti'
+        const cached = await getCueAudio(projectId, i)
+        if (cached && cachedIndices.has(i) && cached.text === text && cached.voiceId === voiceShort && cached.pitch === ttsPitch && cached.smartFitCap === ttsSmartFitCap) {
+          // Cache valid — decode blob ke Float32Array
+          try {
+            const arrayBuf = await cached.blob.arrayBuffer()
+            const audioCtx = new AudioContext({ sampleRate: cached.sampleRate })
+            const audioBuffer = await audioCtx.decodeAudioData(arrayBuf)
+            const float32 = audioBuffer.getChannelData(0)
+            cachedAudios.set(i, new Float32Array(float32))
+            audioCtx.close()
+            cacheHits++
+          } catch (e) {
+            console.warn('Failed to decode cached audio for cue', i, e)
+            cacheMiss++
+          }
+        } else {
+          cacheMiss++
+        }
       }
-      const opts: NarrationOptions = {
-        provider: ttsProvider,
-        voice: defaultVoice,  // fallback kalau voiceResolver undefined
-        voiceResolver,  // per-cue voice
-        respectTiming: true,  // MODE ON — fit ke SRT ori
-        smartFit: true,  // Smart Fit
-        smartFitAudioRateCap: ttsSmartFitCap,
-        smartFitUseAsymmetricTrim: true,
-        smartFitCrossfadeMs: 150,
-        smartFitNormalizeDbFS: -2,
-        pitch: ttsProvider === 'edge' ? ttsPitch : undefined,
-        onLineProgress: (current, total, text) => {
-          setTtsProgress({ current, total, text: text.slice(0, 60) })
-        },
-        onStage: (p) => setTtsStage(p),
-      }
-      const result = await narrateEntries(jawaEntries, opts)
+      toast.info(`Cache: ${cacheHits} hit, ${cacheMiss} miss (akan generate)`)
+
+      // Stitch: pakai cache + generate missing
+      const result = await stitchFullAudio(jawaEntries, cachedAudios, opts, (current, total, text) => {
+        setTtsProgress({ current, total, text: text.slice(0, 60) })
+      })
       setTtsResult(result)
-      // Auto-download the WAV
+
+      // Save full audio ke IndexedDB (browser local storage)
+      const voiceCounts: Record<string, number> = {}
+      jawaEntries.forEach((_, i) => {
+        const v = voices[i] || 'siti'
+        voiceCounts[v] = (voiceCounts[v] || 0) + 1
+      })
+      const voiceSummary = Object.entries(voiceCounts).map(([v, c]) => `${v}:${c}`).join(', ')
+      await saveFullAudio(projectId, result.blob, {
+        sampleRate: result.sampleRate,
+        durationSec: result.durationSec,
+        cueCount: jawaEntries.length,
+        voiceSummary,
+      })
+      refreshAudioCache(projectId)
+
+      // Auto-download WAV
       const safeName = (projectName || prefix).replace(/[^a-zA-Z0-9-_]/g, '_')
       const a = document.createElement('a')
       a.href = result.previewUrl
@@ -438,7 +605,7 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
-      toast.success(`TTS done: ${result.durationSec.toFixed(1)}s, ${jawaEntries.length} cue`)
+      toast.success(`TTS done: ${result.durationSec.toFixed(1)}s, ${jawaEntries.length} cue (cache: ${cacheHits}/${cacheHits + cacheMiss})`)
     } catch (e) {
       console.error(e)
       toast.error(`TTS gagal: ${(e as Error).message}`)
@@ -447,7 +614,7 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
       setTtsProgress(null)
       setTtsStage(null)
     }
-  }, [jawaEntries, voices, ttsProvider, ttsPitch, ttsSmartFitCap, projectName, prefix])
+  }, [jawaEntries, voices, ttsProvider, ttsPitch, ttsSmartFitCap, projectName, prefix, projectId, buildTtsOpts, refreshAudioCache])
 
   // ================================================================
   // RENDER
@@ -630,8 +797,9 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
                 <li>Upload <strong>SRT ID</strong> (Indonesia, konteks) + <strong>SRT Jawa</strong> (editor)</li>
                 <li>Klik <strong>Buat Project</strong> → tersimpan ke Supabase</li>
                 <li>Edit cue, toggle Ngoko/Krama, pilih Voice — <strong>auto-save</strong> setiap 1.5s</li>
-                <li>Klik <strong>Generate TTS</strong> → audio dub dengan mode ON + Smart Fit (sync 100%)</li>
-                <li>Bisa <strong>tutup project</strong>, buka project lain, lanjut kapan saja</li>
+                <li>Klik <strong>▶ Preview</strong> per cue → dengar di browser, cache ke IndexedDB</li>
+                <li>Setelah review semua cue, klik <strong>Generate Full</strong> → audio dub full (Mode ON + Smart Fit, sync 100%)</li>
+                <li>Audio tersimpan di browser (IndexedDB), bisa tutup project + lanjut kapan saja</li>
               </ol>
             </div>
             {projects.length > 0 && (
@@ -752,9 +920,25 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
                   <option value={2.0}>Smart Fit cap 2.0x</option>
                 </select>
                 <Button size="sm" onClick={handleGenerateTts} disabled={isGeneratingTts || jawaEntries.length === 0}>
-                  {isGeneratingTts ? <><Loader2 className="size-3.5 mr-1 animate-spin" /> Generating...</> : <><Wand2 className="size-3.5 mr-1" /> Generate TTS</>}
+                  {isGeneratingTts ? <><Loader2 className="size-3.5 mr-1 animate-spin" /> Generating...</> : <><Wand2 className="size-3.5 mr-1" /> Generate Full</>}
                 </Button>
               </div>
+            </div>
+            {/* Audio cache status */}
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap">
+              <Badge variant="outline" className="text-[11px] bg-purple-50/50 dark:bg-purple-950/30">
+                Preview cache: {cachedCueCount}/{jawaEntries.length} cue{cacheSizeMB > 0 ? ` · ${cacheSizeMB.toFixed(1)} MB` : ''}
+              </Badge>
+              {cachedCueCount === jawaEntries.length && jawaEntries.length > 0 && (
+                <Badge variant="outline" className="text-[11px] bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300">
+                  ✓ Semua cue di-preview — Generate Full akan cepat (no re-gen)
+                </Badge>
+              )}
+              {savedFullAudio && (
+                <Badge variant="outline" className="text-[11px] bg-blue-50/50 dark:bg-blue-950/30">
+                  Full audio tersimpan: {savedFullAudio.durationSec.toFixed(1)}s · {savedFullAudio.voiceSummary}
+                </Badge>
+              )}
             </div>
             {isGeneratingTts && ttsProgress && (
               <div className="space-y-1">
@@ -776,6 +960,13 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
                 <audio controls src={ttsResult.previewUrl} className="h-7 flex-1 min-w-[200px]" />
               </div>
             )}
+            {savedFullAudio && !ttsResult && (
+              <div className="flex items-center gap-3 text-xs pt-1 border-t border-purple-100 dark:border-purple-900">
+                <span className="text-muted-foreground">Full audio dari cache browser:</span>
+                <audio controls src={savedFullAudio.url} className="h-7 flex-1 min-w-[200px]" />
+                <a href={savedFullAudio.url} download={`${projectName.replace(/[^a-zA-Z0-9-_]/g, '_')}-audio-dub.wav`} className="text-purple-600 underline shrink-0">Download</a>
+              </div>
+            )}
           </div>
 
           {/* Cue list */}
@@ -785,12 +976,32 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
               const idEntry = idEntries[idx]
               const register = registers[idx] || ''
               const voiceId = voices[idx] || ''
+              const cueAudio = cueAudioCache[idx]
+              const isPreviewing = previewingCue === idx
 
               return (
                 <div key={idx} className="rounded-lg border p-2.5 space-y-1.5 hover:border-indigo-300 transition-colors">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="font-mono font-bold">#{idx + 1}</span>
-                    <span className="font-mono">{formatTs(entry.start)} → {formatTs(entry.end)}</span>
+                  <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold">#{idx + 1}</span>
+                      <span className="font-mono">{formatTs(entry.start)} → {formatTs(entry.end)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handlePreviewCue(idx)}
+                        disabled={isPreviewing}
+                        className="text-xs px-2 py-0.5 rounded border bg-background hover:border-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-1 disabled:opacity-50"
+                        title="Generate TTS untuk cue ini + play di browser + cache ke IndexedDB"
+                      >
+                        {isPreviewing ? (
+                          <><Loader2 className="size-3 animate-spin" /> Generating...</>
+                        ) : cueAudio ? (
+                          <><span className="text-green-600">▶</span> Re-preview</>
+                        ) : (
+                          <>▶ Preview</>
+                        )}
+                      </button>
+                    </div>
                   </div>
                   {idEntry && (
                     <div className="rounded bg-gray-100 dark:bg-gray-800/50 px-2 py-1">
@@ -803,6 +1014,31 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
                     className="w-full text-sm border rounded px-2 py-1.5 bg-background min-h-[40px] resize-y"
                     rows={Math.max(1, entry.textLines.length)}
                   />
+                  {cueAudio && (
+                    <div className="rounded bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 px-2 py-1.5 flex items-center gap-2">
+                      <span className="text-[11px] text-purple-700 dark:text-purple-300 font-mono shrink-0">
+                        ✓ {cueAudio.durationSec.toFixed(1)}s · {cueAudio.voice}
+                      </span>
+                      <audio controls src={cueAudio.url} className="h-7 flex-1 min-w-[150px]" />
+                      <button
+                        onClick={async () => {
+                          if (!projectId) return
+                          await deleteCueAudio(projectId, idx)
+                          setCueAudioCache(prev => {
+                            const updated = { ...prev }
+                            delete updated[idx]
+                            return updated
+                          })
+                          refreshAudioCache(projectId)
+                          toast.success(`Cue #${idx + 1} cache dihapus`)
+                        }}
+                        className="text-xs text-red-500 hover:text-red-700 px-1"
+                        title="Hapus cache audio cue ini"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 flex-wrap">
                     <select
                       value={voiceId}

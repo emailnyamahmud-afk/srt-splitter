@@ -654,6 +654,286 @@ export async function narratePart(part: SrtPart, opts: NarrationOptions): Promis
 }
 
 // ============================================================
+// PER-CUE PREVIEW (project-based Dual SRT Editor)
+// ============================================================
+//
+// Generate audio untuk 1 cue saja dengan mode ON + Smart Fit logic (sama seperti narrateEntries).
+// Returns audio Float32Array (sudah trimmed, smart-fit applied, peak normalized) + duration.
+// NO stitching — caller bertanggung jawab stitch kalau mau full audio.
+//
+// Use case:
+// - User preview 1 cue di browser (play inline)
+// - Cache audio per cue di IndexedDB
+// - "Generate Full" bisa pakai cached audio (no re-gen) atau generate missing
+
+export interface SingleCueResult {
+  audio: Float32Array       // trimmed + smart-fit applied + peak normalized
+  rawDurationSec: number   // natural TTS duration (before speedup)
+  fittedDurationSec: number // final audio duration (after smart fit)
+  sampleRate: number        // OUTPUT_SAMPLE_RATE
+  cueStartSec: number       // entry.start (untuk position saat stitch)
+  cueEndSec: number         // entry.end
+  voiceUsed: string         // voice ID yang dipakai
+}
+
+/**
+ * Generate audio untuk 1 cue dengan mode ON + Smart Fit.
+ * Sama seperti loop body di narrateEntries, tapi return 1 cue saja.
+ *
+ * @param entry SRT cue (start, end, textLines)
+ * @param cueIndex Index cue (untuk voiceResolver)
+ * @param nextEntryStart Start cue berikutnya (untuk availableDuration). Kalau cue terakhir, pakai entry.end.
+ * @param opts NarrationOptions (voice, voiceResolver, smartFit, dll)
+ */
+export async function narrateSingleCue(
+  entry: SrtEntry,
+  cueIndex: number,
+  nextEntryStart: number,
+  opts: NarrationOptions,
+): Promise<SingleCueResult> {
+  const text = entry.textLines.join(' ').trim()
+  if (!text) {
+    // Empty cue — return empty audio (akan di-handle saat stitch)
+    return {
+      audio: new Float32Array(0),
+      rawDurationSec: 0,
+      fittedDurationSec: 0,
+      sampleRate: OUTPUT_SAMPLE_RATE,
+      cueStartSec: entry.start,
+      cueEndSec: entry.end,
+      voiceUsed: opts.voiceResolver ? opts.voiceResolver(entry, cueIndex) : opts.voice,
+    }
+  }
+
+  // Per-cue voice override
+  const cueVoice = opts.voiceResolver ? opts.voiceResolver(entry, cueIndex) : opts.voice
+
+  let finalAudio: Float32Array
+
+  if (opts.respectTiming && opts.smartFit) {
+    // === ON MODE + SMART FIT ===
+    const cueDuration = entry.end - entry.start
+    const audioRateCap = opts.smartFitAudioRateCap ?? 2.0
+    const useAsymTrim = opts.smartFitUseAsymmetricTrim ?? true
+    const normalizeDbFS = opts.smartFitNormalizeDbFS ?? -2
+
+    // Pass 1: generate natural
+    const synth1 = await synthesizeText(text, {
+      ...opts, voice: cueVoice, rate: '+0%', openaiSpeed: 1.0, speed: 1.0,
+      pitch: opts.pitch,
+      onModelProgress: opts.onModelProgress,
+    })
+    const pass1 = await decodeMonoTrimResample(synth1, OUTPUT_SAMPLE_RATE, false)
+    const naturalAudio = useAsymTrim
+      ? trimSilenceAsymmetric(pass1.audio, OUTPUT_SAMPLE_RATE, 30)
+      : trimSilence(pass1.audio, -30, OUTPUT_SAMPLE_RATE, 50)
+    const naturalDur = naturalAudio.length / OUTPUT_SAMPLE_RATE
+    const need = naturalDur / Math.max(0.001, cueDuration)
+
+    if (need <= 1.0) {
+      finalAudio = naturalAudio
+    } else {
+      // Smart Fit: re-generate dengan audioRate = min(need, cap)
+      const audioRate = Math.min(need, audioRateCap)
+      if (opts.provider === 'edge') {
+        const synth2 = await synthesizeText(text, {
+          ...opts, voice: cueVoice, rate: formatEdgeRate(audioRate),
+          pitch: opts.pitch,
+          onModelProgress: opts.onModelProgress,
+        })
+        const pass2 = await decodeMonoTrimResample(synth2, OUTPUT_SAMPLE_RATE, false)
+        finalAudio = useAsymTrim
+          ? trimSilenceAsymmetric(pass2.audio, OUTPUT_SAMPLE_RATE, 30)
+          : trimSilence(pass2.audio, -30, OUTPUT_SAMPLE_RATE, 50)
+      } else {
+        const synth2 = await synthesizeText(text, {
+          ...opts, voice: cueVoice, openaiSpeed: audioRate,
+          speed: opts.provider === 'kokoro' ? audioRate : undefined,
+          pitch: opts.pitch,
+          onModelProgress: opts.onModelProgress,
+        })
+        const pass2 = await decodeMonoTrimResample(synth2, OUTPUT_SAMPLE_RATE, false)
+        finalAudio = useAsymTrim
+          ? trimSilenceAsymmetric(pass2.audio, OUTPUT_SAMPLE_RATE, 30)
+          : trimSilence(pass2.audio, -30, OUTPUT_SAMPLE_RATE, 50)
+      }
+    }
+
+    // Peak normalize
+    if (normalizeDbFS < 0) {
+      peakNormalize(finalAudio, normalizeDbFS, -50.0)
+    }
+  } else if (opts.respectTiming) {
+    // === ON MODE LAMA (no Smart Fit) ===
+    const cueDuration = entry.end - entry.start
+    const availableDuration = nextEntryStart - entry.start
+
+    const synth1 = await synthesizeText(text, { ...opts, voice: cueVoice, rate: '+0%', openaiSpeed: 1.0, speed: 1.0 })
+    const pass1 = await decodeMonoTrimResample(synth1, OUTPUT_SAMPLE_RATE, true)
+    const actualDuration = pass1.durationSec
+
+    const speedMode = opts.speedMode || 'speedup-slowdown'
+    const MIN_SLOWDOWN_RATIO = 0.7
+
+    if (actualDuration <= cueDuration) {
+      if (speedMode === 'speedup-slowdown' && actualDuration < cueDuration * 0.95) {
+        const rawRatio = actualDuration / cueDuration
+        const slowRatio = Math.max(rawRatio, MIN_SLOWDOWN_RATIO)
+        const edgeRate = formatEdgeRate(slowRatio)
+        if (opts.provider === 'edge' && slowRatio < 0.97) {
+          const synthSlow = await synthesizeText(text, {
+            ...opts, voice: cueVoice, rate: edgeRate, openaiSpeed: slowRatio, speed: slowRatio,
+          })
+          const passSlow = await decodeMonoTrimResample(synthSlow, OUTPUT_SAMPLE_RATE, true)
+          finalAudio = passSlow.audio
+        } else {
+          finalAudio = pass1.audio
+        }
+      } else {
+        finalAudio = pass1.audio
+      }
+    } else if (opts.provider === 'edge') {
+      const targetDuration = Math.max(cueDuration, availableDuration)
+      const ratio = actualDuration / targetDuration
+      const edgeRate = formatEdgeRate(ratio)
+      if (ratio <= 1.1) {
+        finalAudio = pass1.audio
+      } else {
+        const synth2 = await synthesizeText(text, {
+          ...opts, voice: cueVoice, rate: edgeRate, openaiSpeed: ratio, speed: ratio,
+        })
+        const pass2 = await decodeMonoTrimResample(synth2, OUTPUT_SAMPLE_RATE, true)
+        finalAudio = pass2.audio
+      }
+    } else {
+      finalAudio = pass1.audio
+    }
+  } else {
+    // === OFF MODE ===
+    const offSpeed = opts.offSpeed || 1.0
+    let offRate = '+0%'
+    let offOpenaiSpeed = 1.0
+    let offKokoroSpeed = 1.0
+    if (offSpeed !== 1.0) {
+      offRate = formatEdgeRate(offSpeed)
+      offOpenaiSpeed = offSpeed
+      offKokoroSpeed = offSpeed
+    }
+    const synth = await synthesizeText(text, {
+      ...opts, voice: cueVoice, rate: offRate, openaiSpeed: offOpenaiSpeed, speed: offKokoroSpeed,
+    })
+    const off = await decodeMonoTrimResample(synth, OUTPUT_SAMPLE_RATE, true)
+    finalAudio = off.audio
+  }
+
+  return {
+    audio: finalAudio,
+    rawDurationSec: finalAudio.length / OUTPUT_SAMPLE_RATE,
+    fittedDurationSec: finalAudio.length / OUTPUT_SAMPLE_RATE,
+    sampleRate: OUTPUT_SAMPLE_RATE,
+    cueStartSec: entry.start,
+    cueEndSec: entry.end,
+    voiceUsed: cueVoice,
+  }
+}
+
+/**
+ * Stitch cached per-cue audio jadi full audio dengan crossfade (sama seperti narrateEntries).
+ * Pakai cache kalau valid, generate missing kalau perlu.
+ *
+ * @param entries SRT cues (urut)
+ * @param cachedAudios Map: cueIndex → Float32Array (sudah trimmed + smart-fit)
+ * @param opts NarrationOptions (untuk generate missing cues)
+ * @param onProgress callback (current, total, text) saat generate missing
+ */
+export async function stitchFullAudio(
+  entries: SrtEntry[],
+  cachedAudios: Map<number, Float32Array>,
+  opts: NarrationOptions,
+  onProgress?: (current: number, total: number, text: string) => void,
+): Promise<NarrationResult> {
+  if (entries.length === 0) throw new Error('No subtitles to narrate')
+
+  const total = entries.length
+  const placedSegments: { position: number; audio: Float32Array; cueStart: number; cueEnd: number }[] = []
+  let successCount = 0
+  let failCount = 0
+  let firstError = ''
+
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i]
+    const text = entry.textLines.join(' ').trim()
+    onProgress?.(i + 1, total, text.slice(0, 60))
+
+    if (!text) {
+      continue
+    }
+
+    try {
+      let audio: Float32Array
+      const cached = cachedAudios.get(i)
+      if (cached && cached.length > 0) {
+        // Pakai cache — no re-generation
+        audio = cached
+      } else {
+        // Generate missing cue
+        const nextEntryStart = (i + 1 < entries.length) ? entries[i + 1].start : entry.end
+        const result = await narrateSingleCue(entry, i, nextEntryStart, opts)
+        audio = result.audio
+      }
+
+      if (audio.length === 0) {
+        continue
+      }
+
+      const position = Math.floor(entry.start * OUTPUT_SAMPLE_RATE)
+      placedSegments.push({
+        position,
+        audio,
+        cueStart: Math.floor(entry.start * OUTPUT_SAMPLE_RATE),
+        cueEnd: Math.floor(entry.end * OUTPUT_SAMPLE_RATE),
+      })
+      successCount++
+    } catch (e) {
+      failCount++
+      if (!firstError) firstError = (e as Error).message
+      console.error('TTS stitch failed for line', i, e)
+    }
+  }
+
+  if (successCount === 0) {
+    throw new Error(`Stitch gagal. Error: ${firstError || 'unknown'}`)
+  }
+
+  // Stitch with crossfade (sama seperti narrateEntries)
+  const totalSamples = Math.floor(entries[entries.length - 1].end * OUTPUT_SAMPLE_RATE)
+  const allAudio = new Float32Array(totalSamples)
+
+  for (let i = 0; i < placedSegments.length; i++) {
+    const seg = placedSegments[i]
+    if (opts.respectTiming && seg.cueEnd > 0) {
+      const nextSeg = placedSegments[i + 1]
+      if (nextSeg) {
+        const overlapStart = seg.cueEnd
+        const overlapEnd = Math.min(seg.position + seg.audio.length, nextSeg.position + 100)
+        if (overlapEnd > overlapStart && seg.position + seg.audio.length > overlapStart) {
+          const fadeStart = overlapStart - seg.position
+          const fadeEnd = Math.min(seg.audio.length, overlapEnd - seg.position)
+          if (fadeEnd > fadeStart) applyFadeOut(seg.audio, fadeStart, fadeEnd)
+          const fadeInEnd = Math.min(nextSeg.audio.length, fadeEnd - fadeStart)
+          if (fadeInEnd > 0) applyFadeIn(nextSeg.audio, 0, fadeInEnd)
+        }
+      }
+    }
+    mixAudioInto(allAudio, seg.audio, seg.position)
+  }
+
+  const blob = encodeWav(allAudio, OUTPUT_SAMPLE_RATE)
+  const durationSec = allAudio.length / OUTPUT_SAMPLE_RATE
+  return { blob, sampleRate: OUTPUT_SAMPLE_RATE, durationSec, previewUrl: URL.createObjectURL(blob) }
+}
+
+// ============================================================
 // DUBBING MODE — SRT Jawa sebagai ground truth (v2.0 schema)
 // ============================================================
 //
