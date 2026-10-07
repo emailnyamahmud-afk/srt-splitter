@@ -543,3 +543,62 @@ Stage Summary:
 - Lokal: user edit kamus-jawa.csv di VSCode, upload ke Supabase kalau lengkap
 - Workflow: export → edit VSCode → import → Supabase → web app load dari Supabase
 - Kamus editor panel di web tetap ada (search + edit dari Supabase langsung)
+
+---
+Task ID: 12
+Agent: main
+Task: Kamus Jawa — TUI edit + upload Supabase bertahap + fix multiple bugs
+
+User: 'TUI' → 'cara uplod ke supabase?' → 'gak muncul' → 'cuma kedip' → 'sudah bisa upload 1'
+
+Work Log:
+1. kamus-tui.py (NEW, 370 baris): TUI interaktif browse + edit kamus
+   - Browse 44.585 entri (halaman 20, navigasi ◀▶)
+   - Search kata → filter → edit
+   - Edit krama + id inline → save JSON otomatis
+   - Upload ke Supabase (bertahap, upsert, hanya yang sudah diedit)
+   - Status: ✓ (sudah diedit) / ○ (belum)
+
+2. edit-kamus.py: rewrite untuk JSON (bukan CSV)
+   - Import JSON → Supabase (bertahap, upsert)
+   - Export Supabase → JSON lokal
+   - Export Supabase → CSV (backup)
+   - Search kamus di Supabase
+
+3. Bug fixes:
+   a. JSON field 'id' konflik dengan UUID primary key → ganti kolom 'arti'
+   b. upload_to_supabase(edited_count=0) → selalu skip → baca langsung dari JSON
+   c. questionary clear screen → output hilang → pakai subprocess
+
+4. Supabase tabel kamus:
+   - Kolom: ngoko, aksara, krama, arti, keterangan, sumber, status
+   - Unique constraint: ngoko (untuk upsert)
+   - RLS: allow_all
+   - User run SQL: ALTER TABLE ADD COLUMN + UNIQUE CONSTRAINT
+
+5. Kamus format v4 (BENAR):
+   - ngoko: kata + alias (koma)
+   - aksara: aksara Jawa
+   - krama: kosong (user isi manual)
+   - id: kosong (user isi manual, terjemahan Indonesia)
+   - keterangan: definisi JAWA dari XML (JANGAN HAPUS, membantu user isi id)
+   - sumber: jv.wiktionary.org
+
+6. Web app:
+   - Kamus load dari Supabase (bukan JSON file, crash fix)
+   - KamusEditorPanel: search + edit dari Supabase langsung
+   - RapikanJawaPanel: kamus check + convert register (All Ngoko/All Krama)
+
+7. Alias support: ngoko field "aku, inyong, nyong" → match semua
+   - isWordInKamus: split koma, match per kata
+   - convertRegister: lookup dengan alias, pakai krama pertama
+
+Stage Summary:
+- Kamus Jawa 44.585 entri dari Wiktionary (ngoko + aksara + keterangan)
+- krama + id kosong → user edit bertahap 30/hari di TUI
+- Upload ke Supabase (upsert, hanya yang sudah diedit, status: clean)
+- Supabase = ground of truth (makin hari makin lengkap)
+- JSON lokal = draft (edit di TUI/VSCode, commit ke GitHub optional)
+- User sudah test: upload 1 entri (agustus) → sukses
+- Web app load kamus dari Supabase (limit 10000 untuk performance)
+- Kamus editor panel di web: search + edit langsung dari Supabase
