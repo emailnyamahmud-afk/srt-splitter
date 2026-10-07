@@ -665,3 +665,108 @@ Stage Summary:
 - Commit: 911fee0 — pushed ke GitHub, Vercel auto-deploy
 - Files changed: src/app/page.tsx (move + remove import + label), src/components/srt-editor-panel.tsx (grid-cols-2 + visual prominence + cara pakai)
 
+
+---
+Task ID: 14
+Agent: main
+Task: Project-based Dual SRT Editor (multi-project + auto-save Supabase + TTS mode ON)
+
+User request (8 Okt 2026 03:00 WIB):
+"agar lebih sistematis:
+1. di UI buat add project = yg kalau user uplod 2 srt, srt langsung tersimpan di database. setiap kali ada perubahan = auto simpan.
+2. bisa jadi hari ini garap project S1 (belum selesai), lalu hari ini juga uplod S2 (belum selesai), kalau user mau lanjut garap S1 = tinggal buka project S1. dan lanjut sesuai editan terakhir yg kesimpan di supabase.
+3. supabase buat simpan srt gak masalah kan? size srt kecil, dan supabase ada storage.
+4. generate tts/cue, auto load srt dari supabase. tapi logika srt ngikut konfigurasi mode ON. Agar sync"
+
+Implementation:
+
+1. Supabase migration v2 (scripts/supabase-migration-v2.sql)
+   - srt_projects: ADD original_srt_id TEXT (SRT Indonesia konteks, full file)
+   - srt_cues: ADD text_id TEXT (Indonesia context per cue) + voice TEXT (per-cue voice assignment)
+   - Triggers: trg_srt_projects_updated_at + trg_srt_cues_updated_at (auto-update updated_at)
+   - Backward compatible: kolom lama (original_srt, text) tetap dipakai sebagai SRT Jawa + text Jawa
+
+2. Supabase functions (src/lib/supabase.ts)
+   - SrtProject interface: tambah original_srt_id
+   - SrtCue interface: tambah text_id + voice
+   - createDualProject(name, srtId, srtJawa, cues[]): insert project + batch insert cues
+   - getProjectWithCues(projectId): load project + cues (both texts + voice)
+   - updateCueFull(cueId, {text, text_id, register, voice, is_edited}): auto-save per edit
+   - bumpProjectEdited(projectId, delta): update updated_at + cues_edited count
+
+3. Per-cue voice TTS (src/lib/tts.ts)
+   - NarrationOptions.voiceResolver?: (entry, idx) => string
+   - Override voice per cue, fallback ke opts.voice (global) kalau undefined
+   - Semua 8 synthesizeText call di narrateEntries sekarang pakai cueVoice
+   - Mode ON + Smart Fit tetap aktif (respectTiming=true, smartFit=true)
+   - Pitch control per project (Edge TTS: -10Hz laki, +10Hz perempuan)
+
+4. DualSrtEditor rewrite (src/components/srt-editor-panel.tsx, 883 lines)
+   - Empty state:
+     * "+ Project Baru" button (primary)
+     * "Buka Project (N)" button (outline, disabled kalau N=0)
+     * Recent projects list (top 3, klik = load)
+     * Cara pakai instructions (7 langkah)
+   - New Project modal:
+     * Nama project (free text)
+     * Upload SRT ID + Upload SRT Jawa (2-col grid, side-by-side, blue + amber boxes)
+     * Cue count validation (warning kalau beda, pakai min)
+     * "Buat Project & Simpan ke Supabase" button
+   - Project list modal:
+     * Daftar project (nama, cue_count, edited, last_updated)
+     * Active project highlighted (indigo border)
+     * Buka + Hapus buttons
+   - Editor screen (active project):
+     * Header: nama + cue count + voice count + auto-save badge + Ganti + Tutup
+     * Action bar: All Ngoko/Krama (page/all) + Download SRT Jawa
+     * TTS panel inline (purple):
+       - Provider select (Edge/OpenAI/OpenRouter)
+       - Pitch select (Edge only)
+       - Smart Fit cap select (1.5x / 2.0x)
+       - Generate TTS button → narrateEntries dengan voiceResolver
+       - Progress bar + line progress text + stage message
+       - Audio player + download ulang link
+     * Cue list (30 per page):
+       - #index + timestamp
+       - SRT ID context (small grey italic, read-only)
+       - SRT Jawa textarea (editable, auto-save 1.5s)
+       - Voice dropdown (Dimas/Siti/Ardi/Gadis)
+       - Ngoko/Krama toggle buttons (klik = convert dari kamus + auto-save)
+     * Pagination: Sebelumnya / Hal N / Total / Berikutnya
+   - Active project di-persist di localStorage (auto-load saat reload page)
+   - Auto-save: debounced 1.5s, per-cue updateCueFull, mark is_edited=true
+
+5. Size & Supabase feasibility
+   - SRT file ~200KB (2.5 jam, 2000 cue) — kecil
+   - Supabase Postgres free tier: 500MB DB, 1GB storage
+   - Simpan SRT sebagai TEXT column (bukan Storage file) → bisa SQL query per cue
+   - Untuk 100 project × 200KB SRT ID + 200KB SRT Jawa = 40MB total → masih jauh di bawah 500MB
+   - Storage tidak dipakai (SRT kecil, lebih efisien di Postgres untuk query)
+
+Verification:
+- Build: ✓ Compiled successfully 11.1s
+- Vercel deploy: ✓ (commit eb0ac16, deployed in ~60s)
+- VLM verify desktop 1280px:
+  * Editor SRT Jawa at top dengan "Project-based" badge
+  * "+ Project Baru" button (black, primary)
+  * "Buka Project (0)" button (white/outline, 0 karena migration v2 belum di-run user)
+  * "Cara pakai" 7-step instructions
+  * No Supabase error/fallback message
+- Mode ON logic preserved: respectTiming=true + smartFit=true → 100% sync SRT ori
+
+User perlu run SQL migration v2 di Supabase SQL Editor:
+  scripts/supabase-migration-v2.sql
+  (3 ALTER TABLE + 2 trigger, ~1 detik eksekusi)
+
+Stage Summary:
+- Project-based workflow: buat project per SRT pair, simpan ke Supabase, lanjut kapan saja
+- Auto-save 1.5s: edit textarea, toggle register, pilih voice → tersimpan otomatis
+- Multi-project: S1, S2, dst — terpisah, daftar di "Buka Project"
+- Per-cue voice: 4 voices (Dimas/Siti/Ardi/Gadis), Generate TTS pakai voiceResolver
+- Mode ON + Smart Fit: respectTiming=true, smartFit=true, cap 2.0x → 100% sync SRT ori
+- Active project di-restore dari localStorage (auto-load saat reload page)
+- Commit: eb0ac16 — pushed ke GitHub, Vercel auto-deploy
+- Files changed: supabase.ts (+194), tts.ts (+19), srt-editor-panel.tsx (+888 rewrite)
+- Files new: scripts/supabase-migration-v2.sql
+- Pending: user run migration v2 SQL di Supabase SQL Editor
+
