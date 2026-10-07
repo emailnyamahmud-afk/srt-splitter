@@ -602,3 +602,66 @@ Stage Summary:
 - User sudah test: upload 1 entri (agustus) → sukses
 - Web app load kamus dari Supabase (limit 10000 untuk performance)
 - Kamus editor panel di web: search + edit langsung dari Supabase
+
+---
+Task ID: 13
+Agent: main
+Task: Fix bug — "menu uplod srt cuma 1, halaman juga masih 1 srt"
+
+User feedback (8 Okt 2026 02:25 WIB):
+"menu uplod srt cuma 1, halaman juga masih 1 srt, ada bug?"
+
+Investigation:
+- Vercel deploy up-to-date (origin/main == HEAD == c406b1f)
+- Static HTML benar: punya "Upload SRT ID" + "Upload SRT Jawa" + "Editor SRT Jawa"
+- VLM verify desktop + mobile: Dual SRT Editor di-render dengan 2 tombol upload
+- Build success (Turbopack skip type validation, no syntax error)
+- Test upload SRT ID + SRT Jawa di deployed app → dual display working (ID context grey italic + Jawa textarea + Voice + Ngoko/Krama + pagination)
+
+Root cause (BUKAN bug, tapi UX issue):
+- Editor SRT Jawa (DualSrtEditor) ada di BOTTOM page — bawah KamusEditor
+- Split upload area di TOP punya 1 tombol "Pilih File SRT" (untuk Split, bukan dual)
+- User upload SRT ke TOP → Rapikan SRT Jawa panel muncul (single SRT editor)
+- User kira itu "dual editor" tapi cuma 1 SRT per cue
+- User kira "menu uplod srt cuma 1" = Split upload (1 button) di top
+- User kira "halaman juga masih 1 srt" = Rapikan panel (single SRT)
+
+Fix:
+1. Move DualSrtEditor ke ATAS page (right after header) — PRIMARY
+2. Remove RapikanJawaPanel (redundant — Dual SRT Editor gantikan, lebih powerful)
+3. Force grid-cols-2 (always side-by-side, bahkan di mobile 412px)
+4. Visual prominence: border-2 indigo, shadow-md, badge "Dual SRT + Voice"
+5. Tambah section divider "Workflow Split / Translate / TTS (sekunder)"
+6. Split upload area: label baru "Split SRT (potong jadi beberapa file)"
+7. Add "Cara pakai" instructions (6 langkah) di upload screen
+8. Background colors: SRT ID box biru muda, SRT Jawa box amber muda (visual differentiation)
+
+Layout baru (urut dari atas):
+  Header (logo + title + 100% Sync badge)
+  Editor SRT Jawa (PRIMARY, border-2 indigo, 2 uploads side-by-side)
+  --- Workflow Split / Translate / TTS (sekunder) ---
+  Split SRT upload (1 SRT, border-2 dashed amber)
+  [Settings + Translate + TTS panels jika Split file uploaded]
+  TTS Text ke Audio
+  Kamus Jawa Editor (jika Supabase ready)
+  Info section (jika no Split file)
+  Source code download
+  Footer
+
+Verification:
+- Build: ✓ Compiled successfully (12s)
+- Vercel deploy: ✓ (commit 911fee0 pushed, deployed in ~60s)
+- VLM verify desktop 1280px: ✓ Editor SRT Jawa di top, 2 uploads side-by-side, divider di bawah, Split SRT di bawah divider
+- VLM verify mobile 412px: ✓ 2 uploads masih side-by-side (grid-cols-2 forced)
+- Test upload SRT ID: ✓ "✓ 2 cue (konteks)" confirmation muncul, upload screen tetap (waiting SRT Jawa)
+- Test upload SRT Jawa: ✓ Editor view muncul, dual display per cue (ID context grey italic + Jawa textarea + Voice + Ngoko/Krama)
+- Pagination: ✓ "Hal 1 / 1 (2 cue)" + Sebelumnya/Berikutnya buttons
+
+Stage Summary:
+- Bug fix: Editor SRT Jawa sekarang PRIMARY di top page, 2 uploads side-by-side (selalu, bahkan mobile)
+- Rapikan SRT Jawa panel dihapus (redundant) — Dual SRT Editor gantikan dengan lebih banyak fitur (voice per cue, dual display, pagination 30 cue/hal)
+- Split workflow jadi sekunder (label "Split SRT (potong jadi beberapa file)" + divider)
+- User sekarang langsung lihat "Upload SRT ID" + "Upload SRT Jawa" di top page, no confusion
+- Commit: 911fee0 — pushed ke GitHub, Vercel auto-deploy
+- Files changed: src/app/page.tsx (move + remove import + label), src/components/srt-editor-panel.tsx (grid-cols-2 + visual prominence + cara pakai)
+
