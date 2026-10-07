@@ -37,20 +37,17 @@ except ImportError:
     print('\n❌ pip3 install questionary')
     sys.exit(1)
 
-# Default ke kamus-jawa-full.json (v5, 44.585 entri)
-# Fallback ke kamus-jawa.json (v4, 157 entri) kalau full belum ada
+# Kamus JSON path — hanya kamus-jawa-full.json (v5, 44.585 entri)
+# (kamus-jawa.json lama 21KB sudah dihapus dari repo — tidak relevan lagi)
 KAMUS_FULL = Path.home() / 'Dubbing' / 'kamus-jawa-full.json'
-KAMUS_OLD = Path.home() / 'Dubbing' / 'kamus-jawa.json'
 SUPABASE_URL = os.environ.get('NEXT_PUBLIC_SUPABASE_URL', '')
 SUPABASE_KEY = os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY', '')
 
 
 def get_kamus_path():
-    """Cari kamus JSON yang ada di ~/Dubbing/"""
+    """Cari kamus JSON di ~/Dubbing/"""
     if KAMUS_FULL.exists():
         return KAMUS_FULL
-    if KAMUS_OLD.exists():
-        return KAMUS_OLD
     return None
 
 
@@ -59,7 +56,6 @@ def load_kamus():
     if not path:
         print(f'\n❌ Kamus JSON tidak ada di:')
         print(f'   {KAMUS_FULL}')
-        print(f'   {KAMUS_OLD}')
         print(f'\n   Download:')
         print(f'   curl -L -o ~/Dubbing/kamus-jawa-full.json.gz \\')
         print(f'     https://github.com/emailnyamahmud-afk/srt-splitter/raw/main/public/kamus-jawa-full.json.gz')
@@ -446,14 +442,7 @@ import json, sys, os, urllib.request, urllib.error
 KAMUS_PATH = None
 import os.path
 from pathlib import Path
-candidates = [
-    Path.home() / "Dubbing" / "kamus-jawa-full.json",
-    Path.home() / "Dubbing" / "kamus-jawa.json",
-]
-for p in candidates:
-    if p.exists():
-        KAMUS_PATH = p
-        break
+KAMUS_PATH = Path.home() / "Dubbing" / "kamus-jawa-full.json"
 
 URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
 KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY", "")
