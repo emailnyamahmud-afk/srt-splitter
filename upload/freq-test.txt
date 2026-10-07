@@ -1,0 +1,49 @@
+SRT Frequency Analyzer Report
+============================
+
+SRT: upload/test-jw.srt
+Kamus: public/kamus-jawa-full.json
+Tanggal: /home/z/my-project
+
+STATS:
+  Total kata di SRT: 35
+  Unique words: 28
+  Kata dikenal kamus: 21 (80.0% token)
+  Kata TIDAK dikenal: 7 (20.0% token)
+  Coverage: 75.0% type
+
+TOP 50 KATA DIKENAL KAMUS:
+   #   Freq  Kata                  Status
+----------------------------------------------------------------------
+   1      3  arep                  ✓ krama mapping
+   2      3  kula                  ○ ngoko saja
+   3      2  aku                   ✓ krama mapping
+   4      2  ayam                  ○ ngoko saja
+   5      2  iki                   ✓ krama mapping
+   6      1  mangan                ✓ krama mapping
+   7      1  sega                  ✓ krama mapping
+   8      1  karo                  ✓ krama mapping
+   9      1  omah                  ✓ krama mapping
+  10      1  ing                   ○ ngoko saja
+  11      1  dalan                 ✓ krama mapping
+  12      1  ngendi                ✓ krama mapping
+  13      1  menyang               ✓ krama mapping
+  14      1  pasar                 ✓ krama mapping
+  15      1  sapa                  ✓ krama mapping
+  16      1  sing                  ○ ngoko saja
+  17      1  nggawa                ✓ krama mapping
+  18      1  buku                  ○ ngoko saja
+  19      1  sekul                 ○ ngoko saja
+  20      1  kaliyan               ○ ngoko saja
+  21      1  ngertos               ○ ngoko saja
+
+TOP 200 KATA TIDAK DIKENAL (prioritas add ke kamus):
+   #   Freq  Kata                       Suggestion
+----------------------------------------------------------------------
+   1      1  e                          
+   2      1  kowe                       
+   3      1  badhe                      
+   4      1  dhahar                     
+   5      1  prikakosipun               
+   6      1  nggih                      
+   7      1  mboten                     
