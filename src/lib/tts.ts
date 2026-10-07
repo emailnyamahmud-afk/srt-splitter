@@ -264,6 +264,33 @@ function formatEdgeRate(ratio: number): string {
 }
 
 /**
+ * Normalisasi text untuk TTS — tanpa mengubah SRT final.
+ *
+ * Edge TTS Jawa tidak bisa baca aksén Jawa dengan baik (é, è, ê).
+ * SRT final tetap pakai aksén (sesuai kaidah), tapi text yang dikirim ke TTS
+ * di-strip aksen-nya supaya Edge TTS bisa baca dengan baik.
+ *
+ * Yang dilakukan:
+ * 1. Strip aksen Jawa: é/è/ê → e, É/È/Ê → E
+ * 2. Trim whitespace berlebih
+ * 3. Collapse multiple spaces jadi 1
+ *
+ * @param text Text asli dari SRT cue (mungkin ada aksen)
+ * @returns Text yang siap dikirim ke TTS (tanpa aksen)
+ */
+export function normalizeTtsText(text: string): string {
+  return text
+    .replace(/é/g, 'e')
+    .replace(/è/g, 'e')
+    .replace(/ê/g, 'e')
+    .replace(/É/g, 'E')
+    .replace(/È/g, 'E')
+    .replace(/Ê/g, 'E')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+/**
  * Generate narration audio for SRT entries, stitched into one WAV.
  *
  * DUA MODE (filosofi Voicertool.com/subs):
@@ -306,7 +333,8 @@ export async function narrateEntries(
 
   for (let i = 0; i < entries.length; i++) {
     const entry = entries[i]
-    const text = entry.textLines.join(' ').trim()
+    // Normalize untuk TTS: strip aksen Jawa (é/è/ê → e) supaya Edge TTS bisa baca
+    const text = normalizeTtsText(entry.textLines.join(' '))
 
     if (!text) {
       if (opts.respectTiming) {
@@ -691,7 +719,8 @@ export async function narrateSingleCue(
   nextEntryStart: number,
   opts: NarrationOptions,
 ): Promise<SingleCueResult> {
-  const text = entry.textLines.join(' ').trim()
+  // Normalize untuk TTS: strip aksen Jawa (é/è/ê → e)
+  const text = normalizeTtsText(entry.textLines.join(' '))
   if (!text) {
     // Empty cue — return empty audio (akan di-handle saat stitch)
     return {
@@ -862,7 +891,8 @@ export async function stitchFullAudio(
 
   for (let i = 0; i < entries.length; i++) {
     const entry = entries[i]
-    const text = entry.textLines.join(' ').trim()
+    // Normalize untuk TTS: strip aksen Jawa (é/è/ê → e)
+    const text = normalizeTtsText(entry.textLines.join(' '))
     onProgress?.(i + 1, total, text.slice(0, 60))
 
     if (!text) {
@@ -1137,7 +1167,8 @@ export async function narrateDubbingMode(
 
   const generateOne = async (i: number) => {
     const entry = entries[i]
-    const text = entry.textLines.join(' ').trim()
+    // Normalize untuk TTS: strip aksen Jawa (é/è/ê → e)
+    const text = normalizeTtsText(entry.textLines.join(' '))
     const cueDur = entry.end - entry.start
 
     if (!text) {
@@ -1310,7 +1341,8 @@ export async function narrateDubbingMode(
     for (let i = 0; i < entries.length; i++) {
       const entry = entries[i]
       const cueAudio = cueAudios[i]
-      const text = entry.textLines.join(' ').trim()
+      // Normalize untuk TTS: strip aksen Jawa (é/è/ê → e)
+      const text = normalizeTtsText(entry.textLines.join(' '))
 
       // Skip cue kosong atau invalid — track untuk skippedCues
       if (!text || !isFinite(cueAudio.durationSec) || cueAudio.durationSec <= 0) {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Upload, Download, ChevronLeft, ChevronRight, Loader2, CheckCircle2, Cloud, Mic, FolderOpen, Plus, Trash2, Wand2, X } from 'lucide-react'
+import { Upload, Download, ChevronLeft, ChevronRight, Loader2, CheckCircle2, Cloud, Mic, FolderOpen, Plus, Trash2, Wand2, X, Eraser } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -20,6 +20,8 @@ import {
 import {
   loadKamusJawa,
   convertRegister,
+  stripAksenJawa,
+  stripAksenFromEntries,
   type KamusJawa,
   type CueRegister,
 } from '@/lib/rapikan-jawa'
@@ -434,6 +436,35 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
     downloadTextFile(`${safeName}-jw-final.srt`, content)
     toast.success('SRT Jawa didownload')
   }, [jawaEntries, projectName, prefix])
+
+  // === Hapus aksen Jawa di SRT final (é/è/ê → e) ===
+  // Manual normalisasi SRT — hapus aksen permanen di text Jawa
+  // Cocok untuk: SRT final yang mau langsung pakai (untuk VLC, untuk TTS yang tidak bisa baca aksen)
+  // Note: TTS Preview/Generate Full SUDAH auto-strip aksen (tanpa ubah SRT) — tombol ini opsional untuk normalisasi SRT permanen
+  const handleStripAksen = useCallback(() => {
+    if (jawaEntries.length === 0) return
+    if (!confirm('Hapus aksen Jawa (é/è/ê → e) di SRT final? TTS Preview/Generate Full sudah auto-strip tanpa ubah SRT, jadi ini opsional.')) return
+    setJawaEntries(prev => {
+      const updated = prev.map(e => ({
+        ...e,
+        textLines: [...e.textLines],
+      }))
+      const count = stripAksenFromEntries(updated)
+      if (count > 0) {
+        // Save semua cue yang berubah ke Supabase
+        for (let i = 0; i < updated.length; i++) {
+          if (updated[i].textLines.join('\n') !== prev[i].textLines.join('\n')) {
+            markCueForSave(i, { text: updated[i].textLines.join('\n') })
+          }
+        }
+        toast.success(`${count} line: aksen dihapus (é→e, è→e, ê→e)`)
+      } else {
+        toast.info('Tidak ada aksen Jawa di SRT')
+      }
+      return updated
+    })
+  }, [jawaEntries, markCueForSave])
+
 
   // === Generate TTS (mode ON + Smart Fit, per-cue voice) ===
   // Build common NarrationOptions (dipakai oleh per-cue preview + Generate Full)
@@ -881,6 +912,12 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
             <Button size="sm" variant="outline" onClick={() => handleConvertAll('krama')}
               className="border-amber-200 text-amber-600 dark:text-amber-400">
               All Krama (semua)
+            </Button>
+            <Button size="sm" variant="outline" onClick={handleStripAksen}
+              className="border-purple-200 text-purple-600 dark:text-purple-400"
+              title="Hapus aksen Jawa (é/è/ê → e) di SRT final. Edge TTS Jawa tidak bisa baca aksen. Auto-normalisasi juga dilakukan saat Preview/Generate TTS (tanpa ubah SRT final)."
+            >
+              <Eraser className="size-3.5 mr-1" /> Hapus Aksén (SRT)
             </Button>
             <Button size="sm" onClick={handleDownload}>
               <Download className="size-3.5 mr-1" /> Download SRT Jawa
