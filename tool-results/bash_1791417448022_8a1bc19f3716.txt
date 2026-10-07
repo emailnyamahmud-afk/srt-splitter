@@ -1,0 +1,763 @@
+=== Total entries dengan krama_inggil: 254 ===
+
+#  325  ngoko='ampéyan'            krama=''                   ki='ampéyan'           
+        keterangan: (garwa ampéyan) selir; dhukuh.
+
+#  550  ngoko='aras'               krama=''                   ki='aras'              
+        keterangan: diaras; digepok, digrayang; diambung.; aras-arasen; ora duwé
+
+#  613  ngoko='asta'               krama=''                   ki='asta'              
+        keterangan: wolu.; tangan; lengen; tangan kang ngisor (dianggo ukuran); 
+
+#  631  ngoko='ati'                krama=''                   ki='ati'               
+        keterangan: pérangan ing jero kang empuk (tmr. pring, gori lsp); péranga
+
+#  639  ngoko='atur'               krama=''                   ki='atur'              
+        keterangan: unjuk apa kang dikandhakaké; diatur  ditata dipranata
+
+#  691  ngoko='babaran'            krama=''                   ki='babaran'           
+        keterangan: kang wis dibabar (digarap, disoga); wedharan; duwé anak.
+
+#  715  ngoko='badhong'            krama=''                   ki='badhong'           
+        keterangan: blébékan rerengganing dhadha (wayang, jaran); praba (rerengg
+
+# 1960  ngoko='caos'               krama=''                   ki='caos'              
+        keterangan: tungguk; sowan marang dhedhuwurané; cawis
+
+# 2011  ngoko='cawik'              krama=''                   ki='cawik'             
+        keterangan: céwok.; cawikan; cawan, lèpèk; bathok cilik kanggo takeran b
+
+# 2012  ngoko='cawis'              krama=''                   ki='cawis'             
+        keterangan: (caos ) sadhiya, wis tumata; tungguk ana ing dalemé priyayi 
+
+# 2324  ngoko='cucul'              krama=''                   ki='cucul'             
+        keterangan: lukar ucul (ngrucat) panganggo; ngetokaké dhuwit, cucul wrag
+
+# 2360  ngoko='cundhuk'            krama=''                   ki='cundhuk'           
+        keterangan: sangsangan; rerenggan (kembang lsp) disindikaké ing rambut (
+
+# 2495  ngoko='dangu'              krama=''                   ki='dangu'             
+        keterangan: gaganging kembang arèn.; biyèn; suwé; wengi.; didangu ditako
+
+# 2874  ngoko='dhèrèk'             krama=''                   ki='dhèrèk'            
+        keterangan: ndhèrèk; ( ) mèlu; nyarah; miturut; sadhèrèk.; dhèrèk-dhèrèk
+
+# 3151  ngoko='didhèrèk'           krama=''                   ki='didhèrèk'          
+        keterangan: diiring (-aké), ditut (-aké); diturut, dienut
+
+# 3674  ngoko='dipegeng'           krama=''                   ki='dipegeng'          
+        keterangan: diampet (tmr. napas); disapih (enggoné nusu); megengan.
+
+# 3778  ngoko='dipriksakaké'       krama=''                   ki='dipriksakaké'      
+        keterangan: dikon nitipriksa; diweruhaké.
+
+# 3796  ngoko='dipréntah'          krama=''                   ki='dipréntah'         
+        keterangan: dirèh, dikuwasani; ( dipréntahi) didhawuh(-i) dikon, dikon n
+
+# 3926  ngoko='disempriti'         krama=''                   ki='disempriti'        
+        keterangan: disisèni; diwèhi tengara sarana unining sempritan.
+
+# 3962  ngoko='disirami'           krama=''                   ki='disirami'          
+        keterangan: didusi; disoki (dicuri) banyu
+
+# 4605  ngoko='gadhing'            krama=''                   ki='gadhing'           
+        keterangan: siyung gajah; barang dandanan sing digawé siyung gajah mau, 
+
+# 4648  ngoko='galih'              krama=''                   ki='galih'             
+        keterangan: atèn-atèné kayu lumrahé warnané ireng; ati; ati, pangrasanin
+
+# 4892  ngoko='geger'              krama=''                   ki='geger'             
+        keterangan: pengkeran péranganing gembung sing buri
+
+# 4903  ngoko='gelang'             krama=''                   ki='gelang'            
+        keterangan: binggel kolongan emas lsp. dianggo rerengganing tangan; dige
+
+# 4915  ngoko='gelung'             krama=''                   ki='gelung'            
+        keterangan: ukel tataning rambut sing diukel, arané warna-warna
+
+# 5031  ngoko='gerah'              krama=''                   ki='gerah'             
+        keterangan: gludhug, swara sing gumludhug.; sumuk krasa mriyang apanas; 
+
+# 5070  ngoko='gethek'             krama=''                   ki='gethek'            
+        keterangan: geretan ing pring sing arep dikethok lsp; gethak.; gethekan 
+
+# 5490  ngoko='grénda'             krama=''                   ki='grénda'            
+        keterangan: watu pangasahan bunder diubengaké gurinda.; digrénda didadah
+
+# 5655  ngoko='gurah'              krama=''                   ki='gurah'             
+        keterangan: kemu ngresiki gorokan; kemu.; digurah digusah; gurak.; prapè
+
+# 5687  ngoko='gutuk'              krama=''                   ki='gutuk'             
+        keterangan: balang, sawat; saben 1 regané iya 1 (sén, bribil lsp); sambu
+
+# 5800  ngoko='ibing'              krama=''                   ki='ibing'             
+        keterangan: idep.; ngibing  njogèdi tlèdhèk.
+
+# 5816  ngoko='idu'                krama=''                   ki='idu'               
+        keterangan: kecoh; banyuning cangkem; ngetokaké banyuning cangkem; 1/8 b
+
+# 5840  ngoko='iket'               krama=''                   ki='iket'              
+        keterangan: dhesthar  jarit awangun pesagi dianggo nutupi endhas (sarana
+
+# 5880  ngoko='imba'               krama=''                   ki='imba'              
+        keterangan: alis.; tetuwuhan.; imba-imba  tumindak kaya déné; émba, mimb
+
+# 5958  ngoko='iring'              krama=''                   ki='iring'             
+        keterangan: ( iringan) sisih kiwa tengen; ukuran jembaring palehaman (¼ 
+
+# 5991  ngoko='itik'               krama=''                   ki='itik'              
+        keterangan: tuma.; diitik-itik digula-wenthah lan dipiyara wiwit cilik.;
+
+# 6070  ngoko='jaja'               krama=''                   ki='jaja'              
+        keterangan: dhadha; bakul kang ider-ider
+
+# 6331  ngoko='jeneng'             krama=''                   ki='jeneng'            
+        keterangan: adeg-adeg, péranganing gedhèg (pager lsp) sing ngadeg; nama 
+
+# 6500  ngoko='jogèd'              krama=''                   ki='jogèd'             
+        keterangan: tlèdhèk; beksa solah bawa sing tinata manut wiramaning gendh
+
+# 6595  ngoko='juluk'              krama=''                   ki='juluk'             
+        keterangan: jejuluk jeneng, peparab; julukan githok.; menjuluk mingset m
+
+# 6618  ngoko='jungkat'            krama=''                   ki='jungkat'           
+        keterangan: serat pethat  piranti dianggo natasaké lan ngelus rambut, ar
+
+# 6827  ngoko='kaki'               krama=''                   ki='kaki'              
+        keterangan: éyang; embah lanang; anak anggèr (panyebut marang wong nom k
+
+# 6853  ngoko='kalam'              krama=''                   ki='kalam'             
+        keterangan: pèn (lumrahé kang digawé sruwa duk); palanangan.; pangandika
+
+# 7186  ngoko='kathok'             krama=''                   ki='kathok'            
+        keterangan: blébékan emas (slaka lsp) dianggo tutup pawadonan; (lancinga
+
+# 7204  ngoko='katrap'             krama=''                   ki='katrap'            
+        keterangan: katrap paukuman  ditrapi paukuman, diukum; trap.; pathèk
+
+# 7407  ngoko='kedhap'             krama=''                   ki='kedhap'            
+        keterangan: kelap, kedhèp; dikedhapi diicipi
+
+# 8062  ngoko='kethik'             krama=''                   ki='kethik'            
+        keterangan: pasah (pangur).; dikethik dikandhani (diwangsit) kalawan dhe
+
+# 8207  ngoko='kijing'             krama=''                   ki='kijing'            
+        keterangan: kéyong kécé.; sekaran watu lsp. diwangun pesagi dawa kanggo 
+
+# 8752  ngoko='krama'              krama=''                   ki='krama'             
+        keterangan: pratingkah, patrap; tata-pranata kang becik, suba-sita; wata
+
+# 8955  ngoko='kuluk'              krama=''                   ki='kuluk'             
+        keterangan: makutha, panunggul  kethu agemé para priyayi yèn pinuju paso
+
+# 9267  ngoko='kèngser'            krama=''                   ki='kèngser'           
+        keterangan: owah mingser; kesliyo, kecethit; keplayu.
+
+# 9393  ngoko='lair'               krama=''                   ki='lair'              
+        keterangan: mung katoné ing jaba; wadhag, kang dudu batin, kawruh lair, 
+
+# 9409  ngoko='laki'               krama=''                   ki='laki'              
+        keterangan: garwa; bojo (sing lanang); (alaki) krama omah-omah tmr. wong
+
+# 9455  ngoko='lambé'              krama=''                   ki='lambé'             
+        keterangan: lathi pinggiraning cangkem; pinggiraning cangkir, piring lsp
+
+# 9480  ngoko='lancing'            krama=''                   ki='lancing'           
+        keterangan: durung rabi; loncang-lancing.; lancingan:; cawed; kathok, sr
+
+# 9543  ngoko='lapak'              krama=''                   ki='lapak'             
+        keterangan: kambil abah-abah jaran kang dianggo palinggihané wong sing n
+
+# 9550  ngoko='lara'               krama=''                   ki='lara'              
+        keterangan: sakit gerah; nandhang ora kepénak ing badané; ( lelara) apa-
+
+# 9561  ngoko='larap'              krama=''                   ki='larap'             
+        keterangan: lakuning apa-apa sing niyup (nglayang, nyiruk, nylorot) bant
+
+# 9564  ngoko='larik'              krama=''                   ki='larik'             
+        keterangan: garis, tharik; ( larikan) jéjéran urut-urutan; luwangan sing
+
+# 9626  ngoko='layon'              krama=''                   ki='layon'             
+        keterangan: kembang kang wis layu; mayid, bangké.
+
+# 9783  ngoko='lerak'              krama=''                   ki='lerak'             
+        keterangan: tetuwuhan wohé bunder-bunder kena dianggo ngresiki apa-apa (
+
+# 9810  ngoko='lidhah'             krama=''                   ki='lidhah'            
+        keterangan: ilat; iwak ilat (sapi, kebo lsp); lidhah-lidhah) kilat, that
+
+# 9961  ngoko='lolos'              krama=''                   ki='lolos'             
+        keterangan: copot lan ucul saka ing bengkekané tmr. sada ing sapu lsp. u
+
+#10494  ngoko='makutha'            krama=''                   ki='makutha'           
+        keterangan: songkok ageming ratu yèn pinuju sinéwaka; kuluk.
+
+#10528  ngoko='mamah'              krama=''                   ki='mamah'             
+        keterangan: nggilut; nglembutaké sarana untu; ora nggugu pitutur; embok,
+
+#10807  ngoko='mata'               krama=''                   ki='mata'              
+        keterangan: ( mripat tingal ) pirantining panca-driya kang dianggo ndele
+
+#11127  ngoko='megeng'             krama=''                   ki='megeng'            
+        keterangan: ngampet(-napas lsp); nyapih (-bayi); ( megengan) wiwitaning 
+
+#11485  ngoko='metek'              krama=''                   ki='metek'             
+        keterangan: ngenetaké seru; ( meteki) mijeti; menet, mlinder pagawéan; p
+
+#11492  ngoko='methat'             krama=''                   ki='methat'            
+        keterangan: nyopot, mecat pethat.; methati njungkati; pethat.
+
+#11533  ngoko='mijet'              krama=''                   ki='mijet'             
+        keterangan: ngenetaké seru; (metek ) ngenetaké lan ngurut badan; pijet.
+
+#11638  ngoko='mirsa'              krama=''                   ki='mirsa'             
+        keterangan: weruh; pirsa, priksa.; krungu, ngrungu; piyarsa, miyarsa.
+
+#12072  ngoko='mréntah'            krama=''                   ki='mréntah'           
+        keterangan: ngerèh; ( mréntahi ndhawuhi ) akon nindakaké; préntah.
+
+#12155  ngoko='mulih'              krama=''                   ki='mulih'             
+        keterangan: mantuk kondur; bali menyang (tekan) ing omah; (mulih menyang
+
+#12199  ngoko='mundur'             krama=''                   ki='mundur'            
+        keterangan: mlaku memburi; mulih; undur.
+
+#12235  ngoko='munjuk'             krama=''                   ki='munjuk'            
+        keterangan: rada munggah, mendhuwur; kurang tata krama.; matur; unjuk.
+
+#12259  ngoko='mupur'              krama=''                   ki='mupur'             
+        keterangan: mipili jagung; pupur.; mupuri nasiki ngusari nganggo pupur; 
+
+#12464  ngoko='nabi'               krama=''                   ki='nabi'              
+        keterangan: wong suci kang pinaringan pepadhanging Allah bisa memeca.; (
+
+#12595  ngoko='nangsangi'          krama=''                   ki='nangsangi'         
+        keterangan: sumangsang ing; ngalungi; nyundhuki; sangsang.
+
+#12897  ngoko='nembung'            krama=''                   ki='nembung'           
+        keterangan: nyemethi; tembung.; nggebug, nggitik; tembung.; ngucap njalu
+
+#12935  ngoko='nepsu'              krama=''                   ki='nepsu'             
+        keterangan: derenging ati; (duka ) muring; napsu, nesu.
+
+#13042  ngoko='ngaji'              krama=''                   ki='ngaji'             
+        keterangan: maca kitab kur'an.; ngaji-aji ngaosi nyuhun-nyuhun mundhi-mu
+
+#13155  ngoko='ngampil'            krama=''                   ki='ngampil'           
+        keterangan: (ngiringaké) nggawa upacara lsp; ngrengger (pangkat lsp); ny
+
+#13343  ngoko='ngaras'             krama=''                   ki='ngaras'            
+        keterangan: ngambung; aras.; dhamparing Allah; aras.
+
+#13403  ngoko='ngatur'             krama=''                   ki='ngatur'            
+        keterangan: nata, mranata; atur.; ngaturi:; ngundang, nyuruhi (kalawan o
+
+#13834  ngoko='ngenyoh'            krama=''                   ki='ngenyoh'           
+        keterangan: nyakot; mamah; kenyoh.; ngenyohi  ngulungi (mènèhi); enyoh.
+
+#14035  ngoko='ngganda'            krama=''                   ki='ngganda'           
+        keterangan: ngambu; mambu
+
+#14222  ngoko='nggugah'            krama=''                   ki='nggugah'           
+        keterangan: mungu; agawé supaya tangi; nangèkaké prakara sing wis sirep.
+
+#14288  ngoko='ngiket'             krama=''                   ki='ngiket'            
+        keterangan: nalèni; ngarang, ngrumpaka; iket.; ngiket-iketi ndhesthari n
+
+#14300  ngoko='ngilani'            krama=''                   ki='ngilani'           
+        keterangan: nyapih; ila, sapih.; ngukur nganggo kilan; (ngilani dhadha) 
+
+#15038  ngoko='ngramakaké'         krama=''                   ki='ngramakaké'        
+        keterangan: ndadèkaké ing tembung krama; ngomah-omahaké; krama.
+
+#15337  ngoko='ngubur'             krama=''                   ki='ngubur'            
+        keterangan: metak nyarèkaké; mendhem mayit; kubur.; ngubur-ubur, nguburi
+
+#15585  ngoko='ngurut'             krama=''                   ki='ngurut'            
+        keterangan: ( nguruti) nekem (njapit) banjur ditlusuraké supaya padha pe
+
+#15882  ngoko='nindaki'            krama=''                   ki='nindaki'           
+        keterangan: ngukur sarana jangkah; marani; nglakoni (pagawéan)
+
+#16450  ngoko='nuwun'              krama=''                   ki='nuwun'             
+        keterangan: njaluk; suwun, nyuwun.; mratélakaké pakurmatan; trima kasih.
+
+#17228  ngoko='nyunati'            krama=''                   ki='nyunati'           
+        keterangan: netesi ngislamaké bocah wadon; sunat.; nyembelèh; sunat.
+
+#17288  ngoko='nyuwun'             krama=''                   ki='nyuwun'            
+        keterangan: nyunggi; suwun.; njaluk
+
+#17439  ngoko='omah'               krama=''                   ki='omah'              
+        keterangan: griya dalem yeyasan mawa payon kang dianggo dedunung dianggo
+
+#17607  ngoko='padusan'            krama=''                   ki='padusan'           
+        keterangan: (pasiraman ) papan (sendhang lsp) kang dianggo adus; dina ng
+
+#17822  ngoko='panasar'            krama=''                   ki='panasar'           
+        keterangan: susur; canthing dianggo némbok bathikan.
+
+#17854  ngoko='pandangon'          krama=''                   ki='pandangon'         
+        keterangan: minggu kang suwéné 9 dina.; pitakon.
+
+#18041  ngoko='paningset'          krama=''                   ki='paningset'         
+        keterangan: sabuk; pawèwèhé calon pangantèn lanang marang calon pangantè
+
+#18105  ngoko='panuwun'            krama=''                   ki='panuwun'           
+        keterangan: molo; panjaluk; panarima; suwun.
+
+#18149  ngoko='paras'              krama=''                   ki='paras'             
+        keterangan: diparasi; dikethok (endhasé); dipecèli (dioncèki) sepeté kan
+
+#18202  ngoko='pasah'              krama=''                   ki='pasah'             
+        keterangan: bisa tumama (tmr. tamba, tmr. wewadul), bisa rumasuk karo wé
+
+#18234  ngoko='pasikon'            krama=''                   ki='pasikon'           
+        keterangan: sikon; wedhung; wanguning praèn; siku.
+
+#18578  ngoko='paturan'            krama=''                   ki='paturan'           
+        keterangan: (layang lsp) kang diaturaké marang dhedhuwuran; gunem kang k
+
+#18806  ngoko='petek'              krama=''                   ki='petek'             
+        keterangan: dipetek:; dienetaké; ( dipeteki) dipijet(-i); ( dipetekaké) 
+
+#18810  ngoko='pethat'             krama=''                   ki='pethat'            
+        keterangan: pedhot pisah (ora gelem campur manèh); lèrèn mari udan (tmr.
+
+#19065  ngoko='pocong'             krama=''                   ki='pocong'            
+        keterangan: bokong.; sapocong sabentèl (tmr. pari)
+
+#19222  ngoko='praupan'            krama=''                   ki='praupan'           
+        keterangan: paraèn, rai; (pasuryan ) wadhah banyu piranti dianggo raup.
+
+#19253  ngoko='priksa'             krama=''                   ki='priksa'            
+        keterangan: ndeleng lan nyatitèkaké (tumindaking pakaryan lsp); weruh
+
+#19302  ngoko='préntah'            krama=''                   ki='préntah'           
+        keterangan: pangrèh; (dhawuh ) pakon, akon; (préntah désa) warganing pan
+
+#19387  ngoko='pupu'               krama=''                   ki='pupu'              
+        keterangan: wentis sikil ing antarané dhengkul karo wlakang.; dipupu; di
+
+#19393  ngoko='pupur'              krama=''                   ki='pupur'             
+        keterangan: tasik; bubukan beras lsp. dicampur wewangi dianggo mutih rai
+
+#19419  ngoko='puser'              krama=''                   ki='puser'             
+        keterangan: tuntunan; usus kang nggandhèng wudel (tmr. bayi); wudel.; ti
+
+#19442  ngoko='putri'              krama=''                   ki='putri'             
+        keterangan: anaking ratu (para luhur) kang wadon (lumrahé ing crita); wa
+
+#19455  ngoko='puyêng'             krama=''                   ki='puyêng'            
+        keterangan: ( ). ngelu.
+
+#19499  ngoko='rabi'               krama=''                   ki='rabi'              
+        keterangan: (garwa ) somah, bojo (wadon); (arabi) krama nglakoni jejodho
+
+#19543  ngoko='rai'                krama=''                   ki='rai'               
+        keterangan: (pasuryan ) péranganing endhas sing ngarep; péranganing apa-
+
+#19571  ngoko='rama'               krama=''                   ki='rama'              
+        keterangan: bapa; bapa, bapak.
+
+#19671  ngoko='raup'               krama=''                   ki='raup'              
+        keterangan: (saraup) kèhé padha karo isining tangan loro didhèmpètaké sa
+
+#19677  ngoko='rawis'              krama=''                   ki='rawis'             
+        keterangan: sulur wringin sing krembyah-krembyah; wulu jago sing cendhak
+
+#19815  ngoko='resep'              krama=''                   ki='resep'             
+        keterangan: njalari seneng (kapénak) marang pandeleng (pangrungu); rumes
+
+#19964  ngoko='rotan'              krama=''                   ki='rotan'             
+        keterangan: penjalin; teken.
+
+#20161  ngoko='sabet'              krama=''                   ki='sabet'             
+        keterangan: gitik dawa sarta lemes; pedhang
+
+#20169  ngoko='sabuk'              krama=''                   ki='sabuk'             
+        keterangan: paningset apa-apa sing diubedaké ing bangkékan minangka teta
+
+#20368  ngoko='sangsangan'         krama=''                   ki='sangsangan'        
+        keterangan: sampiran, pamépéan; kalung; cundhuk.
+
+#20386  ngoko='saos'               krama=''                   ki='saos'              
+        keterangan: tungguk; sowan; cawis; lelawuhan panganan.; baé; besaos.
+
+#20668  ngoko='semprit'            krama=''                   ki='semprit'           
+        keterangan: sisi; angkuping godhong suruh; (sempritan)  piranti dianggo 
+
+#20899  ngoko='silih'              krama=''                   ki='silih'             
+        keterangan: genti, genti-gentèn, silih ungkih (genti-gentèn ngalahaké); 
+
+#20971  ngoko='siraman'            krama=''                   ki='siraman'           
+        keterangan: ( pasiraman) padusan; upacara ngedusi pangantèn lsp; imbuh; 
+
+#20982  ngoko='sisig'              krama=''                   ki='sisig'             
+        keterangan: susur; (lathi sisig ) untuné diireng
+
+#21050  ngoko='slira'              krama=''                   ki='slira'             
+        keterangan: menyawak gedhé.; ( ): awak; ganepé dadi atusan kurang ... (t
+
+#21113  ngoko='soca'               krama=''                   ki='soca'              
+        keterangan: inten; mata; mataning ali-ali.; blentong ireng ing kayu tila
+
+#21215  ngoko='srengen'            krama=''                   ki='srengen'           
+        keterangan: nepsu; ( nyrengeni) ndukani mituturi sarana tembung sereng.
+
+#21282  ngoko='sugeng'             krama=''                   ki='sugeng'            
+        keterangan: umuk, gumedhé; slamet; lemu.
+
+#21303  ngoko='suker'              krama=''                   ki='suker'             
+        keterangan: éwuh, rekasa angèl; reged, jenes; (tarab ) nggarap banyu (pa
+
+#21330  ngoko='sumangga'           krama=''                   ki='sumangga'          
+        keterangan: sakarepmu; enya, ayo
+
+#21438  ngoko='sunat'              krama=''                   ki='sunat'             
+        keterangan: ora diwajibaké nglakoni nanging prayoga yèn linakonan (babag
+
+#21477  ngoko='supit'              krama=''                   ki='supit'             
+        keterangan: ciyut banget tmr. dalan lsp; sapit geni lsp; sapiting yuyu l
+
+#21479  ngoko='supitan'            krama=''                   ki='supitan'           
+        keterangan: dalan sing ciyut; segara antarané pulo-pulo; tetakan.
+
+#21496  ngoko='suru'               krama=''                   ki='suru'              
+        keterangan: (lantaran ) séndhok; godhong gedhang disuwir ditekuk dianggo
+
+#21497  ngoko='surud'              krama=''                   ki='surud'             
+        keterangan: nisih, mundur wedi; suda tmr. banyu (banjir); mati, pati.
+
+#21515  ngoko='susur'              krama=''                   ki='susur'             
+        keterangan: seselan, ganjel.; disusur  diusari malam supaya wuled (tmr. 
+
+#21549  ngoko='suwun'              krama=''                   ki='suwun'             
+        keterangan: disuwun  disunggi; suhun.; disuwun dijaluk
+
+#21781  ngoko='tanduk'             krama=''                   ki='tanduk'            
+        keterangan: pratingkah, patrap enggoné tumandang; solah-bawa (gunem lsp)
+
+#21837  ngoko='tapel'              krama=''                   ki='tapel'             
+        keterangan: wesi lsp. sing diraketaké ing pethi lsp. supaya kukuh; ( tap
+
+#21839  ngoko='tapih'              krama=''                   ki='tapih'             
+        keterangan: (nyamping ) jarit sing dianggo ing wong wadon; samak bunteli
+
+#21947  ngoko='teka'               krama=''                   ki='teka'              
+        keterangan: dhateng; (rawuh ) anjog ing papan sing dituju, wis bali manè
+
+#21993  ngoko='tembung'            krama=''                   ki='tembung'           
+        keterangan: gitik, gebug; cemethi; bal sing digawé gombal kanggo dolanan
+
+#22062  ngoko='terag'              krama=''                   ki='terag'             
+        keterangan: telag, tendhang; kekurangan udan lsp; telag.; kluron; terèg.
+
+#22202  ngoko='timur'              krama=''                   ki='timur'             
+        keterangan: enom, nonoman.; timuran  angin saka ing wétan.
+
+#22204  ngoko='tindak'             krama=''                   ki='tindak'            
+        keterangan: jangkah; ( tindak-tanduk). patrap, solah-tingkah; laku; mlak
+
+#22209  ngoko='tingal'             krama=''                   ki='tingal'            
+        keterangan: mata; enering pandeleng
+
+#22578  ngoko='tuntun'             krama=''                   ki='tuntun'            
+        keterangan: dituntun; diirid (diajak mlaku) sarana dicekeli tangané (yèn
+
+#22738  ngoko='ukel'               krama=''                   ki='ukel'              
+        keterangan: (saukel) satukel (tmr. lawé); gambar lung-lungan ing bathika
+
+#22848  ngoko='undur'              krama=''                   ki='undur'             
+        keterangan: obah (mlaku) memburi; ulih; kondur, mundur.; udur.
+
+#22869  ngoko='unjuk'              krama=''                   ki='unjuk'             
+        keterangan: diunjukaké diunggahaké (sarana disodhokaké lsp); munjuk.; at
+
+#23354  ngoko='wungu'              krama=''                   ki='wungu'             
+        keterangan: warna abang campur biru.; tangi; melèk
+
+#42274  ngoko=''                   krama=''                   ki='adegan'            
+        keterangan: mung apadha ngadeg; (jumenengan ) tetepan (angkatan) dadi; m
+
+#42275  ngoko=''                   krama=''                   ki='busana'            
+        keterangan: rerenggan, sandhangan; dandan, sandhangan
+
+#42276  ngoko=''                   krama='criyos'             ki='kandha'            
+        keterangan: (pangandika ) crita, gunem kang diucapaké; (ngandika ) clath
+
+#42277  ngoko=''                   krama=''                   ki='daut'              
+        keterangan: ompong; pupak; puput-puser; dhaut, kedaut.
+
+#42278  ngoko=''                   krama=''                   ki='dhaut'             
+        keterangan: ompong; pupak (ganti untu); puput puser; budhal, bédhol (tmr
+
+#42279  ngoko=''                   krama=''                   ki='dhawah'            
+        keterangan: tiba.; pakon, clathu, tutur; dhawuh.
+
+#42280  ngoko=''                   krama='dhuwungan'          ki='kerisan'           
+        keterangan: (wangkingan ) nganggo keris; tetironing keris.
+
+#42281  ngoko=''                   krama=''                   ki='diadegaké'         
+        keterangan: ditata (dipasang) ngadeg; digawé (dianakaké) tmr. pakumpulan
+
+#42282  ngoko=''                   krama=''                   ki='dibusanani'        
+        keterangan: direngga, disandhangi; didandani (dianggon-anggoni).
+
+#42283  ngoko=''                   krama=''                   ki='dicekel'           
+        keterangan: (diasta ) digocèki, digujengi, dicandhak; wis disadhiyakaké 
+
+#42284  ngoko=''                   krama=''                   ki='diimbuhi'          
+        keterangan: diwuwuhi, dibangetaké, diundhaki; (dipun-imbeti ) diwènèhi i
+
+#42285  ngoko=''                   krama=''                   ki='dikramakaké'       
+        keterangan: ditembungaké krama; diomah-omahaké (dirabèkaké, dikalèkaké).
+
+#42286  ngoko=''                   krama=''                   ki='diomahi'           
+        keterangan: ( dipun-griyani ); ditunggoni déning kang lanang (tmr. wong 
+
+#42287  ngoko=''                   krama='dipun-takèkaken'    ki='ditakokaké'        
+        keterangan: dijaluki kateranganing apa-apa supaya mangsuli; dilamar: pit
+
+#42288  ngoko=''                   krama=''                   ki='disapih'           
+        keterangan: ( disapihi) dipisah, dililihaké; (dipegeng ) dilèrèni enggon
+
+#42289  ngoko=''                   krama=''                   ki='disunati'          
+        keterangan: ditetaki; (ditetesi ) diislamaké tmr. bocah wadon
+
+#42290  ngoko=''                   krama=''                   ki='ditapeli'          
+        keterangan: didokoki blebed wilahan wesi lsp; ditrapi tapel-tracak; (dir
+
+#42291  ngoko=''                   krama=''                   ki='ditetesaké'        
+        keterangan: disunataké, ditindhikaké; diengremaké supaya netes tmr. endh
+
+#42292  ngoko=''                   krama=''                   ki='ditindaki'         
+        keterangan: dijangkahi (diukur sarana jangkah); diparani; diambah (diang
+
+#42293  ngoko=''                   krama=''                   ki='diukel'            
+        keterangan: (-rambuté) dicekel banjur ditekuk sarta ditarik (wong wadon 
+
+#42294  ngoko=''                   krama=''                   ki='diurut'            
+        keterangan: diambah (diliwati, diampiri lsp) genti-genti saka siji; ( di
+
+#42295  ngoko=''                   krama=''                   ki='duwèk'             
+        keterangan: gadhahan; kagungan kang didarbèni marang, duwèké Naya, duwèk
+
+#42296  ngoko=''                   krama=''                   ki='garwa'             
+        keterangan: bojo (rabi); brangasan, nepson.
+
+#42297  ngoko=''                   krama='gesang'             ki='urip'              
+        keterangan: (sugeng ) kadunungan kaanan bisa mobah-mosik, mundhak gedhé 
+
+#42298  ngoko=''                   krama=''                   ki='géné'              
+        keterangan: mokal yèn; géné ana, wong mati bali nèng donya; nanging, jeb
+
+#42299  ngoko=''                   krama=''                   ki='imbuh'             
+        keterangan: wuwuh, mundhak, tur; imbet wuwuhan (tmr. barang sing dituku)
+
+#42300  ngoko=''                   krama=''                   ki='jarit'             
+        keterangan: sinjang nyamping bebed, tapih; ( jejarit, jaritan) gombal; s
+
+#42301  ngoko=''                   krama=''                   ki='jenengan dalem'    
+        keterangan: diasta (digawé) dhéwé ing panjenenganing ratu).
+
+#42302  ngoko=''                   krama=''                   ki='jlagra'            
+        keterangan: riyak.; tukang natah watu.
+
+#42303  ngoko=''                   krama=''                   ki='kagem'             
+        keterangan: digegem, dicekel; dianggo.
+
+#42304  ngoko=''                   krama=''                   ki='kambil'            
+        keterangan: abah-abah, lapak.; krambil.
+
+#42305  ngoko=''                   krama=''                   ki='kang'              
+        keterangan: ( ) ingkang; sing; -é, -mu.; kakang; panyebut marang wong la
+
+#42306  ngoko=''                   krama='kawilujengan'       ki='kaslametan'        
+        keterangan: kasugengan kaanan kang slamet ora ana sakara-kara; slamet.
+
+#42307  ngoko=''                   krama=''                   ki='kelimengan'        
+        keterangan: kesaput ing pepeteng; kelalèn.
+
+#42308  ngoko=''                   krama=''                   ki='kesinggihan'       
+        keterangan: bener (mula iya bener); pamit.
+
+#42309  ngoko=''                   krama=''                   ki='kumbala'           
+        keterangan: jebeng awangun kekembangan dianggo rerenggan; jénggot, breng
+
+#42310  ngoko=''                   krama=''                   ki='kéndhang'          
+        keterangan: kèli, kéntir; ( dikéndhangaké) dibuwang (minangka umukan); é
+
+#42311  ngoko=''                   krama=''                   ki='lantaran'          
+        keterangan: kayu (pring) dianggo gocèkaning wod lsp; sénggot; teken, sén
+
+#42312  ngoko=''                   krama=''                   ki='mandhap'           
+        keterangan: medhun, mudhun; mulih; andhap.
+
+#42313  ngoko=''                   krama=''                   ki='mangking'          
+        keterangan: mengko.; nyengkelit; wangking.
+
+#42314  ngoko=''                   krama=''                   ki='maos'              
+        keterangan: maca; waca, waos.; nyakot; waos, untu.; numbak; tumbak, waos
+
+#42315  ngoko=''                   krama=''                   ki='marasi'            
+        keterangan: ngethok endhas; ngilangi sepeté (tmr. degan); paras.; nyukur
+
+#42316  ngoko=''                   krama=''                   ki='mati'              
+        keterangan: pejah; (surud, séda ) ilang nyawané (uripé); ( memati ) matè
+
+#42317  ngoko=''                   krama=''                   ki='mbabar'            
+        keterangan: ( mbabaraké wadi) mbukak wadi (dikandhak-kandhakaké); wis da
+
+#42318  ngoko=''                   krama=''                   ki='meteng'            
+        keterangan: (wawrat mbobot ) ngandhut jabang bayi; wis diisèni patrum (t
+
+#42319  ngoko=''                   krama='ndhatengi'          ki='nekani'            
+        keterangan: (ngrawuhi ) teka ana ing; nyembadani, ngleksanani; teka.
+
+#42320  ngoko=''                   krama='nedha'              ki='njaluk'            
+        keterangan: nglairaké pepénginané arep ndarbèni arep nglakoni
+
+#42321  ngoko=''                   krama=''                   ki='netesaké'          
+        keterangan: nyunataké; ngengremaké endhog supaya bisa netes; tetes.
+
+#42322  ngoko=''                   krama=''                   ki='ngadegaké'         
+        keterangan: ngedegaké; (njumenengaken ) netepaké (ngangkat) dadi ...; ad
+
+#42323  ngoko=''                   krama='nganggé'            ki='nganggo'           
+        keterangan: (ngagem ) migunakaké; (ngagem ) ngetrapaké ing awak (sandhan
+
+#42324  ngoko=''                   krama=''                   ki='ngepèk'            
+        keterangan: mendhet mundhut; ndarbèni; ndadèkaké (anak, bojo lsp); pèk, 
+
+#42325  ngoko=''                   krama=''                   ki='ngilokaké'         
+        keterangan: ( ngiloki) ngélikaké; ilok.; numutaken ndhèrèkaké; akon mèlu
+
+#42326  ngoko=''                   krama=''                   ki='ngimbuhi'          
+        keterangan: muwuhi, ngundhakaké; ngimbeti nanduki mènèhi imbuh (tmr. man
+
+#42327  ngoko=''                   krama=''                   ki='ngukel'            
+        keterangan: ngikal (lawé lsp); nyekel rambut banjur ditekuk lan disendha
+
+#42328  ngoko=''                   krama=''                   ki='ngunjuk'           
+        keterangan: ngombé; unjuk.; ngunjuki uninga ngaturi priksa
+
+#42329  ngoko=''                   krama=''                   ki='nitih'             
+        keterangan: numpang; nunggang
+
+#42330  ngoko=''                   krama=''                   ki='nuhun'             
+        keterangan: nyuwun; nuwun; nuwun, suhun.
+
+#42331  ngoko=''                   krama=''                   ki='nyabet'            
+        keterangan: nggitik nganggo sabet; medhang; nibakaké kertu (ing nalika m
+
+#42332  ngoko=''                   krama=''                   ki='nyuhun'            
+        keterangan: nyuwun, njaluk.; nyuhun-nyuhun ngaji-aji; suhun.
+
+#42333  ngoko=''                   krama=''                   ki='omah-omah'         
+        keterangan: (gegriya dedalem ) dedunung ing; (griya-griya dalem-dalem ) 
+
+#42334  ngoko=''                   krama='panedha'            ki='panjaluk'          
+        keterangan: (panyuwun ) kang dijaluk, patrap lsp. enggoné njaluk; kang k
+
+#42335  ngoko=''                   krama=''                   ki='panengeran'        
+        keterangan: tetenger; jeneng; unyeng-unyeng.
+
+#42336  ngoko=''                   krama=''                   ki='panjenengan'       
+        keterangan: teken; (panjenengan dalem, panjenengan sampéyan) kowé; pepan
+
+#42337  ngoko=''                   krama=''                   ki='paraupan'          
+        keterangan: wadhah banyu piranti dianggo raup; (pasuryan ) rai, praèn.
+
+#42338  ngoko=''                   krama=''                   ki='pati'              
+        keterangan: pejah séda; pisahing nyawa (sukma) saka ing badan wadhag; ta
+
+#42339  ngoko=''                   krama=''                   ki='prana'             
+        keterangan: ambekan, napas, dayaning urip; pangrasa, ati; itil
+
+#42340  ngoko=''                   krama=''                   ki='pundhut'           
+        keterangan: dipundhut; dijupuk; dijaluk; dipèk; dituku.; (pe-)pundhutan 
+
+#42341  ngoko='pungkuran'          krama='pengkeran'          ki='pengkeran'         
+        keterangan: pungkuran; geger.
+
+#42342  ngoko=''                   krama=''                   ki='pèk'               
+        keterangan: dipèk dipun-pendhet dipundhut; didadèkaké darbèké; (dipèk an
+
+#42343  ngoko=''                   krama=''                   ki='rawuh'             
+        keterangan: tiba; teka.
+
+#42344  ngoko=''                   krama=''                   ki='sampiran'          
+        keterangan: gèntèr (tampar lsp) piranti dianggo nyampiraké jarit lsp; pa
+
+#42345  ngoko=''                   krama=''                   ki='sampéyan'          
+        keterangan: sikil.; kowé.
+
+#42346  ngoko=''                   krama=''                   ki='sekaran'           
+        keterangan: kembangan; kuburan; kijing.
+
+#42347  ngoko=''                   krama=''                   ki='senggang'          
+        keterangan: sela; mayar; waras.
+
+#42348  ngoko=''                   krama=''                   ki='sengkang'          
+        keterangan: suwung; suweng.; sangka.
+
+#42349  ngoko=''                   krama=''                   ki='sigra'             
+        keterangan: waing.; rikat, énggal; banjur, nuli.
+
+#42350  ngoko=''                   krama=''                   ki='sundhulan'         
+        keterangan: susulan; ( pasundhulan) embun-embunan.
+
+#42351  ngoko=''                   krama=''                   ki='supé'              
+        keterangan: lali; (sesupé) ali-ali.
+
+#42352  ngoko=''                   krama=''                   ki='takok'             
+        keterangan: takon takèk takèn ndangu miterang njaluk wangsulan
+
+#42353  ngoko=''                   krama=''                   ki='taraban'           
+        keterangan: slametan nalikané kèl sing kawitan.
+
+#42354  ngoko=''                   krama=''                   ki='tasik'             
+        keterangan: segara.; pupur
+
+#42355  ngoko=''                   krama=''                   ki='tedhak'            
+        keterangan: turun; mudhun; ( tedhakan) mudhun saka ing kraton tmr. panje
+
+#42356  ngoko=''                   krama=''                   ki='tedhakan'          
+        keterangan: turunan (layang lsp); turunan; miyosan saka ing kraton.
+
+#42357  ngoko=''                   krama=''                   ki='tekan'             
+        keterangan: (rawuh ) teka ing, anjog ing; nganti, kongsi, tutug ing; bis
+
+#42358  ngoko=''                   krama=''                   ki='tetes'             
+        keterangan: tedhas; sunat; tindhik; trep, nyata plek; tetéla, terang
+
+#42359  ngoko=''                   krama=''                   ki='tingalan'          
+        keterangan: riyaya weton; ( tetingalan) tontonan; pangilon.
+
+#42360  ngoko=''                   krama=''                   ki='tumedhak'          
+        keterangan: medhun; tumurun.
+
+#42361  ngoko=''                   krama=''                   ki='turas'             
+        keterangan: uyuh, nguyuh.; turun, trah.; dituras diilèkaké (disok) kabèh
+
+#42362  ngoko='udud, rokok'        krama='ses'                ki='ses'               
+        keterangan: udud; rokok; serèt.
+
+#42363  ngoko=''                   krama=''                   ki='untar'             
+        keterangan: urub; wudun
+
+#42364  ngoko=''                   krama=''                   ki='wangkingan'        
+        keterangan: bangkékan; keris.
+
+#42365  ngoko=''                   krama=''                   ki='waras'             
+        keterangan: lemah waras palemahan sing ora ditanduri; saras senggang; pu
+
+#42366  ngoko=''                   krama=''                   ki='wayah'             
+        keterangan: wanci; wektu (ing dina), wayah awan; mangsa, wektu, wis waya
+
+#42367  ngoko=''                   krama=''                   ki='wentis'            
+        keterangan: pupu; kémpol.
+
+#42368  ngoko=''                   krama=''                   ki='wèh'               
+        keterangan: wé.; diwèhi dipun-sukani diparingi, disaosi; diwènèhi; didok
