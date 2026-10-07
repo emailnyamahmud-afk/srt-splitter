@@ -38,8 +38,48 @@ except ImportError:
     sys.exit(1)
 
 # Kamus JSON path — hanya kamus-jawa-full.json (v5, 44.585 entri)
-# (kamus-jawa.json lama 21KB sudah dihapus dari repo — tidak relevan lagi)
 KAMUS_FULL = Path.home() / 'Dubbing' / 'kamus-jawa-full.json'
+
+# .env file di ~/Dubbing/ — user simpan Supabase URL + anon key di sini
+# Format .env:
+#   NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx...
+ENV_FILE = Path.home() / 'Dubbing' / '.env'
+
+
+def load_env_file():
+    """Load .env file dari ~/Dubbing/.env (kalau ada).
+    Supaya user tidak perlu set env vars manual tiap kali update kamus-tui.py.
+    Format .env:
+      NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx...
+    """
+    if not ENV_FILE.exists():
+        return False
+    try:
+        with open(ENV_FILE, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                # Skip comment dan empty line
+                if not line or line.startswith('#'):
+                    continue
+                # Parse KEY=VALUE
+                if '=' in line:
+                    key, value = line.split('=', 1)
+                    key = key.strip()
+                    value = value.strip().strip('"').strip("'")
+                    # Hanya set kalau belum ada di os.environ (os.environ lebih prioritas)
+                    if key and key not in os.environ:
+                        os.environ[key] = value
+        return True
+    except Exception as e:
+        print(f'  ⚠ Gagal load .env: {e}')
+        return False
+
+
+# Load .env di awal (sebelum SUPABASE_URL/KEY di-read)
+load_env_file()
+
 SUPABASE_URL = os.environ.get('NEXT_PUBLIC_SUPABASE_URL', '')
 SUPABASE_KEY = os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY', '')
 
@@ -380,6 +420,95 @@ def browse_by_register(data, register):
     browse_list(data, matches, f'🎯 Register: {register} ({len(matches)} entri)')
 
 
+def edit_env_file():
+    """Buka/edit file .env di ~/Dubbing/ untuk set Supabase credentials.
+    Kalau belum ada, buat template otomatis.
+    """
+    print('\n  📁 .env file: ' + str(ENV_FILE))
+    print()
+
+    if ENV_FILE.exists():
+        # Tampilkan isi yang sudah ada (sensor key)
+        with open(ENV_FILE, 'r', encoding='utf-8') as f:
+            content = f.read()
+        # Sensor anon key (tampilkan 10 char pertama + ...)
+        lines = content.split('\n')
+        print('  Isi sekarang:')
+        for line in lines:
+            if line.startswith('NEXT_PUBLIC_SUPABASE_ANON_KEY='):
+                # Sensor: tampilkan URL saja, bukan key lengkap
+                key_val = line.split('=', 1)[1] if '=' in line else ''
+                if len(key_val) > 15:
+                    print(f'    NEXT_PUBLIC_SUPABASE_ANON_KEY={key_val[:10]}...{key_val[-4:]} (hidden)')
+                else:
+                    print('    NEXT_PUBLIC_SUPABASE_ANON_KEY=... (hidden)')
+            else:
+                print(f'    {line}')
+        print()
+        edit_now = questionary.confirm('Edit .env sekarang?', default=False).ask()
+        if not edit_now:
+            return
+    else:
+        # Buat template
+        print('  .env belum ada. Bikin sekarang?')
+        create = questionary.confirm('Buat .env baru?', default=True).ask()
+        if not create:
+            return
+        template = """# Supabase credentials untuk kamus-tui.py
+# Dapatkan dari: https://supabase.com/dashboard/project/xxx/settings/api
+NEXT_PUBLIC_SUPABASE_URL=https://zdrgzbwjlrvyloxjdyfl.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+"""
+        with open(ENV_FILE, 'w', encoding='utf-8') as f:
+            f.write(template)
+        print(f'\n  ✅ Template dibuat: {ENV_FILE}')
+        print('  Sekarang edit isi file .env:')
+        print()
+
+    # Input URL
+    url_input = questionary.text(
+        'NEXT_PUBLIC_SUPABASE_URL:',
+        default=os.environ.get('NEXT_PUBLIC_SUPABASE_URL', 'https://zdrgzbwjlrvyloxjdyfl.supabase.co')
+    ).ask()
+    if url_input is None:
+        return
+    url_input = url_input.strip()
+
+    # Input anon key (password style — tampilkan * saat user ketik, agar aman)
+    existing_key = os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY', '')
+    key_default = existing_key if existing_key else ''
+    key_input = questionary.text(
+        'NEXT_PUBLIC_SUPABASE_ANON_KEY (paste di sini):',
+        default=key_default,
+    ).ask()
+    if key_input is None:
+        return
+    key_input = key_input.strip()
+
+    if not url_input or not key_input:
+        print('\n  ⚠ URL dan ANON KEY wajib diisi.')
+        input('  Tekan Enter...')
+        return
+
+    # Write ke .env
+    with open(ENV_FILE, 'w', encoding='utf-8') as f:
+        f.write('# Supabase credentials untuk kamus-tui.py\n')
+        f.write('# Dapatkan dari: https://supabase.com/dashboard/project/xxx/settings/api\n')
+        f.write(f'NEXT_PUBLIC_SUPABASE_URL={url_input}\n')
+        f.write(f'NEXT_PUBLIC_SUPABASE_ANON_KEY={key_input}\n')
+
+    # Update os.environ juga (supaya bisa upload langsung tanpa restart)
+    os.environ['NEXT_PUBLIC_SUPABASE_URL'] = url_input
+    os.environ['NEXT_PUBLIC_SUPABASE_ANON_KEY'] = key_input
+
+    print(f'\n  ✅ .env disimpan: {ENV_FILE}')
+    print(f'  → URL: {url_input[:40]}...')
+    print(f'  → KEY: {key_input[:10]}...{key_input[-4:]} (hidden)')
+    print()
+    print('  Sekarang upload ke Supabase akan langsung jalan.')
+    input('  Tekan Enter...')
+
+
 def main_menu(data):
     """Main menu — user pilih menu dengan arrow keys"""
     while True:
@@ -390,6 +519,9 @@ def main_menu(data):
         with_arti = sum(1 for w in words if (w.get('arti') or '').strip())
         no_arti = sum(1 for w in words if not (w.get('arti') or '').strip())
 
+        # Cek Supabase status
+        supabase_ok = bool(os.environ.get('NEXT_PUBLIC_SUPABASE_URL') and os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY'))
+
         print('╔' + '═' * 60 + '╗')
         print('║  📖 Kamus Jawa Editor (TUI v2)' + ' ' * 28 + '║')
         print('║  Tab/panah untuk navigasi, Enter untuk pilih' + ' ' * 11 + '║')
@@ -398,6 +530,10 @@ def main_menu(data):
         print(f'  📂 {get_kamus_path()}')
         print(f'  📊 Total: {total} | arti diisi: {with_arti} | belum ada arti: {no_arti}')
         print(f'  🚀 Siap upload (ngoko+krama+arti lengkap): {ready}')
+        if supabase_ok:
+            print(f'  ☁  Supabase: ✓ ter-set (dari .env atau env vars)')
+        else:
+            print(f'  ☁  Supabase: ⚠ belum di-set (gunakan menu "🔑 Set Supabase .env")')
         print()
 
         choices = [
@@ -407,6 +543,7 @@ def main_menu(data):
             '⭐ Browse entries dengan krama mapping (auto-filled, butuh arti)',
             '📝 Browse entries BELUM ada arti (Indonesia)',
             '🎯 Browse per register',
+            '🔑 Set Supabase .env (URL + anon key)',
             '☁  Upload ke Supabase (hanya yang SIAP UPLOAD)',
             '💾 Save JSON (manual)',
             '❌ Keluar',
@@ -441,6 +578,8 @@ def main_menu(data):
             ).ask()
             if reg_selected and 'Kembali' not in reg_selected:
                 browse_by_register(data, reg_selected)
+        elif 'Set Supabase .env' in selected:
+            edit_env_file()
         elif 'Upload' in selected:
             upload_to_supabase()
         elif 'Save JSON' in selected:
@@ -464,9 +603,21 @@ URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
 KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY", "")
 
 if not URL or not KEY:
-    print("\\n  ❌ Supabase belum di-set. Set env vars dulu:")
+    print("\\n  ❌ Supabase belum di-set.")
+    print()
+    print("  Cara 1: Buat file .env di ~/Dubbing/ (RECOMMEND, sekali buat, jalan terus):")
+    print()
+    print('    nano ~/Dubbing/.env')
+    print()
+    print('  Isi file .env:')
+    print('    NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co')
+    print('    NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx...')
+    print()
+    print("  Save (Ctrl+X, Y, Enter)")
+    print()
+    print("  Cara 2: Set env vars manual di terminal (hilang saat terminal close):")
     print('  export NEXT_PUBLIC_SUPABASE_URL="https://xxx.supabase.co"')
-    print('  export NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJxxx"')
+    print('  export NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJxxx..."')
     input("\\n  Tekan Enter...")
     sys.exit(1)
 
