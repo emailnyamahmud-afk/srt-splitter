@@ -80,6 +80,11 @@ def upload_to_supabase(edited_count):
         print('  ⚠ Tidak ada entri clean. Skip.')
         return False
 
+    print(f'  → {len(edited)} entri sudah diedit (akan di-upload)')
+    print(f'  → Supabase URL: {SUPABASE_URL[:40]}...')
+    print()
+
+    import urllib.request
     headers = {
         'apikey': SUPABASE_KEY,
         'Authorization': f'Bearer {SUPABASE_KEY}',
@@ -87,6 +92,7 @@ def upload_to_supabase(edited_count):
         'Prefer': 'resolution=merge-duplicates,return=minimal',
     }
 
+    # Upsert in batches (500 per batch)
     batch_size = 500
     success = 0
     failed = 0
@@ -101,15 +107,21 @@ def upload_to_supabase(edited_count):
             method='POST',
         )
         try:
-            urllib.request.urlopen(ins_req)
+            resp = urllib.request.urlopen(ins_req)
             success += len(batch)
             print(f'  → {success}/{len(edited)}...', end='\r')
+        except urllib.error.HTTPError as e:
+            failed += len(batch)
+            error_body = e.read().decode('utf-8', errors='replace')[:300]
+            print(f'\n  ❌ HTTP {e.code}: {error_body}')
+            break
         except Exception as e:
             failed += len(batch)
-            if failed <= 3:
-                print(f'\n  ⚠ Batch failed: {e}')
+            print(f'\n  ❌ Error: {e}')
+            break
 
     print(f'\n  ✅ Upload: {success} sukses, {failed} gagal')
+    input('\n  Tekan Enter untuk kembali...')
     return True
 
 
