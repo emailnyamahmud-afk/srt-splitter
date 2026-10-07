@@ -29,7 +29,6 @@ import { toast } from 'sonner'
 import { TtsPanel } from '@/components/tts-panel'
 import { TtsTextPanel } from '@/components/tts-text-panel'
 import { TranslatePanel } from '@/components/translate-panel'
-import { RapikanJawaPanel } from '@/components/rapikan-jawa-panel'
 import { KamusEditorPanel } from '@/components/kamus-editor-panel'
 import { DualSrtEditor } from '@/components/srt-editor-panel'
 import {
@@ -211,11 +210,21 @@ export default function Home() {
       </header>
 
       <main className="container mx-auto max-w-5xl px-4 py-8 flex-1 space-y-6">
+        {/* Dual SRT Editor — PRIMARY (pindah ke atas, di atas Split) */}
+        <DualSrtEditor prefix={prefix} />
+
+        {/* === Sekunder: Split / Translate / TTS workflow (lama) === */}
+        <div className="flex items-center gap-3 pt-4">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground uppercase tracking-wider">Workflow Split / Translate / TTS (sekunder)</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
         {/* Upload area */}
         {!file && (
           <Card className="border-2 border-dashed hover:border-primary/50 transition-colors">
             <CardContent
-              className="py-16 px-6 flex flex-col items-center justify-center text-center cursor-pointer"
+              className="py-12 px-6 flex flex-col items-center justify-center text-center cursor-pointer"
               onClick={() => fileInputRef.current?.click()}
               onDragOver={(e) => {
                 e.preventDefault()
@@ -225,16 +234,15 @@ export default function Home() {
               onDrop={onDrop}
             >
               <div
-                className={`size-20 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-950/40 dark:to-orange-950/40 flex items-center justify-center mb-6 transition-transform ${
+                className={`size-16 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-950/40 dark:to-orange-950/40 flex items-center justify-center mb-4 transition-transform ${
                   isDragging ? 'scale-110' : ''
                 }`}
               >
-                <Upload className="size-8 text-amber-600" />
+                <Upload className="size-6 text-amber-600" />
               </div>
-              <h2 className="text-2xl font-semibold mb-2">Drop file .srt di sini</h2>
-              <p className="text-muted-foreground mb-4 max-w-md">
-                Klik untuk pilih file atau seret-dan-jatuhkan. Semua proses dilakukan di
-                browser Anda — file tidak pernah dikirim ke server mana pun.
+              <h2 className="text-xl font-semibold mb-2">Split SRT (potong jadi beberapa file)</h2>
+              <p className="text-sm text-muted-foreground mb-4 max-w-md">
+                Upload 1 SRT → potong per N menit/karakter. Cocok untuk TTS Edge (limit 5000 karakter).
               </p>
               <Button size="lg">
                 <FileText className="size-4 mr-2" /> Pilih File SRT
@@ -246,7 +254,7 @@ export default function Home() {
                 className="hidden"
                 onChange={onInputChange}
               />
-              <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl text-left">
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl text-left">
                 <div className="flex items-start gap-2 text-sm">
                   <Clock className="size-4 text-amber-600 mt-0.5 shrink-0" />
                   <span>Bisa potong per 30 menit atau berapapun sesuai kebutuhan</span>
@@ -600,13 +608,6 @@ export default function Home() {
               }}
             />
 
-            {/* Rapikan SRT Jawa Panel — editor inline + kamus check + toggle ngoko/krama */}
-            <RapikanJawaPanel
-              entries={entries}
-              onUpdated={(updatedEntries) => setEntries(updatedEntries)}
-              prefix={prefix}
-            />
-
             {/* TTS Panel - convert subtitles to audio */}
             <TtsPanel splitResult={splitResult} prefix={prefix} />
           </>
@@ -617,9 +618,6 @@ export default function Home() {
 
         {/* Kamus Editor Panel — edit krama + arti permanen ke Supabase */}
         <KamusEditorPanel />
-
-        {/* Dual SRT Editor — SRT ID (konteks) + SRT Jawa (editor) + voice + ngoko/krama */}
-        <DualSrtEditor prefix={prefix} />
 
         {/* Info section */}
         {!file && (

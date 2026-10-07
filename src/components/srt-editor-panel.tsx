@@ -201,19 +201,25 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
   }, [jawaEntries, registers, voices, supabaseReady])
 
   if (jawaEntries.length === 0) {
-    // Upload screen
+    // Upload screen — dual upload, tombol selalu side-by-side (grid-cols-2 forced)
     return (
-      <Card className="mt-4 border-indigo-200 dark:border-indigo-800">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Mic className="size-5 text-indigo-600" />
-            Editor SRT Jawa (Dual SRT + Voice)
+      <Card className="border-2 border-indigo-300 dark:border-indigo-700 shadow-md">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-xl flex items-center gap-2">
+            <Mic className="size-6 text-indigo-600" />
+            Editor SRT Jawa
+            <Badge variant="secondary" className="ml-1 text-xs">Dual SRT + Voice</Badge>
           </CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            Upload <strong>2 SRT sekaligus</strong>: SRT Indonesia (konteks, read-only) + SRT Jawa (editor).
+            Lihat dual display per cue, toggle ngoko/krama, assign voice, download SRT final.
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium">SRT Indonesia (konteks)</label>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            <div className="rounded-lg border border-blue-200 dark:border-blue-800 p-3 bg-blue-50/30 dark:bg-blue-950/10">
+              <label className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">1. SRT Indonesia</label>
+              <p className="text-[11px] text-muted-foreground mb-2">Konteks (read-only, tampil di atas setiap cue Jawa)</p>
               <input
                 ref={idFileRef}
                 type="file"
@@ -223,17 +229,18 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
               />
               <Button
                 variant="outline"
-                className="w-full mt-1"
+                className="w-full"
                 onClick={() => idFileRef.current?.click()}
               >
                 <Upload className="size-4 mr-2" /> Upload SRT ID
               </Button>
               {idEntries.length > 0 && (
-                <p className="text-xs text-muted-foreground mt-1">✓ {idEntries.length} cue (konteks)</p>
+                <p className="text-xs text-green-600 dark:text-green-400 mt-2 font-medium">✓ {idEntries.length} cue (konteks)</p>
               )}
             </div>
-            <div>
-              <label className="text-sm font-medium">SRT Jawa (editor)</label>
+            <div className="rounded-lg border border-amber-200 dark:border-amber-800 p-3 bg-amber-50/30 dark:bg-amber-950/10">
+              <label className="text-xs font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide">2. SRT Jawa</label>
+              <p className="text-[11px] text-muted-foreground mb-2">Editor (edit inline, toggle ngoko/krama, voice)</p>
               <input
                 ref={jawaFileRef}
                 type="file"
@@ -243,18 +250,24 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
               />
               <Button
                 variant="outline"
-                className="w-full mt-1"
+                className="w-full"
                 onClick={() => jawaFileRef.current?.click()}
               >
                 <Upload className="size-4 mr-2" /> Upload SRT Jawa
               </Button>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Upload SRT ID untuk konteks (readonly, di atas setiap cue Jawa).
-            Upload SRT Jawa untuk edit (ngoko/krama toggle, voice assignment).
-            User nonton VLC, baca SRT ID, edit SRT Jawa.
-          </p>
+          <div className="rounded-md bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900 p-3 text-xs text-muted-foreground">
+            <p className="font-medium text-foreground mb-1">Cara pakai:</p>
+            <ol className="list-decimal list-inside space-y-0.5">
+              <li>Upload <strong>SRT ID</strong> (Indonesia) — untuk konteks</li>
+              <li>Upload <strong>SRT Jawa</strong> (Jawa) — untuk editor</li>
+              <li>Setiap cue: baca SRT ID (kecil, abu-abu), edit SRT Jawa (textarea)</li>
+              <li>Click <strong>Ngoko</strong> / <strong>Krama</strong> → convert dari kamus</li>
+              <li>Pilih <strong>Voice</strong> per cue (Dimas/Siti/Ardi/Gadis)</li>
+              <li>Download SRT Jawa final → generate TTS</li>
+            </ol>
+          </div>
         </CardContent>
       </Card>
     )
@@ -267,8 +280,8 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
   const pageEntries = jawaEntries.slice(startIdx, endIdx)
 
   return (
-    <Card className="mt-4 border-indigo-200 dark:border-indigo-800">
-      <CardHeader>
+    <Card className="border-2 border-indigo-300 dark:border-indigo-700 shadow-md">
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <Mic className="size-5 text-indigo-600" />
