@@ -109,10 +109,9 @@ def detect_register(wikitext):
 
     Returns:
       'ngoko'         — kalau ada {{kn}} di section Jawa
-      'krama'         — kalau ada {{kr}} TAPI tidak ada {{ki}}
-      'krama_inggil'  — kalau ada {{ki}}
-      'kawi'          — kalau ada {{ak}} TAPI tidak ada {{kn}}/{{kr}}/{{ki}}
-      'umum'          — tidak ada tag
+      'krama_inggil'  — kalau ada {{ki}} TAPI tidak ada {{kn}}
+      'kawi'          — kalau ada {{ak}} TAPI tidak ada {{kn}}/{{ki}}
+      'umum'          — tidak ada tag (default)
     """
     jv_start = wikitext.find('{{basa|jv}}')
     if jv_start == -1:
@@ -127,11 +126,86 @@ def detect_register(wikitext):
         return 'ngoko'
     if '{{ki}}' in jv_section:
         return 'krama_inggil'
-    if '{{kr}}' in jv_section:
-        return 'krama'
     if '{{ak}}' in jv_section:
         return 'kawi'
     return 'umum'
+
+
+def detect_dual_register(wikitext):
+    """Cek apakah entry punya multiple register tags sekaligus.
+
+    Beberapa entry punya {{kn}} + {{ki}} = kata yang sama dipakai untuk ngoko
+    DAN krama inggil (mis. "panjenengan" bisa ngoko formal atau krama inggil).
+
+    Returns set of register yang dimiliki entry ini.
+    """
+    jv_start = wikitext.find('{{basa|jv}}')
+    if jv_start == -1:
+        return set()
+
+    jv_section = wikitext[jv_start:]
+    sikil = jv_section.find('{{sikil}}')
+    if sikil != -1:
+        jv_section = jv_section[:sikil]
+
+    registers = set()
+    if '{{kn}}' in jv_section:
+        registers.add('ngoko')
+    if '{{ki}}' in jv_section:
+        registers.add('krama_inggil')
+    if '{{ak}}' in jv_section:
+        registers.add('kawi')
+    return registers
+
+
+def extract_template_words(wikitext):
+    """Parse template {{ngoko|word}}, {{krama|word1|word2|...}}, {{ki|word}} di section Jawa.
+
+    Templates ini adalah cross-reference antar register:
+      {{ngoko|abrit}}  → "entry ini ngoko, krama equivalent adalah abrit"
+      {{krama|abang}}  → "entry ini krama, ngoko equivalent adalah abang"
+      {{krama|ayo|enya|mara}} → "entry ini krama, ngoko equivalents: ayo, enya, mara"
+
+    Returns dict: {ngoko: [...], krama: [...], krama_inggil: [...]}
+    """
+    jv_start = wikitext.find('{{basa|jv}}')
+    if jv_start == -1:
+        return {'ngoko': [], 'krama': [], 'krama_inggil': []}
+
+    jv_section = wikitext[jv_start:]
+    sikil = jv_section.find('{{sikil}}')
+    if sikil != -1:
+        jv_section = jv_section[:sikil]
+
+    refs = {'ngoko': [], 'krama': [], 'krama_inggil': []}
+
+    # Pattern: {{ngoko|word1|word2|...}}, {{krama|word1|word2|...}}, {{ki|word1|word2|...}}
+    # Capture all parameters (dipisah |)
+    patterns = [
+        (r'\{\{ngoko\|([^}]+)\}\}', 'ngoko'),
+        (r'\{\{krama\|([^}]+)\}\}', 'krama'),
+        (r'\{\{ki\|([^}]+)\}\}', 'krama_inggil'),
+    ]
+
+    for pattern, ref_type in patterns:
+        for m in re.finditer(pattern, jv_section, re.IGNORECASE):
+            # Split parameters by |, ambil semua word
+            params = m.group(1).split('|')
+            for param in params:
+                word = param.strip()
+                # Skip parameter yang ada '=' (named parameter mis. alt=ꦲꦧꦁ)
+                if '=' in word:
+                    continue
+                # Skip namespace prefixes
+                if word.startswith(':'):
+                    continue
+                # Skip empty
+                if not word:
+                    continue
+                if word not in refs[ref_type]:
+                    refs[ref_type].append(word)
+
+    return refs
 
 
 def extract_cross_references(wikitext):
@@ -281,8 +355,12 @@ def parse_xml_to_json(xml_path, output_path):
         # Extract definitions (KETERANGAN — definisi dalam bahasa JAWA, bukan Indonesia)
         defs = extract_definitions(wikitext)
 
-        # Detect register dari tag Wiktionary
+        # Detect register dari tag Wiktionary (single-tag detection)
         register = detect_register(wikitext)
+
+        # Detect dual register (entries with {{kn}} + {{ki}} = kata yang sama untuk ngoko DAN krama inggil)
+        dual_registers = detect_dual_register(wikitext)
+        is_dual_ngoko_krama_inggil = 'ngoko' in dual_registers and 'krama_inggil' in dual_registers
 
         # FIX: kalau register='umum' TAPI title ada di krama_to_ngoko atau krama_inggil_to_ngoko,
         # berarti title ini sebenarnya adalah kata krama/krama_inggil (bukan ngoko)
@@ -293,6 +371,25 @@ def parse_xml_to_json(xml_path, output_path):
             elif title_text in krama_inggil_to_ngoko:
                 register = 'krama_inggil'
 
+        # Extract template cross-references: {{ngoko|word}}, {{krama|word}}, {{ki|word}}
+        # SEMANTIK WIKISASTRA (ditemukan 8 Okt 2026 setelah user complaint):
+        #   {{ngoko|X}} di entry Y → Y adalah ngoko, X adalah krama equivalent
+        #   {{krama|X}} di entry Y → Y adalah krama, X adalah ngoko equivalent
+        #   {{ki|X}} di entry Y → Y adalah krama_inggil, X adalah ngoko equivalent
+        # Jadi template name = register entry ini sendiri, parameter = register kebalikannya
+        template_refs = extract_template_words(wikitext)
+
+        # Override register berdasarkan template (lebih reliable daripada tag {{kn}}/{{ki}})
+        if template_refs['krama'] and register == 'umum':
+            # {{krama|X}} → entry ini krama
+            register = 'krama'
+        elif template_refs['krama_inggil'] and register == 'umum':
+            # {{ki|X}} → entry ini krama_inggil
+            register = 'krama_inggil'
+        elif template_refs['ngoko'] and register == 'umum':
+            # {{ngoko|X}} → entry ini ngoko
+            register = 'ngoko'
+
         register_count[register] = register_count.get(register, 0) + 1
 
         # Format v5: put title di field yang benar sesuai register
@@ -300,16 +397,68 @@ def parse_xml_to_json(xml_path, output_path):
         krama = ''
         krama_inggil = ''
 
-        if register == 'ngoko' or register == 'umum':
+        if is_dual_ngoko_krama_inggil:
+            # Entry ini dipakai untuk ngoko DAN krama_inggil (mis. "panjenengan")
+            # Title goes to BOTH fields
+            ngoko = title_text
+            krama_inggil = title_text
+        elif register == 'ngoko' or register == 'umum':
             ngoko = title_text
         elif register == 'krama':
             krama = title_text
         elif register == 'krama_inggil':
             krama_inggil = title_text
 
-        # Bonus: pakai xref_map (dari Wikisastra pages) untuk auto-fill mapping
-        # Kalau title adalah ngoko (atau umum) dan ada di xref_map, isi krama/krama_inggil
+        # === AUTO-FILL MAPPING dari template (semantik Wikisastra) ===
+        # {{ngoko|X}} di entry Y → Y adalah ngoko, X adalah krama equivalent → set krama=X
+        # {{krama|X}} di entry Y → Y adalah krama, X adalah ngoko equivalent → set ngoko=X
+        # {{ki|X}} di entry Y → Y adalah krama_inggil, X adalah ngoko equivalent → set ngoko=X
+        #
+        # Catatan: entry bisa punya multiple sub-entries dengan register berbeda
+        # (mis. "mangga" num=2 krama + num=3 ngoko). Template tetap dipakai untuk
+        # fill cross-reference field, bahkan kalau register title sudah di-set
+        # dari sub-entry lain.
+        #
+        # ANTI SELF-REFERENCE: jangan set krama=title kalau title sudah di ngoko field
+        # (mis. "mangga" punya {{kn}} (ngoko) + {{krama|ayo}} (krama sub-entry) →
+        # ngoko=mangga, krama=ayo — bukan krama=mangga)
         sumber_mod = SOURCE_NAME
+        if template_refs['ngoko']:
+            # Entry Y is ngoko (confirmed), X is krama equivalent
+            # Title sudah di ngoko field (dari register detection), sekarang fill krama
+            if not krama:
+                krama = ', '.join(template_refs['ngoko'])
+                sumber_mod = f'{SOURCE_NAME} + template'
+                stats['with_xref_filled'] += 1
+        if template_refs['krama']:
+            # Entry Y is krama (confirmed), X is ngoko equivalent
+            # Set ngoko = X (cross-reference)
+            if not ngoko:
+                ngoko = ', '.join(template_refs['krama'])
+                sumber_mod = f'{SOURCE_NAME} + template'
+                stats['with_xref_filled'] += 1
+            # Set krama = title ONLY if ngoko is not title (avoid self-reference)
+            # Mis. entry "abrit" (no {{kn}}, only {{krama|abang}}) → ngoko=abang, krama=abrit (title)
+            # Mis. entry "mangga" (has {{kn}} + {{krama|ayo}}) → ngoko=mangga (title from {{kn}}),
+            #   krama=ayo (from template) — JANGAN set krama=mangga (self-reference)
+            if not krama and ngoko != title_text and register != 'ngoko':
+                krama = title_text
+                sumber_mod = f'{SOURCE_NAME} + template'
+                stats['with_xref_filled'] += 1
+        if template_refs['krama_inggil']:
+            # Entry Y is krama_inggil (confirmed), X is ngoko equivalent
+            if not ngoko:
+                ngoko = ', '.join(template_refs['krama_inggil'])
+                sumber_mod = f'{SOURCE_NAME} + template'
+                stats['with_xref_filled'] += 1
+            # Set krama_inggil = title ONLY if ngoko is not title (avoid self-reference)
+            if not krama_inggil and ngoko != title_text and register != 'ngoko':
+                krama_inggil = title_text
+                sumber_mod = f'{SOURCE_NAME} + template'
+                stats['with_xref_filled'] += 1
+
+        # Bonus: pakai xref_map (dari Wikisastra pages) untuk auto-fill mapping kalau template tidak ada
+        # HANYA fill field yang masih kosong — jangan overwrite field yang sudah di-set dari title/template
         if ngoko and ngoko in xref_map:
             xref = xref_map[ngoko]
             if xref['krama'] and not krama:
@@ -320,12 +469,13 @@ def parse_xml_to_json(xml_path, output_path):
                 krama_inggil = ', '.join(xref['krama_inggil'])
                 sumber_mod = f'{SOURCE_NAME} + xref'
                 stats['with_xref_filled'] += 1
-        # Kalau title adalah krama, cek reverse: ada ngoko yang map ke title ini?
-        elif krama and krama in krama_to_ngoko:
+        # Kalau title adalah krama DAN ngoko masih kosong, cek reverse map
+        # JANGAN overwrite ngoko yang sudah di-set dari title
+        elif krama and not ngoko and krama in krama_to_ngoko:
             ngoko = krama_to_ngoko[krama]
             sumber_mod = f'{SOURCE_NAME} + xref'
             stats['with_xref_filled'] += 1
-        elif krama_inggil and krama_inggil in krama_inggil_to_ngoko:
+        elif krama_inggil and not ngoko and krama_inggil in krama_inggil_to_ngoko:
             ngoko = krama_inggil_to_ngoko[krama_inggil]
             sumber_mod = f'{SOURCE_NAME} + xref'
             stats['with_xref_filled'] += 1
