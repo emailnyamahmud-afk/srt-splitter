@@ -229,7 +229,16 @@ def edit_entry(data, idx):
     new_ki = questionary.text('  krama_inggil:', default=ki_old).ask()
     new_arti = questionary.text('  arti (Indonesia):', default=arti_old).ask()
 
-    if new_ngoko is None or new_krama is None or new_ki is None or new_arti is None:
+    # Register dropdown — user bisa fix register (mis. 'ingkang' dari umum → krama)
+    register_choices = ['ngoko', 'krama', 'krama_inggil', 'kawi', 'umum']
+    register_default = register if register in register_choices else 'umum'
+    new_register = questionary.select(
+        '  register:',
+        choices=register_choices,
+        default=register_default,
+    ).ask()
+
+    if new_ngoko is None or new_krama is None or new_ki is None or new_arti is None or new_register is None:
         print('\n  ⏹ Dibatalkan.')
         input('  Tekan Enter...')
         return
@@ -239,13 +248,15 @@ def edit_entry(data, idx):
     new_krama = (new_krama or '').strip()
     new_ki = (new_ki or '').strip()
     new_arti = (new_arti or '').strip()
+    new_register = (new_register or 'umum').strip()
 
     # Cek perubahan
     changed = (
         new_ngoko != ngoko_old or
         new_krama != krama_old or
         new_ki != ki_old or
-        new_arti != arti_old
+        new_arti != arti_old or
+        new_register != register
     )
 
     if not changed:
@@ -261,12 +272,14 @@ def edit_entry(data, idx):
     elif 'krama_inggil' in entry:
         del entry['krama_inggil']
     entry['arti'] = new_arti
+    entry['register'] = new_register  # update register
     # Status auto-detect di save_kamus (ngoko+krama+arti semua terisi → 'ready')
 
     save_kamus(data)
     # Status baru
     new_status = 'ready' if (new_ngoko and new_krama and new_arti) else 'draft'
     print(f'\n  ✅ Disimpan: ngoko={new_ngoko} → krama={new_krama} → arti={new_arti}')
+    print(f'  Register: {new_register}')
     print(f'  Status: {new_status}' + (' (siap upload)' if new_status == 'ready' else ' (butuh arti dulu)'))
     input('\n  Tekan Enter...')
 
@@ -542,6 +555,7 @@ def main_menu(data):
             '🚀 Browse SIAP UPLOAD (ngoko+krama+arti lengkap)',
             '⭐ Browse entries dengan krama mapping (auto-filled, butuh arti)',
             '📝 Browse entries BELUM ada arti (Indonesia)',
+            '⚠ Browse register UMUM (perlu validasi)',
             '🎯 Browse per register',
             '🔑 Set Supabase .env (URL + anon key)',
             '☁  Upload ke Supabase (hanya yang SIAP UPLOAD)',
@@ -570,6 +584,10 @@ def main_menu(data):
             # Browse SIAP UPLOAD (ngoko+krama+arti lengkap)
             ready_entries = [(i, w) for i, w in enumerate(data['words']) if w.get('status') == 'ready']
             browse_list(data, ready_entries, f'🚀 Siap Upload ({len(ready_entries)} entri lengkap)')
+        elif '⚠' in selected and 'UMUM' in selected:
+            # Browse register umum — perlu validasi manual (17.812 entries)
+            umum_entries = [(i, w) for i, w in enumerate(data['words']) if w.get('register', 'umum') == 'umum']
+            browse_list(data, umum_entries, f'⚠ Register UMUM ({len(umum_entries)} entries — perlu validasi)')
         elif 'krama mapping' in selected:
             browse_with_krama(data)
         elif 'BELUM ada arti' in selected:
