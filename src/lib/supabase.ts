@@ -8,47 +8,48 @@
 //      NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx
 //   4. Run SQL di Supabase SQL Editor (lihat dibawah)
 //
-// Table structure (run di Supabase SQL Editor):
+// === Migration v1 (initial) ===
 //
-// -- Table: srt_projects
 // CREATE TABLE srt_projects (
 //   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-//   user_id UUID,  -- anonymous session ID (tidak perlu auth.users)
+//   user_id UUID,
 //   name TEXT NOT NULL,
 //   language TEXT DEFAULT 'jawa',
-//   original_srt TEXT,
+//   original_srt TEXT,           -- SRT Jawa (file yang diedit)
 //   cue_count INT DEFAULT 0,
 //   cues_edited INT DEFAULT 0,
 //   created_at TIMESTAMPTZ DEFAULT now(),
 //   updated_at TIMESTAMPTZ DEFAULT now()
 // );
 //
-// -- Table: srt_cues
 // CREATE TABLE srt_cues (
 //   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 //   project_id UUID REFERENCES srt_projects(id) ON DELETE CASCADE,
 //   cue_index INT NOT NULL,
 //   start_sec FLOAT NOT NULL,
 //   end_sec FLOAT NOT NULL,
-//   text TEXT NOT NULL,
+//   text TEXT NOT NULL,          -- text Jawa (yang diedit)
 //   register TEXT DEFAULT '',
 //   is_edited BOOLEAN DEFAULT false,
 //   created_at TIMESTAMPTZ DEFAULT now(),
 //   updated_at TIMESTAMPTZ DEFAULT now()
 // );
 //
-// -- Index untuk query cepat
 // CREATE INDEX idx_srt_cues_project ON srt_cues(project_id);
 // CREATE INDEX idx_srt_projects_user ON srt_projects(user_id);
 //
-// -- RLS (Row Level Security) — anonymous, semua bisa akses (untuk sekarang)
 // ALTER TABLE srt_projects ENABLE ROW LEVEL SECURITY;
 // ALTER TABLE srt_cues ENABLE ROW LEVEL SECURITY;
 // CREATE POLICY "allow_all_projects" ON srt_projects FOR ALL USING (true);
 // CREATE POLICY "allow_all_cues" ON srt_cues FOR ALL USING (true);
 //
+// === Migration v2 (project-based Dual SRT Editor) ===
+// Lihat scripts/supabase-migration-v2.sql
+//
+// ALTER TABLE srt_projects ADD COLUMN IF NOT EXISTS original_srt_id TEXT;
+// ALTER TABLE srt_cues ADD COLUMN IF NOT EXISTS text_id TEXT, ADD COLUMN IF NOT EXISTS voice TEXT DEFAULT '';
+//
 // Fallback: kalau env vars tidak set, web app tetap jalan dengan localStorage
-// (supabase.ts return null, rapikan-jawa-panel pakai entries state saja)
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
@@ -57,7 +58,8 @@ export interface SrtProject {
   user_id: string | null
   name: string
   language: string
-  original_srt: string | null
+  original_srt: string | null       // SRT Jawa (file yang diedit)
+  original_srt_id: string | null   // SRT Indonesia (konteks, read-only) — Migration v2
   cue_count: number
   cues_edited: number
   created_at: string
@@ -70,8 +72,10 @@ export interface SrtCue {
   cue_index: number
   start_sec: number
   end_sec: number
-  text: string
-  register: string  // 'ngoko' | 'krama' | 'krama_inggil' | ''
+  text: string          // text Jawa (yang diedit)
+  text_id: string | null  // text Indonesia (konteks, read-only) — Migration v2
+  register: string     // 'ngoko' | 'krama' | 'krama_inggil' | ''
+  voice: string         // 'dimas' | 'siti' | 'ardi' | 'gadis' | '' — Migration v2
   is_edited: boolean
   created_at: string
   updated_at: string
@@ -341,6 +345,172 @@ export async function updateProject(
 
   if (error) {
     console.error('[Supabase] updateProject error:', error)
+    return false
+  }
+
+  return true
+}
+
+// ============================================================
+// Dual SRT Project (Migration v2 — project-based workflow)
+// ============================================================
+
+/**
+ * Create new Dual SRT project (SRT ID + SRT Jawa).
+ * Simpan original_srt_id (Indonesia) + original_srt (Jawa) + insert cues dengan text_id + text_jawa.
+ *
+ * @param name Project name (e.g. "S1-Ep1")
+ * @param originalSrtId Konteks SRT Indonesia (full file content)
+ * @param originalSrtJawa Editor SRT Jawa (full file content)
+ * @param cues Array of cues dengan {cue_index, start_sec, end_sec, text (Jawa), text_id (ID), register, voice}
+ */
+export async function createDualProject(
+  name: string,
+  originalSrtId: string,
+  originalSrtJawa: string,
+  cues: { cue_index: number; start_sec: number; end_sec: number; text: string; text_id: string; register?: string; voice?: string }[],
+): Promise<{ project: SrtProject; cues: SrtCue[] } | null> {
+  const client = getSupabase()
+  if (!client) return null
+
+  const userId = getAnonymousUserId()
+
+  // Step 1: Create project
+  const { data: projData, error: projError } = await client
+    .from('srt_projects')
+    .insert({
+      user_id: userId,
+      name,
+      language: 'jawa',
+      original_srt: originalSrtJawa,
+      original_srt_id: originalSrtId,
+      cue_count: cues.length,
+      cues_edited: 0,
+    })
+    .select()
+    .single()
+
+  if (projError || !projData) {
+    console.error('[Supabase] createDualProject: project insert error:', projError)
+    return null
+  }
+
+  const project = projData as SrtProject
+
+  // Step 2: Insert cues (batch)
+  const cueRows = cues.map(c => ({
+    project_id: project.id,
+    cue_index: c.cue_index,
+    start_sec: c.start_sec,
+    end_sec: c.end_sec,
+    text: c.text,
+    text_id: c.text_id,
+    register: c.register || '',
+    voice: c.voice || '',
+    is_edited: false,
+  }))
+
+  const { data: cueData, error: cueError } = await client
+    .from('srt_cues')
+    .insert(cueRows)
+    .select()
+
+  if (cueError) {
+    console.error('[Supabase] createDualProject: cues insert error:', cueError)
+    return { project, cues: [] }
+  }
+
+  return { project, cues: (cueData || []) as SrtCue[] }
+}
+
+/**
+ * Get project + all cues (including text_id dan voice).
+ * Untuk load existing project ke editor.
+ */
+export async function getProjectWithCues(projectId: string): Promise<{ project: SrtProject; cues: SrtCue[] } | null> {
+  const client = getSupabase()
+  if (!client) return null
+
+  // Get project
+  const { data: projData, error: projError } = await client
+    .from('srt_projects')
+    .select('*')
+    .eq('id', projectId)
+    .single()
+
+  if (projError || !projData) {
+    console.error('[Supabase] getProjectWithCues: project error:', projError)
+    return null
+  }
+
+  // Get cues
+  const { data: cueData, error: cueError } = await client
+    .from('srt_cues')
+    .select('*')
+    .eq('project_id', projectId)
+    .order('cue_index', { ascending: true })
+
+  if (cueError) {
+    console.error('[Supabase] getProjectWithCues: cues error:', cueError)
+    return { project: projData as SrtProject, cues: [] }
+  }
+
+  return { project: projData as SrtProject, cues: (cueData || []) as SrtCue[] }
+}
+
+/**
+ * Update single cue (full fields untuk auto-save per edit).
+ * Update: text (Jawa), text_id (kalau user edit konteks), register, voice, is_edited.
+ */
+export async function updateCueFull(
+  cueId: string,
+  updates: { text?: string; text_id?: string; register?: string; voice?: string; is_edited?: boolean },
+): Promise<boolean> {
+  const client = getSupabase()
+  if (!client) return false
+
+  const updatePayload: Record<string, unknown> = { ...updates, updated_at: new Date().toISOString() }
+
+  const { error } = await client
+    .from('srt_cues')
+    .update(updatePayload)
+    .eq('id', cueId)
+
+  if (error) {
+    console.error('[Supabase] updateCueFull error:', error)
+    return false
+  }
+
+  return true
+}
+
+/**
+ * Increment project's cues_edited count + bump updated_at (kalau user edit cue).
+ */
+export async function bumpProjectEdited(projectId: string, cuesEditedDelta: number): Promise<boolean> {
+  const client = getSupabase()
+  if (!client) return false
+
+  // Get current count, then update (atomic kalau pakai RPC, tapi simple approach dulu)
+  const { data: proj } = await client
+    .from('srt_projects')
+    .select('cues_edited')
+    .eq('id', projectId)
+    .single()
+
+  const current = proj?.cues_edited || 0
+  const newCount = Math.max(current, current + cuesEditedDelta)
+
+  const { error } = await client
+    .from('srt_projects')
+    .update({
+      cues_edited: newCount,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', projectId)
+
+  if (error) {
+    console.error('[Supabase] bumpProjectEdited error:', error)
     return false
   }
 

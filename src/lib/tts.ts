@@ -91,6 +91,11 @@ export interface NarrationOptions {
   speedMode?: 'speedup-only' | 'speedup-slowdown'
   offSpeed?: number // OFF mode: kecepatan multiplier (1.0 = natural, 1.25, 1.5, 2.0)
 
+  // === PER-CUE VOICE (project-based Dual SRT Editor) ===
+  // Override voice per cue. Kalau undefined, pakai `voice` (global) untuk semua cue.
+  // Return format: voice ID string (e.g. 'jv-ID-DimasNeural')
+  voiceResolver?: (entry: SrtEntry, idx: number) => string
+
   // === SMART FIT (mode ON) — adopsi VoiceStudio fit_planner + voicertool.com ===
   // Generate natural → measure → kalau overflow, re-generate dengan audioRate (TTS server-side, pitch preserved).
   // Video tetap 100% sync SRT ori (tidak di-retim). Crossfade kalau audio masih overflow.
@@ -324,6 +329,9 @@ export async function narrateEntries(
       let finalAudio: Float32Array
       let position: number
 
+      // Per-cue voice override (project-based Dual SRT Editor)
+      const cueVoice = opts.voiceResolver ? opts.voiceResolver(entry, i) : opts.voice
+
       if (opts.respectTiming && opts.smartFit) {
         // === ON MODE + SMART FIT (VoiceStudio fit_planner + voicertool asymmetric trim) ===
         // Strategi baru (5 Okt 2026, setelah 20x test render gagal):
@@ -352,7 +360,7 @@ export async function narrateEntries(
 
         // Pass 1: generate natural (dengan pitch adjustment user)
         const synth1 = await synthesizeText(text, {
-          ...opts, rate: '+0%', openaiSpeed: 1.0, speed: 1.0,
+          ...opts, voice: cueVoice, rate: '+0%', openaiSpeed: 1.0, speed: 1.0,
           pitch: opts.pitch,  // user pitch adjustment (-10Hz laki, +10Hz perempuan)
           onModelProgress: opts.onModelProgress,
         })
@@ -371,7 +379,7 @@ export async function narrateEntries(
           const audioRate = Math.min(need, audioRateCap)
           if (opts.provider === 'edge') {
             const synth2 = await synthesizeText(text, {
-              ...opts, rate: formatEdgeRate(audioRate),
+              ...opts, voice: cueVoice, rate: formatEdgeRate(audioRate),
               pitch: opts.pitch,  // pitch preserved saat speedup (server-side)
               onModelProgress: opts.onModelProgress,
             })
@@ -381,7 +389,7 @@ export async function narrateEntries(
               : trimSilence(pass2.audio, -30, OUTPUT_SAMPLE_RATE, 50)
           } else {
             const synth2 = await synthesizeText(text, {
-              ...opts, openaiSpeed: audioRate,
+              ...opts, voice: cueVoice, openaiSpeed: audioRate,
               speed: opts.provider === 'kokoro' ? audioRate : undefined,
               pitch: opts.pitch,
               onModelProgress: opts.onModelProgress,
@@ -434,7 +442,7 @@ export async function narrateEntries(
         const availableDuration = nextEntryStart - entry.start
 
         // PASS 1: Generate natural audio untuk ukur actual duration
-        const synth1 = await synthesizeText(text, { ...opts, rate: '+0%', openaiSpeed: 1.0, speed: 1.0 })
+        const synth1 = await synthesizeText(text, { ...opts, voice: cueVoice, rate: '+0%', openaiSpeed: 1.0, speed: 1.0 })
 
         // Decode + mono + resample + TRIM SILENCE
         const pass1 = await decodeMonoTrimResample(synth1, OUTPUT_SAMPLE_RATE, true)
@@ -461,6 +469,7 @@ export async function narrateEntries(
               // Re-generate dengan Edge TTS server-side rate (pitch dipertahankan di server)
               const synthSlow = await synthesizeText(text, {
                 ...opts,
+                voice: cueVoice,
                 rate: edgeRate,
                 openaiSpeed: slowRatio,
                 speed: slowRatio,
@@ -496,6 +505,7 @@ export async function narrateEntries(
             // Speed up needed — re-generate dengan Edge TTS server-side rate (pitch preserved)
             const synth2 = await synthesizeText(text, {
               ...opts,
+              voice: cueVoice,
               rate: edgeRate,
               openaiSpeed: ratio,
               speed: ratio,
@@ -525,6 +535,7 @@ export async function narrateEntries(
 
         const synth = await synthesizeText(text, {
           ...opts,
+          voice: cueVoice,
           rate: offRate,
           openaiSpeed: offOpenaiSpeed,
           speed: offKokoroSpeed,
