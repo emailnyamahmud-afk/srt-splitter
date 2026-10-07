@@ -54,7 +54,7 @@ export async function loadKamusJawa(): Promise<KamusJawa | null> {
     // Load kamus dari Supabase (limit 10000 untuk performance)
     const { data, error } = await client
       .from('kamus')
-      .select('ngoko, aksara, krama, id, keterangan, sumber')
+      .select('ngoko, aksara, krama, arti, keterangan, sumber')
       .limit(10000)
       .order('ngoko', { ascending: true })
 
@@ -63,6 +63,16 @@ export async function loadKamusJawa(): Promise<KamusJawa | null> {
       return null
     }
 
+    // Map Supabase 'arti' → JSON 'id' (untuk konsisten dengan KamusEntry interface)
+    const mappedWords = data.map((d: { ngoko: string; aksara: string; krama: string; arti: string; keterangan: string; sumber: string }) => ({
+      ngoko: d.ngoko,
+      aksara: d.aksara || '',
+      krama: d.krama || '',
+      id: d.arti || '',  // Supabase 'arti' → interface 'id'
+      keterangan: d.keterangan || '',
+      sumber: d.sumber || '',
+    }))
+
     return {
       metadata: {
         version: 'supabase',
@@ -70,7 +80,7 @@ export async function loadKamusJawa(): Promise<KamusJawa | null> {
         entries: data.length,
         note: 'Kamus dari Supabase. User edit lokal, upload ke Supabase.',
       },
-      words: data as KamusEntry[],
+      words: mappedWords,
     }
   } catch (e) {
     console.warn('[Kamus] Load failed:', e)

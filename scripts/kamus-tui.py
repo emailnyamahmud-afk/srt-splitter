@@ -70,7 +70,7 @@ def upload_to_supabase(edited_count):
                 'ngoko': entry.get('ngoko', ''),
                 'aksara': entry.get('aksara', ''),
                 'krama': krama,
-                'id': id_val,
+                'arti': id_val,  # JSON field 'id' → Supabase kolom 'arti' (bukan 'id', karena 'id' = UUID PK)
                 'keterangan': entry.get('keterangan', ''),
                 'sumber': entry.get('sumber', 'jv.wiktionary.org'),
                 'status': 'clean',

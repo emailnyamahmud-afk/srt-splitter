@@ -355,7 +355,7 @@ export interface KamusEntry {
   id: string
   word: string          // kata ngoko
   krama: string        // kata krama (prioritas: krama_inggil kalau ada)
-  id: string            // arti dalam bahasa Indonesia/Jawa
+  arti: string         // arti dalam bahasa Indonesia (JSON field 'id' → Supabase kolom 'arti')
   status: string        // 'draft' (belum diedit) | 'clean' (sudah fix, approved user)
   created_at: string
   updated_at: string

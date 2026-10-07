@@ -126,7 +126,7 @@ def import_json_to_supabase():
                 'ngoko': entry.get('ngoko', ''),
                 'aksara': entry.get('aksara', ''),
                 'krama': krama,
-                'id': id_val,
+                'arti': id_val,  # JSON field 'id' → Supabase kolom 'arti'
                 'keterangan': entry.get('keterangan', ''),
                 'sumber': entry.get('sumber', 'jv.wiktionary.org'),
                 'status': 'clean',  # sudah diedit user = clean
