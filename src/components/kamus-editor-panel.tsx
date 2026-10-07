@@ -47,20 +47,20 @@ export function KamusEditorPanel() {
   const startEdit = useCallback((entry: KamusEntry) => {
     setEditingId(entry.id)
     setEditKrama(entry.krama || '')
-    setEditId(entry.id || '')
+    setEditId(entry.arti || '')
   }, [])
 
   const saveEdit = useCallback(async () => {
     if (!editingId) return
     const ok = await updateKamusEntry(editingId, {
       krama: editKrama,
-      id: editId,
+      arti: editId,
       status: 'clean',  // user edit = clean (approved)
     })
     if (ok) {
       // Update local results
       setResults(prev => prev.map(r =>
-        r.id === editingId ? { ...r, krama: editKrama, id: editId, status: 'clean' } : r
+        r.id === editingId ? { ...r, krama: editKrama, arti: editId, status: 'clean' } : r
       ))
       toast.success('Kamus diperbarui (status: clean)')
     } else {
@@ -117,7 +117,7 @@ export function KamusEditorPanel() {
                   {editingId === entry.id ? (
                     // Edit mode
                     <div className="space-y-2">
-                      <div className="text-sm font-medium">{entry.word}</div>
+                      <div className="text-sm font-medium">{entry.ngoko}</div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <Label className="text-xs">Krama</Label>
@@ -129,7 +129,7 @@ export function KamusEditorPanel() {
                           />
                         </div>
                         <div>
-                          <Label className="text-xs">Arti (id)</Label>
+                          <Label className="text-xs">Arti (Indonesia)</Label>
                           <Input
                             value={editId}
                             onChange={e => setEditId(e.target.value)}
@@ -148,20 +148,30 @@ export function KamusEditorPanel() {
                     <div className="flex items-start gap-2">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-bold text-sm">{entry.word}</span>
+                          <span className="font-mono font-bold text-sm">{entry.ngoko}</span>
                           <span className="text-muted-foreground">→</span>
                           <span className="text-sm">{entry.krama || '(kosong)'}</span>
+                          {entry.krama_inggil && (
+                            <Badge variant="outline" className="text-[10px] bg-purple-50 dark:bg-purple-950/30">
+                              ki: {entry.krama_inggil}
+                            </Badge>
+                          )}
                         </div>
                         <div className="text-xs text-muted-foreground mt-0.5">
-                          {entry.id || '(tidak ada arti)'}
+                          {entry.arti || '(tidak ada arti Indonesia)'}
                         </div>
+                        {entry.keterangan && (
+                          <div className="text-[10px] text-muted-foreground/70 italic mt-1 line-clamp-2">
+                            {entry.keterangan}
+                          </div>
+                        )}
                       </div>
                       <div className="shrink-0 flex items-center gap-2">
                         <Badge
                           variant="outline"
-                          className={`text-xs ${entry.status === 'clean' ? 'bg-green-50 dark:bg-green-950/30' : 'bg-yellow-50 dark:bg-yellow-950/30'}`}
+                          className={`text-xs ${entry.status === 'clean' || entry.status === 'ready' ? 'bg-green-50 dark:bg-green-950/30' : 'bg-yellow-50 dark:bg-yellow-950/30'}`}
                         >
-                          {entry.status === 'clean' ? '✓ clean' : 'draft'}
+                          {entry.status === 'clean' || entry.status === 'ready' ? '✓ approved' : 'draft'}
                         </Badge>
                         <Button
                           size="sm"

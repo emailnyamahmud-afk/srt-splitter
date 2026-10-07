@@ -523,10 +523,15 @@ export async function bumpProjectEdited(projectId: string, cuesEditedDelta: numb
 
 export interface KamusEntry {
   id: string
-  word: string          // kata ngoko
-  krama: string        // kata krama (prioritas: krama_inggil kalau ada)
-  arti: string         // arti dalam bahasa Indonesia (JSON field 'id' → Supabase kolom 'arti')
-  status: string        // 'draft' (belum diedit) | 'clean' (sudah fix, approved user)
+  ngoko: string          // kata ngoko + alias (dipisah koma)
+  aksara: string         // aksara Jawa
+  krama: string          // kata krama + alias
+  krama_inggil: string   // krama inggil (opsional, kosong kalau tidak ada)
+  arti: string           // terjemahan Indonesia
+  keterangan: string     // definisi JAWA dari XML (bantu user isi arti)
+  register: string      // 'ngoko'|'krama'|'krama_inggil'|'kawi'|'umum'
+  sumber: string         // sumber data (mis. jv.wiktionary.org)
+  status: string         // 'draft' (belum diedit) | 'ready' (siap upload) | 'clean' (sudah fix)
   created_at: string
   updated_at: string
 }
@@ -577,12 +582,14 @@ export async function searchKamus(
   const client = getSupabase()
   if (!client) return []
 
+  // Search di kolom ngoko (bukan word) — konsisten dengan upload dari kamus-tui.py
+  // dan loadKamusJawa di rapikan-jawa.ts
   const { data, error } = await client
     .from('kamus')
     .select('*')
-    .ilike('word', `%${query}%`)
+    .ilike('ngoko', `%${query}%`)
     .limit(limit)
-    .order('word', { ascending: true })
+    .order('ngoko', { ascending: true })
 
   if (error) {
     console.error('[Supabase] searchKamus error:', error)
@@ -593,11 +600,11 @@ export async function searchKamus(
 }
 
 /**
- * Update kamus entry (user edit meaning_id)
+ * Update kamus entry (user edit krama/arti/krama_inggil)
  */
 export async function updateKamusEntry(
   entryId: string,
-  updates: { krama?: string; id?: string; status?: string },
+  updates: { krama?: string; krama_inggil?: string; arti?: string; status?: string },
 ): Promise<boolean> {
   const client = getSupabase()
   if (!client) return false
