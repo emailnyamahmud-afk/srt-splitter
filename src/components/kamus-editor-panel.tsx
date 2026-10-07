@@ -1,18 +1,23 @@
 'use client'
 
+// Kamus Viewer (READ-ONLY) — tampilkan kamus dari Supabase untuk verifikasi.
+// User TIDAK bisa edit kamus dari web app. Editing hanya via TUI lokal (kamus-tui.py)
+// + upload ke Supabase. Web app hanya baca + lookup alias untuk convertRegister.
+//
+// Catatan: fungsi updateKamusEntry + importKamus di supabase.ts sengaja tidak dipakai
+// dari UI. Mereka tetap ada di lib untuk potential use case lain, tapi tidak
+// di-import di panel ini.
+
 import { useCallback, useEffect, useState } from 'react'
-import { Search, Edit3, CheckCircle2, AlertTriangle, Loader2, BookOpen } from 'lucide-react'
+import { Search, CheckCircle2, Loader2, BookOpen, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { toast } from 'sonner'
 import {
   isSupabaseAvailable,
   searchKamus,
-  updateKamusEntry,
   countKamus,
   type KamusEntry,
 } from '@/lib/supabase'
@@ -22,9 +27,6 @@ export function KamusEditorPanel() {
   const [searchQuery, setSearchQuery] = useState('')
   const [results, setResults] = useState<KamusEntry[]>([])
   const [totalCount, setTotalCount] = useState(0)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [editKrama, setEditKrama] = useState('')
-  const [editId, setEditId] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -44,31 +46,6 @@ export function KamusEditorPanel() {
     setLoading(false)
   }, [searchQuery, ready])
 
-  const startEdit = useCallback((entry: KamusEntry) => {
-    setEditingId(entry.id)
-    setEditKrama(entry.krama || '')
-    setEditId(entry.arti || '')
-  }, [])
-
-  const saveEdit = useCallback(async () => {
-    if (!editingId) return
-    const ok = await updateKamusEntry(editingId, {
-      krama: editKrama,
-      arti: editId,
-      status: 'clean',  // user edit = clean (approved)
-    })
-    if (ok) {
-      // Update local results
-      setResults(prev => prev.map(r =>
-        r.id === editingId ? { ...r, krama: editKrama, arti: editId, status: 'clean' } : r
-      ))
-      toast.success('Kamus diperbarui (status: clean)')
-    } else {
-      toast.error('Gagal simpan kamus')
-    }
-    setEditingId(null)
-  }, [editingId, editKrama, editId])
-
   if (!ready) return null
 
   return (
@@ -76,10 +53,13 @@ export function KamusEditorPanel() {
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <BookOpen className="size-5 text-emerald-600" />
-          Kamus Jawa Editor
+          Kamus Jawa Viewer
+          <Badge variant="outline" className="text-xs bg-emerald-50 dark:bg-emerald-950/30 ml-1">
+            <Eye className="size-3 mr-1" /> Read-only
+          </Badge>
         </CardTitle>
         <CardDescription>
-          Edit krama + arti (id) permanen ke Supabase. Status: draft (belum diedit) → clean (fix, approved).
+          Lihat kamus dari Supabase (read-only). Edit kamus pakai TUI lokal (kamus-tui.py) → upload ke Supabase.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -105,85 +85,45 @@ export function KamusEditorPanel() {
           </Button>
         </div>
 
-        {/* Results */}
+        {/* Results (read-only display) */}
         {results.length > 0 && (
           <ScrollArea className="h-[400px] rounded-md border">
             <div className="space-y-1 p-2">
               {results.map((entry) => (
                 <div
                   key={entry.id}
-                  className={`rounded p-2 ${editingId === entry.id ? 'border-2 border-emerald-400 bg-emerald-50/30' : 'border'}`}
+                  className="rounded p-2 border"
                 >
-                  {editingId === entry.id ? (
-                    // Edit mode
-                    <div className="space-y-2">
-                      <div className="text-sm font-medium">{entry.ngoko}</div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <Label className="text-xs">Krama</Label>
-                          <Input
-                            value={editKrama}
-                            onChange={e => setEditKrama(e.target.value)}
-                            placeholder="kata krama"
-                            className="h-8 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Arti (Indonesia)</Label>
-                          <Input
-                            value={editId}
-                            onChange={e => setEditId(e.target.value)}
-                            placeholder="arti dalam Indonesia"
-                            className="h-8 text-sm"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={saveEdit} className="h-7 text-xs">Simpan (clean)</Button>
-                        <Button size="sm" variant="outline" onClick={() => setEditingId(null)} className="h-7 text-xs">Batal</Button>
-                      </div>
-                    </div>
-                  ) : (
-                    // View mode
-                    <div className="flex items-start gap-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-bold text-sm">{entry.ngoko}</span>
-                          <span className="text-muted-foreground">→</span>
-                          <span className="text-sm">{entry.krama || '(kosong)'}</span>
-                          {entry.krama_inggil && (
-                            <Badge variant="outline" className="text-[10px] bg-purple-50 dark:bg-purple-950/30">
-                              ki: {entry.krama_inggil}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-0.5">
-                          {entry.arti || '(tidak ada arti Indonesia)'}
-                        </div>
-                        {entry.keterangan && (
-                          <div className="text-[10px] text-muted-foreground/70 italic mt-1 line-clamp-2">
-                            {entry.keterangan}
-                          </div>
+                  <div className="flex items-start gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-mono font-bold text-sm">{entry.ngoko}</span>
+                        <span className="text-muted-foreground">→</span>
+                        <span className="text-sm">{entry.krama || '(kosong)'}</span>
+                        {entry.krama_inggil && (
+                          <Badge variant="outline" className="text-[10px] bg-purple-50 dark:bg-purple-950/30">
+                            ki: {entry.krama_inggil}
+                          </Badge>
                         )}
                       </div>
-                      <div className="shrink-0 flex items-center gap-2">
-                        <Badge
-                          variant="outline"
-                          className={`text-xs ${entry.status === 'clean' || entry.status === 'ready' ? 'bg-green-50 dark:bg-green-950/30' : 'bg-yellow-50 dark:bg-yellow-950/30'}`}
-                        >
-                          {entry.status === 'clean' || entry.status === 'ready' ? '✓ approved' : 'draft'}
-                        </Badge>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => startEdit(entry)}
-                          className="h-7 px-2"
-                        >
-                          <Edit3 className="size-3.5" />
-                        </Button>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        {entry.arti || '(tidak ada arti Indonesia)'}
                       </div>
+                      {entry.keterangan && (
+                        <div className="text-[10px] text-muted-foreground/70 italic mt-1 line-clamp-2">
+                          {entry.keterangan}
+                        </div>
+                      )}
                     </div>
-                  )}
+                    <div className="shrink-0">
+                      <Badge
+                        variant="outline"
+                        className={`text-xs ${entry.status === 'clean' || entry.status === 'ready' ? 'bg-green-50 dark:bg-green-950/30' : 'bg-yellow-50 dark:bg-yellow-950/30'}`}
+                      >
+                        {entry.status === 'clean' || entry.status === 'ready' ? '✓ approved' : 'draft'}
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -199,8 +139,10 @@ export function KamusEditorPanel() {
 
         {/* Info */}
         <p className="text-xs text-muted-foreground">
-          <strong>Cara pakai:</strong> Cari kata → klik edit → isi krama + arti → Simpan (status: clean).
-          Data tersimpan permanen di Supabase. Draft = belum diedit, Clean = sudah fix (approved user).
+          <strong>Cara pakai:</strong> Search kata → lihat entry (ngoko + krama + arti).
+          Untuk edit/add entry: pakai <code>kamus-tui.py</code> di MacBook → upload ke Supabase.
+          Web app cuma baca kamus, tidak edit. Edit langsung di DB Supabase juga bisa
+          (validasi level 2 kalau ada keanehan terjemahan).
         </p>
       </CardContent>
     </Card>

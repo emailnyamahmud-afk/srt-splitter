@@ -518,8 +518,14 @@ export async function bumpProjectEdited(projectId: string, cuesEditedDelta: numb
 }
 
 // ============================================================
-// Kamus table (for user-editable dictionary)
+// Kamus table — READ-ONLY functions
 // ============================================================
+// Filosofi (8 Okt 2026): Web app TIDAK edit kamus. Editing hanya via TUI lokal
+// (kamus-tui.py) → upload ke Supabase. Web app hanya:
+//   - loadKamusJawa (di rapikan-jawa.ts): load kamus ke memory untuk convertRegister
+//   - searchKamus: search kamus di DB (untuk display)
+//   - countKamus: hitung total entries
+// Untuk edit langsung di DB, user bisa pakai Supabase Table Editor (validasi level 2).
 
 export interface KamusEntry {
   id: string
@@ -537,43 +543,7 @@ export interface KamusEntry {
 }
 
 /**
- * Bulk insert kamus entries ke Supabase (untuk initial import)
- */
-export async function importKamus(
-  entries: { word: string; krama: string; id: string; status: string }[],
-  batchSize: number = 500,
-): Promise<{ success: number; failed: number }> {
-  const client = getSupabase()
-  if (!client) return { success: 0, failed: 0 }
-
-  let success = 0
-  let failed = 0
-
-  // Insert in batches
-  for (let i = 0; i < entries.length; i += batchSize) {
-    const batch = entries.slice(i, i + batchSize)
-    const { error } = await client
-      .from('kamus')
-      .insert(batch)
-
-    if (error) {
-      console.error('[Supabase] importKamus batch error:', error)
-      failed += batch.length
-    } else {
-      success += batch.length
-    }
-
-    // Progress
-    if (i % (batchSize * 10) === 0) {
-      console.log(`[Supabase] importKamus: ${i}/${entries.length}`)
-    }
-  }
-
-  return { success, failed }
-}
-
-/**
- * Search kamus entries (with pagination)
+ * Search kamus entries (with pagination) — READ-ONLY
  */
 export async function searchKamus(
   query: string,
@@ -600,33 +570,7 @@ export async function searchKamus(
 }
 
 /**
- * Update kamus entry (user edit krama/arti/krama_inggil)
- */
-export async function updateKamusEntry(
-  entryId: string,
-  updates: { krama?: string; krama_inggil?: string; arti?: string; status?: string },
-): Promise<boolean> {
-  const client = getSupabase()
-  if (!client) return false
-
-  const { error } = await client
-    .from('kamus')
-    .update({
-      ...updates,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', entryId)
-
-  if (error) {
-    console.error('[Supabase] updateKamusEntry error:', error)
-    return false
-  }
-
-  return true
-}
-
-/**
- * Count total kamus entries
+ * Count total kamus entries — READ-ONLY
  */
 export async function countKamus(): Promise<number> {
   const client = getSupabase()
