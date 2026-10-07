@@ -37,16 +37,32 @@ export interface RapikanResult {
 }
 
 /**
- * Load kamus Jawa dari public/kamus-jawa.json
+ * Load kamus Jawa dari public/kamus-jawa-full.json (44.585 kata dari Wiktionary Jawa)
+ * Fallback ke public/kamus-jawa.json (157 entri) kalau full tidak ada
  */
 export async function loadKamusJawa(): Promise<KamusJawa | null> {
   try {
-    const response = await fetch('/kamus-jawa.json')
-    if (!response.ok) return null
-    return await response.json() as KamusJawa
+    // Try full kamus first (44.585 entries)
+    const response = await fetch('/kamus-jawa-full.json')
+    if (response.ok) {
+      const data = await response.json() as KamusJawa
+      return data
+    }
   } catch {
-    return null
+    // ignore, try fallback
   }
+
+  // Fallback: small kamus (157 entries)
+  try {
+    const response = await fetch('/kamus-jawa.json')
+    if (response.ok) {
+      return await response.json() as KamusJawa
+    }
+  } catch {
+    // ignore
+  }
+
+  return null
 }
 
 /**
@@ -188,4 +204,100 @@ export function suggestRegister(text: string, kamus: KamusJawa | null): CueRegis
   if (hasKrama) return 'krama'
   if (hasNgoko) return 'ngoko'
   return ''
+}
+
+/**
+ * Convert SRT text dari satu register ke register lain.
+ * Contoh: "aku arep mangan" (ngoko) → "kula badhe nedha" (krama)
+ *
+ * Pakai kamus untuk cari pasangan kata:
+ *   ngoko → krama: cari entry dengan register=ngoko, ambil krama field
+ *   krama → ngoko: cari entry dengan register=krama, ambil word as ngoko
+ *
+ * Kalau kata tidak ada di kamus atau tidak ada pasangan, biarkan apa adanya.
+ */
+export function convertRegister(
+  text: string,
+  fromRegister: CueRegister,
+  toRegister: CueRegister,
+  kamus: KamusJawa | null,
+): string {
+  if (!kamus || !fromRegister || !toRegister || fromRegister === toRegister) {
+    return text
+  }
+
+  // Build lookup map: word → target register equivalent
+  const lookup = new Map<string, string>()
+
+  for (const entry of kamus.words) {
+    const word = entry.word.toLowerCase()
+    if (!word) continue
+
+    if (fromRegister === 'ngoko' && entry.register === 'ngoko') {
+      // ngoko → krama: cari krama equivalent
+      if (toRegister === 'krama' && entry.krama) {
+        lookup.set(word, entry.krama)
+      } else if (toRegister === 'krama_inggil' && entry.krama_inggil) {
+        lookup.set(word, entry.krama_inggil)
+      }
+    } else if (fromRegister === 'krama' && entry.register === 'krama') {
+      // krama → ngoko: cari ngoko equivalent (word di entry krama = kata krama)
+      // Tapi kamus Wiktionary jarang punya tag krama, jadi ini mungkin terbatas
+      if (toRegister === 'ngoko') {
+        // Cari entry ngoko yang punya krama = word ini
+        const ngokoEntry = kamus.words.find(
+          e => e.register === 'ngoko' && e.krama?.toLowerCase() === word
+        )
+        if (ngokoEntry) {
+          lookup.set(word, ngokoEntry.word)
+        }
+      }
+    }
+  }
+
+  if (lookup.size === 0) return text
+
+  // Replace words in text
+  const words = text.split(/(\s+)/) // split tapi simpan whitespace
+  const converted = words.map(w => {
+    const cleanWord = w.toLowerCase().replace(/[^\wàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ]/g, '')
+    if (!cleanWord) return w
+
+    const replacement = lookup.get(cleanWord)
+    if (replacement) {
+      // Preserve case + surrounding punctuation
+      const isUpperCase = w[0] === w[0]?.toUpperCase()
+      const prefix = w.slice(0, w.length - cleanWord.length - (w.endsWith(cleanWord) ? 0 : 0))
+      const suffix = ''
+      const result = replacement
+      return isUpperCase ? result.charAt(0).toUpperCase() + result.slice(1) : result
+    }
+    return w
+  })
+
+  return converted.join('')
+}
+
+/**
+ * Convert semua entries dari satu register ke register lain (in-place)
+ * Return jumlah kata yang diubah
+ */
+export function convertEntriesRegister(
+  entries: { textLines: string[] }[],
+  fromRegister: CueRegister,
+  toRegister: CueRegister,
+  kamus: KamusJawa | null,
+): number {
+  let count = 0
+  for (const entry of entries) {
+    for (let i = 0; i < entry.textLines.length; i++) {
+      const original = entry.textLines[i]
+      const converted = convertRegister(original, fromRegister, toRegister, kamus)
+      if (original !== converted) {
+        entry.textLines[i] = converted
+        count++
+      }
+    }
+  }
+  return count
 }

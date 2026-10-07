@@ -346,3 +346,125 @@ export async function updateProject(
 
   return true
 }
+
+// ============================================================
+// Kamus table (for user-editable dictionary)
+// ============================================================
+
+export interface KamusEntry {
+  id: string
+  word: string
+  register: string  // 'ngoko' | 'krama' | 'krama_inggil' | 'umum' | 'kawi'
+  meaning_jawa: string  // definisi dalam bahasa Jawa (dari Wiktionary)
+  meaning_id: string    // terjemahan Indonesia (user edit manual)
+  aksara: string        // aksara Jawa (opsional)
+  kelas: string         // kelas kata (opsional)
+  created_at: string
+  updated_at: string
+}
+
+/**
+ * Bulk insert kamus entries ke Supabase (untuk initial import)
+ */
+export async function importKamus(
+  entries: { word: string; register: string; meaning_jawa: string; meaning_id: string; aksara: string; kelas: string }[],
+  batchSize: number = 500,
+): Promise<{ success: number; failed: number }> {
+  const client = getSupabase()
+  if (!client) return { success: 0, failed: 0 }
+
+  let success = 0
+  let failed = 0
+
+  // Insert in batches
+  for (let i = 0; i < entries.length; i += batchSize) {
+    const batch = entries.slice(i, i + batchSize)
+    const { error } = await client
+      .from('kamus')
+      .insert(batch)
+
+    if (error) {
+      console.error('[Supabase] importKamus batch error:', error)
+      failed += batch.length
+    } else {
+      success += batch.length
+    }
+
+    // Progress
+    if (i % (batchSize * 10) === 0) {
+      console.log(`[Supabase] importKamus: ${i}/${entries.length}`)
+    }
+  }
+
+  return { success, failed }
+}
+
+/**
+ * Search kamus entries (with pagination)
+ */
+export async function searchKamus(
+  query: string,
+  limit: number = 20,
+): Promise<KamusEntry[]> {
+  const client = getSupabase()
+  if (!client) return []
+
+  const { data, error } = await client
+    .from('kamus')
+    .select('*')
+    .ilike('word', `%${query}%`)
+    .limit(limit)
+    .order('word', { ascending: true })
+
+  if (error) {
+    console.error('[Supabase] searchKamus error:', error)
+    return []
+  }
+
+  return data as KamusEntry[]
+}
+
+/**
+ * Update kamus entry (user edit meaning_id)
+ */
+export async function updateKamusEntry(
+  entryId: string,
+  updates: { meaning_id?: string; register?: string },
+): Promise<boolean> {
+  const client = getSupabase()
+  if (!client) return false
+
+  const { error } = await client
+    .from('kamus')
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', entryId)
+
+  if (error) {
+    console.error('[Supabase] updateKamusEntry error:', error)
+    return false
+  }
+
+  return true
+}
+
+/**
+ * Count total kamus entries
+ */
+export async function countKamus(): Promise<number> {
+  const client = getSupabase()
+  if (!client) return 0
+
+  const { count, error } = await client
+    .from('kamus')
+    .select('*', { count: 'exact', head: true })
+
+  if (error) {
+    console.error('[Supabase] countKamus error:', error)
+    return 0
+  }
+
+  return count || 0
+}
