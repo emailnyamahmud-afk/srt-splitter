@@ -511,3 +511,35 @@ Stage Summary:
 - Supabase: client siap, tunggu env vars dari user (besok)
 - Aksén Jawa tidak dipakai (Edge TTS tidak bisa baca)
 - Filosofi: video = ground truth, audio dub fit SRT ori, SFX bersih dari Demucs
+
+---
+Task ID: 11
+Agent: main
+Task: Kamus Jawa — pivot ke Supabase (browser crash load 9.6MB JSON) + TUI edit lokal
+
+User feedback:
+'browser UI error, crash saat load json, mending di browser gak usah pake json.
+Mending pake supabase. AI buat TUI edit json kamus, agar user di lokal bisa edit
+kamus per entri pake vscode, jadi satu folder dengan project dubbing. Tiap kamus
+yg lengkap, akan user up ke supabase.'
+
+Work Log:
+- Untrack kamus-jawa-full.json + kamus-jawa.json dari repo (9.6MB crash browser)
+- .gitignore: tambah /public/kamus-jawa*.json
+- rapikan-jawa.ts: loadKamusJawa() sekarang dari Supabase (bukan JSON file)
+  * Lazy import supabase.ts, fetch dari tabel kamus (limit 10000)
+  * Fallback: null kalau Supabase belum set (kamus check skip, semua OK)
+- edit-kamus.py (NEW, 230 baris): TUI untuk edit kamus lokal + upload Supabase
+  * Export: Supabase → kamus-jawa.csv (buka di VSCode, edit per baris)
+  * Import CSV: kamus-jawa.csv → Supabase (setelah user edit di VSCode)
+  * Import JSON: kamus-jawa-full.json → Supabase (initial 44.585 entri)
+  * Search: cari kata di Supabase
+- Kamus format v4 (BENAR): ngoko, aksara, krama, id, keterangan, sumber, status
+- Alias support: ngoko field bisa "aku, inyong, nyong" (split koma)
+- Supabase tabel kamus: user perlu add kolom keterangan + sumber + status + aksara
+
+Stage Summary:
+- Browser: kamus dari Supabase (bukan JSON file), no crash
+- Lokal: user edit kamus-jawa.csv di VSCode, upload ke Supabase kalau lengkap
+- Workflow: export → edit VSCode → import → Supabase → web app load dari Supabase
+- Kamus editor panel di web tetap ada (search + edit dari Supabase langsung)

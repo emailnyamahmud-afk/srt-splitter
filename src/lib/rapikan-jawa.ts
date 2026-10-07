@@ -37,32 +37,45 @@ export interface RapikanResult {
 }
 
 /**
- * Load kamus Jawa dari public/kamus-jawa-full.json (44.585 kata dari Wiktionary Jawa)
- * Fallback ke public/kamus-jawa.json (157 entri) kalau full tidak ada
+ * Load kamus Jawa dari Supabase (bukan dari JSON file — terlalu besar 9.6MB, crash browser)
+ * User edit kamus lokal pakai VSCode, upload ke Supabase kalau sudah lengkap
+ *
+ * Fallback: kalau Supabase belum tersedia, return null (kamus check skip, semua kata dianggap OK)
  */
 export async function loadKamusJawa(): Promise<KamusJawa | null> {
   try {
-    // Try full kamus first (44.585 entries)
-    const response = await fetch('/kamus-jawa-full.json')
-    if (response.ok) {
-      const data = await response.json() as KamusJawa
-      return data
-    }
-  } catch {
-    // ignore, try fallback
-  }
+    const { isSupabaseAvailable } = await import('./supabase')
+    if (!isSupabaseAvailable()) return null
 
-  // Fallback: small kamus (157 entries)
-  try {
-    const response = await fetch('/kamus-jawa.json')
-    if (response.ok) {
-      return await response.json() as KamusJawa
-    }
-  } catch {
-    // ignore
-  }
+    const { getSupabase } = await import('./supabase')
+    const client = getSupabase()
+    if (!client) return null
 
-  return null
+    // Load kamus dari Supabase (limit 10000 untuk performance)
+    const { data, error } = await client
+      .from('kamus')
+      .select('ngoko, aksara, krama, id, keterangan, sumber')
+      .limit(10000)
+      .order('ngoko', { ascending: true })
+
+    if (error || !data || data.length === 0) {
+      console.warn('[Kamus] Supabase load failed or empty:', error?.message)
+      return null
+    }
+
+    return {
+      metadata: {
+        version: 'supabase',
+        source: 'Supabase PostgreSQL',
+        entries: data.length,
+        note: 'Kamus dari Supabase. User edit lokal, upload ke Supabase.',
+      },
+      words: data as KamusEntry[],
+    }
+  } catch (e) {
+    console.warn('[Kamus] Load failed:', e)
+    return null
+  }
 }
 
 /**

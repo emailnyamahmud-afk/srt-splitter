@@ -75,6 +75,10 @@ __pycache__/
 # Build artifacts that aren't needed in repo
 Caddyfile
 
+# Kamus Jawa JSON (too heavy for browser, use Supabase instead)
+# User edit lokal pakai VSCode, upload ke Supabase kalau sudah lengkap
+/public/kamus-jawa*.json
+
 # Scraping / research artifacts (jangan commit ke repo)
 astd-home.json
 *-home.json
