@@ -507,6 +507,11 @@ def parse_xml_to_json(xml_path, output_path):
         w.get('ngoko') or w.get('krama') or w.get('krama_inggil') or w.get('kawi') or '',
     ))
 
+    # Tambah entry_id (1-indexed) supaya user bisa referensi by number
+    # Berguna untuk merge entries (mis. "sing" entry #123 + "ingkang" entry #456 → 1 entry)
+    for i, w in enumerate(words, 1):
+        w['entry_id'] = i
+
     output = {
         'metadata': {
             'version': '5.0',

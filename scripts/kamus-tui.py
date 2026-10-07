@@ -177,8 +177,9 @@ def show_stats(data):
 
 
 def edit_entry(data, idx):
-    """Edit 1 entry: ngoko, krama, krama_inggil, arti"""
+    """Edit 1 entry: ngoko, krama, krama_inggil, arti, register + merge dengan entry lain"""
     entry = data['words'][idx]
+    entry_id = entry.get('entry_id', idx + 1)
     ngoko_old = entry.get('ngoko', '')
     krama_old = entry.get('krama', '')
     ki_old = entry.get('krama_inggil', '')
@@ -189,10 +190,11 @@ def edit_entry(data, idx):
 
     os.system('clear' if os.name != 'nt' else 'cls')
     print('╔' + '═' * 60 + '╗')
-    print(f'║  ✏️  Edit Entry #{idx + 1}' + ' ' * (43 - len(str(idx + 1))) + '║')
+    print(f'║  ✏️  Edit Entry #{entry_id}' + ' ' * (44 - len(str(entry_id))) + '║')
     print('╚' + '═' * 60 + '╝')
     print()
     print(f'  ┌─────────────────────────────────────────────┐')
+    print(f'  │ entry_id:     #{entry_id}')
     print(f'  │ ngoko:        {ngoko_old[:42]}')
     print(f'  │ aksara:        {entry.get("aksara", "")[:42]}')
     print(f'  │ krama:         {krama_old[:42] or "(kosong)"}')
@@ -281,7 +283,122 @@ def edit_entry(data, idx):
     print(f'\n  ✅ Disimpan: ngoko={new_ngoko} → krama={new_krama} → arti={new_arti}')
     print(f'  Register: {new_register}')
     print(f'  Status: {new_status}' + (' (siap upload)' if new_status == 'ready' else ' (butuh arti dulu)'))
+
+    # Opsi merge dengan entry lain (mis. "sing" #39410 + "ingkang" #29837 → 1 entry)
+    print()
+    merge_choice = questionary.confirm('Merge dengan entry lain? (gabung 2 entries jadi 1)', default=False).ask()
+    if merge_choice:
+        merge_entry(data, idx)
+
     input('\n  Tekan Enter...')
+
+
+def merge_entry(data, current_idx):
+    """Merge current entry dengan entry lain berdasarkan entry_id.
+    User input entry_id target → gabung ngoko/krama/arti → delete entry target.
+    """
+    current_entry = data['words'][current_idx]
+    current_entry_id = current_entry.get('entry_id', current_idx + 1)
+
+    print(f'\n  ─── Merge Entry #{current_entry_id} ───')
+    print(f'  Current: ngoko={current_entry.get("ngoko","")!r} krama={current_entry.get("krama","")!r} arti={current_entry.get("arti","")!r}')
+    print()
+
+    target_id_str = questionary.text('Masukkan entry_id target (mis. 29837 untuk ingkang):').ask()
+    if not target_id_str or not target_id_str.strip():
+        print('  ⏹ Dibatalkan.')
+        return
+
+    try:
+        target_id = int(target_id_str.strip())
+    except ValueError:
+        print(f'  ❌ entry_id harus angka, bukan "{target_id_str}"')
+        return
+
+    # Cari entry target berdasarkan entry_id
+    target_idx = None
+    for i, w in enumerate(data['words']):
+        if w.get('entry_id') == target_id:
+            target_idx = i
+            break
+
+    if target_idx is None:
+        print(f'  ❌ entry_id #{target_id} tidak ditemukan')
+        return
+
+    if target_idx == current_idx:
+        print(f'  ❌ Tidak bisa merge dengan diri sendiri')
+        return
+
+    target_entry = data['words'][target_idx]
+    print(f'\n  Target:  entry_id=#{target_id} ngoko={target_entry.get("ngoko","")!r} krama={target_entry.get("krama","")!r} arti={target_entry.get("arti","")!r}')
+    print()
+
+    # Preview merge result
+    merged_ngoko = current_entry.get('ngoko', '') or target_entry.get('ngoko', '')
+    merged_krama = current_entry.get('krama', '') or target_entry.get('krama', '')
+    merged_ki = current_entry.get('krama_inggil', '') or target_entry.get('krama_inggil', '')
+    merged_arti = current_entry.get('arti', '') or target_entry.get('arti', '')
+
+    # Smart merge: kalau current ngoko kosong tapi target ada ngoko, pakai target ngoko
+    # (mis. current=ingkang ngoko='', target=sing ngoko='sing' → merged ngoko='sing')
+    if not current_entry.get('ngoko', '').strip() and target_entry.get('ngoko', '').strip():
+        merged_ngoko = target_entry['ngoko']
+    # Kalau current ada krama kosong tapi target ada krama, pakai target krama
+    if not current_entry.get('krama', '').strip() and target_entry.get('krama', '').strip():
+        merged_krama = target_entry['krama']
+
+    # Register: priority krama_inggil > krama > ngoko > umum
+    register_order = {'krama_inggil': 0, 'krama': 1, 'ngoko': 2, 'kawi': 3, 'umum': 4}
+    current_reg = current_entry.get('register', 'umum')
+    target_reg = target_entry.get('register', 'umum')
+    merged_register = current_reg if register_order.get(current_reg, 99) < register_order.get(target_reg, 99) else target_reg
+
+    print(f'  ─── Hasil Merge ───')
+    print(f'  ngoko:        {merged_ngoko!r}')
+    print(f'  krama:        {merged_krama!r}')
+    print(f'  krama_inggil: {merged_ki!r}')
+    print(f'  arti:         {merged_arti!r}')
+    print(f'  register:     {merged_register}')
+    print()
+
+    confirm = questionary.confirm('Konfirmasi merge? Entry target akan di-DELETE.', default=False).ask()
+    if not confirm:
+        print('  ⏹ Dibatalkan.')
+        return
+
+    # Apply merge ke current entry
+    current_entry['ngoko'] = merged_ngoko
+    current_entry['krama'] = merged_krama
+    if merged_ki:
+        current_entry['krama_inggil'] = merged_ki
+    elif 'krama_inggil' in current_entry:
+        del current_entry['krama_inggil']
+    current_entry['arti'] = merged_arti
+    current_entry['register'] = merged_register
+    # Combine keterangan (bantu user validasi)
+    current_ket = current_entry.get('keterangan', '')
+    target_ket = target_entry.get('keterangan', '')
+    if target_ket and target_ket not in current_ket:
+        current_entry['keterangan'] = f'{current_ket} | {target_ket}'.strip(' |')
+    # Combine sumber
+    current_sumber = current_entry.get('sumber', '')
+    target_sumber = target_entry.get('sumber', '')
+    if target_sumber and target_sumber not in current_sumber:
+        current_entry['sumber'] = f'{current_sumber} + merge #{target_id}'
+
+    # Delete entry target
+    del data['words'][target_idx]
+
+    # Re-number entry_id (karena 1 entry dihapus)
+    for i, w in enumerate(data['words'], 1):
+        w['entry_id'] = i
+
+    save_kamus(data)
+    print(f'\n  ✅ Merge sukses!')
+    print(f'  Entry #{current_entry_id} sekarang: ngoko={merged_ngoko!r} krama={merged_krama!r} arti={merged_arti!r}')
+    print(f'  Entry target #{target_id} di-DELETE.')
+    print(f'  Total entries sekarang: {len(data["words"])}')
 
 
 def browse_list(data, entries_with_idx, title):
@@ -317,16 +434,21 @@ def browse_list(data, entries_with_idx, title):
             ki = entry.get('krama_inggil', '') or ''
             arti = entry.get('arti', '') or ''
             status = entry.get('status', 'draft')
+            register = entry.get('register', 'umum')
+            entry_id = entry.get('entry_id', orig_idx + 1)
             icon = '✓' if status == 'ready' else '○'
 
-            # Build unique label (idx sebagai prefix supaya unik)
-            label = f'{icon} #{orig_idx + 1:5d}. {ngoko_display:25s}'
+            # Build unique label — tampilkan entry_id (dari JSON) supaya user bisa referensi
+            label = f'{icon} #{entry_id:5d}. {ngoko_display:25s}'
             if krama:
                 label += f' → {krama[:15]:15s}'
             if ki:
                 label += f' | ki: {ki[:10]}'
             if arti:
                 label += f' | {arti[:15]}'
+            # Tampilkan register kalau bukan default (umum)
+            if register != 'umum':
+                label += f' [{register}]'
             label_to_idx[label] = orig_idx
             choices.append(label)
 
@@ -556,7 +678,8 @@ def main_menu(data):
             '⭐ Browse entries dengan krama mapping (auto-filled, butuh arti)',
             '📝 Browse entries BELUM ada arti (Indonesia)',
             '⚠ Browse register UMUM (perlu validasi)',
-            '🎯 Browse per register',
+            '🎯 Browse per register (ngoko/krama/krama_inggil/kawi/umum)',
+            '🔗 Merge 2 entries by entry_id',
             '🔑 Set Supabase .env (URL + anon key)',
             '☁  Upload ke Supabase (hanya yang SIAP UPLOAD)',
             '💾 Save JSON (manual)',
@@ -601,6 +724,29 @@ def main_menu(data):
             ).ask()
             if reg_selected and 'Kembali' not in reg_selected:
                 browse_by_register(data, reg_selected)
+        elif '🔗' in selected and 'Merge' in selected:
+            # Merge 2 entries by entry_id
+            merge_id_str = questionary.text('Entry ID entry pertama (mis. 39410 untuk sing):').ask()
+            if not merge_id_str or not merge_id_str.strip():
+                continue
+            try:
+                merge_id = int(merge_id_str.strip())
+            except ValueError:
+                print(f'  ❌ entry_id harus angka')
+                input('  Tekan Enter...')
+                continue
+            # Cari index di data['words']
+            merge_idx = None
+            for i, w in enumerate(data['words']):
+                if w.get('entry_id') == merge_id:
+                    merge_idx = i
+                    break
+            if merge_idx is None:
+                print(f'  ❌ entry_id #{merge_id} tidak ditemukan')
+                input('  Tekan Enter...')
+                continue
+            # Edit entry ini (dengan opsi merge di akhir)
+            edit_entry(data, merge_idx)
         elif '🔑' in selected and 'Supabase .env' in selected:
             edit_env_file()
         elif 'Save JSON' in selected:
