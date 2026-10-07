@@ -317,19 +317,15 @@ export function RapikanJawaPanel({ entries, onUpdated, prefix }: RapikanJawaPane
             <Eraser className="size-3.5 mr-1" /> Hapus Aksén (é→e)
           </Button>
           <Button size="sm" variant="outline" onClick={autoSuggestRegisters} disabled={!kamus}>
-            <CheckCircle2 className="size-3.5 mr-1" /> Auto-suggest Register
-          </Button>
-          <Button size="sm" sizeVariant="sm" variant="outline" onClick={() => handleConvertRegister('ngoko')} disabled={!kamus}
-            className="border-blue-300 text-blue-700 dark:text-blue-300">
-            All Ngoko
+            <CheckCircle2 className="size-3.5 mr-1" /> Auto-suggest
           </Button>
           <Button size="sm" variant="outline" onClick={() => handleConvertRegister('krama')} disabled={!kamus}
             className="border-amber-300 text-amber-700 dark:text-amber-300">
             All Krama
           </Button>
-          <Button size="sm" variant="outline" onClick={() => handleConvertRegister('krama_inggil')} disabled={!kamus}
-            className="border-purple-300 text-purple-700 dark:text-purple-300">
-            All Krama Inggil
+          <Button size="sm" variant="outline" onClick={() => handleConvertRegister('ngoko')} disabled={!kamus}
+            className="border-blue-300 text-blue-700 dark:text-blue-300">
+            All Ngoko
           </Button>
           <Button size="sm" onClick={handleDownload}>
             <Download className="size-3.5 mr-1" /> Download SRT Rapi

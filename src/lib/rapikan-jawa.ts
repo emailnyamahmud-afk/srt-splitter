@@ -10,19 +10,15 @@
 // Output: SRT Jawa yang siap untuk TTS (mode ON + Smart Fit)
 
 export interface KamusEntry {
-  word: string
-  register: 'ngoko' | 'krama' | 'krama_inggil'
-  meaning_id?: string
-  krama?: string
-  krama_inggil?: string
+  word: string       // kata ngoko (dari Wiktionary)
+  krama: string     // kata krama (prioritas: krama_inggil kalau ada, kalau tidak krama). Kosong = belum ada
+  id: string        // arti dalam bahasa Jawa/Indonesia
 }
 
 export interface KamusJawa {
   metadata: {
     version: string
     source: string
-    register: string[]
-    dialect: string
     entries: number
     note: string
   }
@@ -177,100 +173,61 @@ export function getRegisterColor(register: CueRegister): string {
 }
 
 /**
- * Suggest register untuk kata-kata di cue
- * Kalau cue punya kata krama/krama_inggil → suggest krama
- * Kalau cuma kata ngoko → suggest ngoko
- * Hanya saran, user final decision
+ * Suggest register untuk cue berdasarkan kata yang ada.
+ * Simple: kalau ada kata dengan krama mapping → suggest krama
+ * Kalau tidak ada krama mapping → suggest ngoko
  */
 export function suggestRegister(text: string, kamus: KamusJawa | null): CueRegister {
   if (!kamus) return ''
   const words = text.toLowerCase().split(/\s+/)
-  let hasKrama = false
-  let hasKramaInggil = false
-  let hasNgoko = false
 
   for (const word of words) {
     const cleanWord = word.replace(/[^\wàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ]/g, '')
     if (!cleanWord) continue
-    const entries = kamus.words.filter(e => e.word.toLowerCase() === cleanWord)
-    for (const entry of entries) {
-      if (entry.register === 'krama_inggil') hasKramaInggil = true
-      else if (entry.register === 'krama') hasKrama = true
-      else if (entry.register === 'ngoko') hasNgoko = true
+    const entry = kamus.words.find(e => e.word.toLowerCase() === cleanWord)
+    if (entry && entry.krama) {
+      return 'krama'  // ada krama mapping → suggest krama
     }
   }
-
-  if (hasKramaInggil) return 'krama_inggil'
-  if (hasKrama) return 'krama'
-  if (hasNgoko) return 'ngoko'
-  return ''
+  return 'ngoko'  // tidak ada krama mapping → ngoko
 }
 
 /**
- * Convert SRT text dari satu register ke register lain.
- * Contoh: "aku arep mangan" (ngoko) → "kula badhe nedha" (krama)
- *
- * Pakai kamus untuk cari pasangan kata:
- *   ngoko → krama: cari entry dengan register=ngoko, ambil krama field
- *   krama → ngoko: cari entry dengan register=krama, ambil word as ngoko
- *
- * Kalau kata tidak ada di kamus atau tidak ada pasangan, biarkan apa adanya.
+ * Convert SRT text dari ngoko ke krama.
+ * Pakai kamus: cari kata ngoko → ganti dengan krama.
+ * Kalau krama kosong (belum ada mapping), biarkan apa adanya.
  */
 export function convertRegister(
   text: string,
-  fromRegister: CueRegister,
+  _fromRegister: CueRegister,
   toRegister: CueRegister,
   kamus: KamusJawa | null,
 ): string {
-  if (!kamus || !fromRegister || !toRegister || fromRegister === toRegister) {
-    return text
-  }
+  if (!kamus || !toRegister) return text
 
-  // Build lookup map: word → target register equivalent
+  // Build lookup: ngoko word → krama word
+  if (toRegister !== 'krama' && toRegister !== 'krama_inggil') return text
+
   const lookup = new Map<string, string>()
-
   for (const entry of kamus.words) {
     const word = entry.word.toLowerCase()
-    if (!word) continue
-
-    if (fromRegister === 'ngoko' && entry.register === 'ngoko') {
-      // ngoko → krama: cari krama equivalent
-      if (toRegister === 'krama' && entry.krama) {
-        lookup.set(word, entry.krama)
-      } else if (toRegister === 'krama_inggil' && entry.krama_inggil) {
-        lookup.set(word, entry.krama_inggil)
-      }
-    } else if (fromRegister === 'krama' && entry.register === 'krama') {
-      // krama → ngoko: cari ngoko equivalent (word di entry krama = kata krama)
-      // Tapi kamus Wiktionary jarang punya tag krama, jadi ini mungkin terbatas
-      if (toRegister === 'ngoko') {
-        // Cari entry ngoko yang punya krama = word ini
-        const ngokoEntry = kamus.words.find(
-          e => e.register === 'ngoko' && e.krama?.toLowerCase() === word
-        )
-        if (ngokoEntry) {
-          lookup.set(word, ngokoEntry.word)
-        }
-      }
+    if (word && entry.krama) {
+      lookup.set(word, entry.krama)
     }
   }
 
   if (lookup.size === 0) return text
 
   // Replace words in text
-  const words = text.split(/(\s+)/) // split tapi simpan whitespace
+  const words = text.split(/(\s+)/)
   const converted = words.map(w => {
     const cleanWord = w.toLowerCase().replace(/[^\wàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ]/g, '')
     if (!cleanWord) return w
 
     const replacement = lookup.get(cleanWord)
     if (replacement) {
-      // Preserve case + surrounding punctuation
-      const isUpperCase = w[0] === w[0]?.toUpperCase()
-      const prefix = w.slice(0, w.length - cleanWord.length - (w.endsWith(cleanWord) ? 0 : 0))
-      const suffix = ''
-      const result = replacement
-      return isUpperCase ? result.charAt(0).toUpperCase() + result.slice(1) : result
+      const isUpperCase = w[0] === w[0]?.toUpperCase() && w[0] !== w[0]?.toLowerCase()
+      return isUpperCase ? replacement.charAt(0).toUpperCase() + replacement.slice(1) : replacement
     }
     return w
   })
