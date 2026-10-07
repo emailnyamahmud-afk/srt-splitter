@@ -10,9 +10,12 @@
 // Output: SRT Jawa yang siap untuk TTS (mode ON + Smart Fit)
 
 export interface KamusEntry {
-  word: string       // kata ngoko (dari Wiktionary)
-  krama: string     // kata krama (prioritas: krama_inggil kalau ada, kalau tidak krama). Kosong = belum ada
-  id: string        // arti dalam bahasa Jawa/Indonesia
+  ngoko: string       // kata ngoko + alias (dipisah koma, mis. "aku, inyong, nyong")
+  aksara: string      // aksara Jawa
+  krama: string       // kata krama + alias (dipisah koma). Kosong = belum ada
+  id: string          // terjemahan Indonesia. Kosong = belum ada
+  keterangan: string  // definisi JAWA dari XML (membantu user isi id). JANGAN HAPUS
+  sumber: string      // sumber data (mis. jv.wiktionary.org)
 }
 
 export interface KamusJawa {
@@ -21,6 +24,7 @@ export interface KamusJawa {
     source: string
     entries: number
     note: string
+    [key: string]: unknown  // untuk field tambahan di metadata
   }
   words: KamusEntry[]
 }
@@ -64,12 +68,17 @@ export async function loadKamusJawa(): Promise<KamusJawa | null> {
 /**
  * Cek kata: apakah ada di kamus?
  * Case insensitive, strip punctuation
+ * Support alias: ngoko field bisa "aku, inyong, nyong" → match per kata
  */
 export function isWordInKamus(word: string, kamus: KamusJawa | null): boolean {
-  if (!kamus) return true // kalau kamus belum load, anggap semua OK
+  if (!kamus) return true
   const cleanWord = word.toLowerCase().replace(/[^\wàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ]/g, '')
-  if (!cleanWord) return true // punctuation only = OK
-  return kamus.words.some(entry => entry.word.toLowerCase() === cleanWord)
+  if (!cleanWord) return true
+  return kamus.words.some(entry => {
+    // Split ngoko by koma untuk support alias
+    const ngokoVariants = entry.ngoko.split(',').map(n => n.trim().toLowerCase())
+    return ngokoVariants.includes(cleanWord)
+  })
 }
 
 /**
@@ -184,12 +193,16 @@ export function suggestRegister(text: string, kamus: KamusJawa | null): CueRegis
   for (const word of words) {
     const cleanWord = word.replace(/[^\wàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ]/g, '')
     if (!cleanWord) continue
-    const entry = kamus.words.find(e => e.word.toLowerCase() === cleanWord)
+    // Cari entry yang ngoko-nya (dengan alias) cocok
+    const entry = kamus.words.find(e => {
+      const ngokoVariants = e.ngoko.split(',').map(n => n.trim().toLowerCase())
+      return ngokoVariants.includes(cleanWord)
+    })
     if (entry && entry.krama) {
       return 'krama'  // ada krama mapping → suggest krama
     }
   }
-  return 'ngoko'  // tidak ada krama mapping → ngoko
+  return 'ngoko'
 }
 
 /**
@@ -204,21 +217,23 @@ export function convertRegister(
   kamus: KamusJawa | null,
 ): string {
   if (!kamus || !toRegister) return text
-
-  // Build lookup: ngoko word → krama word
   if (toRegister !== 'krama' && toRegister !== 'krama_inggil') return text
 
+  // Build lookup: ngoko word (dengan alias) → krama word (first variant)
   const lookup = new Map<string, string>()
   for (const entry of kamus.words) {
-    const word = entry.word.toLowerCase()
-    if (word && entry.krama) {
-      lookup.set(word, entry.krama)
+    if (!entry.krama) continue
+    // Split ngoko by koma untuk alias
+    const ngokoVariants = entry.ngoko.split(',').map(n => n.trim().toLowerCase())
+    // Krama first variant (sebelum koma)
+    const kramaFirst = entry.krama.split(',')[0].trim()
+    for (const ngoko of ngokoVariants) {
+      if (ngoko) lookup.set(ngoko, kramaFirst)
     }
   }
 
   if (lookup.size === 0) return text
 
-  // Replace words in text
   const words = text.split(/(\s+)/)
   const converted = words.map(w => {
     const cleanWord = w.toLowerCase().replace(/[^\wàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ]/g, '')

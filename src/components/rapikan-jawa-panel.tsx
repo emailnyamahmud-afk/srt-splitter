@@ -342,7 +342,7 @@ export function RapikanJawaPanel({ entries, onUpdated, prefix }: RapikanJawaPane
               <div className="space-y-1 text-xs">
                 {rapikanResult.unknownWordsList.slice(0, 100).map((w, i) => (
                   <div key={i} className="flex gap-2">
-                    <span className="font-mono font-bold text-red-600 dark:text-red-400">{w.word}</span>
+                    <span className="font-mono font-bold text-red-600 dark:text-red-400">{w}</span>
                     <span className="text-muted-foreground">— cue {w.cueIndex + 1}: "{w.context}"</span>
                   </div>
                 ))}
@@ -367,7 +367,10 @@ export function RapikanJawaPanel({ entries, onUpdated, prefix }: RapikanJawaPane
             const words = text.split(' ')
             const highlightedText = words.map((word, wi) => {
               const cleanWord = word.replace(/[^\w]/g, '')
-              const isKnown = kamus ? kamus.words.some(e => e.word.toLowerCase() === cleanWord.toLowerCase()) : true
+              const isKnown = kamus ? kamus.words.some(e => {
+                const ngokoVariants = e.ngoko.split(',').map(n => n.trim().toLowerCase())
+                return ngokoVariants.includes(cleanWord.toLowerCase())
+              }) : true
               return isKnown ? word : `<span class="text-red-600 dark:text-red-400 font-semibold">${word}</span>`
             }).join(' ')
 
