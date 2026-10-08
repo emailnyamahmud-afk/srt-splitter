@@ -1,6 +1,6 @@
 # PROJECT_RULES.md — Aturan Project SRT Splitter + Dubbing
 
-> 12 rules minimal, project-specific. Baca tiap session sebelum kerja.
+> 13 rules minimal, project-specific. Baca tiap session sebelum kerja.
 > Konflik antar dokumen? File ini menang.
 
 ## Aturan Dokumentasi (paling penting, biar gak lupa)
@@ -93,6 +93,21 @@ Wajib cek sebelum claim done:
 - [ ] Status marker di AGENTS.md update kalau pipeline berubah
 - [ ] Tidak ada asumsi "pasti jalan" — kalau gak test, bilang "belum di-test"
 - [ ] Git status jelas (commit/push kalau user minta, jangan auto-push)
+
+### R-13 — Git sync wajib tiap session start
+Di awal session (chat pertama, sebelum kerja apapun):
+1. `git fetch origin` untuk update info remote
+2. `git status -sb` untuk lihat status branch
+3. Resolusi sesuai hasil:
+   - `## main` (clean, no diff) → up-to-date, lanjut kerja
+   - `## main...origin/main [behind N]` → `git pull origin main` (auto, aman)
+   - `## main...origin/main [ahead N]` → tanya user "push N commit?", jangan auto-push
+   - `## main...origin/main [diverged]` → tanya user, jangan auto-resolve
+   - `?? file` (untracked) → tanya user sebelum add, jangan auto-add
+
+Tidak boleh auto-push. Tidak boleh auto-resolve diverge. Tidak boleh auto-add untracked file.
+
+Setelah commit + push, wajib cek `git status -sb` lagi konfirmasi `## main` (clean).
 
 ---
 

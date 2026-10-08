@@ -1,11 +1,34 @@
 # AGENTS.md — SRT Splitter + Dubbing
 
 > File ini dibaca AI otomatis di awal setiap session.
-> Isinya: pointer ke rules + status pipeline terkini.
+> Isinya: pre-session checklist + pointer ke rules + status pipeline terkini.
+
+## Pre-session checklist (wajib, di awal chat pertama)
+
+Saat user bilang **"mulai"** / **"baca dokumen"** / chat pertama di session baru:
+
+1. **Baca dokumen (wajib)** — baca full file ini, lalu:
+   - `PROJECT_RULES.md` — 13 rules project-specific
+   - `README.md` (root) — workflow 4 fase + status
+   - `scripts/README.md` — detail per script (kalau kerja Python)
+
+2. **Cek git sync (wajib)**:
+   ```bash
+   git fetch origin
+   git status -sb
+   ```
+   - `## main` (no diff) → up-to-date, lanjut
+   - `## main...origin/main [behind N]` → `git pull origin main`, lanjut
+   - `## main...origin/main [ahead N]` → tanya user "push N commit?", jangan auto-push
+   - `## main...origin/main [diverged]` → tanya user, jangan auto-resolve
+
+3. **Lapor status pipeline** ke user (1 tabel, pakai marker konsisten).
+
+Setelah checklist selesai, AI siap kerja. Tidak perlu ulang di chat berikutnya di session yang sama.
 
 ## Baca dulu (wajib, tiap session)
 
-1. **`PROJECT_RULES.md`** — 12 rules project-specific. Baca full sebelum kerja apapun.
+1. **`PROJECT_RULES.md`** — 13 rules project-specific. Baca full sebelum kerja apapun.
 2. **`README.md`** (root) — workflow 4 fase, 2 mode dubbing, status pipeline.
 3. **`scripts/README.md`** — detail per Python script.
 
@@ -47,6 +70,7 @@ Kalau ada konflik antara dokumen, `PROJECT_RULES.md` menang.
 3. **Tanya kalau ragu, jangan asumsi.** User bukan coder, jawaban teknis perlu dikonfirmasi.
 4. **Jangan eksekusi kalau diminta jangan.** User sering bilang "jangan eksekusi, edit code saja".
 5. **Path file: wajib di `/home/z/my-project/`** untuk script, `/home/z/my-project/download/` untuk deliverable.
+6. **Git sync tiap session start.** Pull kalau behind, tanya kalau ahead, jangan auto-push.
 
 ## Yang sedang nunggu
 
