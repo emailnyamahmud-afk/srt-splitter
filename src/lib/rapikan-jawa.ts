@@ -55,14 +55,10 @@ export async function loadKamusJawa(): Promise<KamusJawa | null> {
     const client = getSupabase()
     if (!client) return null
 
-    // Load kamus dari Supabase — prioritas: status='ready'/'clean' (user-approved) dulu,
-    // lalu yang ada krama mapping (auto-filled). Limit tinggi supaya cukup untuk 5-10k entries
-    // yang user isi + auto-fill dari Wiktionary.
-    // Limit 50000 = cukup untuk 44.585 entries Wiktionary (kalau user upload semua).
+    // Load SEMUA kamus dari Supabase — jangan filter/limit, database = ground of truth
     const { data, error } = await client
       .from('kamus')
       .select('ngoko, aksara, krama, krama_inggil, arti, keterangan, register, sumber')
-      .limit(50000)
       .order('ngoko', { ascending: true })
 
     if (error || !data || data.length === 0) {
