@@ -125,11 +125,11 @@ def main():
     print('═' * 64 + '\n')
 
     if 'terpisah' in output_mode:
-        # MODE TERPISAH: 2 command terpisah — JANGAN merge!
-        # Command 1: video only (tanpa audio)
+        # MODE TERPISAH: 2 command terpisah — video dan audio download terpisah
+        # Tidak ada --merge-output-format, jadi yt-dlp tidak merge
         print('▶ Download video (tanpa audio)...')
         cmd_video = [ytdlp, '-f', video_fmt, '-o', video_template,
-                     '--no-playlist', '--newline', '--no-merge-output-format', url]
+                     '--no-playlist', '--newline', url]
         try:
             subprocess.run(cmd_video)
         except KeyboardInterrupt:
@@ -139,7 +139,7 @@ def main():
         # Command 2: audio only
         print('\n▶ Download audio (m4a)...')
         cmd_audio = [ytdlp, '-f', audio_fmt, '-o', audio_template,
-                     '--no-playlist', '--newline', '--no-merge-output-format',
+                     '--no-playlist', '--newline',
                      '--extract-audio', url]
         try:
             subprocess.run(cmd_audio)
