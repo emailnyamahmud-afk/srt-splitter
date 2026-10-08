@@ -20,6 +20,13 @@ Status tracking:
   status='draft' = belum di-edit user (hanya auto-filled dari template)
   status='clean' = sudah di-edit user (arti diisi, atau krama_inggil ditambah)
 
+Edit per entri: ngoko, krama, krama_inggil, arti (Indonesia), register
+  - keterangan JAWA read-only (JANGAN HAPUS)
+  - register BISA di-edit (dropdown: ngoko/krama/krama_inggil/kawi/umum)
+
+Merge: menu khusus, search kata 1 → search kata 2 → preview → konfirmasi
+Upload: HANYA entries dengan ngoko+krama+arti lengkap (3 field wajib)
+
 Install: pip3 install questionary
 Usage: python3 kamus-tui.py
 """
@@ -106,24 +113,20 @@ def load_kamus():
 
 
 def save_kamus(data):
-    """Save ke JSON file + update status berdasarkan kelengkapan field.
+    """Save ke JSON file + recompute status untuk SEMUA entries.
 
-    Status logic (v3, 8 Okt 2026):
+    Status logic:
     - 'ready' = ngoko + krama + arti SEMUA terisi → siap upload ke Supabase
-    - 'draft' = belum lengkap (perlu user isi arti dulu, atau validasi manual)
+    - 'draft' = belum lengkap
 
-    krama_inggil OPSIONAL — tidak semua kata Jawa punya krama inggil
-    (buktinya dari 44.585 entries, cuma 95 yang register=krama_inggil).
-
-    Upload HANYA entries dengan status='ready'.
+    SELALU recompute status setiap save (jangan skip yang sudah punya status).
+    User edit arti → status harus recompute dari draft → ready.
     """
     for w in data['words']:
-        if 'status' not in w:
-            ngoko = (w.get('ngoko') or '').strip()
-            krama = (w.get('krama') or '').strip()
-            arti = (w.get('arti') or '').strip()
-            # 'ready' HANYA kalau 3 field wajib terisi
-            w['status'] = 'ready' if (ngoko and krama and arti) else 'draft'
+        ngoko = (w.get('ngoko') or '').strip()
+        krama = (w.get('krama') or '').strip()
+        arti = (w.get('arti') or '').strip()
+        w['status'] = 'ready' if (ngoko and krama and arti) else 'draft'
     path = get_kamus_path()
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
@@ -284,160 +287,7 @@ def edit_entry(data, idx):
     print(f'  Register: {new_register}')
     print(f'  Status: {new_status}' + (' (siap upload)' if new_status == 'ready' else ' (butuh arti dulu)'))
 
-    # Opsi merge dengan entry lain (mis. "sing" #39410 + "ingkang" #29837 → 1 entry)
-    print()
-    merge_choice = questionary.confirm('Merge dengan entry lain? (gabung 2 entries jadi 1)', default=False).ask()
-    if merge_choice:
-        merge_entry(data, idx)
-
     input('\n  Tekan Enter...')
-
-
-def merge_entry(data, current_idx):
-    """Merge current entry dengan entry lain.
-    User SEARCH kata target → pilih dari list → gabung → delete entry target.
-    Tidak perlu hafal entry_id — search by kata.
-    """
-    current_entry = data['words'][current_idx]
-    current_entry_id = current_entry.get('entry_id', current_idx + 1)
-
-    print(f'\n  ─── Merge Entry #{current_entry_id} ───')
-    print(f'  Current: ngoko={current_entry.get("ngoko","")!r} krama={current_entry.get("krama","")!r} arti={current_entry.get("arti","")!r}')
-    print()
-
-    # SEARCH kata target (bukan input angka)
-    search_query = questionary.text('Cari kata target untuk merge (mis. "ingkang"):').ask()
-    if not search_query or not search_query.strip():
-        print('  ⏹ Dibatalkan.')
-        return
-
-    search_lower = search_query.lower().strip()
-
-    # Cari entries yang match
-    matches = []
-    for i, w in enumerate(data['words']):
-        if i == current_idx:
-            continue  # skip diri sendiri
-        ngoko = (w.get('ngoko') or '').lower()
-        krama = (w.get('krama') or '').lower()
-        ki = (w.get('krama_inggil') or '').lower()
-        arti = (w.get('arti') or '').lower()
-        if (search_lower in ngoko or search_lower in krama or
-            search_lower in ki or search_lower in arti):
-            matches.append((i, w))
-
-    if not matches:
-        print(f'  ❌ Tidak ada hasil untuk "{search_query}"')
-        input('  Tekan Enter...')
-        return
-
-    if len(matches) == 1:
-        target_idx = matches[0][0]
-    else:
-        # Tampilkan pilihan
-        print(f'  Ditemukan {len(matches)} entries. Pilih satu:\n')
-        choices = []
-        idx_map = {}
-        for i, (orig_idx, w) in enumerate(matches[:30]):
-            ngoko = (w.get('ngoko') or '').strip()[:25]
-            krama = (w.get('krama') or '').strip()[:20]
-            ki = (w.get('krama_inggil') or '').strip()[:15]
-            arti = (w.get('arti') or '').strip()[:20]
-            eid = w.get('entry_id', '?')
-            label = f'#{eid:>5} {ngoko:25s} → {krama:20s}'
-            if ki:
-                label += f' | ki: {ki}'
-            if arti:
-                label += f' | {arti}'
-            idx_map[label] = orig_idx
-            choices.append(label)
-        choices.append('↩ Batal')
-
-        selected = questionary.select(
-            'Pilih entry target untuk merge:',
-            choices=choices,
-            default=choices[0],
-        ).ask()
-
-        if not selected or 'Batal' in selected:
-            print('  ⏹ Dibatalkan.')
-            return
-
-        target_idx = idx_map.get(selected)
-        if target_idx is None:
-            print('  ❌ Pilihan tidak valid')
-            return
-
-    target_entry = data['words'][target_idx]
-    target_eid = target_entry.get('entry_id', '?')
-    print(f'\n  Target:  entry_id=#{target_eid} ngoko={target_entry.get("ngoko","")!r} krama={target_entry.get("krama","")!r} arti={target_entry.get("arti","")!r}')
-    print()
-
-    # Preview merge result
-    merged_ngoko = current_entry.get('ngoko', '') or target_entry.get('ngoko', '')
-    merged_krama = current_entry.get('krama', '') or target_entry.get('krama', '')
-    merged_ki = current_entry.get('krama_inggil', '') or target_entry.get('krama_inggil', '')
-    merged_arti = current_entry.get('arti', '') or target_entry.get('arti', '')
-
-    # Smart merge: kalau current ngoko kosong tapi target ada ngoko, pakai target ngoko
-    # (mis. current=ingkang ngoko='', target=sing ngoko='sing' → merged ngoko='sing')
-    if not current_entry.get('ngoko', '').strip() and target_entry.get('ngoko', '').strip():
-        merged_ngoko = target_entry['ngoko']
-    # Kalau current ada krama kosong tapi target ada krama, pakai target krama
-    if not current_entry.get('krama', '').strip() and target_entry.get('krama', '').strip():
-        merged_krama = target_entry['krama']
-
-    # Register: priority krama_inggil > krama > ngoko > umum
-    register_order = {'krama_inggil': 0, 'krama': 1, 'ngoko': 2, 'kawi': 3, 'umum': 4}
-    current_reg = current_entry.get('register', 'umum')
-    target_reg = target_entry.get('register', 'umum')
-    merged_register = current_reg if register_order.get(current_reg, 99) < register_order.get(target_reg, 99) else target_reg
-
-    print(f'  ─── Hasil Merge ───')
-    print(f'  ngoko:        {merged_ngoko!r}')
-    print(f'  krama:        {merged_krama!r}')
-    print(f'  krama_inggil: {merged_ki!r}')
-    print(f'  arti:         {merged_arti!r}')
-    print(f'  register:     {merged_register}')
-    print()
-
-    confirm = questionary.confirm('Konfirmasi merge? Entry target akan di-DELETE.', default=False).ask()
-    if not confirm:
-        print('  ⏹ Dibatalkan.')
-        return
-
-    # Apply merge ke current entry
-    current_entry['ngoko'] = merged_ngoko
-    current_entry['krama'] = merged_krama
-    if merged_ki:
-        current_entry['krama_inggil'] = merged_ki
-    elif 'krama_inggil' in current_entry:
-        del current_entry['krama_inggil']
-    current_entry['arti'] = merged_arti
-    current_entry['register'] = merged_register
-    # Combine keterangan (bantu user validasi)
-    current_ket = current_entry.get('keterangan', '')
-    target_ket = target_entry.get('keterangan', '')
-    if target_ket and target_ket not in current_ket:
-        current_entry['keterangan'] = f'{current_ket} | {target_ket}'.strip(' |')
-    # Combine sumber
-    current_sumber = current_entry.get('sumber', '')
-    target_sumber = target_entry.get('sumber', '')
-    if target_sumber and target_sumber not in current_sumber:
-        current_entry['sumber'] = f'{current_sumber} + merge #{target_eid}'
-
-    # Delete entry target
-    del data['words'][target_idx]
-
-    # Re-number entry_id (karena 1 entry dihapus)
-    for i, w in enumerate(data['words'], 1):
-        w['entry_id'] = i
-
-    save_kamus(data)
-    print(f'\n  ✅ Merge sukses!')
-    print(f'  Entry #{current_entry_id} sekarang: ngoko={merged_ngoko!r} krama={merged_krama!r} arti={merged_arti!r}')
-    print(f'  Entry target #{target_eid} di-DELETE.')
-    print(f'  Total entries sekarang: {len(data["words"])}')
 
 
 def browse_list(data, entries_with_idx, title):
@@ -523,11 +373,20 @@ def browse_list(data, entries_with_idx, title):
             search_query = questionary.text('Cari kata di list ini:').ask()
             if search_query:
                 search_lower = search_query.lower().strip()
-                filtered = [(i, e) for i, e in entries_with_idx
-                            if search_lower in (e.get('ngoko', '') or '').lower()
-                            or search_lower in (e.get('krama', '') or '').lower()
-                            or search_lower in (e.get('arti', '') or '').lower()
-                            or search_lower in (e.get('krama_inggil', '') or '').lower()]
+                # Exact match dulu, baru substring (sama seperti search_menu)
+                exact_f = []
+                substr_f = []
+                for i, e in entries_with_idx:
+                    ngoko = (e.get('ngoko', '') or '').lower()
+                    krama = (e.get('krama', '') or '').lower()
+                    ki = (e.get('krama_inggil', '') or '').lower()
+                    arti = (e.get('arti', '') or '').lower()
+                    if ngoko == search_lower or krama == search_lower or ki == search_lower or arti == search_lower:
+                        exact_f.append((i, e))
+                    elif (search_lower in ngoko or search_lower in krama or
+                          search_lower in ki or search_lower in arti):
+                        substr_f.append((i, e))
+                filtered = exact_f + substr_f
                 if filtered:
                     browse_list(data, filtered, f'🔍 Search "{search_query}"')
                 else:
