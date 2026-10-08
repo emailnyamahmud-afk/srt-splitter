@@ -11,15 +11,40 @@ Workflow produksi (3 fase, bersih):
 Mix ini selalu pakai 3 input:
   1. MP4 ori (video, dari yt-dlp)
   2. no_vocals (SFX bersih dari Demucs — MP3 320 kbps, vokal ori sudah dibuang)
-  3. audio_dub.wav (dialog hasil dubbing)
+  3. audio_dub.wav (dialog hasil dubbing dari web app — lihat sumber di bawah)
+
+Sumber audio_dub (web app Dubbing, 2 mode):
+  ┌──────────────────────────────────────────────────────────────────┐
+  │ Mode ON (lama)  → Bahasa Indonesia, cara cepat                  │
+  │   - Generate full durasi langsung (1 klik, selesai)              │
+  │   - Default voice: Dimas (laki-laki) untuk semua cue             │
+  │   - Output: audio-id-dub.wav                                     │
+  │   - Status: SUDAH JALAN                                          │
+  ├──────────────────────────────────────────────────────────────────┤
+  │ SRT editor      → Bahasa Jawa, per cue (masa depan)              │
+  │   - User saat ini harus klik per cue satu-satu                   │
+  │   - TODO: default voice Dimas untuk semua cue otomatis,          │
+  │     suara Siti (perempuan) tetap manual via klik                  │
+  │   - Output: audio-jw-dub.wav                                     │
+  │   - Status: code perlu dibereskan (web app side), bukan di sini  │
+  │   - Kamus Jawa di Supabase, semakin hari semakin lengkap         │
+  └──────────────────────────────────────────────────────────────────┘
+
+Multi-bahasa output (rencana masa depan):
+  Setelah audio-jw-dub.wav ready, ada 3 opsi:
+    A. Multi-track MP4  — 1 file, switch audio di player (DVD-style)
+                          cocok untuk arsip & VLC playback
+    B. File terpisah    — 2 MP4 independent (mp4-id-final + mp4-jw-final)
+                          cocok untuk upload TikTok/IG per bahasa
+    C. Hybrid           — 1 MP4 (default ID) + sidecar wav Jawa
 
 Output: MP4 durasi penuh. Setelah dub selesai, SFX tetap bermain (dub = hening).
 
 Mode manual (DaVinci Resolve):
   1. Tarik mp4 ori ke timeline
-  2. Tarik no_vocals.wav ke timeline
+  2. Tarik no_vocals.mp3 ke timeline
   3. Tarik wav dub (laki + perempuan) ke timeline
-  4. Edit manual: mana suara laki, mana perempuan
+  4. Edit manual: mana suara laki (Dimas), mana perempuan (Siti)
 
 Tips durasi:
   - Full season (2.5 jam): MP4 full + SFX full + dub full → 1 output

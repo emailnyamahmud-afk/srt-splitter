@@ -29,10 +29,26 @@ Output:
   output/{model}/{namafile}/no_vocals.mp3  (SFX bersih, MP3 320 kbps)
   (vocals.wav auto-dihapus setelah separation)
 
-Workflow integrasi (mode ON + Smart Fit + mix):
-  Fase 0: demucs-tui.py → no_vocals.mp3 (SFX bersih)
-  Fase 1: Web app mode ON + Smart Fit → audio-id-dub.wav (dialog dub)
-  Fase 2: mix-tui.py → MP4 + no_vocals.mp3 + audio_dub → mp4-id-final.mp4
+Workflow integrasi (3 fase, bersih):
+  Fase 1: yt-dlp         → download MP4 (video) + audio.wav (terpisah)
+  Fase 2: demucs-tui.py  → split audio.wav → no_vocals.mp3 (MP3 320, SFX bersih)
+                           + vocals.wav (auto-hapus, tidak dipakai)
+  Fase 3: mix-tui.py    → MP4 + no_vocals.mp3 + audio_dub → mp4-id-final.mp4
+
+Sumber audio_dub (web app Dubbing, 2 mode):
+  - Mode ON (lama)  → Bahasa Indonesia, generate full durasi 1 klik,
+                      default voice Dimas, output audio-id-dub.wav
+                      Status: SUDAH JALAN
+  - SRT editor      → Bahasa Jawa, per cue (klik satu-satu)
+                      TODO: default Dimas otomatis, Siti manual per cue
+                      Output: audio-jw-dub.wav
+                      Status: code perlu dibereskan (web app side)
+                      Kamus Jawa di Supabase (progressif)
+
+Multi-bahasa output (rencana masa depan, setelah Jawa ready):
+  A. Multi-track MP4  — 1 file, switch audio di player (DVD-style)
+  B. File terpisah    — 2 MP4 (mp4-id-final + mp4-jw-final)
+  C. Hybrid           — 1 MP4 default ID + sidecar wav Jawa
 """
 
 import os
