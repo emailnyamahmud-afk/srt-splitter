@@ -597,18 +597,14 @@ def main_menu(data):
 
         if 'Statistik' in selected:
             show_stats(data)
-        elif 'Search' in selected:
+        elif 'Search' in selected and 'cari kata' in selected:
             search_menu(data)
-        elif '☁' in selected and 'Upload' in selected:
-            # Upload ke Supabase — check PERTAMA (sebelum 'SIAP UPLOAD' matching)
-            # karena menu upload text-nya mengandung 'SIAP UPLOAD' juga
+        elif 'Upload ke Supabase' in selected:
             upload_to_supabase()
-        elif '🚀' in selected and 'SIAP UPLOAD' in selected:
-            # Browse SIAP UPLOAD (ngoko+krama+arti lengkap)
+        elif 'SIAP UPLOAD' in selected and 'Browse' in selected:
             ready_entries = [(i, w) for i, w in enumerate(data['words']) if w.get('status') == 'ready']
             browse_list(data, ready_entries, f'🚀 Siap Upload ({len(ready_entries)} entri lengkap)')
-        elif '⚠' in selected and 'UMUM' in selected:
-            # Browse register umum — perlu validasi manual (17.812 entries)
+        elif 'register UMUM' in selected:
             umum_entries = [(i, w) for i, w in enumerate(data['words']) if w.get('register', 'umum') == 'umum']
             browse_list(data, umum_entries, f'⚠ Register UMUM ({len(umum_entries)} entries — perlu validasi)')
         elif 'krama mapping' in selected:
@@ -624,7 +620,7 @@ def main_menu(data):
             ).ask()
             if reg_selected and 'Kembali' not in reg_selected:
                 browse_by_register(data, reg_selected)
-        elif '🔗' in selected and 'Merge' in selected:
+        elif 'Merge 2 entries' in selected:
             # Merge 2 entries — LANGSUNG: search kata 1 → search kata 2 → preview → konfirmasi
             print('\n  ═══ MERGE 2 ENTRIES ═══')
             print('  Gabung 2 entries terpisah jadi 1 entry.')
@@ -790,7 +786,7 @@ def main_menu(data):
             print(f'  Entry #{eid2} di-DELETE. Total: {len(data["words"])}')
             print(f'  Sekarang isi arti: menu 📝 Browse BELUM ada arti → search kata → edit')
             input('  Tekan Enter...')
-        elif '🔑' in selected and 'Supabase .env' in selected:
+        elif 'Set Supabase' in selected:
             edit_env_file()
         elif 'Save JSON' in selected:
             save_kamus(data)
