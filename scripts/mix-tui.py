@@ -4,12 +4,13 @@ mix-tui.py — TUI interaktif untuk mix MP4 + no_vocal + audio_dub
 
 Workflow produksi (3 fase, bersih):
   Fase 1: yt-dlp         → download MP4 (video) + audio.wav (terpisah)
-  Fase 2: demucs-tui.py  → split audio.wav → vocals.wav + no_vocals.wav
-  Fase 3: mix-tui.py    → MP4 + no_vocals.wav + audio_dub.wav → mp4-id-final.mp4
+  Fase 2: demucs-tui.py  → split audio.wav → no_vocals.mp3 (MP3 320, SFX bersih)
+                           + vocals.wav (auto-hapus, tidak dipakai)
+  Fase 3: mix-tui.py    → MP4 + no_vocals.mp3 + audio_dub.wav → mp4-id-final.mp4
 
 Mix ini selalu pakai 3 input:
   1. MP4 ori (video, dari yt-dlp)
-  2. no_vocals.wav (SFX bersih, dari Demucs — vokal ori sudah dibuang)
+  2. no_vocals (SFX bersih dari Demucs — MP3 320 kbps, vokal ori sudah dibuang)
   3. audio_dub.wav (dialog hasil dubbing)
 
 Output: MP4 durasi penuh. Setelah dub selesai, SFX tetap bermain (dub = hening).
@@ -153,9 +154,11 @@ def main():
     print(f'  ✓ {mp4}')
     print()
 
-    # Step 2: no_vocals.wav (SFX bersih dari Demucs)
-    print(f'▶ Step 2/{total}: Pilih file no_vocals.wav (SFX bersih dari Demucs)')
-    sfx_wav = select_file('SFX bersih (no_vocals.wav):', ['wav'])
+    # Step 2: no_vocals (SFX bersih dari Demucs)
+    # Demucs output MP3 320 kbps (hemat space ~10x dibanding WAV).
+    # Backward-compatible: baca MP3 (output demucs-tui.py baru) atau WAV (lama).
+    print(f'▶ Step 2/{total}: Pilih file SFX bersih (no_vocals.mp3 / .wav)')
+    sfx_wav = select_file('SFX bersih (no_vocals):', ['mp3', 'wav', 'flac'])
     if not sfx_wav:
         print('Batal.'); sys.exit(0)
     print(f'  ✓ {sfx_wav}')

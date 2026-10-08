@@ -3,7 +3,15 @@
 demucs-tui.py — TUI interaktif untuk Demucs SFX separation
 
 Pisahkan vocals ori (akan dibuang) dari SFX/backsound (akan dipertahankan).
-Hasil: no_vocals.wav (SFX bersih) → mix dengan audio dub dari web app.
+Hasil: no_vocals.mp3 (SFX bersih) → mix dengan audio dub dari web app.
+
+Output format: MP3 320 kbps (hemat space ~10x dibanding WAV).
+  - WAV 16-bit stereo 44.1kHz untuk audio 2 jam ≈ 1.3 GB
+  - MP3 320 kbps untuk audio 2 jam ≈ 140 MB (90% lebih kecil)
+  - Source biasanya sudah lossy (Opus/MP3 dari yt-dlp) → MP3 320 cukup
+  - SFX = musik/efek/ambience (bukan dialog) → ear tidak sensitif seperti vocal
+
+Vocals ori auto-dihapus setelah separation selesai (tidak dipakai untuk dubbing).
 
 Hardware acceleration di M1/M2/M3 (Apple Silicon):
   --device mps  (Metal Performance Shaders, 3-5x lebih cepat dari CPU)
@@ -18,13 +26,13 @@ Usage:
   (pilih file pakai arrow keys, ikuti 6 step)
 
 Output:
-  output/{model}/{namafile}/no_vocals.wav  (SFX bersih, tanpa vocals ori)
-  output/{model}/{namafile}/vocals.wav      (vocals ori, akan dibuang)
+  output/{model}/{namafile}/no_vocals.mp3  (SFX bersih, MP3 320 kbps)
+  (vocals.wav auto-dihapus setelah separation)
 
 Workflow integrasi (mode ON + Smart Fit + mix):
-  Fase 0: demucs-tui.py → no_vocals.wav (SFX bersih)
+  Fase 0: demucs-tui.py → no_vocals.mp3 (SFX bersih)
   Fase 1: Web app mode ON + Smart Fit → audio-id-dub.wav (dialog dub)
-  Fase 2: mix-audio-dub.py --sfx-wav no_vocals.wav --audio-dub audio-id-dub.wav
+  Fase 2: mix-tui.py → MP4 + no_vocals.mp3 + audio_dub → mp4-id-final.mp4
 """
 
 import os
@@ -56,7 +64,7 @@ def print_banner():
     clear_screen()
     print('╔' + '═' * 64 + '╗')
     print('║  🎵 Demucs SFX Separator (TUI Mode)' + ' ' * 25 + '║')
-    print('║  Pisahkan vocals ori dari SFX (musik, efek, ambience)' + '   ' + '║')
+    print('║  Output MP3 320kbps | vocals ori auto-hapus' + ' ' * 18 + '║')
     print('╚' + '═' * 64 + '╝')
     print()
 
@@ -250,7 +258,9 @@ def main():
     print()
 
     # Tampilkan command yang akan dijalankan
-    cmd_args = ['-n', model_name, '--device', device_name, '-o', output_dir]
+    # Format output: MP3 320 kbps (hemat space ~10x dibanding WAV)
+    cmd_args = ['-n', model_name, '--device', device_name, '-o', output_dir,
+                '--mp3', '--mp3-bitrate', '320']
     if use_two_stems:
         cmd_args.extend(['--two-stems', 'vocals'])
     cmd_args.append(input_file)
@@ -286,42 +296,60 @@ def main():
         print()
         # Cek output file
         base_name = Path(input_file).stem
-        # Demucs output: {output_dir}/{model}/{base_name}/no_vocals.wav
+        # Demucs output: {output_dir}/{model}/{base_name}/no_vocals.mp3
         model_output_dir = Path(output_dir) / model_name / base_name
         if use_two_stems:
-            no_vocals = model_output_dir / 'no_vocals.wav'
-            vocals = model_output_dir / 'vocals.wav'
+            no_vocals = model_output_dir / 'no_vocals.mp3'
+            vocals_wav = model_output_dir / 'vocals.wav'
+            vocals_mp3 = model_output_dir / 'vocals.mp3'
             if no_vocals.exists():
                 size_mb = no_vocals.stat().st_size / 1024 / 1024
                 print(f'📁 Output:')
-                print(f'   SFX (no_vocals.wav): {no_vocals} ({size_mb:.1f} MB)')
-                print(f'   → Pakai ini untuk mix-audio-dub.py --sfx-wav')
-            if vocals.exists():
-                size_mb = vocals.stat().st_size / 1024 / 1024
-                print(f'   Vocals ori (vocals.wav): {vocals} ({size_mb:.1f} MB)')
-                print(f'   → Bisa dibuang (tidak dipakai untuk dubbing)')
+                print(f'   SFX (no_vocals.mp3): {no_vocals} ({size_mb:.1f} MB) — MP3 320 kbps')
+                print(f'   → Pakai ini untuk mix-tui.py (pilih file SFX)')
+            # Auto-hapus vocals (tidak dipakai untuk dubbing)
+            deleted = []
+            for v in (vocals_wav, vocals_mp3):
+                if v.exists():
+                    try:
+                        v_size = v.stat().st_size / 1024 / 1024
+                        v.unlink()
+                        deleted.append(f'{v.name} ({v_size:.1f} MB)')
+                    except OSError as e:
+                        print(f'   ⚠ Gagal hapus {v.name}: {e}')
+            if deleted:
+                print(f'   🗑 Auto-hapus vocals ori: {" + ".join(deleted)}')
         else:
-            # four-stems
+            # four-stems: tetap MP3 output (Demucs --mp3 flag convert semua stems)
             stems = ['drums', 'bass', 'other', 'vocals']
-            print(f'📁 Output (4 stems):')
+            print(f'📁 Output (4 stems, MP3 320):')
             for stem in stems:
-                stem_path = model_output_dir / f'{stem}.wav'
+                stem_path = model_output_dir / f'{stem}.mp3'
                 if stem_path.exists():
                     size_mb = stem_path.stat().st_size / 1024 / 1024
-                    print(f'   {stem}.wav: {stem_path} ({size_mb:.1f} MB)')
+                    print(f'   {stem}.mp3: {stem_path} ({size_mb:.1f} MB)')
+            # Auto-hapus vocals.mp3 di mode four-stems (tidak dipakai)
+            vocals_mp3 = model_output_dir / 'vocals.mp3'
+            if vocals_mp3.exists():
+                try:
+                    v_size = vocals_mp3.stat().st_size / 1024 / 1024
+                    vocals_mp3.unlink()
+                    print(f'   🗑 Auto-hapus vocals.mp3 ({v_size:.1f} MB)')
+                except OSError as e:
+                    print(f'   ⚠ Gagal hapus vocals.mp3: {e}')
 
         print()
         print('═' * 64)
         print('🎬 Langkah berikutnya (workflow mode ON + Smart Fit):')
         print()
         print('   1. Web app: mode ON + Smart Fit → generate audio-id-dub.wav')
-        print('   2. Python mix:')
+        print('   2. Python mix (TUI):')
         if use_two_stems and no_vocals.exists():
-            print(f'      python3 mix-audio-dub.py \\')
-            print(f'        --mp4 {input_file} \\')
-            print(f'        --audio-dub audio-id-dub.wav \\')
-            print(f'        --sfx-wav {no_vocals} \\')
-            print(f'        --output mp4-id-final.mp4')
+            print(f'      python3 mix-tui.py')
+            print(f'        → MP4: {input_file}')
+            print(f'        → SFX: {no_vocals}')
+            print(f'        → Dub: audio-id-dub.wav')
+            print(f'        → Output: mp4-id-final.mp4')
         print('═' * 64)
     else:
         print('═' * 64)
