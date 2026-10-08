@@ -352,3 +352,99 @@ User MacBook folder: `~/Dubbing/`
 - **8 Okt 2026, 21:30 WIB**: arti (Indonesia) jadi alias source lookup (saya/aku/gue/ane → nyong/kula)
 - **8 Okt 2026, 22:00 WIB**: UI panel Top 100 Unknown Words + badge per cue
 - **Next update**: Setelah user selesai isi 100-200 entries kamus + test workflow end-to-end
+
+---
+
+## 🎉 MILESTONE: Kamus TUI + Aksara + 5k Cue Fix (8 Okt 2026 malam, sesi panjang)
+
+### Commits (16 commits dalam 1 sesi: 0b94ed1 → 3586fad)
+
+| Commit | Deskripsi |
+|---|---|
+| `0b94ed1` | Revert auto-merge script (AI ceroboh, merge tanpa baca definisi) |
+| `6a25cba` | Hapus 159 krama_inggil self-reference (ngoko == krama_inggil) |
+| `8f3fa78` | Hapus SEMUA krama_inggil (parser tidak reliable) → REVERT |
+| `e883ff5` | Restore krama_inggil (95 entries) — datanya BENAR, cuma TERBALIK |
+| `3e8ee46` | Fix 5 entries krama_inggil TERBALIK |
+| `8158bd4` | Fix SEMUA 90 krama_inggil TERBALIK — ki→ngoko, krama tetap |
+| `70c5eac` | Merge pakai SEARCH kata, bukan input entry_id |
+| `7286b0a` | Fix teks menu merge — hapus "by entry_id" |
+| `f312d1d` | Merge sederhana — search kata 1 → search kata 2 → preview |
+| `5a0c1fe` | Search merge — exact match dulu |
+| `1e8efeb` | SEMUA search — exact match dulu + hapus search di keterangan |
+| `7eb30f6` | Audit TUI — 5 bug fix (status recompute, merge duplikat, exact match) |
+| `d06165d` | Menu matching — hapus emoji dependency, pakai keyword unik |
+| `b384aa7` | Merge — gabung aksara juga |
+| `62b7416` | Merge — gabung sinonim sebagai alias (comma) |
+| `bf07803` | Aksara Jawa jadi source alias — database baca aksara |
+| `c888744` | Audit: hapus limit 50000 — database = ground of truth |
+| `3586fad` | Fix 5k cue hanya 1k terbaca — Supabase REST API limit |
+
+### Yang sudah jadi
+
+1. **krama_inggil TERBALIK fix** — SEMUA 90 entries dibalik:
+   - Parser {{ki}} tag salah: title ditaruh di ki field, padahal title = ngoko/krama
+   - ki field → pindah ke ngoko field, krama tetap, hapus ki
+   - User context: "dari akar tanya (id), takon (ngoko), taken (krama)"
+   - Sekarang: 0 krama_inggil entries (semua jadi ngoko+krama yang benar)
+
+2. **TUI merge** — search kata → pilih → preview → konfirmasi:
+   - Smart merge: kalau entry2 ngoko == entry1 krama → krama word
+   - Gabung sinonim sebagai alias (comma): "sing, kang" bukan ambil "sing"
+   - Gabung aksara: "ꦱꦶꦁ, ꦲꦶꦁꦏꦁ" (keduanya disimpan)
+   - Gabung keterangan: "ket1 | ket2"
+   - Tidak perlu hafal entry_id — search by kata
+
+3. **TUI audit** — 5 bug fix:
+   - save_kamus: selalu recompute status (tidak skip yang sudah ada)
+   - Hapus merge_entry duplikat (merge hanya via menu)
+   - Semua search: exact match dulu, baru substring
+   - Menu matching: keyword unik (tidak bergantung emoji)
+   - Register bisa di-edit (dropdown)
+
+4. **Aksara Jawa support**:
+   - User: "database membaca sumber. urusan web mau ngolah jadi ngoko, krama,
+     bahkan ke indonesia itu urusan database"
+   - Filosofi: Google = translate cerdas (kalimat), database = translate
+     deterministik (kata by kata, baku sesuai Wiktionary)
+   - Aksara jadi source alias di: convertRegister, isWordInKamus, suggestRegister
+   - Source "ꦲꦏꦸ" → convert ke ngoko → "aku", ke krama → "kula"
+
+5. **Database audit** — 10 cek:
+   - SEMUA 5 field jadi source alias (ngoko, krama, krama_inggil, arti, aksara)
+   - Output = kata pertama (ngokoVariants[0] / kramaVariants[0])
+   - Tidak ada write ke kamus (read-only)
+   - Hapus limit 50000 — database = ground of truth
+   - Unknown Words Panel ada (top 100 + badge per cue)
+
+6. **5k cue bug fix**:
+   - Bug 1: insert 5000 cues sekaligus → Supabase reject >1000 rows
+   - Fix: batch insert 500 per request
+   - Bug 2: select cues tidak ada .limit() → default 1000 rows
+   - Fix: .limit(100000)
+   - User verify: "5100 cue sudah terbaca di project 1" ✓
+
+### Filosofi yang dipelajari (hard way)
+
+1. **Jangan hapus data yang "salah"** — fix/biarkan untuk user validasi
+   (User: "BUKAN SALAH, HANYA TERBALIK. KENAPA DIHAPUS?")
+
+2. **AI tidak bisa auto-merge** tanpa memahami konteks definisi
+   (User: "JANGAN SEMBARANGAN ASAL HAPUS DAN ASAL MERG")
+
+3. **Database = ground of truth** — jangan filter/limit dari web app
+   (User: "jangan ada code yg menganggu database, atau filter database")
+
+4. **Web app harus manfaatkan SEMUA data** — ngoko, krama, krama_inggil,
+   arti (Indonesia), aksara Jawa. Bukan cuma ngoko+krama.
+   (User: "website terlalu BODOH, tidak memanfaatkan database")
+
+5. **Merge harus search by kata**, bukan input angka
+   (User: "lha caranya user tau id gimana? ada ribuan id")
+
+6. **Search exact match dulu** — supaya "sing" tidak tenggelam di 112 hasil
+   (User: "GAK MUNCUL, SYSTEM MERGE ANEH")
+
+7. **Gabung sinonim sebagai alias** (comma), bukan ambil pertama
+   (User: "maslah baru, kalau ada sinonim, harus merge lagi")
+

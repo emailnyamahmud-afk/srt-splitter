@@ -1030,3 +1030,82 @@ Stage Summary:
 - User verified: panel muncul dengan 100 unique words, top kata sing ×125
 - Pipeline end-to-end siap: edit kamus bertahap → upload → test di Editor → iterasi
 
+
+---
+Task ID: 20
+Agent: main
+Task: Kamus TUI audit + krama_inggil fix + aksara support + 5k cue bug fix
+
+User requests (8 Okt 2026, sesi panjang malam):
+
+1. Register ngoko/krama juga tidak 100% valid — banyak register ngoko ternyata krama
+2. Tambah entry_id di JSON supaya user bisa referensi by number
+3. TUI merge fitur — gabung 2 entries terpisah jadi 1
+4. Register bisa di-edit di TUI (dropdown)
+5. krama_inggil parser TERBALIK — ki field sebenarnya ngoko, krama field sudah benar
+6. SEMUA 90 krama_inggil dibalik (ki→ngoko, krama tetap, hapus ki)
+7. Merge pakai SEARCH kata, bukan input entry_id
+8. Search exact match dulu, baru substring (supaya "sing" tidak tenggelam)
+9. Merge gabung sinonim sebagai alias (comma), bukan ambil pertama
+10. Merge gabung aksara juga, jangan hilangkan
+11. Aksara Jawa jadi source alias — database baca aksara, convert ke ngoko/krama/ID
+12. Hapus limit 50000 — database = ground of truth, jangan filter
+13. 5100 cue hanya 1000 terbaca — Supabase REST API limit 1000 rows
+
+Work Log:
+
+A. krama_inggil TERBALIK (commit 8158bd4):
+   - Parser {{ki}} tag salah: title ditaruh di ki field, padahal title = ngoko/krama word
+   - Contoh: krama='criyos' ki='kandha' → seharusnya ngoko='kandha' krama='criyos'
+   - User: 'BUKAN SALAH, HANYA TERBALIK. KENAPA DIHAPUS?'
+   - Fix: SEMUA 90 entries ki→ngoko, krama tetap, hapus ki
+   - User context: 'krama=dipun-takèkaken ki=ditakokaké = dari akar tanya (id),
+     takon (ngoko), taken (krama). Tidak ada krama_inggil untuk konsep tanya.'
+
+B. TUI audit (commit 7eb30f6):
+   - 5 bug: save_kamus tidak recompute status, DUA versi merge, browse_list search
+     tidak exact match, docstring outdated
+   - Fix: recompute status setiap save, hapus merge_entry duplikat, exact match
+     semua search, update docstring
+
+C. Merge fitur (commits 70c5eac → 62b7416):
+   - Search kata 1 → search kata 2 → preview → konfirmasi
+   - Smart merge: kalau entry2 ngoko == entry1 krama → krama word
+   - Gabung sinonim sebagai alias (comma): 'sing, kang' bukan ambil 'sing' saja
+   - Gabung aksara: 'ꦱꦶꦁ, ꦲꦶꦁꦏꦁ' (keduanya disimpan)
+   - Gabung keterangan: 'ket1 | ket2' (keduanya disimpan)
+   - Hapus emoji dependency di menu matching (pakai keyword unik)
+
+D. Aksara Jawa support (commit bf07803):
+   - User: 'database membaca sumber. urusan web mau ngolah jadi ngoko, krama,
+     bahkan ke indonesia itu urusan database. website terlalu BODOH tidak
+     memanfaatkan database.'
+   - Filosofi: Google Translate = translate cerdas (kalimat), database = translate
+     deterministik (kata by kata, baku sesuai Wiktionary)
+   - Aksara jadi source alias di: convertRegister, isWordInKamus, suggestRegister,
+     getTopUnknownWords
+   - Source 'ꦲꦏꦸ' → convert ke ngoko → 'aku', ke krama → 'kula'
+
+E. Database audit (commit c888744):
+   - 10 cek: SEMUA pass kecuali limit 50000
+   - Hapus limit — database = ground of truth, baca semua tanpa filter
+   - Tidak ada write ke kamus dari web (read-only)
+
+F. 5k cue bug fix (commit 3586fad):
+   - User: 'saya attached srt jw harusnya 5k cue, tapi kenapa cuma terbaca 1k cue?'
+   - Bug 1: insert 5000 cues sekaligus → Supabase REST API reject >1000 rows
+     Fix: batch insert 500 per request
+   - Bug 2: select cues tidak ada .limit() → Supabase default = 1000 rows
+     Fix: .limit(100000)
+   - User verify: '5100 cue sudah terbaca di project 1, dan di DB juga muncul'
+
+Stage Summary:
+- krama_inggil: 254 → 159 hapus (self-ref) → 95 restore → 90 dibalik → 0 (semua jadi ngoko+krama benar)
+- TUI merge: search kata → pilih → preview → konfirmasi (gabung alias + aksara + keterangan)
+- TUI search: exact match dulu, baru substring (tidak tenggelam di noise)
+- TUI audit: 5 bug fix (status recompute, merge duplikat, search exact, docstring)
+- Aksara Jawa: jadi source alias di convertRegister + isWordInKamus + suggestRegister
+- Database audit: 10 cek pass, hapus limit, read-only kamus
+- 5k cue: batch insert 500 + limit 100000 → 5100 cue sukses
+- Commits: 0b94ed1 → 3586fad (16 commits dalam 1 sesi)
+
