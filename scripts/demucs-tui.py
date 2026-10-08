@@ -12,6 +12,7 @@ Output format: MP3 320 kbps (hemat space ~10x dibanding WAV).
   - SFX = musik/efek/ambience (bukan dialog) → ear tidak sensitif seperti vocal
 
 Vocals ori auto-dihapus setelah separation selesai (tidak dipakai untuk dubbing).
+Demucs --mp3 flag menggantikan WAV dengan MP3 (bukan menambah), jadi output hanya .mp3.
 
 Hardware acceleration di M1/M2/M3 (Apple Silicon):
   --device mps  (Metal Performance Shaders, 3-5x lebih cepat dari CPU)
@@ -27,12 +28,12 @@ Usage:
 
 Output:
   output/{model}/{namafile}/no_vocals.mp3  (SFX bersih, MP3 320 kbps)
-  (vocals.wav auto-dihapus setelah separation)
+  (vocals.mp3 auto-dihapus setelah separation — tidak dipakai untuk dubbing)
 
 Workflow integrasi (3 fase, bersih):
   Fase 1: yt-dlp         → download MP4 (video) + audio.wav (terpisah)
   Fase 2: demucs-tui.py  → split audio.wav → no_vocals.mp3 (MP3 320, SFX bersih)
-                           + vocals.wav (auto-hapus, tidak dipakai)
+                           + vocals.mp3 (auto-hapus, tidak dipakai)
   Fase 3: mix-tui.py    → MP4 + no_vocals.mp3 + audio_dub → mp4-id-final.mp4
 
 Sumber audio_dub (web app Dubbing, 2 mode):
@@ -312,31 +313,27 @@ def main():
         print()
         # Cek output file
         base_name = Path(input_file).stem
-        # Demucs output: {output_dir}/{model}/{base_name}/no_vocals.mp3
+        # Demucs output dengan --mp3: hanya .mp3 files (WAV diganti MP3, bukan ditambah)
+        # Output path: {output_dir}/{model}/{base_name}/no_vocals.mp3
         model_output_dir = Path(output_dir) / model_name / base_name
         if use_two_stems:
             no_vocals = model_output_dir / 'no_vocals.mp3'
-            vocals_wav = model_output_dir / 'vocals.wav'
             vocals_mp3 = model_output_dir / 'vocals.mp3'
             if no_vocals.exists():
                 size_mb = no_vocals.stat().st_size / 1024 / 1024
                 print(f'📁 Output:')
                 print(f'   SFX (no_vocals.mp3): {no_vocals} ({size_mb:.1f} MB) — MP3 320 kbps')
                 print(f'   → Pakai ini untuk mix-tui.py (pilih file SFX)')
-            # Auto-hapus vocals (tidak dipakai untuk dubbing)
-            deleted = []
-            for v in (vocals_wav, vocals_mp3):
-                if v.exists():
-                    try:
-                        v_size = v.stat().st_size / 1024 / 1024
-                        v.unlink()
-                        deleted.append(f'{v.name} ({v_size:.1f} MB)')
-                    except OSError as e:
-                        print(f'   ⚠ Gagal hapus {v.name}: {e}')
-            if deleted:
-                print(f'   🗑 Auto-hapus vocals ori: {" + ".join(deleted)}')
+            # Auto-hapus vocals.mp3 (tidak dipakai untuk dubbing)
+            if vocals_mp3.exists():
+                try:
+                    v_size = vocals_mp3.stat().st_size / 1024 / 1024
+                    vocals_mp3.unlink()
+                    print(f'   🗑 Auto-hapus vocals.mp3 ({v_size:.1f} MB)')
+                except OSError as e:
+                    print(f'   ⚠ Gagal hapus vocals.mp3: {e}')
         else:
-            # four-stems: tetap MP3 output (Demucs --mp3 flag convert semua stems)
+            # four-stems: --mp3 flag convert semua stems jadi .mp3
             stems = ['drums', 'bass', 'other', 'vocals']
             print(f'📁 Output (4 stems, MP3 320):')
             for stem in stems:
