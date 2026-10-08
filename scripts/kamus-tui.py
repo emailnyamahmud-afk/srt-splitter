@@ -294,8 +294,9 @@ def edit_entry(data, idx):
 
 
 def merge_entry(data, current_idx):
-    """Merge current entry dengan entry lain berdasarkan entry_id.
-    User input entry_id target → gabung ngoko/krama/arti → delete entry target.
+    """Merge current entry dengan entry lain.
+    User SEARCH kata target → pilih dari list → gabung → delete entry target.
+    Tidak perlu hafal entry_id — search by kata.
     """
     current_entry = data['words'][current_idx]
     current_entry_id = current_entry.get('entry_id', current_idx + 1)
@@ -304,34 +305,72 @@ def merge_entry(data, current_idx):
     print(f'  Current: ngoko={current_entry.get("ngoko","")!r} krama={current_entry.get("krama","")!r} arti={current_entry.get("arti","")!r}')
     print()
 
-    target_id_str = questionary.text('Masukkan entry_id target (mis. 29837 untuk ingkang):').ask()
-    if not target_id_str or not target_id_str.strip():
+    # SEARCH kata target (bukan input angka)
+    search_query = questionary.text('Cari kata target untuk merge (mis. "ingkang"):').ask()
+    if not search_query or not search_query.strip():
         print('  ⏹ Dibatalkan.')
         return
 
-    try:
-        target_id = int(target_id_str.strip())
-    except ValueError:
-        print(f'  ❌ entry_id harus angka, bukan "{target_id_str}"')
-        return
+    search_lower = search_query.lower().strip()
 
-    # Cari entry target berdasarkan entry_id
-    target_idx = None
+    # Cari entries yang match
+    matches = []
     for i, w in enumerate(data['words']):
-        if w.get('entry_id') == target_id:
-            target_idx = i
-            break
+        if i == current_idx:
+            continue  # skip diri sendiri
+        ngoko = (w.get('ngoko') or '').lower()
+        krama = (w.get('krama') or '').lower()
+        ki = (w.get('krama_inggil') or '').lower()
+        arti = (w.get('arti') or '').lower()
+        if (search_lower in ngoko or search_lower in krama or
+            search_lower in ki or search_lower in arti):
+            matches.append((i, w))
 
-    if target_idx is None:
-        print(f'  ❌ entry_id #{target_id} tidak ditemukan')
+    if not matches:
+        print(f'  ❌ Tidak ada hasil untuk "{search_query}"')
+        input('  Tekan Enter...')
         return
 
-    if target_idx == current_idx:
-        print(f'  ❌ Tidak bisa merge dengan diri sendiri')
-        return
+    if len(matches) == 1:
+        target_idx = matches[0][0]
+    else:
+        # Tampilkan pilihan
+        print(f'  Ditemukan {len(matches)} entries. Pilih satu:\n')
+        choices = []
+        idx_map = {}
+        for i, (orig_idx, w) in enumerate(matches[:30]):
+            ngoko = (w.get('ngoko') or '').strip()[:25]
+            krama = (w.get('krama') or '').strip()[:20]
+            ki = (w.get('krama_inggil') or '').strip()[:15]
+            arti = (w.get('arti') or '').strip()[:20]
+            eid = w.get('entry_id', '?')
+            label = f'#{eid:>5} {ngoko:25s} → {krama:20s}'
+            if ki:
+                label += f' | ki: {ki}'
+            if arti:
+                label += f' | {arti}'
+            idx_map[label] = orig_idx
+            choices.append(label)
+        choices.append('↩ Batal')
+
+        selected = questionary.select(
+            'Pilih entry target untuk merge:',
+            choices=choices,
+            default=choices[0],
+        ).ask()
+
+        if not selected or 'Batal' in selected:
+            print('  ⏹ Dibatalkan.')
+            return
+
+        target_idx = idx_map.get(selected)
+        if target_idx is None:
+            print('  ❌ Pilihan tidak valid')
+            return
 
     target_entry = data['words'][target_idx]
-    print(f'\n  Target:  entry_id=#{target_id} ngoko={target_entry.get("ngoko","")!r} krama={target_entry.get("krama","")!r} arti={target_entry.get("arti","")!r}')
+    target_eid = target_entry.get('entry_id', '?')
+    print(f'\n  Target:  entry_id=#{target_eid} ngoko={target_entry.get("ngoko","")!r} krama={target_entry.get("krama","")!r} arti={target_entry.get("arti","")!r}')
     print()
 
     # Preview merge result
@@ -385,7 +424,7 @@ def merge_entry(data, current_idx):
     current_sumber = current_entry.get('sumber', '')
     target_sumber = target_entry.get('sumber', '')
     if target_sumber and target_sumber not in current_sumber:
-        current_entry['sumber'] = f'{current_sumber} + merge #{target_id}'
+        current_entry['sumber'] = f'{current_sumber} + merge #{target_eid}'
 
     # Delete entry target
     del data['words'][target_idx]
@@ -397,7 +436,7 @@ def merge_entry(data, current_idx):
     save_kamus(data)
     print(f'\n  ✅ Merge sukses!')
     print(f'  Entry #{current_entry_id} sekarang: ngoko={merged_ngoko!r} krama={merged_krama!r} arti={merged_arti!r}')
-    print(f'  Entry target #{target_id} di-DELETE.')
+    print(f'  Entry target #{target_eid} di-DELETE.')
     print(f'  Total entries sekarang: {len(data["words"])}')
 
 
@@ -725,28 +764,36 @@ def main_menu(data):
             if reg_selected and 'Kembali' not in reg_selected:
                 browse_by_register(data, reg_selected)
         elif '🔗' in selected and 'Merge' in selected:
-            # Merge 2 entries by entry_id
-            merge_id_str = questionary.text('Entry ID entry pertama (mis. 39410 untuk sing):').ask()
-            if not merge_id_str or not merge_id_str.strip():
+            # Merge 2 entries — search kata, bukan input angka
+            search_query = questionary.text('Cari kata entry pertama (mis. "sing"):').ask()
+            if not search_query or not search_query.strip():
                 continue
-            try:
-                merge_id = int(merge_id_str.strip())
-            except ValueError:
-                print(f'  ❌ entry_id harus angka')
+            search_lower = search_query.lower().strip()
+            matches = [(i, w) for i, w in enumerate(data['words'])
+                       if search_lower in (w.get('ngoko') or '').lower()
+                       or search_lower in (w.get('krama') or '').lower()
+                       or search_lower in (w.get('arti') or '').lower()]
+            if not matches:
+                print(f'  ❌ Tidak ada hasil untuk "{search_query}"')
                 input('  Tekan Enter...')
                 continue
-            # Cari index di data['words']
-            merge_idx = None
-            for i, w in enumerate(data['words']):
-                if w.get('entry_id') == merge_id:
-                    merge_idx = i
-                    break
-            if merge_idx is None:
-                print(f'  ❌ entry_id #{merge_id} tidak ditemukan')
-                input('  Tekan Enter...')
+            # Pilih dari hasil search
+            idx_map = {}
+            choices = []
+            for orig_idx, w in matches[:30]:
+                ngoko = (w.get('ngoko') or '').strip()[:25]
+                krama = (w.get('krama') or '').strip()[:20]
+                eid = w.get('entry_id', '?')
+                label = f'#{eid:>5} {ngoko:25s} → {krama:20s}'
+                idx_map[label] = orig_idx
+                choices.append(label)
+            choices.append('↩ Batal')
+            selected2 = questionary.select('Pilih entry pertama:', choices=choices, default=choices[0]).ask()
+            if not selected2 or 'Batal' in selected2:
                 continue
-            # Edit entry ini (dengan opsi merge di akhir)
-            edit_entry(data, merge_idx)
+            merge_idx = idx_map.get(selected2)
+            if merge_idx is not None:
+                edit_entry(data, merge_idx)
         elif '🔑' in selected and 'Supabase .env' in selected:
             edit_env_file()
         elif 'Save JSON' in selected:
