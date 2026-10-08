@@ -5,6 +5,8 @@ Aplikasi web untuk split SRT, translate subtitle, dan **dubbing Mandarin → Jaw
 **Live:** https://srt-splitter.vercel.app/
 **Source:** https://github.com/emailnyamahud-afk/srt-splitter
 
+> **🤖 Untuk AI agent:** Baca [`AGENTS.md`](AGENTS.md) + [`PROJECT_RULES.md`](PROJECT_RULES.md) di awal setiap session. Berisi status pipeline + 12 aturan project-specific (workflow, docs, marker, kode).
+
 > **📖 Visi Project:** Bukan cuma dubbing Mandarin → Jawa. Ini prototype untuk **digitalisasi bahasa daerah Indonesia di era AI** (700 bahasa, 169 terancam punah). Lihat [`docs/PROJECT_VISION.md`](docs/PROJECT_VISION.md) untuk konteks lengkap + roadmap 2 tahun.
 
 ---
