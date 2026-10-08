@@ -112,17 +112,18 @@ Setelah commit + push, wajib cek `git status -sb` lagi konfirmasi `## main` (cle
 ### R-14 — User download file via curl, bukan git pull
 User di MacBook pakai `curl` untuk download individual file dari GitHub raw URL, BUKAN `git pull`. Folder `~/Dubbing/` di MacBook bukan git repo, cuma working folder.
 
-Setiap selesai commit + push, AI WAJIB kasih command curl ke user, format:
-```bash
-cd ~/Dubbing
-curl -L -o <filename> "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/<path>?v=N"
+Setiap selesai commit + push, AI WAJIB kasih **raw URL** ke user, format:
+```
+https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/<path>?v=N
 ```
 
+Jika user minta link, tampilkan raw URL mentah (bukan command curl). User yang decide mau `curl` atau buka di browser.
+
 Keterangan:
-- `<filename>` = nama file lokal di MacBook (mis. `demucs-tui.py`)
-- `<path>` = path file di repo (mis. `scripts/demucs-tui.py`)
-- `?v=N` = cache buster, increment setiap update (v=1, v=2, v=3, ...) supaya curl gak ambil dari browser/ISP cache
+- `<path>` = path file di repo (mis. `scripts/demucs-tui.py`, `PROJECT_RULES.md`)
+- `?v=N` = cache buster, increment setiap update (v=1, v=2, v=3, ...) supaya gak ambil dari cache
 - Jangan pernah suruh user `git pull origin main` — itu gak relevant di setup MacBook
+- Jangan format sebagai `curl -L -o ...` jika user hanya minta "link" — tampilkan URL mentah saja
 
 ### R-15 — Catat ke PROJECT_RULES, jangan cuma bilang "aku catat"
 Kalau AI bilang "aku catat note" / "note untuk diriku" / "next time aku inget" — WAJIB langsung tulis ke `PROJECT_RULES.md` atau `AGENTS.md` di sesi yang sama. Kalau cuma diucapkan tapi gak ditulis, AI akan halu di session berikutnya (user ngulang-ngulang instruksi 1000x).
