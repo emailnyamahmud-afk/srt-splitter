@@ -1,31 +1,22 @@
 #!/usr/bin/env python3
 """
-mix-tui.py — TUI interaktif untuk mix SFX + audio dub + MP4
+mix-tui.py — TUI interaktif untuk mix MP4 + no_vocal + audio_dub
 
-Dua mode operasi (dipilih di Step 0):
-  Mode A — MP4 dengan audio:  SFX = audio dari MP4 ori (vokal ori tetap ada)
-          Pakai kalau sumber cuma MP4 (belum jalankan Demucs).
-          Input : MP4 + audio_dub
-          Step  : 5 (mp4 → dub → ducking → output → konfirmasi)
+Workflow produksi (3 fase, bersih):
+  Fase 1: yt-dlp         → download MP4 (video) + audio.wav (terpisah)
+  Fase 2: demucs-tui.py  → split audio.wav → vocals.wav + no_vocals.wav
+  Fase 3: mix-tui.py    → MP4 + no_vocals.wav + audio_dub.wav → mp4-id-final.mp4
 
-  Mode B — Sumber terpisah:   SFX = no_vocal.wav (clean, hasil Demucs)
-          Pakai kalau sudah ada no_vocals.wav dari Demucs.
-          Input : MP4 + no_vocal.wav + audio_dub
-          Step  : 6 (mp4 → no_vocal → dub → ducking → output → konfirmasi)
+Mix ini selalu pakai 3 input:
+  1. MP4 ori (video, dari yt-dlp)
+  2. no_vocals.wav (SFX bersih, dari Demucs — vokal ori sudah dibuang)
+  3. audio_dub.wav (dialog hasil dubbing)
 
-Workflow 3 fase (mode cepat, Mode B):
-  Fase 0: demucs-tui.py → no_vocals.wav (SFX bersih)
-  Fase 1: Web app mode ON + Smart Fit → audio-id-dub.wav (dialog)
-  Fase 2: mix-tui.py → mp4-id-final.mp4 (video ori + SFX + dub)
-
-Workflow 2 fase (Mode A, tanpa Demucs):
-  Fase 1: Web app mode ON + Smart Fit → audio-id-dub.wav (dialog)
-  Fase 2: mix-tui.py → mp4-id-final.mp4 (video ori + audio ori + dub)
-  ⚠ Audio ori (vokal) tetap terdengar sebagai SFX. Untuk hasil bersih, pakai Mode B.
+Output: MP4 durasi penuh. Setelah dub selesai, SFX tetap bermain (dub = hening).
 
 Mode manual (DaVinci Resolve):
   1. Tarik mp4 ori ke timeline
-  2. Tarik wav SFX (no_vocals.wav) ke timeline (Mode B)
+  2. Tarik no_vocals.wav ke timeline
   3. Tarik wav dub (laki + perempuan) ke timeline
   4. Edit manual: mana suara laki, mana perempuan
 
@@ -60,8 +51,8 @@ def clear_screen():
 def print_banner():
     clear_screen()
     print('╔' + '═' * 64 + '╗')
-    print('║  🎬 Mix Audio Dub + SFX + MP4 (TUI Mode)' + ' ' * 23 + '║')
-    print('║  Mode A: MP4 dgn audio | Mode B: Sumber terpisah' + ' ' * 13 + '║')
+    print('║  🎬 Mix MP4 + No-Vocal SFX + Audio Dub (TUI Mode)' + ' ' * 13 + '║')
+    print('║  Workflow bersih: yt-dlp → Demucs → mix → final MP4' + ' ' * 11 + '║')
     print('╚' + '═' * 64 + '╝')
     print()
 
@@ -146,146 +137,74 @@ def prompt_output(default_output='mp4-id-final.mp4'):
 def main():
     print_banner()
 
-    print('📋 Mode: Mix cepat (TUI) — video + SFX + dub dengan ducking')
+    print('📋 Mode: Mix cepat (TUI) — MP4 + SFX no-vocal + dub dengan ducking')
     print('   Mode manual (DaVinci): tarik file ke timeline, edit sendiri')
     print()
     print('   Navigasi: ↑↓ arrow keys, Enter konfirmasi, q batal')
     print()
 
-    # Step 0: Pilih mode
-    print('▶ Step 0: Pilih mode mix')
-    mode_choices = [
-        'Mode B: Sumber terpisah (MP4 + no_vocal + dub) — clean, hasil Demucs — REKOMENDASI',
-        'Mode A: MP4 dengan audio (SFX dari MP4 ori) — quick, vokal ori tetap ada',
-    ]
-    mode_choice = questionary.select('Mode mix:', choices=mode_choices, default=mode_choices[0]).ask()
-    if not mode_choice:
-        print('Batal.'); sys.exit(0)
+    total = 6
 
-    is_mode_b = 'Mode B' in mode_choice
-    mode_label = 'Mode B (sumber terpisah)' if is_mode_b else 'Mode A (MP4 dengan audio)'
-    print(f'  ✓ {mode_label}')
+    # Step 1: MP4 ori (video)
+    print(f'▶ Step 1/{total}: Pilih file MP4 ori (video)')
+    mp4 = select_file('MP4 ori (mis. mp4-ori-full.mp4):', ['mp4'])
+    if not mp4:
+        print('Batal.'); sys.exit(0)
+    print(f'  ✓ {mp4}')
     print()
 
-    # Shared state
-    mp4 = None
-    sfx_wav = None  # None in Mode A → SFX dari MP4 ori
-    audio_dub = None
-    ducking_db = 12
-    output = 'mp4-id-final.mp4'
+    # Step 2: no_vocals.wav (SFX bersih dari Demucs)
+    print(f'▶ Step 2/{total}: Pilih file no_vocals.wav (SFX bersih dari Demucs)')
+    sfx_wav = select_file('SFX bersih (no_vocals.wav):', ['wav'])
+    if not sfx_wav:
+        print('Batal.'); sys.exit(0)
+    print(f'  ✓ {sfx_wav}')
+    print()
 
-    if is_mode_b:
-        # ─────────────────────────────────────────────────────────────────
-        # Mode B: Sumber terpisah (6 langkah)
-        # ─────────────────────────────────────────────────────────────────
-        total = 6
+    # Step 3: Audio dub
+    print(f'▶ Step 3/{total}: Pilih file audio dub WAV')
+    audio_dub = select_file('Audio dub (mis. audio-id-dub.wav, audio-jw-dub.wav):', ['wav'])
+    if not audio_dub:
+        print('Batal.'); sys.exit(0)
+    print(f'  ✓ {audio_dub}')
+    print()
 
-        # Step 1: MP4 ori (video)
-        print(f'▶ Step 1/{total}: Pilih file MP4 ori (video)')
-        mp4 = select_file('MP4 ori (mis. mp4-ori-full.mp4):', ['mp4'])
-        if not mp4:
-            print('Batal.'); sys.exit(0)
-        print(f'  ✓ {mp4}')
-        print()
+    # Step 4: Ducking
+    print(f'▶ Step 4/{total}: Pilih ducking level')
+    ducking_db = prompt_ducking()
+    print(f'  ✓ {ducking_db}dB')
+    print()
 
-        # Step 2: no_vocal.wav (SFX bersih)
-        print(f'▶ Step 2/{total}: Pilih file no_vocal.wav (SFX bersih dari Demucs)')
-        sfx_wav = select_file('SFX bersih (no_vocals.wav):', ['wav'])
-        if not sfx_wav:
-            print('Batal.'); sys.exit(0)
-        print(f'  ✓ {sfx_wav}')
-        print()
+    # Step 5: Output
+    print(f'▶ Step 5/{total}: Pilih nama output MP4')
+    output = prompt_output()
+    print(f'  ✓ {output}')
+    print()
 
-        # Step 3: Audio dub
-        print(f'▶ Step 3/{total}: Pilih file audio dub WAV')
-        audio_dub = select_file('Audio dub (mis. audio-id-dub.wav, audio-jw-dub.wav):', ['wav'])
-        if not audio_dub:
-            print('Batal.'); sys.exit(0)
-        print(f'  ✓ {audio_dub}')
-        print()
+    # Step 6: Konfirmasi
+    print(f'▶ Step 6/{total}: Konfirmasi')
 
-        # Step 4: Ducking
-        print(f'▶ Step 4/{total}: Pilih ducking level')
-        ducking_db = prompt_ducking()
-        print(f'  ✓ {ducking_db}dB')
-        print()
-
-        # Step 5: Output
-        print(f'▶ Step 5/{total}: Pilih nama output MP4')
-        output = prompt_output(output)
-        print(f'  ✓ {output}')
-        print()
-
-        # Step 6: Konfirmasi
-        print(f'▶ Step 6/{total}: Konfirmasi')
-
-    else:
-        # ─────────────────────────────────────────────────────────────────
-        # Mode A: MP4 dengan audio (5 langkah)
-        # ─────────────────────────────────────────────────────────────────
-        total = 5
-
-        # Step 1: MP4 (with audio)
-        print(f'▶ Step 1/{total}: Pilih file MP4 ori (dengan audio)')
-        mp4 = select_file('MP4 ori (mis. mp4-ori-full.mp4, mp4-ori-test-7min.mp4):', ['mp4'])
-        if not mp4:
-            print('Batal.'); sys.exit(0)
-        print(f'  ✓ {mp4}')
-        print()
-
-        # Step 2: Audio dub
-        print(f'▶ Step 2/{total}: Pilih file audio dub WAV')
-        audio_dub = select_file('Audio dub (mis. audio-id-dub.wav, audio-jw-dub.wav):', ['wav'])
-        if not audio_dub:
-            print('Batal.'); sys.exit(0)
-        print(f'  ✓ {audio_dub}')
-        print()
-
-        # Step 3: Ducking
-        print(f'▶ Step 3/{total}: Pilih ducking level')
-        ducking_db = prompt_ducking()
-        print(f'  ✓ {ducking_db}dB')
-        print()
-
-        # Step 4: Output
-        print(f'▶ Step 4/{total}: Pilih nama output MP4')
-        output = prompt_output(output)
-        print(f'  ✓ {output}')
-        print()
-
-        # Step 5: Konfirmasi
-        print(f'▶ Step 5/{total}: Konfirmasi')
-
-    # ─────────────────────────────────────────────────────────────────────
-    # Probe durations untuk ringkasan
-    # ─────────────────────────────────────────────────────────────────────
+    # Probe durations
     ffmpeg = find_ffmpeg()
     ffprobe = find_ffprobe()
     mp4_dur = get_duration(ffprobe, mp4)
+    sfx_dur = get_duration(ffprobe, sfx_wav)
     dub_dur = get_duration(ffprobe, audio_dub)
 
     print()
     print('╔' + '═' * 64 + '╗')
     print('║  📋 Ringkasan:' + ' ' * 49 + '║')
     print('╠' + '═' * 64 + '╣')
-    print(f'║  Mode     : {mode_label[:46]:<46}║')
     print(f'║  MP4      : {mp4[:46]:<46}║')
-    if sfx_wav:
-        print(f'║  SFX      : {sfx_wav[:46]:<46}║')
-    else:
-        print(f'║  SFX      : {"(dari MP4 ori, vokal ori masih ada)":<46}║')
+    print(f'║  SFX      : {sfx_wav[:46]:<46}║')
     print(f'║  Audio dub: {audio_dub[:46]:<46}║')
     print(f'║  Output   : {output[:46]:<46}║')
     print(f'║  Ducking  : {str(ducking_db) + " dB":<46}║')
     print(f'║  MP4 dur  : {mp4_dur:.1f}s' + ' ' * (46 - len(f'{mp4_dur:.1f}s')) + '║')
+    print(f'║  SFX dur  : {sfx_dur:.1f}s' + ' ' * (46 - len(f'{sfx_dur:.1f}s')) + '║')
     print(f'║  Dub dur  : {dub_dur:.1f}s' + ' ' * (46 - len(f'{dub_dur:.1f}s')) + '║')
     print('╚' + '═' * 64 + '╝')
     print()
-
-    if not is_mode_b:
-        print('  ⚠ Mode A: audio ori (vokal) tetap terdengar sebagai SFX.')
-        print('           Untuk hasil bersih, jalankan Demucs dulu → pakai Mode B.')
-        print()
 
     if dub_dur < mp4_dur - 1:
         print(f'  ℹ Audio dub ({dub_dur:.1f}s) lebih pendek dari MP4 ({mp4_dur:.1f}s).')
@@ -297,75 +216,36 @@ def main():
     if not confirm:
         print('Batal.'); sys.exit(0)
 
-    # ─────────────────────────────────────────────────────────────────────
     # Build FFmpeg command
-    # ─────────────────────────────────────────────────────────────────────
+    # Indeks input: 0=mp4 (video only), 1=sfx_wav, 2=audio_dub
     print('\n' + '═' * 64)
     print('🚀 Mulai mix...')
     print('═' * 64 + '\n')
 
-    # Catatan indeks input:
-    #  - Mode A: 0=mp4 (audio=0:a sebagai SFX), 1=audio_dub
-    #  - Mode B: 0=mp4 (video only, audio di-ignore), 1=sfx_wav (SFX), 2=audio_dub
     if ducking_db <= 0:
         # No ducking: additive mix (amix dengan normalize=0)
-        if sfx_wav:
-            # Mode B no ducking
-            filter_complex = (
-                '[1:a]volume=1[sfx];'
-                '[2:a]volume=1[dub];'
-                '[sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
-            )
-            cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
-                   '-filter_complex', filter_complex,
-                   '-map', '0:v', '-map', '[aout]',
-                   '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
-                   '-movflags', '+faststart', output]
-        else:
-            # Mode A no ducking (SFX = audio MP4 ori)
-            filter_complex = (
-                '[0:a]volume=1[sfx];'
-                '[1:a]volume=1[dub];'
-                '[sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
-            )
-            cmd = [ffmpeg, '-y', '-i', mp4, '-i', audio_dub,
-                   '-filter_complex', filter_complex,
-                   '-map', '0:v', '-map', '[aout]',
-                   '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
-                   '-movflags', '+faststart', output]
+        filter_complex = (
+            '[1:a]volume=1[sfx];'
+            '[2:a]volume=1[dub];'
+            '[sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
+        )
     else:
-        # Ducking: sidechain compression (FIX: no makeup gain, no -shortest)
+        # Ducking: sidechain compression (no makeup gain, no -shortest)
         ratio = 10 if ducking_db >= 10 else 5
-        if sfx_wav:
-            # Mode B with ducking
-            filter_complex = (
-                f'[1:a]volume=1[sfx];'
-                f'[2:a]volume=1,asplit=2[dub][sidechain];'
-                f'[sfx][sidechain]sidechaincompress='
-                f'threshold=0.05:ratio={ratio}:attack=5:release=300'
-                f'[ducked_sfx];'
-                f'[ducked_sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
-            )
-            cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
-                   '-filter_complex', filter_complex,
-                   '-map', '0:v', '-map', '[aout]',
-                   '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
-                   '-movflags', '+faststart', output]
-        else:
-            # Mode A with ducking (SFX = audio MP4 ori)
-            filter_complex = (
-                f'[0:a]volume=1[sfx];'
-                f'[1:a]volume=1,asplit=2[dub][sidechain];'
-                f'[sfx][sidechain]sidechaincompress='
-                f'threshold=0.05:ratio={ratio}:attack=5:release=300'
-                f'[ducked_sfx];'
-                f'[ducked_sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
-            )
-            cmd = [ffmpeg, '-y', '-i', mp4, '-i', audio_dub,
-                   '-filter_complex', filter_complex,
-                   '-map', '0:v', '-map', '[aout]',
-                   '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
-                   '-movflags', '+faststart', output]
+        filter_complex = (
+            f'[1:a]volume=1[sfx];'
+            f'[2:a]volume=1,asplit=2[dub][sidechain];'
+            f'[sfx][sidechain]sidechaincompress='
+            f'threshold=0.05:ratio={ratio}:attack=5:release=300'
+            f'[ducked_sfx];'
+            f'[ducked_sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
+        )
+
+    cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
+           '-filter_complex', filter_complex,
+           '-map', '0:v', '-map', '[aout]',
+           '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
+           '-movflags', '+faststart', output]
 
     print(f'Command: {" ".join(cmd[:5])} ...')
     print()
