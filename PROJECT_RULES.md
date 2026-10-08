@@ -1,6 +1,6 @@
 # PROJECT_RULES.md — Aturan Project SRT Splitter + Dubbing
 
-> 13 rules minimal, project-specific. Baca tiap session sebelum kerja.
+> 15 rules minimal, project-specific. Baca tiap session sebelum kerja.
 > Konflik antar dokumen? File ini menang.
 
 ## Aturan Dokumentasi (paling penting, biar gak lupa)
@@ -108,6 +108,32 @@ Di awal session (chat pertama, sebelum kerja apapun):
 Tidak boleh auto-push. Tidak boleh auto-resolve diverge. Tidak boleh auto-add untracked file.
 
 Setelah commit + push, wajib cek `git status -sb` lagi konfirmasi `## main` (clean).
+
+### R-14 — User download file via curl, bukan git pull
+User di MacBook pakai `curl` untuk download individual file dari GitHub raw URL, BUKAN `git pull`. Folder `~/Dubbing/` di MacBook bukan git repo, cuma working folder.
+
+Setiap selesai commit + push, AI WAJIB kasih command curl ke user, format:
+```bash
+cd ~/Dubbing
+curl -L -o <filename> "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/<path>?v=N"
+```
+
+Keterangan:
+- `<filename>` = nama file lokal di MacBook (mis. `demucs-tui.py`)
+- `<path>` = path file di repo (mis. `scripts/demucs-tui.py`)
+- `?v=N` = cache buster, increment setiap update (v=1, v=2, v=3, ...) supaya curl gak ambil dari browser/ISP cache
+- Jangan pernah suruh user `git pull origin main` — itu gak relevant di setup MacBook
+
+### R-15 — Catat ke PROJECT_RULES, jangan cuma bilang "aku catat"
+Kalau AI bilang "aku catat note" / "note untuk diriku" / "next time aku inget" — WAJIB langsung tulis ke `PROJECT_RULES.md` atau `AGENTS.md` di sesi yang sama. Kalau cuma diucapkan tapi gak ditulis, AI akan halu di session berikutnya (user ngulang-ngulang instruksi 1000x).
+
+Workflow:
+1. AI ucapkan note
+2. AI langsung Edit/Write ke PROJECT_RULES.md atau AGENTS.md
+3. AI commit + push
+4. AI kasih command curl ke user
+
+Jangan pernah: ucapkan note → tutup sesi → harap ingat di sesi berikutnya. Itu gagal.
 
 ---
 

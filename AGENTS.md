@@ -8,7 +8,7 @@
 Saat user bilang **"baca AGENTS.md dan PROJECT_RULES.md"** (atau variasi: "mulai" / "baca dokumen" / chat pertama di session baru):
 
 1. **Baca dokumen (wajib)** — baca full file ini, lalu:
-   - `PROJECT_RULES.md` — 13 rules project-specific
+   - `PROJECT_RULES.md` — 15 rules project-specific
    - `README.md` (root) — workflow 4 fase + status
    - `scripts/README.md` — detail per script (kalau kerja Python)
 
@@ -28,7 +28,7 @@ Setelah checklist selesai, AI siap kerja. Tidak perlu ulang di chat berikutnya d
 
 ## Baca dulu (wajib, tiap session)
 
-1. **`PROJECT_RULES.md`** — 13 rules project-specific. Baca full sebelum kerja apapun.
+1. **`PROJECT_RULES.md`** — 15 rules project-specific. Baca full sebelum kerja apapun.
 2. **`README.md`** (root) — workflow 4 fase, 2 mode dubbing, status pipeline.
 3. **`scripts/README.md`** — detail per Python script.
 
