@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { FileText, Download, Eraser, BookOpen, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react'
+import { FileText, Download, Eraser, BookOpen, CheckCircle2, AlertTriangle, Loader2, Save, Cloud } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -16,10 +16,21 @@ import {
   suggestRegister,
   getRegisterLabel,
   getRegisterColor,
+  convertEntriesRegister,
   type KamusJawa,
   type CueRegister,
   type RapikanResult,
 } from '@/lib/rapikan-jawa'
+import {
+  isSupabaseAvailable,
+  getAnonymousUserId,
+  createProject,
+  listProjects,
+  saveCues,
+  getCues,
+  type SrtProject,
+  type SrtCue,
+} from '@/lib/supabase'
 
 interface RapikanJawaPanelProps {
   entries: SrtEntry[]
@@ -37,6 +48,14 @@ export function RapikanJawaPanel({ entries, onUpdated, prefix }: RapikanJawaPane
   const [showUnknownWords, setShowUnknownWords] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  // Supabase state
+  const [supabaseReady, setSupabaseReady] = useState(false)
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null)
+  const [projects, setProjects] = useState<SrtProject[]>([])
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const cueIdMapRef = useRef<Record<number, string>>({}) // cue_index → cue UUID
+
   // Load kamus on mount
   useEffect(() => {
     loadKamusJawa().then(k => {
@@ -48,7 +67,75 @@ export function RapikanJawaPanel({ entries, onUpdated, prefix }: RapikanJawaPane
         toast.error('Gagal load kamus Jawa')
       }
     })
+    // Check Supabase availability
+    setSupabaseReady(isSupabaseAvailable())
   }, [])
+
+  // Load projects list when Supabase is ready
+  useEffect(() => {
+    if (!supabaseReady) return
+    listProjects().then(projs => {
+      setProjects(projs)
+    })
+  }, [supabaseReady])
+
+  // Auto-save: debounce 2 detik setelah entries atau registers berubah
+  const autoSave = useCallback(async () => {
+    if (!supabaseReady || entries.length === 0) return
+
+    // Kalau belum ada project, create baru
+    let projectId = currentProjectId
+    if (!projectId) {
+      setAutoSaveStatus('saving')
+      const originalSrt = entries.map((e, i) =>
+        `${i + 1}\n${Math.floor(e.start / 3600)}:${Math.floor((e.start % 3600) / 60)}:${Math.floor(e.start % 60)},000 --> ${Math.floor(e.end / 3600)}:${Math.floor((e.end % 3600) / 60)}:${Math.floor(e.end % 60)},000\n${e.textLines.join('\n')}\n`
+      ).join('\n')
+      const proj = await createProject(
+        `${prefix}-jawa`,
+        'jawa',
+        originalSrt,
+        entries.length,
+      )
+      if (proj) {
+        projectId = proj.id
+        setCurrentProjectId(proj.id)
+        setProjects(prev => [proj, ...prev])
+      } else {
+        setAutoSaveStatus('error')
+        return
+      }
+    }
+
+    // Save cues
+    setAutoSaveStatus('saving')
+    const cuesToSave = entries.map((e, i) => ({
+      cue_index: i,
+      start_sec: e.start,
+      end_sec: e.end,
+      text: e.textLines.join('\n'),
+      register: cueRegisters[i] || '',
+    }))
+    const ok = await saveCues(projectId!, cuesToSave)
+    if (ok) {
+      setAutoSaveStatus('saved')
+      // Auto-clear "saved" badge after 3 seconds
+      setTimeout(() => setAutoSaveStatus('idle'), 3000)
+    } else {
+      setAutoSaveStatus('error')
+    }
+  }, [supabaseReady, entries, currentProjectId, cueRegisters, prefix])
+
+  // Debounce auto-save (2 detik setelah perubahan)
+  useEffect(() => {
+    if (!supabaseReady || entries.length === 0) return
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    saveTimerRef.current = setTimeout(() => {
+      autoSave()
+    }, 2000)
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    }
+  }, [entries, cueRegisters, supabaseReady, autoSave])
 
   // Check unknown words when entries change
   const runCheck = useCallback(() => {
@@ -125,6 +212,29 @@ export function RapikanJawaPanel({ entries, onUpdated, prefix }: RapikanJawaPane
     toast.success(`Auto-suggest: ${Object.keys(newRegisters).length} cues detected`)
   }, [entries, kamus])
 
+  // Convert all entries to specific register
+  const handleConvertRegister = useCallback((toRegister: CueRegister) => {
+    if (entries.length === 0 || !kamus) return
+    const newEntries = entries.map(e => ({
+      ...e,
+      textLines: [...e.textLines],
+    }))
+    const count = convertEntriesRegister(newEntries, 'ngoko', toRegister, kamus)
+    onUpdated(newEntries)
+    // Set all registers to target
+    const newRegisters: Record<number, CueRegister> = {}
+    for (let i = 0; i < entries.length; i++) {
+      newRegisters[i] = toRegister
+    }
+    setCueRegisters(newRegisters)
+    if (count > 0) {
+      toast.success(`${count} cue dikonversi ke ${getRegisterLabel(toRegister)}`)
+    } else {
+      toast.info('Tidak ada kata yang bisa dikonversi (mungkin kamus belum lengkap)')
+    }
+    runCheck()
+  }, [entries, kamus, onUpdated, runCheck])
+
   // Download SRT rapi
   const handleDownload = useCallback(() => {
     if (entries.length === 0) return
@@ -155,8 +265,8 @@ export function RapikanJawaPanel({ entries, onUpdated, prefix }: RapikanJawaPane
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Kamus status */}
-        <div className="flex items-center gap-2 text-xs">
+        {/* Kamus + Supabase status */}
+        <div className="flex flex-wrap items-center gap-2 text-xs">
           {loadingKamus ? (
             <><Loader2 className="size-3.5 animate-spin" /> Loading kamus...</>
           ) : kamus ? (
@@ -181,6 +291,24 @@ export function RapikanJawaPanel({ entries, onUpdated, prefix }: RapikanJawaPane
               )}
             </>
           )}
+          {/* Supabase auto-save status */}
+          {supabaseReady ? (
+            <Badge variant="outline" className={
+              autoSaveStatus === 'saving' ? 'bg-blue-50 dark:bg-blue-950/30 animate-pulse' :
+              autoSaveStatus === 'saved' ? 'bg-green-50 dark:bg-green-950/30' :
+              autoSaveStatus === 'error' ? 'bg-red-50 dark:bg-red-950/30' :
+              'bg-gray-50 dark:bg-gray-900/30'
+            }>
+              {autoSaveStatus === 'saving' ? <><Loader2 className="size-3 mr-1 animate-spin" /> Menyimpan...</> :
+               autoSaveStatus === 'saved' ? <><CheckCircle2 className="size-3 mr-1" /> Tersimpan</> :
+               autoSaveStatus === 'error' ? <><AlertTriangle className="size-3 mr-1" /> Error simpan</> :
+               <><Cloud className="size-3 mr-1" /> Auto-save siap</>}
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="bg-gray-50 dark:bg-gray-900/30 text-muted-foreground">
+              <Cloud className="size-3 mr-1 opacity-50" /> Supabase belum set (localStorage)
+            </Badge>
+          )}
         </div>
 
         {/* Action buttons */}
@@ -189,7 +317,15 @@ export function RapikanJawaPanel({ entries, onUpdated, prefix }: RapikanJawaPane
             <Eraser className="size-3.5 mr-1" /> Hapus Aksén (é→e)
           </Button>
           <Button size="sm" variant="outline" onClick={autoSuggestRegisters} disabled={!kamus}>
-            <CheckCircle2 className="size-3.5 mr-1" /> Auto-suggest Register
+            <CheckCircle2 className="size-3.5 mr-1" /> Auto-suggest
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => handleConvertRegister('krama')} disabled={!kamus}
+            className="border-amber-300 text-amber-700 dark:text-amber-300">
+            All Krama
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => handleConvertRegister('ngoko')} disabled={!kamus}
+            className="border-blue-300 text-blue-700 dark:text-blue-300">
+            All Ngoko
           </Button>
           <Button size="sm" onClick={handleDownload}>
             <Download className="size-3.5 mr-1" /> Download SRT Rapi
@@ -206,7 +342,7 @@ export function RapikanJawaPanel({ entries, onUpdated, prefix }: RapikanJawaPane
               <div className="space-y-1 text-xs">
                 {rapikanResult.unknownWordsList.slice(0, 100).map((w, i) => (
                   <div key={i} className="flex gap-2">
-                    <span className="font-mono font-bold text-red-600 dark:text-red-400">{w.word}</span>
+                    <span className="font-mono font-bold text-red-600 dark:text-red-400">{w}</span>
                     <span className="text-muted-foreground">— cue {w.cueIndex + 1}: "{w.context}"</span>
                   </div>
                 ))}
@@ -231,7 +367,10 @@ export function RapikanJawaPanel({ entries, onUpdated, prefix }: RapikanJawaPane
             const words = text.split(' ')
             const highlightedText = words.map((word, wi) => {
               const cleanWord = word.replace(/[^\w]/g, '')
-              const isKnown = kamus ? kamus.words.some(e => e.word.toLowerCase() === cleanWord.toLowerCase()) : true
+              const isKnown = kamus ? kamus.words.some(e => {
+                const ngokoVariants = e.ngoko.split(',').map(n => n.trim().toLowerCase())
+                return ngokoVariants.includes(cleanWord.toLowerCase())
+              }) : true
               return isKnown ? word : `<span class="text-red-600 dark:text-red-400 font-semibold">${word}</span>`
             }).join(' ')
 

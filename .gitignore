@@ -63,7 +63,13 @@ server.log
 /db/
 
 # User-private files (NOT to be committed)
-/upload/      # user-uploaded SRT files
+# Note: upload/ folder used to be ignored, but user actually need some files from GitHub
+# (e.g. wiktionary XML, kamus JSON). So we ignore specific patterns instead of whole /upload/.
+/upload/Pasted*
+/upload/Screenshot*
+/upload/*-home.json
+/upload/voicertool-research/
+/upload/wiktionary/      # 86MB XML — too big for repo, user re-download from https://jv.wiktionary.org/wiki/Istimewa:Export
 /download/    # generated split SRT outputs
 /tool-results/ # debug output from Read tool
 
@@ -74,6 +80,11 @@ __pycache__/
 
 # Build artifacts that aren't needed in repo
 Caddyfile
+
+# Kamus Jawa JSON — TRACK di git supaya user bisa download dari GitHub (MacBook user)
+# File: public/kamus-jawa-full.json (11MB, generated dari scripts/parse-wiktionary-jv.py)
+# Compressed version: public/kamus-jawa-full.json.gz (~3MB)
+# Web app load dari Supabase, bukan dari file ini. File ini untuk user edit lokal + re-import.
 
 # Scraping / research artifacts (jangan commit ke repo)
 astd-home.json

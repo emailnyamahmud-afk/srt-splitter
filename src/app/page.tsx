@@ -29,7 +29,8 @@ import { toast } from 'sonner'
 import { TtsPanel } from '@/components/tts-panel'
 import { TtsTextPanel } from '@/components/tts-text-panel'
 import { TranslatePanel } from '@/components/translate-panel'
-import { RapikanJawaPanel } from '@/components/rapikan-jawa-panel'
+import { KamusEditorPanel } from '@/components/kamus-editor-panel'
+import { DualSrtEditor } from '@/components/srt-editor-panel'
 import {
   parseSrt,
   splitEntries,
@@ -194,28 +195,36 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
       <header className="border-b bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto max-w-5xl px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
-              <Scissors className="size-5 text-white" />
-            </div>
+        <div className="container mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <img src="/logo.svg" alt="SRT Splitter" className="size-8 rounded-lg" />
             <div>
-              <h1 className="text-xl font-bold tracking-tight">SRT Splitter</h1>
-              <p className="text-xs text-muted-foreground">Pemecah file subtitle tanpa upload server</p>
+              <h1 className="text-lg font-bold tracking-tight">SRT Splitter</h1>
+              <p className="text-[11px] text-muted-foreground">Dubbing Studio — Split, Translate, TTS, Editor Jawa</p>
             </div>
           </div>
           <Badge variant="secondary" className="hidden sm:flex">
-            <CheckCircle2 className="size-3 mr-1" /> 100% Offline
+            <CheckCircle2 className="size-3 mr-1" /> 100% Sync
           </Badge>
         </div>
       </header>
 
       <main className="container mx-auto max-w-5xl px-4 py-8 flex-1 space-y-6">
+        {/* Dual SRT Editor — PRIMARY (pindah ke atas, di atas Split) */}
+        <DualSrtEditor prefix={prefix} />
+
+        {/* === Sekunder: Split / Translate / TTS workflow (lama) === */}
+        <div className="flex items-center gap-3 pt-4">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground uppercase tracking-wider">Workflow Split / Translate / TTS (sekunder)</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+
         {/* Upload area */}
         {!file && (
           <Card className="border-2 border-dashed hover:border-primary/50 transition-colors">
             <CardContent
-              className="py-16 px-6 flex flex-col items-center justify-center text-center cursor-pointer"
+              className="py-12 px-6 flex flex-col items-center justify-center text-center cursor-pointer"
               onClick={() => fileInputRef.current?.click()}
               onDragOver={(e) => {
                 e.preventDefault()
@@ -225,16 +234,15 @@ export default function Home() {
               onDrop={onDrop}
             >
               <div
-                className={`size-20 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-950/40 dark:to-orange-950/40 flex items-center justify-center mb-6 transition-transform ${
+                className={`size-16 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-950/40 dark:to-orange-950/40 flex items-center justify-center mb-4 transition-transform ${
                   isDragging ? 'scale-110' : ''
                 }`}
               >
-                <Upload className="size-8 text-amber-600" />
+                <Upload className="size-6 text-amber-600" />
               </div>
-              <h2 className="text-2xl font-semibold mb-2">Drop file .srt di sini</h2>
-              <p className="text-muted-foreground mb-4 max-w-md">
-                Klik untuk pilih file atau seret-dan-jatuhkan. Semua proses dilakukan di
-                browser Anda — file tidak pernah dikirim ke server mana pun.
+              <h2 className="text-xl font-semibold mb-2">Split SRT (potong jadi beberapa file)</h2>
+              <p className="text-sm text-muted-foreground mb-4 max-w-md">
+                Upload 1 SRT → potong per N menit/karakter. Cocok untuk TTS Edge (limit 5000 karakter).
               </p>
               <Button size="lg">
                 <FileText className="size-4 mr-2" /> Pilih File SRT
@@ -246,7 +254,7 @@ export default function Home() {
                 className="hidden"
                 onChange={onInputChange}
               />
-              <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl text-left">
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl text-left">
                 <div className="flex items-start gap-2 text-sm">
                   <Clock className="size-4 text-amber-600 mt-0.5 shrink-0" />
                   <span>Bisa potong per 30 menit atau berapapun sesuai kebutuhan</span>
@@ -600,13 +608,6 @@ export default function Home() {
               }}
             />
 
-            {/* Rapikan SRT Jawa Panel — editor inline + kamus check + toggle ngoko/krama */}
-            <RapikanJawaPanel
-              entries={entries}
-              onUpdated={(updatedEntries) => setEntries(updatedEntries)}
-              prefix={prefix}
-            />
-
             {/* TTS Panel - convert subtitles to audio */}
             <TtsPanel splitResult={splitResult} prefix={prefix} />
           </>
@@ -614,6 +615,9 @@ export default function Home() {
 
         {/* TTS Text Panel — selalu tampil (tidak perlu upload SRT) */}
         <TtsTextPanel />
+
+        {/* Kamus Editor Panel — edit krama + arti permanen ke Supabase */}
+        <KamusEditorPanel />
 
         {/* Info section */}
         {!file && (

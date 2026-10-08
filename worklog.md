@@ -511,3 +511,658 @@ Stage Summary:
 - Supabase: client siap, tunggu env vars dari user (besok)
 - Aksén Jawa tidak dipakai (Edge TTS tidak bisa baca)
 - Filosofi: video = ground truth, audio dub fit SRT ori, SFX bersih dari Demucs
+
+---
+Task ID: 11
+Agent: main
+Task: Kamus Jawa — pivot ke Supabase (browser crash load 9.6MB JSON) + TUI edit lokal
+
+User feedback:
+'browser UI error, crash saat load json, mending di browser gak usah pake json.
+Mending pake supabase. AI buat TUI edit json kamus, agar user di lokal bisa edit
+kamus per entri pake vscode, jadi satu folder dengan project dubbing. Tiap kamus
+yg lengkap, akan user up ke supabase.'
+
+Work Log:
+- Untrack kamus-jawa-full.json + kamus-jawa.json dari repo (9.6MB crash browser)
+- .gitignore: tambah /public/kamus-jawa*.json
+- rapikan-jawa.ts: loadKamusJawa() sekarang dari Supabase (bukan JSON file)
+  * Lazy import supabase.ts, fetch dari tabel kamus (limit 10000)
+  * Fallback: null kalau Supabase belum set (kamus check skip, semua OK)
+- edit-kamus.py (NEW, 230 baris): TUI untuk edit kamus lokal + upload Supabase
+  * Export: Supabase → kamus-jawa.csv (buka di VSCode, edit per baris)
+  * Import CSV: kamus-jawa.csv → Supabase (setelah user edit di VSCode)
+  * Import JSON: kamus-jawa-full.json → Supabase (initial 44.585 entri)
+  * Search: cari kata di Supabase
+- Kamus format v4 (BENAR): ngoko, aksara, krama, id, keterangan, sumber, status
+- Alias support: ngoko field bisa "aku, inyong, nyong" (split koma)
+- Supabase tabel kamus: user perlu add kolom keterangan + sumber + status + aksara
+
+Stage Summary:
+- Browser: kamus dari Supabase (bukan JSON file), no crash
+- Lokal: user edit kamus-jawa.csv di VSCode, upload ke Supabase kalau lengkap
+- Workflow: export → edit VSCode → import → Supabase → web app load dari Supabase
+- Kamus editor panel di web tetap ada (search + edit dari Supabase langsung)
+
+---
+Task ID: 12
+Agent: main
+Task: Kamus Jawa — TUI edit + upload Supabase bertahap + fix multiple bugs
+
+User: 'TUI' → 'cara uplod ke supabase?' → 'gak muncul' → 'cuma kedip' → 'sudah bisa upload 1'
+
+Work Log:
+1. kamus-tui.py (NEW, 370 baris): TUI interaktif browse + edit kamus
+   - Browse 44.585 entri (halaman 20, navigasi ◀▶)
+   - Search kata → filter → edit
+   - Edit krama + id inline → save JSON otomatis
+   - Upload ke Supabase (bertahap, upsert, hanya yang sudah diedit)
+   - Status: ✓ (sudah diedit) / ○ (belum)
+
+2. edit-kamus.py: rewrite untuk JSON (bukan CSV)
+   - Import JSON → Supabase (bertahap, upsert)
+   - Export Supabase → JSON lokal
+   - Export Supabase → CSV (backup)
+   - Search kamus di Supabase
+
+3. Bug fixes:
+   a. JSON field 'id' konflik dengan UUID primary key → ganti kolom 'arti'
+   b. upload_to_supabase(edited_count=0) → selalu skip → baca langsung dari JSON
+   c. questionary clear screen → output hilang → pakai subprocess
+
+4. Supabase tabel kamus:
+   - Kolom: ngoko, aksara, krama, arti, keterangan, sumber, status
+   - Unique constraint: ngoko (untuk upsert)
+   - RLS: allow_all
+   - User run SQL: ALTER TABLE ADD COLUMN + UNIQUE CONSTRAINT
+
+5. Kamus format v4 (BENAR):
+   - ngoko: kata + alias (koma)
+   - aksara: aksara Jawa
+   - krama: kosong (user isi manual)
+   - id: kosong (user isi manual, terjemahan Indonesia)
+   - keterangan: definisi JAWA dari XML (JANGAN HAPUS, membantu user isi id)
+   - sumber: jv.wiktionary.org
+
+6. Web app:
+   - Kamus load dari Supabase (bukan JSON file, crash fix)
+   - KamusEditorPanel: search + edit dari Supabase langsung
+   - RapikanJawaPanel: kamus check + convert register (All Ngoko/All Krama)
+
+7. Alias support: ngoko field "aku, inyong, nyong" → match semua
+   - isWordInKamus: split koma, match per kata
+   - convertRegister: lookup dengan alias, pakai krama pertama
+
+Stage Summary:
+- Kamus Jawa 44.585 entri dari Wiktionary (ngoko + aksara + keterangan)
+- krama + id kosong → user edit bertahap 30/hari di TUI
+- Upload ke Supabase (upsert, hanya yang sudah diedit, status: clean)
+- Supabase = ground of truth (makin hari makin lengkap)
+- JSON lokal = draft (edit di TUI/VSCode, commit ke GitHub optional)
+- User sudah test: upload 1 entri (agustus) → sukses
+- Web app load kamus dari Supabase (limit 10000 untuk performance)
+- Kamus editor panel di web: search + edit langsung dari Supabase
+
+---
+Task ID: 13
+Agent: main
+Task: Fix bug — "menu uplod srt cuma 1, halaman juga masih 1 srt"
+
+User feedback (8 Okt 2026 02:25 WIB):
+"menu uplod srt cuma 1, halaman juga masih 1 srt, ada bug?"
+
+Investigation:
+- Vercel deploy up-to-date (origin/main == HEAD == c406b1f)
+- Static HTML benar: punya "Upload SRT ID" + "Upload SRT Jawa" + "Editor SRT Jawa"
+- VLM verify desktop + mobile: Dual SRT Editor di-render dengan 2 tombol upload
+- Build success (Turbopack skip type validation, no syntax error)
+- Test upload SRT ID + SRT Jawa di deployed app → dual display working (ID context grey italic + Jawa textarea + Voice + Ngoko/Krama + pagination)
+
+Root cause (BUKAN bug, tapi UX issue):
+- Editor SRT Jawa (DualSrtEditor) ada di BOTTOM page — bawah KamusEditor
+- Split upload area di TOP punya 1 tombol "Pilih File SRT" (untuk Split, bukan dual)
+- User upload SRT ke TOP → Rapikan SRT Jawa panel muncul (single SRT editor)
+- User kira itu "dual editor" tapi cuma 1 SRT per cue
+- User kira "menu uplod srt cuma 1" = Split upload (1 button) di top
+- User kira "halaman juga masih 1 srt" = Rapikan panel (single SRT)
+
+Fix:
+1. Move DualSrtEditor ke ATAS page (right after header) — PRIMARY
+2. Remove RapikanJawaPanel (redundant — Dual SRT Editor gantikan, lebih powerful)
+3. Force grid-cols-2 (always side-by-side, bahkan di mobile 412px)
+4. Visual prominence: border-2 indigo, shadow-md, badge "Dual SRT + Voice"
+5. Tambah section divider "Workflow Split / Translate / TTS (sekunder)"
+6. Split upload area: label baru "Split SRT (potong jadi beberapa file)"
+7. Add "Cara pakai" instructions (6 langkah) di upload screen
+8. Background colors: SRT ID box biru muda, SRT Jawa box amber muda (visual differentiation)
+
+Layout baru (urut dari atas):
+  Header (logo + title + 100% Sync badge)
+  Editor SRT Jawa (PRIMARY, border-2 indigo, 2 uploads side-by-side)
+  --- Workflow Split / Translate / TTS (sekunder) ---
+  Split SRT upload (1 SRT, border-2 dashed amber)
+  [Settings + Translate + TTS panels jika Split file uploaded]
+  TTS Text ke Audio
+  Kamus Jawa Editor (jika Supabase ready)
+  Info section (jika no Split file)
+  Source code download
+  Footer
+
+Verification:
+- Build: ✓ Compiled successfully (12s)
+- Vercel deploy: ✓ (commit 911fee0 pushed, deployed in ~60s)
+- VLM verify desktop 1280px: ✓ Editor SRT Jawa di top, 2 uploads side-by-side, divider di bawah, Split SRT di bawah divider
+- VLM verify mobile 412px: ✓ 2 uploads masih side-by-side (grid-cols-2 forced)
+- Test upload SRT ID: ✓ "✓ 2 cue (konteks)" confirmation muncul, upload screen tetap (waiting SRT Jawa)
+- Test upload SRT Jawa: ✓ Editor view muncul, dual display per cue (ID context grey italic + Jawa textarea + Voice + Ngoko/Krama)
+- Pagination: ✓ "Hal 1 / 1 (2 cue)" + Sebelumnya/Berikutnya buttons
+
+Stage Summary:
+- Bug fix: Editor SRT Jawa sekarang PRIMARY di top page, 2 uploads side-by-side (selalu, bahkan mobile)
+- Rapikan SRT Jawa panel dihapus (redundant) — Dual SRT Editor gantikan dengan lebih banyak fitur (voice per cue, dual display, pagination 30 cue/hal)
+- Split workflow jadi sekunder (label "Split SRT (potong jadi beberapa file)" + divider)
+- User sekarang langsung lihat "Upload SRT ID" + "Upload SRT Jawa" di top page, no confusion
+- Commit: 911fee0 — pushed ke GitHub, Vercel auto-deploy
+- Files changed: src/app/page.tsx (move + remove import + label), src/components/srt-editor-panel.tsx (grid-cols-2 + visual prominence + cara pakai)
+
+
+---
+Task ID: 14
+Agent: main
+Task: Project-based Dual SRT Editor (multi-project + auto-save Supabase + TTS mode ON)
+
+User request (8 Okt 2026 03:00 WIB):
+"agar lebih sistematis:
+1. di UI buat add project = yg kalau user uplod 2 srt, srt langsung tersimpan di database. setiap kali ada perubahan = auto simpan.
+2. bisa jadi hari ini garap project S1 (belum selesai), lalu hari ini juga uplod S2 (belum selesai), kalau user mau lanjut garap S1 = tinggal buka project S1. dan lanjut sesuai editan terakhir yg kesimpan di supabase.
+3. supabase buat simpan srt gak masalah kan? size srt kecil, dan supabase ada storage.
+4. generate tts/cue, auto load srt dari supabase. tapi logika srt ngikut konfigurasi mode ON. Agar sync"
+
+Implementation:
+
+1. Supabase migration v2 (scripts/supabase-migration-v2.sql)
+   - srt_projects: ADD original_srt_id TEXT (SRT Indonesia konteks, full file)
+   - srt_cues: ADD text_id TEXT (Indonesia context per cue) + voice TEXT (per-cue voice assignment)
+   - Triggers: trg_srt_projects_updated_at + trg_srt_cues_updated_at (auto-update updated_at)
+   - Backward compatible: kolom lama (original_srt, text) tetap dipakai sebagai SRT Jawa + text Jawa
+
+2. Supabase functions (src/lib/supabase.ts)
+   - SrtProject interface: tambah original_srt_id
+   - SrtCue interface: tambah text_id + voice
+   - createDualProject(name, srtId, srtJawa, cues[]): insert project + batch insert cues
+   - getProjectWithCues(projectId): load project + cues (both texts + voice)
+   - updateCueFull(cueId, {text, text_id, register, voice, is_edited}): auto-save per edit
+   - bumpProjectEdited(projectId, delta): update updated_at + cues_edited count
+
+3. Per-cue voice TTS (src/lib/tts.ts)
+   - NarrationOptions.voiceResolver?: (entry, idx) => string
+   - Override voice per cue, fallback ke opts.voice (global) kalau undefined
+   - Semua 8 synthesizeText call di narrateEntries sekarang pakai cueVoice
+   - Mode ON + Smart Fit tetap aktif (respectTiming=true, smartFit=true)
+   - Pitch control per project (Edge TTS: -10Hz laki, +10Hz perempuan)
+
+4. DualSrtEditor rewrite (src/components/srt-editor-panel.tsx, 883 lines)
+   - Empty state:
+     * "+ Project Baru" button (primary)
+     * "Buka Project (N)" button (outline, disabled kalau N=0)
+     * Recent projects list (top 3, klik = load)
+     * Cara pakai instructions (7 langkah)
+   - New Project modal:
+     * Nama project (free text)
+     * Upload SRT ID + Upload SRT Jawa (2-col grid, side-by-side, blue + amber boxes)
+     * Cue count validation (warning kalau beda, pakai min)
+     * "Buat Project & Simpan ke Supabase" button
+   - Project list modal:
+     * Daftar project (nama, cue_count, edited, last_updated)
+     * Active project highlighted (indigo border)
+     * Buka + Hapus buttons
+   - Editor screen (active project):
+     * Header: nama + cue count + voice count + auto-save badge + Ganti + Tutup
+     * Action bar: All Ngoko/Krama (page/all) + Download SRT Jawa
+     * TTS panel inline (purple):
+       - Provider select (Edge/OpenAI/OpenRouter)
+       - Pitch select (Edge only)
+       - Smart Fit cap select (1.5x / 2.0x)
+       - Generate TTS button → narrateEntries dengan voiceResolver
+       - Progress bar + line progress text + stage message
+       - Audio player + download ulang link
+     * Cue list (30 per page):
+       - #index + timestamp
+       - SRT ID context (small grey italic, read-only)
+       - SRT Jawa textarea (editable, auto-save 1.5s)
+       - Voice dropdown (Dimas/Siti/Ardi/Gadis)
+       - Ngoko/Krama toggle buttons (klik = convert dari kamus + auto-save)
+     * Pagination: Sebelumnya / Hal N / Total / Berikutnya
+   - Active project di-persist di localStorage (auto-load saat reload page)
+   - Auto-save: debounced 1.5s, per-cue updateCueFull, mark is_edited=true
+
+5. Size & Supabase feasibility
+   - SRT file ~200KB (2.5 jam, 2000 cue) — kecil
+   - Supabase Postgres free tier: 500MB DB, 1GB storage
+   - Simpan SRT sebagai TEXT column (bukan Storage file) → bisa SQL query per cue
+   - Untuk 100 project × 200KB SRT ID + 200KB SRT Jawa = 40MB total → masih jauh di bawah 500MB
+   - Storage tidak dipakai (SRT kecil, lebih efisien di Postgres untuk query)
+
+Verification:
+- Build: ✓ Compiled successfully 11.1s
+- Vercel deploy: ✓ (commit eb0ac16, deployed in ~60s)
+- VLM verify desktop 1280px:
+  * Editor SRT Jawa at top dengan "Project-based" badge
+  * "+ Project Baru" button (black, primary)
+  * "Buka Project (0)" button (white/outline, 0 karena migration v2 belum di-run user)
+  * "Cara pakai" 7-step instructions
+  * No Supabase error/fallback message
+- Mode ON logic preserved: respectTiming=true + smartFit=true → 100% sync SRT ori
+
+User perlu run SQL migration v2 di Supabase SQL Editor:
+  scripts/supabase-migration-v2.sql
+  (3 ALTER TABLE + 2 trigger, ~1 detik eksekusi)
+
+Stage Summary:
+- Project-based workflow: buat project per SRT pair, simpan ke Supabase, lanjut kapan saja
+- Auto-save 1.5s: edit textarea, toggle register, pilih voice → tersimpan otomatis
+- Multi-project: S1, S2, dst — terpisah, daftar di "Buka Project"
+- Per-cue voice: 4 voices (Dimas/Siti/Ardi/Gadis), Generate TTS pakai voiceResolver
+- Mode ON + Smart Fit: respectTiming=true, smartFit=true, cap 2.0x → 100% sync SRT ori
+- Active project di-restore dari localStorage (auto-load saat reload page)
+- Commit: eb0ac16 — pushed ke GitHub, Vercel auto-deploy
+- Files changed: supabase.ts (+194), tts.ts (+19), srt-editor-panel.tsx (+888 rewrite)
+- Files new: scripts/supabase-migration-v2.sql
+- Pending: user run migration v2 SQL di Supabase SQL Editor
+
+
+---
+Task ID: 15
+Agent: main
+Task: Per-cue preview + browser local audio cache (IndexedDB)
+
+User question (sebelum run migration v2 SQL):
+"sebelum user run scrip sql, ada yg user tanyakan.
+1. soal generate audio, di srt editor, ini perhalaman? atau langsung full?
+   user perlu reviuw per cue (play di browser)
+2. bisakah kalau srt sudah final, langsung generate full?
+   uplod ke mode on, dengan suara sudah terkurasi, antara dimas atau siti.
+   Atau generate tts multi suara, hanya bisa di srt editor?
+intinya user mau, srt editor juga ada reviuw di browser, srt wav tersimpan di lokal browser."
+
+Jawaban + implementasi:
+
+Sebelumnya:
+- 'Generate TTS' di editor langsung full (semua cue sekaligus), tidak ada per-cue review
+- Audio hanya di memory (URL.createObjectURL), hilang saat reload
+- Multi-voice (per-cue) hanya di editor, Split workflow pakai 1 voice global
+
+Sekarang:
+- Per-cue '▶ Preview' button → dengar 1 cue di browser (inline audio player)
+- Cache audio per cue di IndexedDB (persistent antar reload, survive browser close)
+- 'Generate Full' pakai cache kalau valid (no re-gen untuk cue yang sudah di-preview)
+- Full audio tersimpan di IndexedDB → reload page → audio auto-load
+- Split workflow tetap untuk SRT final single-voice (1 voice global, mode ON)
+
+Files:
+
+1. src/lib/audio-cache.ts (NEW, 274 lines)
+   - Database: 'srt-splitter-audio' (IndexedDB)
+   - 2 stores:
+     * cue-audio: key = `${projectId}:${cueIndex}` → { blob, sampleRate, durationSec, voice, voiceId, text, pitch, smartFitCap, generatedAt }
+     * full-audio: key = projectId → { blob, sampleRate, durationSec, cueCount, voiceSummary, generatedAt }
+   - Functions: initAudioDb, saveCueAudio, getCueAudio, deleteCueAudio,
+     listCachedCueIndices, saveFullAudio, getFullAudio, getCacheSizeForProject, clearAll
+   - Persistent: data survive browser close, reload, bahkan browser restart
+   - Storage limit: ratusan MB-GB (jauh lebih besar dari localStorage 5-10MB)
+
+2. src/lib/tts.ts (+280 lines)
+   - narrateSingleCue(entry, cueIndex, nextEntryStart, opts): SingleCueResult
+     * Generate audio untuk 1 cue saja dengan mode ON + Smart Fit logic
+     * Sama persis seperti loop body di narrateEntries
+     * Returns: { audio: Float32Array, fittedDurationSec, sampleRate, voiceUsed }
+     * NO stitching — caller bertanggung jawab stitch
+   - stitchFullAudio(entries, cachedAudios, opts, onProgress): NarrationResult
+     * Loop semua cue, pakai cache kalau valid (decode blob → Float32Array)
+     * Generate missing via narrateSingleCue
+     * Stitch dengan crossfade (sama seperti narrateEntries)
+     * Returns: { blob, sampleRate, durationSec, previewUrl }
+
+3. src/components/srt-editor-panel.tsx (+310 lines)
+   - Per-cue UI:
+     * Tombol '▶ Preview' di pojok kanan cue card (next to #index + timestamp)
+     * Klik → generate 1 cue TTS (narrateSingleCue) → encode WAV → save IndexedDB
+     * Inline audio player muncul di cue card (purple accent)
+     * Badge: ✓ 1.2s · siti (durasi + voice)
+     * Tombol ✕ untuk hapus cache cue ini
+   - TTS panel (purple section di atas cue list):
+     * 'Generate Full' button (rename dari 'Generate TTS')
+     * Cache status badges:
+       - 'Preview cache: 5/200 cue · 12.3 MB' (real-time count + size)
+       - '✓ Semua cue di-preview — Generate Full akan cepat (no re-gen)' kalau 100%
+       - 'Full audio tersimpan: 150.2s · siti:150, dimas:50' kalau sudah generate full
+     * Generate Full: cache-aware (hit/miss toast)
+     * Full audio player (auto-load dari IndexedDB kalau ada, no re-gen)
+   - Cache validation:
+     * Cache valid kalau: text sama + voiceId sama + pitch sama + smartFitCap sama
+     * User edit text → cache miss → re-generate saat Preview klik lagi
+     * User ganti voice/pitch/cap → cache miss → re-generate
+     * Semua sama → instant play dari cache (no API call, no Edge TTS)
+   - refreshAudioCache: load cache count + size + full audio saat load project
+
+Workflow baru (sistematis):
+1. Buat project (SRT ID + SRT Jawa)
+2. Edit cue: textarea, Ngoko/Krama, Voice (auto-save ke Supabase)
+3. Per-cue: klik '▶ Preview' → dengar di browser → cache ke IndexedDB
+4. Kalau suara kurang pas: edit text/voice → Preview lagi (re-generate, cache update)
+5. Setelah semua cue OK: klik 'Generate Full' → stitch semua cached audio
+6. Full audio tersimpan di IndexedDB → reload page → audio masih ada
+7. Tutup project → buka project lain → balik lagi → semua masih utuh
+
+Untuk SRT final single-voice (mode ON, 1 voice global):
+- Pakai Split workflow (TtsPanel lama di bawah editor)
+- Upload SRT final → pilih Edge voice (Dimas/Siti/Ardi/Gadis) → Generate TTS
+- Mode ON tetap aktif (respectTiming=true, smartFit=true)
+- Cocok untuk SRT yang tidak perlu multi-voice + tidak perlu per-cue review
+
+Verification:
+- Build: ✓ Compiled successfully 11.8s
+- Vercel deploy: ✓ (commit b30538c, ~60s)
+- VLM verify: ✓ '+ Project Baru' + 'Buka Project' + 8-step Cara pakai (termasuk step 6 '▶ Preview' + step 7 'Generate Full')
+
+Stage Summary:
+- Per-cue preview + browser cache sudah jadi (IndexedDB, persistent)
+- Generate Full pakai cache kalau valid (hemat API call Edge TTS)
+- Full audio tersimpan di browser → reload page → audio masih ada
+- Split workflow tetap untuk SRT final single-voice (1 voice global)
+- Commit: b30538c — pushed ke GitHub, Vercel auto-deploy
+- Files: audio-cache.ts (NEW 274), tts.ts (+280 narrateSingleCue + stitchFullAudio), srt-editor-panel.tsx (+310 per-cue UI)
+- User bisa langsung coba setelah run migration v2 SQL di Supabase SQL Editor
+
+
+---
+Task ID: 16
+Agent: main
+Task: Update dokumentasi (README, PROGRESS, worklog) — sync dengan progress terbaru
+
+User request (8 Okt 2026 03:35 WIB):
+"update dokumentasi, progres dan konteks"
+
+Work Log:
+- Update docs/PROGRESS.md (352 → 280 lines rewrite)
+  * Quick status table: 16 item dengan status (✅/⏳/🔜)
+  * MILESTONE baru: Editor SRT Jawa project-based (8 Okt 2026)
+    - 6 sub-fitur dengan commit hash
+  * Supabase schema v1 → v2 → v3 (3 migration files)
+  * Kamus Jawa format v5 (schema + stats + files table)
+  * Web app architecture (komponen baru + layout)
+  * 16 catatan untuk AI next time
+  * Timeline update: 24 entries dari 4 Okt → 8 Okt 2026
+
+- Update README.md (211 → 200 lines rewrite)
+  * Editor SRT Jawa sebagai PRIMARY (project-based + per-cue preview + IndexedDB)
+  * Split/Translate/TTS sebagai SEKUNDER (workflow lama)
+  * 3 fase workflow (ganti dari 5 fase — Fase 0 opsional Demucs, Fase 1 Editor, Fase 2 Mix)
+  * Setup section: Supabase + Kamus download + Python lokal
+  * Kamus Jawa section dengan bidirectional lookup + edit workflow
+  * Struktur folder update (kamus JSON di public/, scripts Python + SQL)
+  * Environment variables (Supabase URL + anon key)
+  * Link ke docs/PROGRESS.md untuk status detail
+
+Stage Summary:
+- Dokumentasi sync dengan progress 8 Okt 2026
+- 3 file update: docs/PROGRESS.md, README.md, worklog.md
+- User next time baca PROGRESS.md → tahu status project
+- AI next time baca PROGRESS.md catatan → tahu konteks + filosofi
+- Tidak ada perubahan kode, hanya dokumentasi
+
+
+---
+Task ID: 17
+Agent: main
+Task: Kamus-tui.py v2 + .env support + upload logic fix (8 Okt 2026 malam)
+
+User: 'pake jq manual = user pusing, mending AI edit TUI di kamus-tui.py pake menu-menu jq, yg user tinggal tab tab, arah panah. juga ada menu upload (hanya yg sudah diedit)'
+
+Work Log:
+- Rewrite kamus-tui.py v2 (387 → 540 lines):
+  * Main menu pre-built (arrow keys, no jq): Statistik, Search, Browse SIAP UPLOAD,
+    Browse krama mapping, Browse BELUM ada arti, Browse per register, Upload, Save, Keluar
+  * Browse list: pagination 20/page, ✓/○ status icon, search di list, edit per entry
+  * Edit entry: ngoko, krama, krama_inggil, arti (Indonesia), keterangan read-only
+  * .env file di ~/Dubbing/ untuk Supabase credentials (sekali set, jalan terus)
+  * Menu "🔑 Set Supabase .env" — input URL + anon key via questionary
+  * Auto-load .env saat start (sebelum SUPABASE_URL/KEY di-read)
+
+- Upload logic (iterasi 3x karena bug):
+  * v1: upload semua yang ada krama (auto-fill template) — BODOH, user cuma edit 2
+  * v2: upload hanya yang status='clean' (arti diisi) — masih bug karena auto-set clean
+  * v3 (FINAL): upload HANYA yang ngoko+krama+arti lengkap (3 field wajib)
+    krama_inggil opsional (tidak semua kata punya)
+    Yang auto-fill template tanpa arti → TIDAK di-upload (belum divalidasi user)
+
+- Bug fixes:
+  * Supabase PGRST102 (all keys must match) — semua row include krama_inggil + register
+  * Menu matching bug: '☁ Upload' bolak-balik ke edit (substring match) — fix pakai emoji prefix
+  * Hapus kamus-jawa.json lama (21KB draft v4) — bikin bingung user
+
+Stage Summary:
+- kamus-tui.py v2 production-ready dengan menu pre-built + .env support
+- Upload logic benar: 3 field wajib (ngoko+krama+arti), krama_inggil opsional
+- User bisa set Supabase credentials sekali, jalan terus walau update TUI
+- User test upload 2 entries → sukses
+
+---
+Task ID: 18
+Agent: main
+Task: Web app kamus audit + frequency analyzer pakai Supabase (8 Okt 2026 malam)
+
+User: 'Lalu ai audit code, jangan rusak kamus dengan code di web, tugas web cukup baca alias, sama merujuk ke kamus. Jadi kamus bisa translate, kaya gue = Kula (dalam krama), atau Nyong (dalam ngoko), karena di kamus alais sudah banyak.'
+
+Work Log:
+- Web app AUDIT — kamus READ-ONLY:
+  * kamus-editor-panel.tsx: hapus semua fungsi edit/save → read-only viewer
+    - Hapus tombol Edit, saveEdit function, edit mode UI
+    - Tambah badge "Read-only" di header
+    - Display: ngoko + krama + krama_inggil + arti + keterangan + status
+  * supabase.ts: hapus fungsi importKamus + updateKamusEntry (write functions)
+    - Sekarang cuma ada: searchKamus (read), countKamus (read)
+    - Comment: "Web app TIDAK edit kamus. Editing hanya via TUI lokal."
+  * Filosofi: editing kamus = TUI lokal → upload ke Supabase
+    Web app cuma baca + lookup alias
+    Validasi level 2: user edit langsung di DB Supabase (Table Editor)
+
+- Frequency analyzer v2 (pakai Supabase sebagai ground of truth):
+  * Hapus load_kamus_set(kamus_path) yang baca file JSON lokal
+  * Tambah fetch_kamus_from_supabase() yang query REST API
+  * Pakai credentials dari ~/Dubbing/.env (sama seperti kamus-tui.py)
+  * Hapus argumen --kamus (tidak perlu lagi)
+
+- Bug fix: web app Kamus Editor pakai kolom 'ngoko' (bukan 'word') + 'arti' (bukan 'id')
+  Konsisten dengan upload dari kamus-tui.py + loadKamusJawa di rapikan-jawa.ts
+
+- Naikkan limit kamus load: 10.000 → 50.000 (cukup untuk 5-10k entries user + auto-fill Wiktionary)
+
+Stage Summary:
+- Web app kamus READ-ONLY (audit selesai, hapus write functions)
+- Frequency analyzer pakai Supabase sebagai ground of truth
+- User test: upload 2 entries → web app search → ketemu (verified end-to-end)
+
+---
+Task ID: 19
+Agent: main
+Task: arti (Indonesia) jadi alias source + UI Top 100 Unknown Words (8 Okt 2026 malam)
+
+User complaint: 'AI SALAH, HARUSNYA AKU dikenal sebagai allias. user membuat kata ngoko adalah nyong dan aku sebagai alias. kalau di sumber srt ada kata saya, aku = seharusnya ngoko translate jadi Nyong dan krama translate jadi Kula'
+
+User request: 'di UI srt editor, bisa lihat misal 2000 kata tak dikenal, top 100 kata tak dikenal?'
+
+Work Log:
+- Bug fix: arti (Indonesia) TIDAK dipakai sebagai source alias
+  * KamusEntry.id (arti Indonesia): update comment — "terjemahan Indonesia + alias (dipisah koma, mis. saya, aku, gue, gua, ane). Dipakai sebagai alias source lookup juga."
+  * isWordInKamus: cek alias di ngoko + krama + krama_inggil + ARTI
+  * suggestRegister: cari entry yang ngoko/krama/krama_inggil/ARTI cocok
+  * convertRegister: allVariants include artiVariants
+    → lookup: {saya→nyong (ngoko) / saya→kula (krama), gue→nyong, ane→kula, ...}
+  * Test 9/9 PASS (saya → nyong/kula, gue → nyong, ane → kula, aku → kula, dst.)
+
+- UI panel "Top 100 Unknown Words" + badge per cue:
+  * getTopUnknownWords() di rapikan-jawa.ts:
+    - Analisis jawaEntries vs kamus (in-memory)
+    - Hitung frequency per kata tak dikenal
+    - Track cue indices (di cue mana kata itu muncul)
+    - Sort by freq desc, lalu alphabet
+    - Return top N (default 100)
+  * Panel amber collapsible di Editor SRT Jawa:
+    - Header: AlertCircle + count badge + "top 100 — prioritas add ke kamus"
+    - Body: list top 100 kata + frequency (×N)
+    - Klik kata → copy ke clipboard (paste di kamus-tui.py)
+    - Hover tooltip: "Muncul di cue: 1, 5, 12..."
+    - Tombol "Copy all (N)" untuk copy semua sekaligus
+    - Helper: "Paste di kamus-tui.py → search → add entry"
+    - Empty state: "✓ Semua kata di SRT dikenal kamus."
+  * Badge per cue "N tak dikenal" (amber border + AlertCircle icon):
+    - Hitung unknown words di cue itu
+    - Border cue card jadi amber kalau ada unknown words
+  * Auto-update: useEffect saat jawaEntries atau kamus berubah
+
+- User verifikasi: panel muncul dengan "100 unique" + top kata (sing ×125, ora ×124, iki ×111)
+  Workflow user: Copy all → paste di kamus-tui.py → add entry → upload → reload
+
+Stage Summary:
+- arti (Indonesia) jadi source alias: saya/aku/gue/ane → nyong/kula
+- UI panel Top 100 Unknown Words + badge per cue
+- User verified: panel muncul dengan 100 unique words, top kata sing ×125
+- Pipeline end-to-end siap: edit kamus bertahap → upload → test di Editor → iterasi
+
+
+---
+Task ID: 20
+Agent: main
+Task: Kamus TUI audit + krama_inggil fix + aksara support + 5k cue bug fix
+
+User requests (8 Okt 2026, sesi panjang malam):
+
+1. Register ngoko/krama juga tidak 100% valid — banyak register ngoko ternyata krama
+2. Tambah entry_id di JSON supaya user bisa referensi by number
+3. TUI merge fitur — gabung 2 entries terpisah jadi 1
+4. Register bisa di-edit di TUI (dropdown)
+5. krama_inggil parser TERBALIK — ki field sebenarnya ngoko, krama field sudah benar
+6. SEMUA 90 krama_inggil dibalik (ki→ngoko, krama tetap, hapus ki)
+7. Merge pakai SEARCH kata, bukan input entry_id
+8. Search exact match dulu, baru substring (supaya "sing" tidak tenggelam)
+9. Merge gabung sinonim sebagai alias (comma), bukan ambil pertama
+10. Merge gabung aksara juga, jangan hilangkan
+11. Aksara Jawa jadi source alias — database baca aksara, convert ke ngoko/krama/ID
+12. Hapus limit 50000 — database = ground of truth, jangan filter
+13. 5100 cue hanya 1000 terbaca — Supabase REST API limit 1000 rows
+
+Work Log:
+
+A. krama_inggil TERBALIK (commit 8158bd4):
+   - Parser {{ki}} tag salah: title ditaruh di ki field, padahal title = ngoko/krama word
+   - Contoh: krama='criyos' ki='kandha' → seharusnya ngoko='kandha' krama='criyos'
+   - User: 'BUKAN SALAH, HANYA TERBALIK. KENAPA DIHAPUS?'
+   - Fix: SEMUA 90 entries ki→ngoko, krama tetap, hapus ki
+   - User context: 'krama=dipun-takèkaken ki=ditakokaké = dari akar tanya (id),
+     takon (ngoko), taken (krama). Tidak ada krama_inggil untuk konsep tanya.'
+
+B. TUI audit (commit 7eb30f6):
+   - 5 bug: save_kamus tidak recompute status, DUA versi merge, browse_list search
+     tidak exact match, docstring outdated
+   - Fix: recompute status setiap save, hapus merge_entry duplikat, exact match
+     semua search, update docstring
+
+C. Merge fitur (commits 70c5eac → 62b7416):
+   - Search kata 1 → search kata 2 → preview → konfirmasi
+   - Smart merge: kalau entry2 ngoko == entry1 krama → krama word
+   - Gabung sinonim sebagai alias (comma): 'sing, kang' bukan ambil 'sing' saja
+   - Gabung aksara: 'ꦱꦶꦁ, ꦲꦶꦁꦏꦁ' (keduanya disimpan)
+   - Gabung keterangan: 'ket1 | ket2' (keduanya disimpan)
+   - Hapus emoji dependency di menu matching (pakai keyword unik)
+
+D. Aksara Jawa support (commit bf07803):
+   - User: 'database membaca sumber. urusan web mau ngolah jadi ngoko, krama,
+     bahkan ke indonesia itu urusan database. website terlalu BODOH tidak
+     memanfaatkan database.'
+   - Filosofi: Google Translate = translate cerdas (kalimat), database = translate
+     deterministik (kata by kata, baku sesuai Wiktionary)
+   - Aksara jadi source alias di: convertRegister, isWordInKamus, suggestRegister,
+     getTopUnknownWords
+   - Source 'ꦲꦏꦸ' → convert ke ngoko → 'aku', ke krama → 'kula'
+
+E. Database audit (commit c888744):
+   - 10 cek: SEMUA pass kecuali limit 50000
+   - Hapus limit — database = ground of truth, baca semua tanpa filter
+   - Tidak ada write ke kamus dari web (read-only)
+
+F. 5k cue bug fix (commit 3586fad):
+   - User: 'saya attached srt jw harusnya 5k cue, tapi kenapa cuma terbaca 1k cue?'
+   - Bug 1: insert 5000 cues sekaligus → Supabase REST API reject >1000 rows
+     Fix: batch insert 500 per request
+   - Bug 2: select cues tidak ada .limit() → Supabase default = 1000 rows
+     Fix: .limit(100000)
+   - User verify: '5100 cue sudah terbaca di project 1, dan di DB juga muncul'
+
+Stage Summary:
+- krama_inggil: 254 → 159 hapus (self-ref) → 95 restore → 90 dibalik → 0 (semua jadi ngoko+krama benar)
+- TUI merge: search kata → pilih → preview → konfirmasi (gabung alias + aksara + keterangan)
+- TUI search: exact match dulu, baru substring (tidak tenggelam di noise)
+- TUI audit: 5 bug fix (status recompute, merge duplikat, search exact, docstring)
+- Aksara Jawa: jadi source alias di convertRegister + isWordInKamus + suggestRegister
+- Database audit: 10 cek pass, hapus limit, read-only kamus
+- 5k cue: batch insert 500 + limit 100000 → 5100 cue sukses
+- Commits: 0b94ed1 → 3586fad (16 commits dalam 1 sesi)
+
+
+---
+Task ID: 21
+Agent: main
+Task: Hapus scripts lama + yt-dlp v2 + generate per halaman + default Dimas + jump page
+
+User requests (8 Okt 2026, sesi terakhir malam):
+
+1. TTS di SRT Editor: default voice Dimas, generate per halaman, jump page
+2. Audit semua TUI di folder scripts — mana aktif, mana lama
+3. edit-kamus.py: masih berfungsi? hapus kalau gak guna
+4. yt-dlp-tui.py: tambah pilihan resolusi (480p/720p/1080p)
+5. demucs-tui.py: batch per 10 menit (3 jam = berat RAM)
+6. mix-tui.py: batch + subtitle embed (ukuran kecil untuk video vertikal)
+
+Work Log:
+
+1. Default voice: Siti → Dimas (commit e0d7f80)
+   - buildTtsOpts: defaultVoice = jv-ID-DimasNeural
+   - handlePreviewCue: default voiceShort = 'dimas'
+   - Generate Full fallback: Dimas
+   - User cukup klik Siti manual untuk cue perempuan
+
+2. Jump to page: input number di pagination (commit e0d7f80)
+   - Muncul kalau totalPages > 5 (5100 cue = 170 halaman)
+   - User ketik angka → langsung lompat ke halaman itu
+
+3. Generate per halaman: handleGeneratePage (commit a3aa3dd)
+   - Generate 30 cue di halaman saat ini
+   - Pakai cache per-cue (kalau valid, no re-gen)
+   - Stitch 30 cue → download WAV (namaproject-halN.wav)
+   - Cocok untuk: sudah Generate Full → edit beberapa kata → generate halaman itu
+
+4. Audit 17 scripts (commit 7398ade):
+   AKTIF (7): kamus-tui, srt-frequency-analyzer, demucs-tui, mix-tui, yt-dlp-tui,
+     parse-wiktionary-jv, add-entry-id
+   HAPUS (10): edit-kamus, rapikan-jawa, rapikan-jawa-semua-season, tambah-krama,
+     srt-to-audio, split_srt, analyze-srt-density, dubbing-tui, retime-video,
+     build_source_zip
+
+5. yt-dlp-tui.py v2 (commit 7398ade):
+   - Pilihan: 480p, 720p, 1080p, best, audio only
+   - Output: MP4 + audio terpisah (2 file) atau MP4 merged (1 file)
+   - Pakai bestvideo[height<=N] (fleksibel, bukan format ID hardcode)
+
+6. demucs batch + mix batch + subtitle: PENDING besok
+   - Demucs: split per 10 menit → demucs per batch → concat
+   - Mix: per batch + embed subtitle (font kecil untuk video vertikal)
+   - Versi manual: user cuma butuh MP4 ori + SFX + audio dub + SRT (DaVinci)
+
+Stage Summary:
+- 10 scripts lama dihapus (folder scripts/ bersih: 7 file aktif)
+- yt-dlp v2: pilihan resolusi + output terpisah
+- TTS Editor: default Dimas + jump page + generate per halaman
+- Commits: e0d7f80, a3aa3dd, 7398ade
+- Pending besok: batch demucs + batch mix + subtitle embed
+
