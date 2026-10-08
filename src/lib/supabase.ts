@@ -265,19 +265,37 @@ export async function getCues(projectId: string): Promise<SrtCue[]> {
   const client = getSupabase()
   if (!client) return []
 
-  const { data, error } = await client
-    .from('srt_cues')
-    .select('*')
-    .eq('project_id', projectId)
-    .order('cue_index', { ascending: true })
-    .limit(100000)
+  // PAGINATION — Supabase default max rows = 1000
+  let allCues: SrtCue[] = []
+  const pageBatch = 1000
+  let offset = 0
+  let hasMore = true
 
-  if (error) {
-    console.error('[Supabase] getCues error:', error)
-    return []
+  while (hasMore) {
+    const { data, error } = await client
+      .from('srt_cues')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('cue_index', { ascending: true })
+      .range(offset, offset + pageBatch - 1)
+
+    if (error) {
+      console.error('[Supabase] getCues error (page ' + offset + '):', error)
+      return allCues
+    }
+
+    if (data && data.length > 0) {
+      allCues = allCues.concat(data as SrtCue[])
+    }
+
+    if (!data || data.length < pageBatch) {
+      hasMore = false
+    } else {
+      offset += pageBatch
+    }
   }
 
-  return data as SrtCue[]
+  return allCues
 }
 
 /**
@@ -459,20 +477,39 @@ export async function getProjectWithCues(projectId: string): Promise<{ project: 
     return null
   }
 
-  // Get cues — limit tinggi supaya dapat semua (Supabase default limit = 1000)
-  const { data: cueData, error: cueError } = await client
-    .from('srt_cues')
-    .select('*')
-    .eq('project_id', projectId)
-    .order('cue_index', { ascending: true })
-    .limit(100000)
+  // Get cues — PAGINATION karena Supabase PostgREST default max rows = 1000
+  // .limit(100000) TIDAK BERFUNGSI (PostgREST override)
+  // Pakai .range() untuk fetch per batch 1000
+  let allCues: SrtCue[] = []
+  const pageBatch = 1000
+  let offset = 0
+  let hasMore = true
 
-  if (cueError) {
-    console.error('[Supabase] getProjectWithCues: cues error:', cueError)
-    return { project: projData as SrtProject, cues: [] }
+  while (hasMore) {
+    const { data: pageData, error: pageError } = await client
+      .from('srt_cues')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('cue_index', { ascending: true })
+      .range(offset, offset + pageBatch - 1)
+
+    if (pageError) {
+      console.error('[Supabase] getProjectWithCues: cues error (page ' + offset + '):', pageError)
+      return { project: projData as SrtProject, cues: allCues }
+    }
+
+    if (pageData && pageData.length > 0) {
+      allCues = allCues.concat(pageData as SrtCue[])
+    }
+
+    if (!pageData || pageData.length < pageBatch) {
+      hasMore = false
+    } else {
+      offset += pageBatch
+    }
   }
 
-  return { project: projData as SrtProject, cues: (cueData || []) as SrtCue[] }
+  return { project: projData as SrtProject, cues: allCues }
 }
 
 /**
