@@ -13,7 +13,24 @@ Aplikasi web untuk split SRT, translate subtitle, dan **dubbing Mandarin → Jaw
 
 ### Web App (https://srt-splitter.vercel.app/)
 
-#### Editor SRT Jawa (PRIMARY — project-based workflow) ⭐
+Aplikasi web punya **2 mode dubbing** sesuai bahasa target:
+
+#### Mode ON — Bahasa Indonesia (cara cepat, SUDAH JALAN) ✅
+
+Workflow lama, khusus dub Indonesia. Generate full durasi 1 klik, default voice Dimas untuk semua cue.
+
+| Fitur | Deskripsi |
+|---|---|
+| **TTS Mode ON + Smart Fit** | Per-cue dynamic TTS speed (cap 2.0x, pitch preserved), 100% sync SRT ori |
+| **TTS Pitch Control** | -10Hz laki (lebih bas), +10Hz perempuan (lebih tinggi) |
+| **TTS Mode OFF** | Natural sequential, speed 1.0x-2.0x |
+| **Default voice** | Dimas (laki-laki) untuk semua cue (auto) |
+| **Output** | `audio-id-dub.wav` (1 klik generate full durasi) |
+| **Status** | ✅ SUDAH JALAN — siap pakai untuk pipeline mix-tui.py |
+
+#### Editor SRT Jawa — Bahasa Jawa (per cue, masa depan) ⏳
+
+Workflow baru, project-based. Saat ini user masih klik per cue satu-satu untuk preview + generate.
 
 | Fitur | Deskripsi |
 |---|---|
@@ -25,21 +42,20 @@ Aplikasi web untuk split SRT, translate subtitle, dan **dubbing Mandarin → Jaw
 | **Generate Full** | Pakai cache kalau valid (hemat API call) + auto-download WAV |
 | **Bidirectional alias** | Source apapun (aku/inyong/kula/dalem/saya/gue/ane) → convert ke ngoko/krama utama |
 | **Arti (Indonesia) alias** | "saya" → klik Ngoko → "nyong", klik Krama → "kula" (asalkan "saya" ada di arti alias) |
-| **Per-cue voice** | Dimas/Siti (Jawa), Ardi/Gadis (Indonesia) — assign per cue |
+| **Per-cue voice** | Dimas/Siti (Jawa) — assign per cue |
 | **Auto-strip aksen TTS** | é/è/ê → e otomatis saat TTS (SRT final tetap utuh dengan aksen) |
-| **Mode ON + Smart Fit** | 100% sync SRT ori, cap 2.0x, asymmetric trim, crossfade 150ms |
 | **⚠ Top 100 Unknown Words** | Panel amber: list top 100 kata tak dikenal kamus + frequency + Copy all |
 | **Badge per cue "N tak dikenal"** | Visual cue: cue mana yang perlu review (amber border) |
+| **Output** | `audio-jw-dub.wav` |
+| **Status** | ⏳ Code perlu dibereskan: default voice Dimas otomatis untuk semua cue (sekarang klik manual), Siti tetap manual via klik |
+| **Kamus Jawa** | Di Supabase, progressif (50 entries/minggu), target 2.000 entries dengan arti |
 
-#### Split / Translate / TTS (SEKUNDER — workflow lama)
+#### Split / Translate (SEKUNDER — utility)
 
 | Fitur | Deskripsi |
 |---|---|
 | **Split SRT** | By durasi (5m-5jam) atau by karakter (max 5000) |
 | **Translate** | EN→ID, ID→Jawa, Jawa→ID (gratis Google Translate atau premium OpenAI) |
-| **TTS Mode ON + Smart Fit** | Per-cue dynamic TTS speed (cap 2.0x, pitch preserved) |
-| **TTS Pitch Control** | -10Hz laki (lebih bas), +10Hz perempuan (lebih tinggi) |
-| **TTS Mode OFF** | Natural sequential, speed 1.0x-2.0x |
 | **🔴 Dubbing Mode v2.0** | Audio natural → SRT baru → MP4 retimed (deprecated, 20x test gagal) |
 
 #### Kamus Jawa Viewer (READ-ONLY) ⚠
@@ -55,9 +71,9 @@ Aplikasi web untuk split SRT, translate subtitle, dan **dubbing Mandarin → Jaw
 
 | Script | Fungsi |
 |---|---|
-| **`demucs-tui.py`** ⭐ | TUI Demucs SFX separation (MPS acceleration, ~1 menit untuk 7.5 menit audio) |
-| **`mix-tui.py`** ⭐ | TUI Mix SFX bersih + audio dub + MP4 (~7 detik, 0 DTS warnings) |
-| **`yt-dlp-tui.py`** | TUI Download YouTube 1080p H.264 + audio |
+| **`yt-dlp-tui.py`** ⭐ | TUI Download YouTube (pilih resolusi 480/720/1080) + audio terpisah |
+| **`demucs-tui.py`** ⭐ | TUI Demucs SFX separation → no_vocals.mp3 (MP3 320 kbps, MPS acceleration, ~140 MB per 2 jam) |
+| **`mix-tui.py`** ⭐ | TUI Mix MP4 + no_vocals + audio_dub (~7 detik, 0 DTS warnings, ducking sidechain) |
 | **`kamus-tui.py`** ⭐ | TUI edit kamus Jawa v2 — menu pre-built, .env support, upload Supabase |
 | **`srt-frequency-analyzer.py`** ⭐ | Analisis SRT → top 100 kata tak dikenal (pakai Supabase sebagai ground of truth) |
 | **`parse-wiktionary-jv.py`** | Parser v5: Wiktionary XML → kamus JSON (register tag + krama_inggil + xref) |
@@ -69,30 +85,56 @@ Aplikasi web untuk split SRT, translate subtitle, dan **dubbing Mandarin → Jaw
 
 ---
 
-## Workflow Dubbing Mandarin → Jawa (3 Fase)
+## Workflow Dubbing Mandarin → Jawa (4 Fase, sumber terpisah)
 
 ```
-Fase 0 (opsional): SFX Separation dengan Demucs (Python lokal)
-  Input: MP4 → Output: no_vocals.wav (SFX bersih)
+Fase 1: Download dari YouTube (yt-dlp-tui.py, Python lokal)
+  Pilih resolusi (480/720/1080) → output: mp4-ori.mp4 + audio.wav (terpisah)
         ↓
-Fase 1: Web app Editor SRT Jawa (project-based + per-cue preview)
-  + Project Baru → upload SRT ID + SRT Jawa → buat project (simpan ke Supabase)
-  Edit cue (text/voice/ngoko/krama) → auto-save 1.5s
-  Preview per cue → dengar di browser → cache ke IndexedDB
-  Generate Full → stitch cached audio + crossfade → audio-{lang}-dub.wav
+Fase 2: SFX Separation dengan Demucs (demucs-tui.py, Python lokal)
+  Input: audio.wav → Output: no_vocals.mp3 (SFX bersih, MP3 320 kbps)
+  (vocals.wav auto-dihapus — tidak dipakai untuk dubbing)
         ↓
-Fase 2: Mix SFX + Dub (Python lokal, mix-tui.py)
-  Input: mp4-ori + audio-{lang}-dub + no_vocals.wav (SFX)
+Fase 3a: Web app — Mode ON (Bahasa Indonesia, cara cepat) — SUDAH JALAN
+  Upload SRT ori → mode ON → Smart Fit (cap 2.0x) → pitch (-15Hz laki)
+  Default voice: Dimas untuk semua cue → audio-id-dub.wav (dialog, 100% sync)
+        ↓
+Fase 3b: Web app — SRT editor (Bahasa Jawa, per cue) — NUNGGU CODE FIX
+  + Project Baru → upload SRT ID + SRT Jawa → simpan ke Supabase
+  Edit cue (text/voice/ngoko/krama) → Preview per cue → Generate Full
+  TODO: default voice Dimas otomatis untuk semua cue (sekarang klik manual)
+        Siti (perempuan) tetap manual via klik
+  Output: audio-jw-dub.wav — code perlu dibereskan (web app side)
+  Kamus Jawa di Supabase (progressif, 50 entries/minggu)
+        ↓
+Fase 4: Mix SFX + Dub (mix-tui.py, Python lokal)
+  Input: mp4-ori.mp4 + no_vocals.mp3 + audio-id-dub.wav (atau audio-jw-dub.wav)
   Output: mp4-{lang}-final.mp4 (video stream copy, 0 DTS warnings, 100% sync)
         ↓
-Fase 3 (opsional): Edit final di DaVinci Resolve (manual)
+Fase 5 (opsional): Edit final di DaVinci Resolve (manual)
 ```
 
 **Total waktu untuk MP4 3 jam**: ~30-60 menit
-- Fase 0: 5-10 menit (Demucs MPS, opsional)
-- Fase 1: 20-40 menit (edit + preview + generate)
-- Fase 2: ~10 detik (mix FFmpeg)
-- Fase 3: 30-60 menit (edit manual, opsional)
+- Fase 1: 5-10 menit (download, tergantung koneksi)
+- Fase 2: 5-10 menit (Demucs MPS) — output MP3 320 (~140 MB per 2 jam)
+- Fase 3a: 20-40 menit (Mode ON edit + preview + generate) — ID
+- Fase 3b: 1-2 jam (SRT editor per cue + kamus lookup) — Jawa (saat ready)
+- Fase 4: ~10 detik (mix FFmpeg)
+- Fase 5: 30-60 menit (edit manual, opsional)
+
+---
+
+## Multi-bahasa Output (rencana masa depan)
+
+Setelah Fase 3b (Jawa) ready:
+
+| Opsi | Bentuk | Cocok untuk |
+|---|---|---|
+| **A. Multi-track MP4** | 1 file, switch audio di player (DVD-style) | Arsip & VLC playback |
+| **B. File terpisah** | 2 MP4 (mp4-id-final + mp4-jw-final) | Upload TikTok/IG per bahasa |
+| **C. Hybrid** | 1 MP4 default ID + sidecar wav Jawa | Bandwidth efficient |
+
+Belum diimplementasi di mix-tui.py (single-bahasa dulu sampai Jawa ready).
 
 ---
 
