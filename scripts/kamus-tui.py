@@ -776,9 +776,17 @@ def main_menu(data):
             if not q1 or not q1.strip():
                 continue
             q1_lower = q1.lower().strip()
-            m1 = [(i, w) for i, w in enumerate(data['words'])
-                  if q1_lower in (w.get('ngoko') or '').lower()
-                  or q1_lower in (w.get('krama') or '').lower()]
+            # Exact match dulu (ngoko atau krama persis = kata), baru substring
+            exact_m1 = []
+            substr_m1 = []
+            for i, w in enumerate(data['words']):
+                ngoko = (w.get('ngoko') or '').lower()
+                krama = (w.get('krama') or '').lower()
+                if ngoko == q1_lower or krama == q1_lower:
+                    exact_m1.append((i, w))
+                elif q1_lower in ngoko or q1_lower in krama:
+                    substr_m1.append((i, w))
+            m1 = exact_m1 + substr_m1  # exact dulu, baru substring
             if not m1:
                 print(f'  ❌ Tidak ada hasil untuk "{q1}"')
                 input('  Tekan Enter...')
@@ -810,10 +818,19 @@ def main_menu(data):
             if not q2 or not q2.strip():
                 continue
             q2_lower = q2.lower().strip()
-            m2 = [(i, w) for i, w in enumerate(data['words'])
-                  if i != idx1
-                  and (q2_lower in (w.get('ngoko') or '').lower()
-                       or q2_lower in (w.get('krama') or '').lower())]
+            # Exact match dulu, baru substring
+            exact_m2 = []
+            substr_m2 = []
+            for i, w in enumerate(data['words']):
+                if i == idx1:
+                    continue
+                ngoko = (w.get('ngoko') or '').lower()
+                krama = (w.get('krama') or '').lower()
+                if ngoko == q2_lower or krama == q2_lower:
+                    exact_m2.append((i, w))
+                elif q2_lower in ngoko or q2_lower in krama:
+                    substr_m2.append((i, w))
+            m2 = exact_m2 + substr_m2  # exact dulu, baru substring
             if not m2:
                 print(f'  ❌ Tidak ada hasil untuk "{q2}"')
                 input('  Tekan Enter...')
