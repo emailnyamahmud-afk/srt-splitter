@@ -153,7 +153,7 @@ def main():
     print('▶ Step 1/6: Pilih file MP4/audio ori')
     input_file = select_file(
         'File MP4/audio ori (mis. mp4-ori-test-7min.mp4):',
-        ['mp4', 'wav', 'm4a', 'flac', 'mp3'],
+        ['mp4', 'wav', 'm4a', 'flac', 'mp3', 'opus', 'webm', 'ogg'],
     )
     if not input_file:
         print('Batal.')
