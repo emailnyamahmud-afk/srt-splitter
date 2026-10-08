@@ -1109,3 +1109,60 @@ Stage Summary:
 - 5k cue: batch insert 500 + limit 100000 → 5100 cue sukses
 - Commits: 0b94ed1 → 3586fad (16 commits dalam 1 sesi)
 
+
+---
+Task ID: 21
+Agent: main
+Task: Hapus scripts lama + yt-dlp v2 + generate per halaman + default Dimas + jump page
+
+User requests (8 Okt 2026, sesi terakhir malam):
+
+1. TTS di SRT Editor: default voice Dimas, generate per halaman, jump page
+2. Audit semua TUI di folder scripts — mana aktif, mana lama
+3. edit-kamus.py: masih berfungsi? hapus kalau gak guna
+4. yt-dlp-tui.py: tambah pilihan resolusi (480p/720p/1080p)
+5. demucs-tui.py: batch per 10 menit (3 jam = berat RAM)
+6. mix-tui.py: batch + subtitle embed (ukuran kecil untuk video vertikal)
+
+Work Log:
+
+1. Default voice: Siti → Dimas (commit e0d7f80)
+   - buildTtsOpts: defaultVoice = jv-ID-DimasNeural
+   - handlePreviewCue: default voiceShort = 'dimas'
+   - Generate Full fallback: Dimas
+   - User cukup klik Siti manual untuk cue perempuan
+
+2. Jump to page: input number di pagination (commit e0d7f80)
+   - Muncul kalau totalPages > 5 (5100 cue = 170 halaman)
+   - User ketik angka → langsung lompat ke halaman itu
+
+3. Generate per halaman: handleGeneratePage (commit a3aa3dd)
+   - Generate 30 cue di halaman saat ini
+   - Pakai cache per-cue (kalau valid, no re-gen)
+   - Stitch 30 cue → download WAV (namaproject-halN.wav)
+   - Cocok untuk: sudah Generate Full → edit beberapa kata → generate halaman itu
+
+4. Audit 17 scripts (commit 7398ade):
+   AKTIF (7): kamus-tui, srt-frequency-analyzer, demucs-tui, mix-tui, yt-dlp-tui,
+     parse-wiktionary-jv, add-entry-id
+   HAPUS (10): edit-kamus, rapikan-jawa, rapikan-jawa-semua-season, tambah-krama,
+     srt-to-audio, split_srt, analyze-srt-density, dubbing-tui, retime-video,
+     build_source_zip
+
+5. yt-dlp-tui.py v2 (commit 7398ade):
+   - Pilihan: 480p, 720p, 1080p, best, audio only
+   - Output: MP4 + audio terpisah (2 file) atau MP4 merged (1 file)
+   - Pakai bestvideo[height<=N] (fleksibel, bukan format ID hardcode)
+
+6. demucs batch + mix batch + subtitle: PENDING besok
+   - Demucs: split per 10 menit → demucs per batch → concat
+   - Mix: per batch + embed subtitle (font kecil untuk video vertikal)
+   - Versi manual: user cuma butuh MP4 ori + SFX + audio dub + SRT (DaVinci)
+
+Stage Summary:
+- 10 scripts lama dihapus (folder scripts/ bersih: 7 file aktif)
+- yt-dlp v2: pilihan resolusi + output terpisah
+- TTS Editor: default Dimas + jump page + generate per halaman
+- Commits: e0d7f80, a3aa3dd, 7398ade
+- Pending besok: batch demucs + batch mix + subtitle embed
+
