@@ -483,7 +483,7 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
   // === Generate TTS (mode ON + Smart Fit, per-cue voice) ===
   // Build common NarrationOptions (dipakai oleh per-cue preview + Generate Full)
   const buildTtsOpts = useCallback((onLineProgress?: (current: number, total: number, text: string) => void): NarrationOptions => {
-    const defaultVoice = 'jv-ID-SitiNeural'
+    const defaultVoice = 'jv-ID-DimasNeural'  // Default: Dimas (laki), user bisa override per cue
     const voiceResolver = (_entry: SrtEntry, idx: number) => {
       const voiceId = voices[idx]
       if (!voiceId) return defaultVoice
@@ -519,8 +519,8 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
 
     // Voice for this cue
     const voiceId = voices[cueIndex] || ''
-    const voiceShort = voiceId || 'siti'  // default Siti
-    const voiceFull = VOICES.find(v => v.id === voiceShort)?.voice || 'jv-ID-SitiNeural'
+    const voiceShort = voiceId || 'dimas'  // default Dimas (laki)
+    const voiceFull = VOICES.find(v => v.id === voiceShort)?.voice || 'jv-ID-DimasNeural'
 
     // Check existing cache — kalau text + voice + pitch + cap sama, langsung play (no regen)
     try {
@@ -1206,7 +1206,7 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center justify-between gap-2 pt-2 flex-wrap">
             <Button
               size="sm"
               variant="outline"
@@ -1215,9 +1215,27 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
             >
               <ChevronLeft className="size-4" /> Sebelumnya
             </Button>
-            <span className="text-xs text-muted-foreground">
-              Hal {currentPage + 1} / {totalPages} ({jawaEntries.length} cue)
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
+                Hal {currentPage + 1} / {totalPages} ({jawaEntries.length} cue)
+              </span>
+              {totalPages > 5 && (
+                <input
+                  type="number"
+                  min={1}
+                  max={totalPages}
+                  value={currentPage + 1}
+                  onChange={e => {
+                    const val = parseInt(e.target.value)
+                    if (val >= 1 && val <= totalPages) {
+                      setCurrentPage(val - 1)
+                    }
+                  }}
+                  className="w-16 text-xs border rounded px-1 py-0.5 bg-background text-center"
+                  title="Lompat ke halaman"
+                />
+              )}
+            </div>
             <Button
               size="sm"
               variant="outline"
