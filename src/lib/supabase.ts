@@ -270,6 +270,7 @@ export async function getCues(projectId: string): Promise<SrtCue[]> {
     .select('*')
     .eq('project_id', projectId)
     .order('cue_index', { ascending: true })
+    .limit(100000)
 
   if (error) {
     console.error('[Supabase] getCues error:', error)
@@ -397,7 +398,7 @@ export async function createDualProject(
 
   const project = projData as SrtProject
 
-  // Step 2: Insert cues (batch)
+  // Step 2: Insert cues (batch — 500 per request, Supabase REST API limit ~1000 rows)
   const cueRows = cues.map(c => ({
     project_id: project.id,
     cue_index: c.cue_index,
@@ -410,17 +411,32 @@ export async function createDualProject(
     is_edited: false,
   }))
 
-  const { data: cueData, error: cueError } = await client
-    .from('srt_cues')
-    .insert(cueRows)
-    .select()
+  const batchSize = 500
+  let allCueData: SrtCue[] = []
+  let insertError: { message: string } | null = null
 
-  if (cueError) {
-    console.error('[Supabase] createDualProject: cues insert error:', cueError)
-    return { project, cues: [] }
+  for (let i = 0; i < cueRows.length; i += batchSize) {
+    const batch = cueRows.slice(i, i + batchSize)
+    const { data: batchData, error: batchErr } = await client
+      .from('srt_cues')
+      .insert(batch)
+      .select()
+
+    if (batchErr) {
+      console.error('[Supabase] createDualProject: cues insert error (batch):', batchErr)
+      insertError = batchErr
+      break
+    }
+    if (batchData) {
+      allCueData = allCueData.concat(batchData as SrtCue[])
+    }
   }
 
-  return { project, cues: (cueData || []) as SrtCue[] }
+  if (insertError) {
+    return { project, cues: allCueData }
+  }
+
+  return { project, cues: allCueData }
 }
 
 /**
@@ -443,12 +459,13 @@ export async function getProjectWithCues(projectId: string): Promise<{ project: 
     return null
   }
 
-  // Get cues
+  // Get cues — limit tinggi supaya dapat semua (Supabase default limit = 1000)
   const { data: cueData, error: cueError } = await client
     .from('srt_cues')
     .select('*')
     .eq('project_id', projectId)
     .order('cue_index', { ascending: true })
+    .limit(100000)
 
   if (cueError) {
     console.error('[Supabase] getProjectWithCues: cues error:', cueError)
