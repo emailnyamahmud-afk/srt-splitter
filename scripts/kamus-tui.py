@@ -542,7 +542,7 @@ def browse_list(data, entries_with_idx, title):
 
 
 def search_menu(data):
-    """Search kamus"""
+    """Search kamus — exact match dulu, baru substring. Hanya di ngoko/krama/krama_inggil/arti."""
     os.system('clear' if os.name != 'nt' else 'cls')
     print('╔' + '═' * 60 + '╗')
     print('║  🔍 Search Kamus' + ' ' * 44 + '║')
@@ -554,19 +554,21 @@ def search_menu(data):
         return
 
     search_lower = query.lower().strip()
-    matches = []
+    # Exact match dulu (ngoko/krama/krama_inggil/arti persis = kata), baru substring
+    # TIDAK search di keterangan (terlalu banyak noise)
+    exact = []
+    substr = []
     for i, entry in enumerate(data['words']):
-        ngoko = entry.get('ngoko', '') or ''
-        krama = entry.get('krama', '') or ''
-        ki = entry.get('krama_inggil', '') or ''
-        arti = entry.get('arti', '') or ''
-        ket = entry.get('keterangan', '') or ''
-        if (search_lower in ngoko.lower() or
-            search_lower in krama.lower() or
-            search_lower in ki.lower() or
-            search_lower in arti.lower() or
-            search_lower in ket.lower()):
-            matches.append((i, entry))
+        ngoko = (entry.get('ngoko') or '').lower()
+        krama = (entry.get('krama') or '').lower()
+        ki = (entry.get('krama_inggil') or '').lower()
+        arti = (entry.get('arti') or '').lower()
+        if ngoko == search_lower or krama == search_lower or ki == search_lower or arti == search_lower:
+            exact.append((i, entry))
+        elif (search_lower in ngoko or search_lower in krama or
+              search_lower in ki or search_lower in arti):
+            substr.append((i, entry))
+    matches = exact + substr
 
     if not matches:
         print(f'\n  Tidak ada hasil untuk "{query}"')
