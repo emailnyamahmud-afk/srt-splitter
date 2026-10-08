@@ -1,30 +1,12 @@
 #!/usr/bin/env python3
 """
-yt-dlp-tui.py — TUI untuk download YouTube video (MP4 1080p H.264 + audio)
+yt-dlp-tui.py v2 — TUI download YouTube dengan pilihan resolusi
 
-Download video YouTube dengan yt-dlp, output:
-  - Video: H.264 1080p (format 137 = 1080p H.264)
-  - Audio: m4a (format 140)
-  - Merge: MP4 (video + audio digabung)
+Pilihan resolusi: 480p, 720p, 1080p, best
+Output: 2 file = MP4 (video+audio merged) + audio ori (m4a)
 
-Install yt-dlp (sekali saja):
-  pip3 install yt-dlp
-  # Atau: pip3 install yt-dlp --break-system-packages
-  # Atau: brew install yt-dlp
-
-Usage:
-  source venv/bin/activate  # kalau install di venv
-  python3 yt-dlp-tui.py
-  (pilih mode, paste URL YouTube, tunggu download)
-
-Output:
-  {title}.mp4 (video 1080p H.264 + audio, siap untuk workflow dubbing)
-
-Tips:
-  - Format 137 = 1080p H.264 (cepat decode di FFmpeg, cocok untuk Demucs)
-  - Format 140 = audio m4a 128kbps
-  - Kalau 1080p tidak ada, fallback ke 720p (format 136)
-  - Kalau H.264 tidak ada, fallback ke format terbaik
+Install: pip3 install yt-dlp
+Usage: python3 yt-dlp-tui.py
 """
 
 import os
@@ -36,9 +18,7 @@ from pathlib import Path
 try:
     import questionary
 except ImportError:
-    print('\n❌ Library "questionary" belum terinstall.')
-    print('   Install dengan: pip3 install questionary')
-    print()
+    print('\n❌ pip3 install questionary')
     sys.exit(1)
 
 
@@ -46,22 +26,11 @@ def clear_screen():
     os.system('clear' if os.name != 'nt' else 'cls')
 
 
-def print_banner():
-    clear_screen()
-    print('╔' + '═' * 64 + '╗')
-    print('║  📺 YouTube Downloader (TUI Mode)' + ' ' * 32 + '║')
-    print('║  Download MP4 1080p H.264 + audio untuk dubbing' + ' ' * 16 + '║')
-    print('╚' + '═' * 64 + '╝')
-    print()
-
-
 def check_ytdlp():
-    """Cek apakah yt-dlp terinstall."""
     import shutil
     path = shutil.which('yt-dlp') or shutil.which('yt-dlp.exe')
     if path:
         return path
-    # Coba di venv
     venv_path = os.path.join(os.path.dirname(sys.executable), 'yt-dlp')
     if os.path.isfile(venv_path) and os.access(venv_path, os.X_OK):
         return venv_path
@@ -69,157 +38,142 @@ def check_ytdlp():
 
 
 def sanitize_filename(name):
-    """Bersihkan karakter ilegal dari nama file."""
-    # Hapus karakter yang tidak valid di macOS/Linux/Windows
-    name = re.sub(r'[\\/:*?"<>|]', '', name)
-    name = name.strip()
-    # Limit panjang nama file
-    if len(name) > 200:
-        name = name[:200]
-    return name or 'video'
+    name = re.sub(r'[\\/:*?"<>|]', '', name).strip()
+    return name[:200] if len(name) > 200 else (name or 'video')
 
 
 def main():
-    print_banner()
+    clear_screen()
+    print('╔' + '═' * 64 + '╗')
+    print('║  📺 YouTube Downloader v2 (TUI)' + ' ' * 30 + '║')
+    print('║  Pilihan resolusi + output MP4 + audio terpisah' + ' ' * 12 + '║')
+    print('╚' + '═' * 64 + '╝')
+    print()
 
-    # Cek yt-dlp
     ytdlp = check_ytdlp()
     if not ytdlp:
-        print('❌ yt-dlp belum terinstall.')
-        print()
-        print('   Install dengan:')
-        print('   pip3 install yt-dlp')
-        print('   # Atau: pip3 install yt-dlp --break-system-packages')
-        print('   # Atau: brew install yt-dlp')
-        print()
+        print('❌ yt-dlp belum terinstall. Install: pip3 install yt-dlp')
         sys.exit(1)
 
-    print(f'yt-dlp: {ytdlp}')
-    print()
-    print('📋 Step-by-step, ikuti petunjuk di layar.')
-    print('   Navigasi: ↑↓ arrow keys, Enter konfirmasi, q batal')
-    print()
+    print(f'yt-dlp: {ytdlp}\n')
 
-    # Step 1: Mode download
-    print('▶ Step 1/5: Pilih mode download')
-    mode = questionary.select(
-        'Mode:',
+    # Step 1: Resolusi
+    print('▶ Step 1/5: Pilih resolusi')
+    res = questionary.select(
+        'Resolusi:',
         choices=[
-            '1080p H.264 + audio (REKOMENDASI untuk dubbing) — format 137+140',
-            '720p H.264 + audio (lebih kecil, cepat download) — format 136+140',
-            'Best quality (auto, bisa AV1/VP9) — tidak rekomendasi untuk dubbing',
-            'Audio only (m4a 128kbps) — kalau cuma butuh audio',
+            '480p (file kecil, cepat download, cukup untuk dubbing)',
+            '720p (sedang, rekomendasi)',
+            '1080p (besar, kualitas terbaik)',
+            'Best quality (auto, bisa AV1/VP9)',
+            'Audio only (m4a 128kbps)',
         ],
-        default='1080p H.264 + audio (REKOMENDASI untuk dubbing) — format 137+140',
+        default='720p (sedang, rekomendasi)',
     ).ask()
-    print(f'  ✓ {mode}')
-    print()
 
-    # Step 2: URL YouTube
+    # Step 2: URL
+    print(f'\n  ✓ {res}\n')
     print('▶ Step 2/5: Masukkan URL YouTube')
-    url = questionary.text(
-        'URL YouTube (paste link video):',
-    ).ask()
+    url = questionary.text('URL YouTube:').ask()
     if not url or not url.strip():
-        print('Batal.')
         sys.exit(0)
     url = url.strip()
-    print(f'  ✓ {url}')
-    print()
+    print(f'  ✓ {url}\n')
 
-    # Step 3: Output directory
-    print('▶ Step 3/5: Pilih output directory')
-    output_dir = questionary.text(
-        'Output directory (default: ~/Dubbing):',
-        default=os.path.expanduser('~/Dubbing'),
-    ).ask()
+    # Step 3: Output dir
+    print('▶ Step 3/5: Output directory')
+    output_dir = questionary.text('Output dir:', default=os.path.expanduser('~/Dubbing')).ask()
     if not output_dir:
         output_dir = os.path.expanduser('~/Dubbing')
     output_dir = os.path.expanduser(output_dir)
     os.makedirs(output_dir, exist_ok=True)
-    print(f'  ✓ {output_dir}')
-    print()
+    print(f'  ✓ {output_dir}\n')
 
-    # Step 4: Rename output (opsional)
-    print('▶ Step 4/5: Rename output (opsional)')
-    custom_name = questionary.text(
-        'Nama file custom (kosongkan = pakai judul YouTube):',
-        default='',
-    ).ask()
+    # Step 4: Nama file
+    print('▶ Step 4/5: Nama file (opsional)')
+    custom_name = questionary.text('Nama custom (kosong = judul YouTube):', default='').ask()
     if custom_name and custom_name.strip():
         custom_name = sanitize_filename(custom_name.strip())
-        print(f'  ✓ {custom_name}.mp4')
     else:
         custom_name = None
-        print(f'  ✓ (pakai judul YouTube)')
-    print()
+    print(f'  ✓ {custom_name or "(judul YouTube)"}\n')
 
-    # Step 5: Konfirmasi
-    print('▶ Step 5/5: Konfirmasi')
-
-    # Build yt-dlp command
-    if '1080p' in mode:
-        format_str = '137+140/bestvideo+bestaudio/best'
-        # 137 = 1080p H.264, 140 = audio m4a
-        # Fallback: bestvideo+bestaudio, lalu best
-    elif '720p' in mode:
-        format_str = '136+140/bestvideo[height<=720]+bestaudio/best[height<=720]/best'
-        # 136 = 720p H.264, 140 = audio m4a
-    elif 'Audio only' in mode:
-        format_str = '140/bestaudio'
+    # Step 5: Output mode — MP4 merged saja, atau MP4 + audio terpisah
+    print('▶ Step 5/5: Output mode')
+    if 'Audio only' not in res:
+        output_mode = questionary.select(
+            'Output:',
+            choices=[
+                'MP4 + audio terpisah (2 file: mp4 ori + m4a ori)',
+                'MP4 saja (merged, 1 file)',
+            ],
+            default='MP4 + audio terpisah (2 file: mp4 ori + m4a ori)',
+        ).ask()
     else:
-        # Best quality (auto)
+        output_mode = 'Audio only'
+    print(f'  ✓ {output_mode}\n')
+
+    # Build format string
+    if '480p' in res:
+        format_str = 'bestvideo[height<=480]+bestaudio/best[height<=480]/best'
+    elif '720p' in res:
+        format_str = 'bestvideo[height<=720]+bestaudio/best[height<=720]/best'
+    elif '1080p' in res:
+        format_str = 'bestvideo[height<=1080]+bestaudio/best[height<=1080]/best'
+    elif 'Audio only' in res:
+        format_str = 'bestaudio/best'
+    else:
         format_str = 'bestvideo+bestaudio/best'
 
     # Output template
     if custom_name:
-        output_template = os.path.join(output_dir, f'{custom_name}.%(ext)s')
+        base_name = custom_name
     else:
-        output_template = os.path.join(output_dir, '%(title).200s.%(ext)s')
+        base_name = '%(title).200s'
 
+    if 'terpisah' in output_mode:
+        # Download video dan audio terpisah, lalu merge
+        output_template = os.path.join(output_dir, f'{base_name}.%(ext)s')
+    else:
+        output_template = os.path.join(output_dir, f'{base_name}.%(ext)s')
+
+    # Build command
     cmd = [
         ytdlp,
         '-f', format_str,
         '--merge-output-format', 'mp4',
         '-o', output_template,
         '--no-playlist',
-        '--newline',  # satu baris progress, mudah dibaca
+        '--newline',
     ]
 
     # Konfirmasi
-    print()
     print('╔' + '═' * 64 + '╗')
     print('║  📋 Ringkasan:' + ' ' * 49 + '║')
     print('╠' + '═' * 64 + '╣')
-    print(f'║  Mode   : {mode[:46]:<46}║')
-    print(f'║  URL    : {url[:46]:<46}║')
-    print(f'║  Output : {output_dir[:46]:<46}║')
-    if custom_name:
-        print(f'║  Nama   : {custom_name[:46]:<46}║')
+    print(f'║  Resolusi: {res[:48]:<48}║')
+    print(f'║  Output  : {output_mode[:48]:<48}║')
+    print(f'║  URL     : {url[:48]:<48}║')
+    print(f'║  Dir     : {output_dir[:48]:<48}║')
     print('╚' + '═' * 64 + '╝')
-    print()
-    print('=== Command yang akan dijalankan ===')
-    print(f'yt-dlp -f "{format_str}" --merge-output-format mp4 -o "{output_template}" {url}')
-    print('=== End command ===')
     print()
 
     confirm = questionary.confirm('Lanjut download?', default=True).ask()
     if not confirm:
-        print('Batal.')
         sys.exit(0)
 
     # Eksekusi
     print('\n' + '═' * 64)
-    print('🚀 Mulai download...')
+    print('🚀 Download...')
     print('═' * 64 + '\n')
 
-    cmd.extend([url])
+    cmd.append(url)
 
     try:
         result = subprocess.run(cmd)
         exit_code = result.returncode
     except KeyboardInterrupt:
-        print('\n\n⏹ Dibatalkan user.')
+        print('\n⏹ Dibatalkan.')
         sys.exit(130)
 
     print()
@@ -229,29 +183,26 @@ def main():
         print()
         # Cari file output
         mp4_files = sorted(Path(output_dir).glob('*.mp4'), key=os.path.getmtime, reverse=True)
+        m4a_files = sorted(Path(output_dir).glob('*.m4a'), key=os.path.getmtime, reverse=True)
+
         if mp4_files:
             latest = mp4_files[0]
             size_mb = latest.stat().st_size / 1024 / 1024
-            print(f'📁 Output: {latest}')
-            print(f'   Size: {size_mb:.1f} MB')
-            print()
-            print('🎬 Langkah berikutnya (workflow dubbing):')
-            print()
-            print('   1. Rename ke standar: mv "{}" mp4-ori-{{name}}.mp4'.format(latest.name))
-            print('   2. Demucs: python3 demucs-tui.py (pilih MP4 ini)')
-            print('   3. Web app: mode ON + Smart Fit → audio-id-dub.wav')
-            print('   4. Mix: python3 mix-tui.py')
+            print(f'📁 MP4: {latest.name} ({size_mb:.1f} MB)')
+        if m4a_files:
+            latest_m4a = m4a_files[0]
+            size_mb = latest_m4a.stat().st_size / 1024 / 1024
+            print(f'📁 Audio: {latest_m4a.name} ({size_mb:.1f} MB)')
+
+        print()
+        print('🎬 Langkah berikutnya:')
+        print('   1. Demucs: python3 demucs-tui.py')
+        print('   2. Web app: Editor SRT Jawa → generate TTS')
+        print('   3. Mix: python3 mix-tui.py')
         print('═' * 64)
     else:
-        print('═' * 64)
-        print(f'❌ GAGAL dengan exit code {exit_code}')
-        print()
-        print('Cek error message di atas. Umumnya:')
-        print('  - URL salah → paste URL lengkap (https://www.youtube.com/watch?v=...)')
-        print('  - Format tidak ada → coba mode "Best quality"')
-        print('  - Rate limit → tunggu 1-2 menit, coba lagi')
-        print('  - ffmpeg belum install → brew install ffmpeg')
-        print('═' * 64)
+        print(f'❌ GAGAL (exit {exit_code})')
+        print('Cek error di atas. Umumnya: URL salah, format tidak ada, rate limit.')
 
     sys.exit(exit_code)
 
@@ -260,10 +211,8 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        print('\n\n⏹ Dibatalkan user.')
+        print('\n⏹ Dibatalkan.')
         sys.exit(130)
     except Exception as e:
-        print(f'\n❌ Error: {e}', file=sys.stderr)
-        import traceback
-        print(f'\n{traceback.format_exc()[:500]}', file=sys.stderr)
+        print(f'\n❌ {e}', file=sys.stderr)
         sys.exit(1)
