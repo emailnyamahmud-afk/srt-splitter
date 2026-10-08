@@ -718,7 +718,7 @@ def main_menu(data):
             '📝 Browse entries BELUM ada arti (Indonesia)',
             '⚠ Browse register UMUM (perlu validasi)',
             '🎯 Browse per register (ngoko/krama/krama_inggil/kawi/umum)',
-            '🔗 Merge 2 entries by entry_id',
+            '🔗 Merge 2 entries (search kata)',
             '🔑 Set Supabase .env (URL + anon key)',
             '☁  Upload ke Supabase (hanya yang SIAP UPLOAD)',
             '💾 Save JSON (manual)',
