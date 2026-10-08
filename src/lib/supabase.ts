@@ -411,7 +411,7 @@ export async function createDualProject(
     is_edited: false,
   }))
 
-  const batchSize = 500
+  const batchSize = 100  // Supabase REST API limit ~1000 rows, tapi text panjang → 100 per batch lebih aman
   let allCueData: SrtCue[] = []
   let insertError: { message: string } | null = null
 
