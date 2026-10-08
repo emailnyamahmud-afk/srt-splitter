@@ -764,36 +764,154 @@ def main_menu(data):
             if reg_selected and 'Kembali' not in reg_selected:
                 browse_by_register(data, reg_selected)
         elif '🔗' in selected and 'Merge' in selected:
-            # Merge 2 entries — search kata, bukan input angka
-            search_query = questionary.text('Cari kata entry pertama (mis. "sing"):').ask()
-            if not search_query or not search_query.strip():
+            # Merge 2 entries — LANGSUNG: search kata 1 → search kata 2 → preview → konfirmasi
+            print('\n  ═══ MERGE 2 ENTRIES ═══')
+            print('  Gabung 2 entries terpisah jadi 1 entry.')
+            print('  Contoh: sing (entry terpisah) + ingkang (entry terpisah)')
+            print('          → 1 entry: ngoko=sing, krama=ingkang, arti=yang')
+            print()
+
+            # Step 1: Search entry pertama
+            q1 = questionary.text('1. Cari kata pertama (mis. "sing"):').ask()
+            if not q1 or not q1.strip():
                 continue
-            search_lower = search_query.lower().strip()
-            matches = [(i, w) for i, w in enumerate(data['words'])
-                       if search_lower in (w.get('ngoko') or '').lower()
-                       or search_lower in (w.get('krama') or '').lower()
-                       or search_lower in (w.get('arti') or '').lower()]
-            if not matches:
-                print(f'  ❌ Tidak ada hasil untuk "{search_query}"')
+            q1_lower = q1.lower().strip()
+            m1 = [(i, w) for i, w in enumerate(data['words'])
+                  if q1_lower in (w.get('ngoko') or '').lower()
+                  or q1_lower in (w.get('krama') or '').lower()]
+            if not m1:
+                print(f'  ❌ Tidak ada hasil untuk "{q1}"')
                 input('  Tekan Enter...')
                 continue
-            # Pilih dari hasil search
-            idx_map = {}
-            choices = []
-            for orig_idx, w in matches[:30]:
+
+            idx_map1 = {}
+            choices1 = []
+            for orig_idx, w in m1[:20]:
                 ngoko = (w.get('ngoko') or '').strip()[:25]
                 krama = (w.get('krama') or '').strip()[:20]
                 eid = w.get('entry_id', '?')
                 label = f'#{eid:>5} {ngoko:25s} → {krama:20s}'
-                idx_map[label] = orig_idx
-                choices.append(label)
-            choices.append('↩ Batal')
-            selected2 = questionary.select('Pilih entry pertama:', choices=choices, default=choices[0]).ask()
-            if not selected2 or 'Batal' in selected2:
+                idx_map1[label] = orig_idx
+                choices1.append(label)
+            choices1.append('↩ Batal')
+            sel1 = questionary.select('Pilih entry pertama:', choices=choices1, default=choices1[0]).ask()
+            if not sel1 or 'Batal' in sel1:
                 continue
-            merge_idx = idx_map.get(selected2)
-            if merge_idx is not None:
-                edit_entry(data, merge_idx)
+            idx1 = idx_map1.get(sel1)
+            if idx1 is None:
+                continue
+
+            entry1 = data['words'][idx1]
+            eid1 = entry1.get('entry_id', '?')
+            print(f'\n  Entry 1: ngoko={entry1.get("ngoko","")!r} krama={entry1.get("krama","")!r} arti={entry1.get("arti","")!r}')
+
+            # Step 2: Search entry kedua
+            q2 = questionary.text('\n2. Cari kata kedua (mis. "ingkang"):').ask()
+            if not q2 or not q2.strip():
+                continue
+            q2_lower = q2.lower().strip()
+            m2 = [(i, w) for i, w in enumerate(data['words'])
+                  if i != idx1
+                  and (q2_lower in (w.get('ngoko') or '').lower()
+                       or q2_lower in (w.get('krama') or '').lower())]
+            if not m2:
+                print(f'  ❌ Tidak ada hasil untuk "{q2}"')
+                input('  Tekan Enter...')
+                continue
+
+            idx_map2 = {}
+            choices2 = []
+            for orig_idx, w in m2[:20]:
+                ngoko = (w.get('ngoko') or '').strip()[:25]
+                krama = (w.get('krama') or '').strip()[:20]
+                eid = w.get('entry_id', '?')
+                label = f'#{eid:>5} {ngoko:25s} → {krama:20s}'
+                idx_map2[label] = orig_idx
+                choices2.append(label)
+            choices2.append('↩ Batal')
+            sel2 = questionary.select('Pilih entry kedua:', choices=choices2, default=choices2[0]).ask()
+            if not sel2 or 'Batal' in sel2:
+                continue
+            idx2 = idx_map2.get(sel2)
+            if idx2 is None:
+                continue
+
+            entry2 = data['words'][idx2]
+            eid2 = entry2.get('entry_id', '?')
+            print(f'\n  Entry 2: ngoko={entry2.get("ngoko","")!r} krama={entry2.get("krama","")!r} arti={entry2.get("arti","")!r}')
+
+            # Step 3: Preview merge
+            # Smart merge: gabung field yang tidak kosong
+            merged_ngoko = (entry1.get('ngoko') or '').strip() or (entry2.get('ngoko') or '').strip()
+            merged_krama = (entry1.get('krama') or '').strip() or (entry2.get('krama') or '').strip()
+            # Kalau entry1 ngoko == entry2 krama (atau sebaliknya), itu pasangan yang sama
+            # Kalau entry1 ngoko kosong tapi entry2 krama = entry1 ngoko → pakai entry2 ngoko
+            e1_ngoko = (entry1.get('ngoko') or '').strip()
+            e1_krama = (entry1.get('krama') or '').strip()
+            e2_ngoko = (entry2.get('ngoko') or '').strip()
+            e2_krama = (entry2.get('krama') or '').strip()
+
+            # Kalau entry2 ngoko kosong tapi entry2 ada krama = entry1 ngoko → entry2 itu krama word
+            # Hasil: ngoko=entry1.ngoko, krama=entry2.ngoko (krama word)
+            if not e2_krama and e2_ngoko and e1_krama and e2_ngoko.lower() == e1_krama.lower():
+                merged_ngoko = e1_ngoko
+                merged_krama = e2_ngoko  # entry2 title = krama word
+            elif not e1_krama and e1_ngoko and e2_krama and e1_ngoko.lower() == e2_krama.lower():
+                merged_ngoko = e2_ngoko
+                merged_krama = e1_ngoko  # entry1 title = krama word
+
+            merged_arti = (entry1.get('arti') or '').strip() or (entry2.get('arti') or '').strip()
+
+            # Register: krama_inggil > krama > ngoko > umum
+            reg_order = {'krama_inggil': 0, 'krama': 1, 'ngoko': 2, 'kawi': 3, 'umum': 4}
+            r1 = entry1.get('register', 'umum')
+            r2 = entry2.get('register', 'umum')
+            merged_reg = r1 if reg_order.get(r1, 99) < reg_order.get(r2, 99) else r2
+
+            print(f'\n  ═══ HASIL MERGE ═══')
+            print(f'  ngoko:    {merged_ngoko!r}')
+            print(f'  krama:    {merged_krama!r}')
+            print(f'  arti:     {merged_arti!r}  (kosong = isi nanti)')
+            print(f'  register: {merged_reg}')
+            print(f'  Entry #{eid2} akan di-DELETE.')
+            print()
+
+            # Step 4: Konfirmasi
+            confirm = questionary.confirm('Konfirmasi merge?', default=False).ask()
+            if not confirm:
+                print('  ⏹ Dibatalkan.')
+                input('  Tekan Enter...')
+                continue
+
+            # Apply: simpan ke entry1, delete entry2
+            entry1['ngoko'] = merged_ngoko
+            entry1['krama'] = merged_krama
+            entry1['arti'] = merged_arti
+            entry1['register'] = merged_reg
+            # Combine keterangan
+            k1 = (entry1.get('keterangan') or '').strip()
+            k2 = (entry2.get('keterangan') or '').strip()
+            if k2 and k2 not in k1:
+                entry1['keterangan'] = f'{k1} | {k2}'.strip(' |')
+            # Sumber
+            s1 = (entry1.get('sumber') or '').strip()
+            s2 = (entry2.get('sumber') or '').strip()
+            if s2 and s2 not in s1:
+                entry1['sumber'] = f'{s1} + merge #{eid2}'
+
+            # Delete entry2
+            del data['words'][idx2]
+
+            # Re-number entry_id
+            for i, w in enumerate(data['words'], 1):
+                w['entry_id'] = i
+
+            save_kamus(data)
+            print(f'\n  ✅ Merge sukses!')
+            print(f'  Hasil: ngoko={merged_ngoko!r} krama={merged_krama!r} arti={merged_arti!r}')
+            print(f'  Entry #{eid2} di-DELETE. Total: {len(data["words"])}')
+            print(f'  Sekarang isi arti: menu 📝 Browse BELUM ada arti → search kata → edit')
+            input('  Tekan Enter...')
         elif '🔑' in selected and 'Supabase .env' in selected:
             edit_env_file()
         elif 'Save JSON' in selected:
