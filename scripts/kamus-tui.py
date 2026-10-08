@@ -762,6 +762,11 @@ def main_menu(data):
             entry1['krama'] = merged_krama
             entry1['arti'] = merged_arti
             entry1['register'] = merged_reg
+            # Combine aksara (jangan hilangkan aksara dari entry2)
+            a1 = (entry1.get('aksara') or '').strip()
+            a2 = (entry2.get('aksara') or '').strip()
+            if a2 and a2 not in a1:
+                entry1['aksara'] = f'{a1}, {a2}'.strip(', ')
             # Combine keterangan
             k1 = (entry1.get('keterangan') or '').strip()
             k2 = (entry2.get('keterangan') or '').strip()
