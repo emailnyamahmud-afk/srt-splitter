@@ -653,6 +653,79 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
     }
   }, [jawaEntries, voices, ttsProvider, ttsPitch, ttsSmartFitCap, projectName, prefix, projectId, buildTtsOpts, refreshAudioCache])
 
+  // === Generate Page Audio (hanya cue di halaman saat ini) ===
+  // User sudah Generate Full, tapi ada kata yang diedit → generate ulang halaman itu saja
+  // Output: WAV file untuk halaman itu (stitch 30 cue)
+  const handleGeneratePage = useCallback(async () => {
+    if (jawaEntries.length === 0 || !projectId) return
+    const startIdx = currentPage * PAGE_SIZE
+    const endIdx = Math.min(startIdx + PAGE_SIZE, jawaEntries.length)
+    const pageEntries = jawaEntries.slice(startIdx, endIdx)
+    if (pageEntries.length === 0) return
+
+    setIsGeneratingTts(true)
+    setTtsProgress({ current: 0, total: pageEntries.length, text: `Generate halaman ${currentPage + 1}...` })
+    setTtsResult(null)
+    try {
+      const opts = buildTtsOpts((current, total, text) => {
+        setTtsProgress({ current, total, text: text.slice(0, 60) })
+      })
+
+      // Build cached audios untuk page ini
+      const cachedAudios = new Map<number, Float32Array>()
+      let cacheHits = 0
+      let cacheMiss = 0
+      for (let i = 0; i < pageEntries.length; i++) {
+        const globalIdx = startIdx + i
+        const entry = pageEntries[i]
+        const text = entry.textLines.join(' ').trim()
+        if (!text) continue
+        const voiceId = voices[globalIdx] || ''
+        const voiceShort = voiceId || 'dimas'
+        const cached = await getCueAudio(projectId, globalIdx)
+        if (cached && cached.text === text && cached.voiceId === voiceShort && cached.pitch === ttsPitch && cached.smartFitCap === ttsSmartFitCap) {
+          try {
+            const arrayBuf = await cached.blob.arrayBuffer()
+            const audioCtx = new AudioContext({ sampleRate: cached.sampleRate })
+            const audioBuffer = await audioCtx.decodeAudioData(arrayBuf)
+            const float32 = audioBuffer.getChannelData(0)
+            cachedAudios.set(i, new Float32Array(float32))
+            audioCtx.close()
+            cacheHits++
+          } catch {
+            cacheMiss++
+          }
+        } else {
+          cacheMiss++
+        }
+      }
+      toast.info(`Hal ${currentPage + 1} cache: ${cacheHits} hit, ${cacheMiss} miss`)
+
+      // Stitch hanya page ini
+      const result = await stitchFullAudio(pageEntries, cachedAudios, opts, (current, total, text) => {
+        setTtsProgress({ current, total, text: text.slice(0, 60) })
+      })
+      setTtsResult(result)
+
+      // Download WAV untuk halaman ini
+      const safeName = (projectName || prefix).replace(/[^a-zA-Z0-9-_]/g, '_')
+      const a = document.createElement('a')
+      a.href = result.previewUrl
+      a.download = `${safeName}-hal${currentPage + 1}.wav`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      toast.success(`Hal ${currentPage + 1} done: ${result.durationSec.toFixed(1)}s, ${pageEntries.length} cue`)
+    } catch (e) {
+      console.error(e)
+      toast.error(`Generate halaman gagal: ${(e as Error).message}`)
+    } finally {
+      setIsGeneratingTts(false)
+      setTtsProgress(null)
+      setTtsStage(null)
+    }
+  }, [jawaEntries, currentPage, voices, ttsProvider, ttsPitch, ttsSmartFitCap, projectName, prefix, projectId, buildTtsOpts])
+
   // ================================================================
   // RENDER
   // ================================================================
@@ -1041,6 +1114,12 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
                 </select>
                 <Button size="sm" onClick={handleGenerateTts} disabled={isGeneratingTts || jawaEntries.length === 0}>
                   {isGeneratingTts ? <><Loader2 className="size-3.5 mr-1 animate-spin" /> Generating...</> : <><Wand2 className="size-3.5 mr-1" /> Generate Full</>}
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleGeneratePage} disabled={isGeneratingTts || jawaEntries.length === 0}
+                  title="Generate TTS hanya untuk halaman ini (30 cue). Pakai kalau sudah Generate Full lalu edit beberapa kata."
+                >
+                  {isGeneratingTts ? <Loader2 className="size-3.5 mr-1 animate-spin" /> : <Wand2 className="size-3.5 mr-1" />}
+                  Generate Hal {currentPage + 1}
                 </Button>
               </div>
             </div>
