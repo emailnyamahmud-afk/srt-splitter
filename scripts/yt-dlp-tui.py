@@ -180,11 +180,20 @@ def main():
     cmd = [
         ytdlp,
         '-f', format_str,
-        '--merge-output-format', 'mp4',
         '-o', output_template,
         '--no-playlist',
         '--newline',  # satu baris progress, mudah dibaca
     ]
+
+    # Mode "terpisah": jangan merge, pakai -k untuk keep file asli
+    # Mode "merged": merge video+audio jadi 1 MP4
+    if 'terpisah' in output_mode:
+        # Download video dan audio terpisah, KEEP file asli (jangan delete)
+        cmd.append('-k')  # keep original files after merge
+        # JANGAN pakai --merge-output-format (biarkan video + audio tetap terpisah)
+        # Tapi yt-dlp tetap merge kalau format berbeda — gunakan 2 command terpisah
+    else:
+        cmd.extend(['--merge-output-format', 'mp4'])
 
     # Konfirmasi
     print()
@@ -213,14 +222,49 @@ def main():
     print('🚀 Mulai download...')
     print('═' * 64 + '\n')
 
-    cmd.extend([url])
+    if 'terpisah' in output_mode:
+        # MODE TERPISAH: download video dan audio sebagai 2 file terpisah
+        base_name = custom_name if custom_name else '%(title).200s'
+        video_template = os.path.join(output_dir, f'{base_name}.%(ext)s')
+        audio_template = os.path.join(output_dir, f'{base_name}-audio.%(ext)s')
 
-    try:
-        result = subprocess.run(cmd)
-        exit_code = result.returncode
-    except KeyboardInterrupt:
-        print('\n\n⏹ Dibatalkan user.')
-        sys.exit(130)
+        # Command 1: video only
+        if '480p' in res:
+            video_fmt = 'bestvideo[height<=480]/best[height<=480]'
+        elif '720p' in res:
+            video_fmt = 'bestvideo[height<=720]/best[height<=720]'
+        elif '1080p' in res:
+            video_fmt = 'bestvideo[height<=1080]/best[height<=1080]'
+        else:
+            video_fmt = 'bestvideo/best'
+
+        print('▶ Download video (tanpa audio)...')
+        cmd_video = [ytdlp, '-f', video_fmt, '-o', video_template, '--no-playlist', '--newline', url]
+        try:
+            subprocess.run(cmd_video)
+        except KeyboardInterrupt:
+            print('\n⏹ Dibatalkan.')
+            sys.exit(130)
+
+        # Command 2: audio only
+        print('\n▶ Download audio (m4a)...')
+        cmd_audio = [ytdlp, '-f', 'bestaudio/best', '-o', audio_template, '--no-playlist', '--newline', '--extract-audio', url]
+        try:
+            subprocess.run(cmd_audio)
+        except KeyboardInterrupt:
+            print('\n⏹ Dibatalkan.')
+            sys.exit(130)
+
+        exit_code = 0
+    else:
+        # MODE MERGED: 1 command, merge video+audio jadi 1 MP4
+        cmd.extend([url])
+        try:
+            result = subprocess.run(cmd)
+            exit_code = result.returncode
+        except KeyboardInterrupt:
+            print('\n\n⏹ Dibatalkan user.')
+            sys.exit(130)
 
     print()
     if exit_code == 0:
