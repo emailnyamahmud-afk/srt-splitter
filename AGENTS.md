@@ -5,7 +5,7 @@
 
 ## Pre-session checklist (wajib, di awal chat pertama)
 
-Saat user bilang **"mulai"** / **"baca dokumen"** / chat pertama di session baru:
+Saat user bilang **"baca AGENTS.md dan PROJECT_RULES.md"** (atau variasi: "mulai" / "baca dokumen" / chat pertama di session baru):
 
 1. **Baca dokumen (wajib)** — baca full file ini, lalu:
    - `PROJECT_RULES.md` — 13 rules project-specific
