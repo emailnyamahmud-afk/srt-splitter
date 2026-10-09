@@ -1676,3 +1676,47 @@ Stage Summary:
 - Dokumentasi konsisten dengan code terkini
 - User download v2.27 + TUI v9 → mulai validasi via TUI
 - AI tunggu instruksi user berikutnya
+
+---
+Task ID: audit-code-kamus-tui-supabase
+Agent: main
+Task: User minta audit code kamus-tui.py + upload-supabase.py teliti, baca semua code
+
+Work Log:
+- Baca kamus-tui.py (1417 baris) + upload-supabase.py (276 baris) full
+- Audit AI sebelumnya (sesi sebelumnya) bilang 0 bug logic, 6 outdated:
+  1. kamus-tui.py L2-31: docstring header outdated (status='clean', register read-only)
+  2. kamus-tui.py L116: curl ?v=23 outdated
+  3. kamus-tui.py L122-130: save_kamus docstring salah (bilang recompute, kode tidak)
+  4. kamus-tui.py L1355: curl upload-supabase.py ?v=1 outdated
+  5. upload-supabase.py L23: 'Total rows: 2' outdated
+  6. upload-supabase.py L251: curl ?v=26 outdated (audit bilang → v30) — HALU
+- Verifikasi audit sebelumnya:
+  - Grep ?v= di semua script + README → v30 TIDAK ADA di codebase mana pun
+  - README.md pakai v=26 (kamus), v=8 (kamus-tui.py), v=2 (upload-supabase.py)
+  - upload-supabase.py L251 sudah ?v=26 → match README → TIDAK outdated
+  - Jadi hanya 5 outdated, bukan 6. Audit AI sebelumnya halu angka v30
+- Apply 5 fix:
+  - kamus-tui.py L2-32 header docstring: rewrite penuh
+    * tambah menu 'Browse per kelengkapan' + 'Deteksi Duplikat' (v9 tapi belum di-doc)
+    * hapus 'status=clean' (sudah tidak ada sejak R-12)
+    * hapus 'register read-only' (sekarang bisa edit)
+    * tambah R-21 + R-12 compliance note
+  - kamus-tui.py L116: curl kamus ?v=23 → ?v=26 (match README)
+  - kamus-tui.py L123-138 save_kamus docstring: rewrite
+    * hapus 'SELALU recompute status' (kode pertahankan existing per R-12)
+    * hapus 'Status logic: ready = ngoko+krama+arti' (auto-ready sudah tidak ada)
+    * ganti ke R-12 compliance note: user EXPLICIT mark via menu
+  - kamus-tui.py L1354: curl upload-supabase.py ?v=1 → ?v=2 (match README)
+  - upload-supabase.py L23: 'Total rows: 2 (test awal 7 Okt 2026)' →
+    '0 (DB clean sejak task docs-update-v2.27)'
+- Verify: py_compile kedua file → Syntax OK
+- Verify: grep ?v= → semua URL konsisten dengan README.md (v=26 / v=8 / v=2)
+- Commit 187fe07 + push
+
+Stage Summary:
+- 0 bug logic, 5 outdated docstrings + curl versions sudah fix
+- Audit AI sebelumnya halu angka v30 — sebenarnya v26 sudah latest (match README)
+- Code sekarang konsisten dengan dokumentasi di README.md
+- Docstrings sekarang akurat ke R-12 (no auto-ready) + R-21 (word kosong kalau paired)
+- Total: kamus-tui.py 1417 → 1418 baris, upload-supabase.py 277 baris
