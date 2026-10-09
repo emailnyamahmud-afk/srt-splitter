@@ -1062,6 +1062,145 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
     input('  Tekan Enter...')
 
 
+def detect_duplicates(data):
+    """Deteksi duplikat di kamus — JANGAN HAPUS, hanya tunjukin ke user.
+
+    User lihat duplikat, baca konteks, putuskan manual:
+    - Sinonim valid? → biarkan
+    - Sinonim salah (kita di arti='kamu')? → user edit/hapus token manual
+    - Perlu merge? → user pakai menu Merge 2 entries
+
+    Duplikat yang dideteksi:
+    1. ngoko: kata yang sama muncul di ngoko multiple entries
+    2. krama: kata yang sama muncul di krama multiple entries
+    3. word: kata yang sama muncul di word multiple entries (NETRAL)
+    4. cross-field: kata di ngoko entry A = krama entry B
+    """
+    from collections import defaultdict
+
+    words = data['words']
+    os.system('clear' if os.name != 'nt' else 'cls')
+    print('╔' + '═' * 60 + '╗')
+    print('║  🔍 Deteksi Duplikat (JANGAN HAPUS — user putuskan)' + ' ' * 6 + '║')
+    print('╚' + '═' * 60 + '╝')
+    print()
+    print('  ⚠ Duplikat = JANGAN HAPUS otomatis (R-18).')
+    print('  User baca konteks, putuskan manual:')
+    print('    - Sinonim valid? → biarkan')
+    print('    - Sinonim salah? → edit entry, hapus token')
+    print('    - Perlu merge? → pakai menu Merge 2 entries')
+    print()
+
+    # Build index
+    ngoko_idx = defaultdict(list)
+    krama_idx = defaultdict(list)
+    word_idx = defaultdict(list)
+
+    for i, k in enumerate(words):
+        ng = (k.get('ngoko', '') or '').strip().lower()
+        kr = (k.get('krama', '') or '').strip().lower()
+        word = (k.get('word', '') or '').strip().lower()
+        ar = (k.get('arti', '') or '').strip()
+        ket = (k.get('keterangan', '') or '').strip()[:60]
+        eid = k.get('entry_id', '?')
+
+        for t in ng.split(','):
+            t = t.strip()
+            if t and len(t) > 1:
+                ngoko_idx[t].append((i, eid, ar, ket))
+        for t in kr.split(','):
+            t = t.strip()
+            if t and len(t) > 1:
+                krama_idx[t].append((i, eid, ar, ket))
+        for t in word.split(','):
+            t = t.strip()
+            if t and len(t) > 1:
+                word_idx[t].append((i, eid, ar, ket))
+
+    # Find dupes
+    dupes_ngoko = {t: v for t, v in ngoko_idx.items() if len(v) > 1}
+    dupes_krama = {t: v for t, v in krama_idx.items() if len(v) > 1}
+    dupes_word = {t: v for t, v in word_idx.items() if len(v) > 1}
+
+    # Cross-field: ngoko token yang juga ada di krama
+    cross = {}
+    for t in ngoko_idx:
+        if t in krama_idx:
+            ng_entries = ngoko_idx[t]
+            kr_entries = krama_idx[t]
+            # Cek apakah beda entry
+            has_cross = False
+            for ne in ng_entries:
+                for ke in kr_entries:
+                    if ne[0] != ke[0]:
+                        has_cross = True
+                        break
+            if has_cross:
+                cross[t] = (ng_entries, kr_entries)
+
+    print(f'  📊 Duplikat ngoko:    {len(dupes_ngoko):>5} tokens')
+    print(f'  📊 Duplikat krama:    {len(dupes_krama):>5} tokens')
+    print(f'  📊 Duplikat word:     {len(dupes_word):>5} tokens')
+    print(f'  📊 Cross-field:       {len(cross):>5} tokens (ngoko=krama beda entry)')
+    print()
+
+    # Pilih kategori
+    cat_choices = [
+        f'1. Duplikat ngoko ({len(dupes_ngoko)} tokens)',
+        f'2. Duplikat krama ({len(dupes_krama)} tokens)',
+        f'3. Duplikat word ({len(dupes_word)} tokens)',
+        f'4. Cross-field ({len(cross)} tokens)',
+        '↩ Kembali',
+    ]
+    cat_sel = questionary.select('Pilih kategori duplikat:', choices=cat_choices, default=cat_choices[0]).ask()
+    if not cat_sel or 'Kembali' in cat_sel:
+        return
+
+    # Tampilkan duplikat terpilih
+    if cat_sel.startswith('1.'):
+        dupes = dupes_ngoko
+        field_name = 'ngoko'
+    elif cat_sel.startswith('2.'):
+        dupes = dupes_krama
+        field_name = 'krama'
+    elif cat_sel.startswith('3.'):
+        dupes = dupes_word
+        field_name = 'word'
+    elif cat_sel.startswith('4.'):
+        # Cross-field: tampilkan khusus
+        print(f'\n  Cross-field: kata yang muncul di ngoko entry A DAN krama entry B')
+        print(f'  (Mungkin sinonim valid, atau homograf beda arti — user putuskan)')
+        print()
+        for token, (ng_entries, kr_entries) in sorted(cross.items(), key=lambda x: len(x[1][0]) + len(x[1][1]), reverse=True)[:30]:
+            print(f"\n  '{token}' muncul di ngoko ({len(ng_entries)} entries) dan krama ({len(kr_entries)} entries):")
+            for e in ng_entries[:3]:
+                print(f"    ngoko [{e[1]}] arti={e[2]!r}")
+            for e in kr_entries[:3]:
+                print(f"    krama [{e[1]}] arti={e[2]!r}")
+            if len(ng_entries) > 3 or len(kr_entries) > 3:
+                print(f"    ... +{max(len(ng_entries), len(kr_entries)) - 3} more")
+        input('\n  Tekan Enter untuk kembali...')
+        return
+
+    # Tampilkan duplikat (sorted by jumlah entries terbanyak)
+    sorted_dupes = sorted(dupes.items(), key=lambda x: len(x[1]), reverse=True)
+
+    # Build list untuk browse
+    print(f'\n  Menampilkan {min(50, len(sorted_dupes))} duplikat {field_name} teratas (dari {len(sorted_dupes)} total):')
+    print()
+
+    for token, entries in sorted_dupes[:50]:
+        print(f"\n  '{token}' muncul di {len(entries)} entries:")
+        for idx, eid, ar, ket in entries[:5]:
+            print(f"    [{eid}] arti={ar[:30]!r}  ket={ket!r}")
+        if len(entries) > 5:
+            print(f"    ... +{len(entries) - 5} more")
+
+    print(f"\n  Total duplikat {field_name}: {len(sorted_dupes)} tokens")
+    print(f"  ⚠ JANGAN HAPUS otomatis. User baca konteks, edit manual via TUI.")
+    input('\n  Tekan Enter untuk kembali...')
+
+
 def main_menu(data):
     """Main menu — user pilih menu dengan arrow keys"""
     while True:
@@ -1110,6 +1249,7 @@ def main_menu(data):
             '⭐ Browse entries dengan krama mapping (auto-filled, butuh arti)',
             '📝 Browse entries BELUM ada arti (Indonesia)',
             '🔗 Merge 2 entries (search kata)',
+            '🔍 Deteksi duplikat (JANGAN HAPUS, user putuskan)',
             '⚡ Mark READY/DRAFT bulk (search kata, tanpa edit)',
             '🔑 Set Supabase .env (URL + anon key)',
             '☁  Upload ke Supabase (hanya yang READY)',
@@ -1178,6 +1318,8 @@ def main_menu(data):
         elif 'Merge 2 entries' in selected:
             # Phase 4: extract ke fungsi merge_2_entries() (line 785-984)
             merge_2_entries(data)
+        elif 'Deteksi duplikat' in selected:
+            detect_duplicates(data)
         elif 'Set Supabase' in selected:
             edit_env_file()
 
