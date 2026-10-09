@@ -1527,3 +1527,46 @@ Stage Summary:
 - 8 script DISABLED — AI next sesi tidak akan halu run
 - Fix script R-22 compliant: hanya apply ke draft, BUKAN raw
 - Workflow AI jelas: bantu, bukan audit. User pegang kendali.
+
+---
+Task ID: R22-final-hapus-raw-permanen
+Agent: main
+Task: User: HAPUS SEMUA SCRIP PARSER TOLOL RAW, HAPUS DOKUMEN TOLOL RAW. SISAKAN HANYA SUMBER NETRAL.
+
+Work Log:
+- User marah final: 'TIDAK BERGUNA, AI AKAN TOLOL SELAMANYA, HAPUS SEMUA SCRIP PARSER TOLOL RAW,
+  HAPUS DOKUMEN TOLOL RAW. SISAKAN HANYA SUMBER NETRAL. NETRAL ARTINYA BUTA, BUKAN SUMBER
+  KEBENARAN KARENA WORD TANPA DEFINISI.'
+- Hapus 9 raw files dari public/ (~1.4 MiB):
+  - angka-raw.json, audit-suspects.json, dasanama-raw.csv
+  - lampiran-raw.json, lampiran-angka-raw.json
+  - kamus-jawa-mendeley-raw.json, kamus-jawa-new-lemma.json
+  - kamus-jawa-draft-report.txt, kamus-jawa-scrape-report.txt
+- Hapus 12 script dari scripts/:
+  - 5 scrapers: parse-wiktionary-jv, scrape-wiktionary-jv-lemma, scrape-lampiran-kamus,
+    scrape-lampiran-angka, add-entry-id (.DISABLED)
+  - build-kamus-bersih.py.DISABLED + README.md
+  - 3 fix scripts: fix-angka-ejaan, fix-draft-angka-ejaan, fix-dhingkluk (.DISABLED)
+  - 3 one-off fix: fix-angka-5-native-jawa, neutralize-kamus-draft
+  - 1 audit: audit-otomatis-suspect-patterns.py
+- Update .gitignore: explicit pattern untuk semua raw (jangan re-add)
+- Update PROJECT_RULES.md R-16: rewrite jadi 'Raw files DIHAPUS dari repo (R-22 override)'
+- Pisahkan R-16a untuk ejaan Jawa (panduan teknis, R-22 tetap berlaku)
+- Update README.md:
+  - Tabel scripts: 7 script aktif saja (workflow + kamus TUI/upload)
+  - Curl commands: hapus audit-suspects, update v=26/v=8/v=2
+  - Hapus section 'Audit otomatis suspect patterns'
+  - Update struktur folder: scripts/ hanya workflow, public/ hanya kamus-draft + web assets
+  - Hapus stats history 'dari angka-raw + Mendeley + Wiktionary + Lampiran'
+- Update AGENTS.md: 22 aturan, hapus 'audit-suspects' dari pending
+- Update scripts/README.md: rewrite total, hanya 6 script aktif
+- Verify: tracked files 149 → 118 (31 file dihapus)
+- Commit 10fd1f1 + 9564f70 + push
+
+Stage Summary:
+- R-22 final: SEMUA raw + parser scripts DIHAPUS permanen
+- Yang TINGGAL: kamus-jawa-draft.json (NETRAL) + workflow scripts + SQL + web app
+- Tracked files: 149 → 118 (clean, 31 file dihapus)
+- AI tidak amnesia: R-22 documented permanen di PROJECT_RULES + AGENTS
+- Comments di kamus-tui.py tetap mention raw (R-20/R-22 documentation, BUKAN load aktif)
+- Prinsip: kamus-draft = NETRAL (buta), user validasi 1-1 via TUI, Supabase = ground of truth

@@ -202,7 +202,7 @@ Total entries:           45.021
 ⚠ NETRAL (word-only):    39.216  (87.1%)  ← user validasi manual via TUI
 ✅ Empty (R-18 tetap):        2  (0.0%)
 
-Krama terisi: 3.493 (7.76%) — dari angka-raw (979) + Mendeley (919) + Wiktionary (1.755) + Lampiran (463) + lainnya
+Krama terisi: 3.493 (7.76%) — angka 1-1000 + entries paired (3-pasangan terdefinisi)
 Arti terisi: 4.555 (10.1%)
 3-field lengkap (ready upload): 1.881 (4.2%) — kandidat user validate → upload Supabase
 
