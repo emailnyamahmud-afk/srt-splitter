@@ -36,6 +36,7 @@ import sys
 import json
 import subprocess
 import tempfile
+import textwrap
 from pathlib import Path
 
 try:
@@ -458,21 +459,16 @@ def browse_list(data, entries_with_idx, title):
         if 'Search' in selected:
             search_query = questionary.text('Cari kata di list ini:').ask()
             if search_query:
-                search_lower = search_query.lower().strip()
-                # Exact match dulu, baru substring (sama seperti search_menu)
-                exact_f = []
-                substr_f = []
-                for i, e in entries_with_idx:
-                    ngoko = (e.get('ngoko', '') or '').lower()
-                    krama = (e.get('krama', '') or '').lower()
-                    ki = (e.get('krama_inggil', '') or '').lower()
-                    arti = (e.get('arti', '') or '').lower()
-                    if ngoko == search_lower or krama == search_lower or ki == search_lower or arti == search_lower:
-                        exact_f.append((i, e))
-                    elif (search_lower in ngoko or search_lower in krama or
-                          search_lower in ki or search_lower in arti):
-                        substr_f.append((i, e))
-                filtered = exact_f + substr_f
+                # Phase 1: search di list saat ini (entries_with_idx), bukan data global
+                # Helper _search_entries expects data['words'] — buat mini-data dari list saat ini
+                mini_data = {'words': [e for _, e in entries_with_idx]}
+                mini_matches = _search_entries(
+                    mini_data, search_query,
+                    fields=['ngoko', 'krama', 'krama_inggil', 'arti'],
+                )
+                # Remap mini indices (0..N-1) ke orig_idx dari entries_with_idx
+                orig_indices = [orig for orig, _ in entries_with_idx]
+                filtered = [(orig_indices[mini_i], e) for mini_i, e in mini_matches]
                 if filtered:
                     browse_list(data, filtered, f'🔍 Search "{search_query}"')
                 else:
@@ -484,6 +480,75 @@ def browse_list(data, entries_with_idx, title):
         match_idx = label_to_idx.get(selected)
         if match_idx is not None:
             edit_entry(data, match_idx)
+
+
+# ============================================================
+# Helper functions (Phase 1-2 simplification)
+# ============================================================
+
+def _search_entries(data, query, fields=None, exclude_idx=None):
+    """Helper: search entries by query di fields tertentu.
+
+    Args:
+        data: kamus data dict (punya key 'words')
+        query: kata yang dicari (akan di-lowercase + strip)
+        fields: list field yang di-search. Default: ngoko, krama, arti (R-21: word opsional).
+                Pilihan valid: 'ngoko', 'krama', 'krama_inggil', 'arti', 'word'
+        exclude_idx: index yang di-skip (mis. untuk merge, skip entry pertama)
+
+    Returns:
+        list (idx, entry) — exact match dulu, substring kemudian.
+        Konsisten dengan behavior lama (search_menu, browse_list search, bulk_mark, merge_2).
+    """
+    if fields is None:
+        fields = ['ngoko', 'krama', 'arti']
+    q = (query or '').lower().strip()
+    if not q:
+        return []
+    exact, substr = [], []
+    for i, e in enumerate(data['words']):
+        if exclude_idx is not None and i == exclude_idx:
+            continue
+        values = [(e.get(f) or '').lower() for f in fields]
+        if q in values:
+            exact.append((i, e))
+        elif any(q in v for v in values):
+            substr.append((i, e))
+    return exact + substr
+
+
+def _entry_label(orig_idx, entry):
+    """Build label untuk list (R-21: word first kalau NETRAL).
+
+    Format: '{icon} #{eid:5d}. {primary:25s} → {krama:15s} | {arti:15}'
+    - icon: ✓=ready, ○=draft
+    - primary: word (kalau NETRAL) atau ngoko (kalau paired)
+    - krama, arti: tampilkan kalau ada
+
+    Returns:
+        (label, orig_idx) — tuple untuk dipakai browse_list.
+    """
+    word = (entry.get('word', '') or '').strip()
+    ngoko = (entry.get('ngoko', '') or '').strip()
+    kr = (entry.get('krama', '') or '').strip()
+    ar = (entry.get('arti', '') or '').strip()
+    ki = (entry.get('krama_inggil', '') or '').strip()
+    reg = (entry.get('register', 'umum') or 'umum').strip()
+    eid = entry.get('entry_id', orig_idx + 1)
+    icon = '✓' if entry.get('status') == 'ready' else '○'
+
+    # R-21: word first kalau NETRAL (belum terdefinisi)
+    primary = word if (word and not ngoko) else ngoko
+    label = f'{icon} #{eid:5d}. {(primary or "?")[:25]:25s}'
+    if kr:
+        label += f' → {kr[:15]:15s}'
+    if ki:
+        label += f' | ki: {ki[:10]}'
+    if ar:
+        label += f' | {ar[:15]}'
+    if reg != 'umum':
+        label += f' [{reg}]'
+    return label, orig_idx
 
 
 def search_menu(data):
@@ -498,22 +563,11 @@ def search_menu(data):
     if not query:
         return
 
-    search_lower = query.lower().strip()
-    # Exact match dulu (ngoko/krama/krama_inggil/arti persis = kata), baru substring
-    # TIDAK search di keterangan (terlalu banyak noise)
-    exact = []
-    substr = []
-    for i, entry in enumerate(data['words']):
-        ngoko = (entry.get('ngoko') or '').lower()
-        krama = (entry.get('krama') or '').lower()
-        ki = (entry.get('krama_inggil') or '').lower()
-        arti = (entry.get('arti') or '').lower()
-        if ngoko == search_lower or krama == search_lower or ki == search_lower or arti == search_lower:
-            exact.append((i, entry))
-        elif (search_lower in ngoko or search_lower in krama or
-              search_lower in ki or search_lower in arti):
-            substr.append((i, entry))
-    matches = exact + substr
+    # Phase 1: pakai helper _search_entries (fields: ngoko, krama, krama_inggil, arti)
+    matches = _search_entries(
+        data, query,
+        fields=['ngoko', 'krama', 'krama_inggil', 'arti'],
+    )
 
     if not matches:
         print(f'\n  Tidak ada hasil untuk "{query}"')
@@ -644,20 +698,9 @@ def bulk_mark_valid_draft(data):
     query = questionary.text('Cari kata (di ngoko / krama / arti):').ask()
     if not query or not query.strip():
         return
-    search_lower = query.lower().strip()
 
-    # Exact match dulu, baru substring
-    exact = []
-    substr = []
-    for i, entry in enumerate(data['words']):
-        ngoko = (entry.get('ngoko') or '').lower()
-        krama = (entry.get('krama') or '').lower()
-        arti = (entry.get('arti') or '').lower()
-        if ngoko == search_lower or krama == search_lower or arti == search_lower:
-            exact.append((i, entry))
-        elif (search_lower in ngoko or search_lower in krama or search_lower in arti):
-            substr.append((i, entry))
-    matches = exact + substr
+    # Phase 1: pakai helper _search_entries (default fields: ngoko, krama, arti)
+    matches = _search_entries(data, query)
 
     if not matches:
         print(f'\n  Tidak ada hasil untuk "{query}"')
@@ -952,18 +995,8 @@ def main_menu(data):
             q1 = questionary.text('1. Cari kata pertama (mis. "sing"):').ask()
             if not q1 or not q1.strip():
                 continue
-            q1_lower = q1.lower().strip()
-            # Exact match dulu (ngoko atau krama persis = kata), baru substring
-            exact_m1 = []
-            substr_m1 = []
-            for i, w in enumerate(data['words']):
-                ngoko = (w.get('ngoko') or '').lower()
-                krama = (w.get('krama') or '').lower()
-                if ngoko == q1_lower or krama == q1_lower:
-                    exact_m1.append((i, w))
-                elif q1_lower in ngoko or q1_lower in krama:
-                    substr_m1.append((i, w))
-            m1 = exact_m1 + substr_m1  # exact dulu, baru substring
+            # Phase 1: pakai helper (fields: ngoko, krama only — merge tidak search arti/ki)
+            m1 = _search_entries(data, q1, fields=['ngoko', 'krama'])
             if not m1:
                 print(f'  ❌ Tidak ada hasil untuk "{q1}"')
                 input('  Tekan Enter...')
@@ -990,24 +1023,12 @@ def main_menu(data):
             eid1 = entry1.get('entry_id', '?')
             print(f'\n  Entry 1: ngoko={entry1.get("ngoko","")!r} krama={entry1.get("krama","")!r} arti={entry1.get("arti","")!r}')
 
-            # Step 2: Search entry kedua
+            # Step 2: Search entry kedua (skip entry pertama)
             q2 = questionary.text('\n2. Cari kata kedua (mis. "ingkang"):').ask()
             if not q2 or not q2.strip():
                 continue
-            q2_lower = q2.lower().strip()
-            # Exact match dulu, baru substring
-            exact_m2 = []
-            substr_m2 = []
-            for i, w in enumerate(data['words']):
-                if i == idx1:
-                    continue
-                ngoko = (w.get('ngoko') or '').lower()
-                krama = (w.get('krama') or '').lower()
-                if ngoko == q2_lower or krama == q2_lower:
-                    exact_m2.append((i, w))
-                elif q2_lower in ngoko or q2_lower in krama:
-                    substr_m2.append((i, w))
-            m2 = exact_m2 + substr_m2  # exact dulu, baru substring
+            # Phase 1: pakai helper dengan exclude_idx=idx1
+            m2 = _search_entries(data, q2, fields=['ngoko', 'krama'], exclude_idx=idx1)
             if not m2:
                 print(f'  ❌ Tidak ada hasil untuk "{q2}"')
                 input('  Tekan Enter...')
