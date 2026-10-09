@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "version": "2.14",
+    "version": "2.15",
     "description": "Kamus Jawa komprehensif — group by konsep, gabung sinonim",
     "sources": [
       "jv.wiktionary.org (44,585 entries, raw preserved)",
@@ -25,7 +25,7 @@
       "4. Target: 2.000 entries dengan 3-field lengkap dalam 1 tahun (50/minggu)",
       "5. Upload yang lengkap ke Supabase (DB = ground of truth)"
     ],
-    "last_fix": "restore 'suku' arti='suku' (suku bangsa/etnis, BUKAN kaki) — koreksi user"
+    "last_fix": "isi arti ke entries ngoko terisi + arti kosong — pair dengan kata Indonesia dari SRT"
   },
   "words": [
     {
@@ -259142,7 +259142,7 @@
       "ngoko": "kudu",
       "krama": "kedah",
       "krama_inggil": "",
-      "arti": "",
+      "arti": "harus",
       "keterangan": "kudu. | derenging ati tansah arep (nindakaké lsp); (ora kena ora) mesthi wajib ditindakaké (dilakoni lsp); mempeng banget arep ... kumudu, kudon, parikudu. | kudhu (harus; wajib)\nkudu (kuntum bunga) | kudhu (harus; wajib); kudu (kuntum bunga)",
       "aksara": "ꦏꦼꦢꦃ, ꦏꦸꦢꦸ",
       "register": "umum",
@@ -509162,7 +509162,7 @@
       "ngoko": "prakara",
       "krama": "prakawis",
       "krama_inggil": "",
-      "arti": "",
+      "arti": "urusan",
       "keterangan": "prakara. | kang dadi rembug (pasulayan, padudon lsp); bab, kang dirembug (diomongaké lsp); apa-apa kang kelakon; pasulayan lsp. kang diadili ing pradata",
       "aksara": "ꦥꦿꦏꦮꦶꦱ꧀, ꦥꦿꦏꦫ",
       "register": "umum",
@@ -536742,7 +536742,7 @@
       "ngoko": "saka",
       "krama": "saking",
       "krama_inggil": "",
-      "arti": "",
+      "arti": "dari",
       "keterangan": "saka. | Dari; tiang rumah (lihat cagak) | saking; nerangaké asalé, teka saka Sala; nerangaké enggoné wiwit (kawitané), saka kaca 10 tekan kaca 25; tinimbang karo, luwih saka ngekat; jalaran, marga, saka kurang pangati-atiné:; mbaka, saben, dijupuki saka 6 rupiyah; sangka.; cagak sangganing payon; taun saka; pétungan taun Indhu sing wiwité saka jumenengé Prabu Saka (Aji Saka).; pang; kanca, mitra.",
       "aksara": "ꦱꦏꦶꦁ, ꦱꦏ",
       "register": "umum",
@@ -543050,7 +543050,7 @@
       "ngoko": "sapa",
       "krama": "sinten",
       "krama_inggil": "",
-      "arti": "",
+      "arti": "siapa",
       "keterangan": "sinten; tembung pitakon nakokaké jenengé wong; supata, sot, sumpah. | sapa. | sapa (perkataan untuk menegur (mengajak bercakap-cakap dsb.)\n[[siapa]] | {{label|jv|krama}} [[siapa]]\n{{banten}} [[siapa]] | sapa (perkataan untuk menegur (mengajak bercakap-cakap dsb.); siapa; siapa; siapa",
       "aksara": "ꦱꦥ, ꦱꦶꦤ꧀ꦠꦼꦤ꧀",
       "register": "umum",
