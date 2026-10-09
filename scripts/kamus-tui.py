@@ -159,12 +159,10 @@ def show_stats(data):
     from collections import Counter
     reg_count = Counter(w.get('register', 'umum') for w in words)
 
-    # Mapping stats
-    with_krama = sum(1 for w in words if (w.get('krama') or '').strip())
-    with_ki = sum(1 for w in words if (w.get('krama_inggil') or '').strip())
-    with_arti = sum(1 for w in words if (w.get('arti') or '').strip())
-    both_ngoko_krama = sum(1 for w in words if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip())
-    ready_count = sum(1 for w in words if w.get('status') == 'ready')
+    # Status
+    status_count = Counter(w.get('status', 'draft') for w in words)
+    ready_count = status_count.get('ready', 0)
+    draft_count = status_count.get('draft', 0)
 
     # Komposisi kelengkapan field (prioritas kerja user)
     ngoko_only = sum(1 for w in words if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and not (w.get('arti') or '').strip())
@@ -173,8 +171,11 @@ def show_stats(data):
     ngoko_krama_arti = sum(1 for w in words if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and (w.get('arti') or '').strip())
     no_ngoko = sum(1 for w in words if not (w.get('ngoko') or '').strip())
 
-    # Status
-    status_count = Counter(w.get('status', 'draft') for w in words)
+    # Mapping stats (detail) — for Reference
+    with_krama = sum(1 for w in words if (w.get('krama') or '').strip())
+    with_ki = sum(1 for w in words if (w.get('krama_inggil') or '').strip())
+    with_arti = sum(1 for w in words if (w.get('arti') or '').strip())
+    both_ngoko_krama = sum(1 for w in words if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip())
 
     print('╔' + '═' * 60 + '╗')
     print('║  📊 Statistik Kamus Jawa' + ' ' * 36 + '║')
@@ -187,23 +188,21 @@ def show_stats(data):
     is_mend = sum(1 for w in words if w.get('is_mendeley'))
     is_dasa = sum(1 for w in words if w.get('is_dasanama'))
     is_angk = sum(1 for w in words if w.get('is_angka'))
-    approved = sum(1 for w in words if w.get('user_approved'))
     print(f'    is_lemma:    {is_lemma:6d}  (dari id.wiktionary.org jv:Lema)')
     print(f'    is_mendeley: {is_mend:6d}  (curated, data.mendeley.com)')
     print(f'    is_dasanama: {is_dasa:6d}  (sinonim Jawa, user upload CSV)')
     print(f'    is_angka:    {is_angk:6d}  (angka sistematis)')
-    print(f'    user_approved: {approved:6d}  ⭐ (validasi user, siap upload Supabase)')
     print()
     print('  Komposisi kelengkapan field:')
     print(f'    1. ngoko saja:               {ngoko_only:6d}  (perlu krama + arti)')
     print(f'    2. ngoko + krama:              {ngoko_krama:6d}  (perlu arti)')
     print(f'    3. ngoko + arti (no krama):    {ngoko_arti_no_krama:6d}  (perlu krama)')
-    print(f'    4. ngoko + krama + arti:       {ngoko_krama_arti:6d}  ⭐ (3-field ready, perlu validasi)')
+    print(f'    4. ngoko + krama + arti:       {ngoko_krama_arti:6d}  (3-field lengkap)')
     print(f'    5. no ngoko (orphan):         {no_ngoko:6d}  (krama-only, kawi)')
     print()
-    print('  Status validasi (R-12: user explicit):')
-    print(f'    ✅ VALID (user_approved):         {approved:6d}  🚀 (siap upload Supabase)')
-    print(f'    📋 DRAFT (ready tapi belum valid): {ngoko_krama_arti - approved:6d}  (perlu user mark valid)')
+    print('  Status (patokan valid — pakai field status):')
+    print(f'    📋 DRAFT (belum di-edit user):      {draft_count:6d}  (default dari build)')
+    print(f'    ✅ READY (user sudah edit via TUI):  {ready_count:6d}  🚀 (siap upload Supabase)')
     print()
     print('  Mapping stats (detail):')
     print(f'    ngoko + krama (auto-filled):    {both_ngoko_krama:6d}  ⭐ (dari template Wikisastra)')
@@ -250,7 +249,7 @@ def edit_entry(data, idx):
     if entry.get('is_angka'): src_tags.append('angka')
     src_str = ', '.join(src_tags) if src_tags else '-'
     src_count = entry.get('source_count', 1)
-    approved = '✓' if entry.get('user_approved') else '○'
+    status_icon = '✅' if entry.get('status') == 'ready' else '📋'
 
     print(f'  ┌─────────────────────────────────────────────┐')
     print(f'  │ entry_id:     #{entry_id}')
@@ -262,7 +261,7 @@ def edit_entry(data, idx):
     print(f'  │ register:      {register}')
     print(f'  │ sumber:        {sumber[:42]}')
     print(f'  │ source:        [{src_count}x] {src_str}')
-    print(f'  │ approved:      {approved} (✓=sudah, ○=belum)')
+    print(f'  │ status:        {status_icon} {entry.get("status", "draft")}')
     print(f'  └─────────────────────────────────────────────┘')
     print()
     print('  📖 Keterangan (definisi JAWA — JANGAN HAPUS, bantu isi arti):')
@@ -337,39 +336,14 @@ def edit_entry(data, idx):
     entry['arti'] = new_arti
     entry['register'] = new_register  # update register
     # Status auto-detect di save_kamus (ngoko+krama+arti semua terisi → 'ready')
+    # User edit + save = user validasi implicit (status jadi 'ready' kalau 3-field lengkap)
 
     save_kamus(data)
     # Status baru
     new_status = 'ready' if (new_ngoko and new_krama and new_arti) else 'draft'
     print(f'\n  ✅ Disimpan: ngoko={new_ngoko} → krama={new_krama} → arti={new_arti}')
     print(f'  Register: {new_register}')
-    print(f'  Status: {new_status}' + (' (3-field lengkap)' if new_status == 'ready' else ' (butuh arti dulu)'))
-
-    # Explicit user action: mark as valid (siap upload Supabase) atau biarkan draft
-    # Per R-12: AI gak boleh auto-approve. User wajib explicit pilih.
-    current_approved = bool(entry.get('user_approved'))
-    if new_status == 'ready':
-        if current_approved:
-            # Sudah valid sebelumnya, tanya: keep valid atau unmark?
-            keep = questionary.confirm('  Sudah ditandai VALID (siap upload). Keep valid?', default=True).ask()
-            entry['user_approved'] = bool(keep)
-            if keep:
-                print('  ✅ Tetap VALID (siap upload Supabase)')
-            else:
-                print('  ○ Unmark: kembali jadi DRAFT (perlu validasi lagi)')
-        else:
-            # Belum valid, tanya: mark as valid?
-            mark = questionary.confirm('  Mark as VALID (siap upload ke Supabase)?', default=False).ask()
-            entry['user_approved'] = bool(mark)
-            if mark:
-                print('  ✅ Ditandai VALID (siap upload Supabase)')
-            else:
-                print('  ○ Tetap DRAFT (perlu validasi lagi nanti)')
-    else:
-        # Status draft (3-field belum lengkap) → tidak bisa valid
-        entry['user_approved'] = False
-        print('  ○ Tidak bisa mark VALID (3-field belum lengkap)')
-    save_kamus(data)  # save lagi untuk persist user_approved
+    print(f'  Status: {new_status}' + (' (siap upload Supabase)' if new_status == 'ready' else ' (butuh 3-field lengkap)'))
 
     input('\n  Tekan Enter...')
 
@@ -631,7 +605,7 @@ def bulk_mark_valid_draft(data):
     """
     os.system('clear' if os.name != 'nt' else 'cls')
     print('╔' + '═' * 60 + '╗')
-    print('║  ⚡ Mark VALID/DRAFT Bulk' + ' ' * 32 + '║')
+    print('║  ⚡ Mark READY/DRAFT Bulk' + ' ' * 30 + '║')
     print('╚' + '═' * 60 + '╝')
     print()
     print('  Search entries → pilih dari list → mark VALID atau DRAFT.')
@@ -670,9 +644,9 @@ def bulk_mark_valid_draft(data):
         krama = (entry.get('krama') or '')[:20]
         arti = (entry.get('arti') or '')[:20]
         ready = (entry.get('ngoko') or '').strip() and (entry.get('krama') or '').strip() and (entry.get('arti') or '').strip()
-        approved = entry.get('user_approved')
-        # Icon: ✅=valid, 📋=ready tapi draft, ❌=draft (3-field belum lengkap)
-        if approved:
+        status = entry.get('status', 'draft')
+        # Icon: ✅=ready (user edit), 📋=3-field lengkap tapi draft, ❌=draft (3-field belum lengkap)
+        if status == 'ready':
             icon = '✅'
         elif ready:
             icon = '📋'
@@ -705,7 +679,7 @@ def bulk_mark_valid_draft(data):
     ready = (entry.get('ngoko') or '').strip() and (entry.get('krama') or '').strip() and (entry.get('arti') or '').strip()
 
     if not ready:
-        print(f'\n  ❌ Entry ini 3-field belum lengkap. Tidak bisa di-mark VALID.')
+        print(f'\n  ❌ Entry ini 3-field belum lengkap. Tidak bisa di-mark READY.')
         print(f'     ngoko={entry.get("ngoko","")!r}')
         print(f'     krama={entry.get("krama","")!r}')
         print(f'     arti={entry.get("arti","")!r}')
@@ -717,12 +691,12 @@ def bulk_mark_valid_draft(data):
     print(f'    ngoko:  {entry.get("ngoko","")!r}')
     print(f'    krama:  {entry.get("krama","")!r}')
     print(f'    arti:   {entry.get("arti","")!r}')
-    print(f'    Status sekarang: {"✅ VALID" if entry.get("user_approved") else "📋 DRAFT"}')
+    print(f'    Status sekarang: {entry.get("status", "draft")}')
     print()
 
     action_choices = [
-        '✅ Mark VALID (siap upload ke Supabase)',
-        '📋 Mark DRAFT (un-approve, kembali review)',
+        '✅ Mark READY (siap upload ke Supabase)',
+        '📋 Mark DRAFT (un-mark, kembali review)',
         '↩ Batal',
     ]
     action = questionary.select(
@@ -734,14 +708,14 @@ def bulk_mark_valid_draft(data):
     if not action or 'Batal' in action:
         return
 
-    if 'VALID' in action:
-        entry['user_approved'] = True
+    if 'READY' in action:
+        entry['status'] = 'ready'
         save_kamus(data)
-        print(f'\n  ✅ Ditandai VALID. Siap upload ke Supabase.')
+        print(f'\n  ✅ Ditandai READY. Siap upload ke Supabase.')
     elif 'DRAFT' in action:
-        entry['user_approved'] = False
+        entry['status'] = 'draft'
         save_kamus(data)
-        print(f'\n  ○ Kembali ke DRAFT. Perlu validasi lagi nanti.')
+        print(f'\n  ○ Kembali ke DRAFT. Perlu review lagi nanti.')
 
     input('\n  Tekan Enter...')
 
@@ -842,7 +816,6 @@ def main_menu(data):
         words = data['words']
         total = len(words)
         ready = sum(1 for w in words if w.get('status') == 'ready')
-        approved = sum(1 for w in words if w.get('user_approved'))
         with_arti = sum(1 for w in words if (w.get('arti') or '').strip())
         no_arti = sum(1 for w in words if not (w.get('arti') or '').strip())
 
@@ -856,7 +829,7 @@ def main_menu(data):
         print()
         print(f'  📂 {get_kamus_path()}')
         print(f'  📊 Total: {total} | arti diisi: {with_arti} | belum ada arti: {no_arti}')
-        print(f'  📋 3-field ready: {ready} | ✅ approved: {approved} | 🚀 siap upload: {approved}')
+        print(f'  📋 Draft: {total - ready} | ✅ Ready: {ready} | 🚀 Siap upload: {ready}')
         if supabase_ok:
             print(f'  ☁  Supabase: ✓ ter-set (dari .env atau env vars)')
         else:
@@ -866,16 +839,16 @@ def main_menu(data):
         choices = [
             '📊 Statistik kamus',
             '🔍 Search (cari kata di semua field)',
-            '✅ Browse VALID (user-approved, siap upload)',
-            '📋 Browse DRAFT (belum valid, perlu review)',
+            '✅ Browse READY (status=ready, siap upload)',
+            '📋 Browse DRAFT (belum di-edit user)',
             '📊 Browse by kelengkapan (ngoko / ngoko+krama / 3-field)',
             '📂 Browse by source (lemma/mendeley/dasanama/angka)',
             '⭐ Browse entries dengan krama mapping (auto-filled, butuh arti)',
             '📝 Browse entries BELUM ada arti (Indonesia)',
             '🔗 Merge 2 entries (search kata)',
-            '⚡ Mark VALID/DRAFT bulk (search kata, tanpa edit)',
+            '⚡ Mark READY/DRAFT bulk (search kata, tanpa edit)',
             '🔑 Set Supabase .env (URL + anon key)',
-            '☁  Upload ke Supabase (hanya yang VALID)',
+            '☁  Upload ke Supabase (hanya yang READY)',
             '❌ Keluar',
         ]
 
@@ -894,15 +867,14 @@ def main_menu(data):
             search_menu(data)
         elif 'Upload ke Supabase' in selected:
             upload_to_supabase()
-        elif 'Browse VALID' in selected:
-            # Entries yang user_approved=True (explicit user action)
-            valid_entries = [(i, w) for i, w in enumerate(data['words']) if w.get('user_approved')]
-            browse_list(data, valid_entries, f'✅ VALID ({len(valid_entries)} entri siap upload)')
+        elif 'Browse READY' in selected:
+            # Entries yang status='ready' (user sudah edit via TUI)
+            ready_entries = [(i, w) for i, w in enumerate(data['words']) if w.get('status') == 'ready']
+            browse_list(data, ready_entries, f'✅ READY ({len(ready_entries)} entri siap upload)')
         elif 'Browse DRAFT' in selected:
-            # Entries yang 3-field ready tapi belum user_approved (perlu validasi)
-            draft_entries = [(i, w) for i, w in enumerate(data['words'])
-                            if w.get('status') == 'ready' and not w.get('user_approved')]
-            browse_list(data, draft_entries, f'📋 DRAFT ({len(draft_entries)} entri perlu validasi)')
+            # Entries yang status='draft' (belum di-edit user)
+            draft_entries = [(i, w) for i, w in enumerate(data['words']) if w.get('status') != 'ready']
+            browse_list(data, draft_entries, f'📋 DRAFT ({len(draft_entries)} entri belum di-edit)')
         elif 'by kelengkapan' in selected:
             browse_by_kelengkapan(data)
         elif 'by source' in selected:
@@ -911,7 +883,7 @@ def main_menu(data):
             browse_with_krama(data)
         elif 'BELUM ada arti' in selected:
             browse_no_arti(data)
-        elif 'Mark VALID/DRAFT bulk' in selected:
+        elif 'Mark READY/DRAFT bulk' in selected:
             bulk_mark_valid_draft(data)
         elif 'Merge 2 entries' in selected:
             # Merge 2 entries — LANGSUNG: search kata 1 → search kata 2 → preview → konfirmasi

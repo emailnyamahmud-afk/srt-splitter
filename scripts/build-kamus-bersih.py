@@ -273,6 +273,7 @@ def merge_full_entries(entries, group_by="krama"):
         "keterangan": keterangan_merged,
         "aksara": aksara,
         "register": register,
+        "status": "draft",  # default draft, user edit via TUI → save → recompute jadi 'ready'
         "source_count": len(entries),
     }
 
@@ -357,6 +358,7 @@ def merge_lemma_to_konseps(konseps, lemma_words):
                 "keterangan": lemma_ket,
                 "aksara": lemma_aksara,
                 "register": "umum",  # SEMUA umum (jangan parse — halusinasi)
+                "status": "draft",
                 "sumber": "id.wiktionary.org Kategori:jv:Lema (new)",
                 "is_lemma": True,
                 "lemma_words": lemma_ngoko,
@@ -500,6 +502,7 @@ def merge_mendeley_to_konseps(konseps, mendeley_words):
                 "keterangan": mendeley_ket,
                 "aksara": "",
                 "register": "umum",
+                "status": "draft",
                 "sumber": "data.mendeley.com/datasets/y3hstv4bfn (new)",
                 "is_mendeley": True,
                 "mendeley_id": entry.get("_firebase_id", ""),
@@ -636,6 +639,7 @@ def merge_dasanama_to_konseps(konseps, dasanama_entries):
                 "keterangan": f"Dasanama: {', '.join(sinonim)}",
                 "aksara": "",
                 "register": "umum",
+                "status": "draft",
                 "sumber": "dasanama-raw.csv (new)",
                 "is_dasanama": True,
                 "dasanama_count": len(sinonim),
@@ -746,6 +750,7 @@ def merge_angka_to_konseps(konseps, angka_words):
                 "keterangan": angka_ket,
                 "aksara": "",
                 "register": "umum",
+                "status": "draft",
                 "sumber": "angka-raw.json (new)",
                 "is_angka": True,
                 "source_count": 1,
@@ -1109,6 +1114,7 @@ def merge_konsep_group(entries):
         "keterangan": " | ".join(keterangan_parts),
         "aksara": ", ".join(aksara_words),
         "register": "umum",
+        "status": "draft",  # default draft, user edit via TUI → save → recompute jadi 'ready'
         "sumber": " + ".join(sumber_parts),
         "source_count": source_count,
     }
