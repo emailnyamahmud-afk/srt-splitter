@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "version": "2.8",
+    "version": "2.9",
     "description": "Kamus Jawa komprehensif — group by konsep, gabung sinonim",
     "sources": [
       "jv.wiktionary.org (44,585 entries, raw preserved)",
@@ -25,7 +25,7 @@
       "4. Target: 2.000 entries dengan 3-field lengkap dalam 1 tahun (50/minggu)",
       "5. Upload yang lengkap ke Supabase (DB = ground of truth)"
     ],
-    "last_fix": "koreksi user native Jawa: yang=sing, kamu=kowé, kami=awaké dhéwé, kita=aku lan kowé kabèh"
+    "last_fix": "koreksi satu: siji, satunggal (bukan cithakan)"
   },
   "words": [
     {
@@ -545713,11 +545713,11 @@
       "word": "satru-batin"
     },
     {
-      "ngoko": "",
+      "ngoko": "siji, satunggal",
       "krama": "",
       "krama_inggil": "",
       "arti": "satu",
-      "keterangan": "cithakan",
+      "keterangan": "cithakan | Koreksi user 9 Okt: 'satu' (Indonesia) = 'siji, satunggal' (Jawa 1). Keterangan lama 'cithakan' = HALU (cithakan = cetakan, BUKAN angka).",
       "aksara": "ꦱꦠꦸ",
       "register": "umum",
       "status": "draft",
