@@ -1601,3 +1601,30 @@ Stage Summary:
 - Code sekarang konsisten dengan R-22 (raw = sampah, draft = sumber tunggal NETRAL)
 - Tidak ada lagi mention R-20/R-19 (sudah di-override R-22)
 - AI next sesi baca code: tidak akan halu merujuk raw
+
+---
+Task ID: tambah-kata-umum-srt-indonesia
+Agent: main
+Task: User kasih list 100 kata umum SRT Indonesia. AI masukin ke arti field (hanya json, BUKAN DB).
+
+Work Log:
+- User kasih 100 kata umum SRT ID yang muncul sebagai 'tak dikenal kamus' di web (DB kosong)
+- Cari entries NETRAL dengan word cocok → 29 match (yang, ada, juga, kita, kami, kamu, dll)
+- Cari entries PAIRED yang sudah punya arti/ngoko cocok → 53 match (TIDAK perlu diubah)
+- 18 still no match → tambah entries BARU dengan word=kata, arti=kata
+- Apply ke kamus-jawa-draft.json:
+  - 29 NETRAL entries: arti diisi (status tetap 'draft')
+  - 18 NEW entries: word=kata, arti=kata, sumber='list-kata-umum-srt-indonesia (AI insert)'
+- Total entries: 45.021 → 45.039
+- NETRAL: 39.216 → 39.187 (-29 yang sekarang punya arti)
+- Version: v2.6 → v2.7
+- Commit 362f555 + push
+
+Stage Summary:
+- 47 entries sekarang punya arti Indonesia (29 update + 18 new) — user validasi via TUI
+- R-22: hanya ke draft json, BUKAN upload DB
+- R-12: status='draft', user putuskan valid/tidak
+- R-18: TIDAK hapus, hanya enrich + tambah
+- R-21: word tetap dipertahankan, NETRAL status preserved
+- User workflow: download v2.7, TUI → Filter NETRAL → cari sumber 'list-kata-umum'
+  → validasi → set ngoko/krama → save → status='ready' → upload
