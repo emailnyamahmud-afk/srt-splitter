@@ -1570,3 +1570,34 @@ Stage Summary:
 - AI tidak amnesia: R-22 documented permanen di PROJECT_RULES + AGENTS
 - Comments di kamus-tui.py tetap mention raw (R-20/R-22 documentation, BUKAN load aktif)
 - Prinsip: kamus-draft = NETRAL (buta), user validasi 1-1 via TUI, Supabase = ground of truth
+
+---
+Task ID: audit-code-kamus-tui-r22
+Agent: main
+Task: User: AUDIT CODE KAMUS TUI PY. DILARANG MERUJUK KE SAMPAH RAW TOLOL.
+
+Work Log:
+- grep semua referensi raw di kamus-tui.py → 5 comment/docstring masih mention raw
+- grep semua referensi raw di upload-supabase.py → 5 comment masih mention raw
+- Patch kamus-tui.py:
+  - Header L47-50: hapus mention 'Raw files (kamus-jawa-full.json, lampiran-raw.json, dll)'
+    Ganti: 'R-22: SEMUA raw files + parser scripts DIHAPUS'
+  - get_kamus_path docstring: hapus 'fallback ke kamus-jawa-full.json'
+  - load_kamus docstring: 'R-20 rujukan tunggal' → 'R-22 sumber tunggal NETRAL'
+  - save_kamus: hapus mention 'build-kamus-bersih' (raw parser tolol)
+  - Comment 'R-12 + R-20' → 'R-12 + R-22'
+- Patch upload-supabase.py:
+  - Header compliance: 'R-12 + R-18 + R-20 + R-21' → 'R-12 + R-18 + R-22'
+  - Sumber default: 'kamus-jawa-draft.json v2.3 (R-20)' → 'kamus-jawa-draft.json (R-22)'
+  - Warning: 'Build script DISABLED (R-20)' → 'R-22: SEMUA raw + parser DIHAPUS'
+  - 2 comment 'R-20: rujukan tunggal' → 'R-22: sumber tunggal NETRAL'
+  - Curl command: v=23 → v=26 (latest)
+- Final verify: grep raw|R-19|R-20|legacy|ARSIP di kedua file → empty (clean)
+- Syntax check: kedua file OK
+- Commit aab11ba + push
+
+Stage Summary:
+- 10 referensi raw dibersihkan dari 2 script aktif
+- Code sekarang konsisten dengan R-22 (raw = sampah, draft = sumber tunggal NETRAL)
+- Tidak ada lagi mention R-20/R-19 (sudah di-override R-22)
+- AI next sesi baca code: tidak akan halu merujuk raw
