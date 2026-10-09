@@ -201,6 +201,31 @@ Ngoko words (JANGAN taruh di krama, KECUALI yang betul dipakai di dua register):
 
 Verifikasi per angka WAJIB cek isi data (R-12), bukan asumsi dari pola komposisi AI-generated. Setiap angka punya potensi anomali (mis. `séket` (50), `sewidak` (60) = pengecualian komposisi).
 
+### R-17 — Skema field kamus: ngoko + krama + arti (krama_inggil masuk krama)
+
+Skema field final kamus-jawa-draft.json (per user 9 Okt 2026):
+
+| Field | Isi | Sumber |
+|-------|-----|--------|
+| `ngoko` | ngoko + sinonim ngoko (comma) | jv.wiktionary, id.wiktionary, Mendeley, Lampiran |
+| `krama` | krama + kramainggil + sinonim (comma) | Mendeley (kramaalus + kramainggil), jv.wiktionary, Lampiran |
+| `krama_inggil` | KOSONG (TIDAK DIPAKAI) | — |
+| `arti` | arti Indonesia | Mendeley (curated), Wiktionary, AI komposisi |
+| `keterangan` | keterangan tambahan | semua sumber |
+| `is_angka` | bool | true untuk angka 1-1000 |
+| `status` | draft/ready | user validate via TUI |
+
+Alasan `krama_inggil` jadi 1 field `krama`: user spec 9 Okt — dataset kita = ngoko, arti, krama. Tidak perlu pisah krama vs kramainggil karena TTS/dubbing mau pakai tingkat tutur yang sama (krama sudah mencakup kramainggil sebagai bentuk sopan).
+
+Audit 9 Okt 2026 v2.1: 955/955 (100%) Mendeley entries dengan `kramainggil` SUDAH ter-merge ke field `krama` di draft. 1.036 draft entries punya ≥1 kramainggil word di krama (mis. `mangan` krama=`nedha, dhahar`; `turu` krama=`tilem, sare`; `aba` krama=`aba, dhawuh`).
+
+Build script `build-kamus-bersih.py` line 441-446: gabung `kramaalus + kramainggil` jadi `krama` dengan dedup word-level.
+
+JANGAN:
+- Buat field baru `krama_inggil` terpisah di Supabase — pakai field `krama` saja.
+- Pisahkan kramainggil dari krama saat upload — akan hilang sinonim.
+- Audit laporkan "krama_inggil: 0 entries" sebagai masalah — itu BY DESIGN, bukan bug.
+
 ---
 
 ## Catatan untuk AI
