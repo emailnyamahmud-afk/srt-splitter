@@ -35,7 +35,6 @@ import os
 import sys
 import json
 import subprocess
-import tempfile
 import textwrap
 from pathlib import Path
 
@@ -1194,138 +1193,40 @@ def main_menu(data):
 
 
 def upload_to_supabase():
-    """Upload entri yang sudah di-edit user ke Supabase (subprocess)"""
-    # Buat script Python sementara untuk upload (subprocess supaya output tidak di-clear)
-    script = '''
-import json, sys, os, urllib.request, urllib.error
+    """Upload entri yang sudah di-edit user ke Supabase.
 
-KAMUS_PATH = None
-import os.path
-from pathlib import Path
-# Prefer kamus-jawa-draft.json (v3, group by konsep, register umum), fallback ke kamus-jawa-full.json (legacy)
-KAMUS_DRAFT = Path.home() / "Dubbing" / "kamus-jawa-draft.json"
-KAMUS_LEGACY = Path.home() / "Dubbing" / "kamus-jawa-full.json"
-KAMUS_PATH = KAMUS_DRAFT if KAMUS_DRAFT.exists() else KAMUS_LEGACY
+    Phase 5: logic upload dipindah ke scripts/upload-supabase.py (file terpisah).
+    Fungsi ini sekarang jadi wrapper: cari file upload-supabase.py, jalankan
+    sebagai subprocess supaya output tidak di-clear oleh TUI.
 
-URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
-KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY", "")
+    Lokasi search:
+      1. Sama dengan kamus-tui.py (recommended — user download bareng)
+      2. ~/Dubbing/upload-supabase.py (kalau user download ke Dubbing/)
 
-if not URL or not KEY:
-    print("\\n  ❌ Supabase belum di-set.")
-    print()
-    print("  Cara 1: Buat file .env di ~/Dubbing/ (RECOMMEND, sekali buat, jalan terus):")
-    print()
-    print('    nano ~/Dubbing/.env')
-    print()
-    print('  Isi file .env:')
-    print('    NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co')
-    print('    NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx...')
-    print()
-    print("  Save (Ctrl+X, Y, Enter)")
-    print()
-    print("  Cara 2: Set env vars manual di terminal (hilang saat terminal close):")
-    print('  export NEXT_PUBLIC_SUPABASE_URL="https://xxx.supabase.co"')
-    print('  export NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJxxx..."')
-    input("\\n  Tekan Enter...")
-    sys.exit(1)
+    Fallback kalau file tidak ditemukan: tampilkan pesan error + URL download.
+    """
+    # Cari file upload-supabase.py
+    here = Path(__file__).parent / 'upload-supabase.py'
+    dubbing = Path.home() / 'Dubbing' / 'upload-supabase.py'
 
-if not KAMUS_PATH:
-    print(f"\\n  ❌ Kamus JSON tidak ada di ~/Dubbing/")
-    input("\\n  Tekan Enter...")
-    sys.exit(1)
+    if here.exists():
+        script_path = here
+    elif dubbing.exists():
+        script_path = dubbing
+    else:
+        print('\n  ❌ upload-supabase.py tidak ditemukan.')
+        print(f'     Looked at:')
+        print(f'       {here}')
+        print(f'       {dubbing}')
+        print()
+        print('  Download dari GitHub:')
+        print('  curl -L -o upload-supabase.py \\')
+        print('    "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py?v=1"')
+        input('\n  Tekan Enter...')
+        return
 
-print(f"\\n  → Load kamus: {KAMUS_PATH}")
-with open(KAMUS_PATH, "r", encoding="utf-8") as f:
-    data = json.load(f)
-
-# Filter: HANYA upload entries yang USER APPROVED (R-12 compliance)
-# Syarat: ngoko + krama + arti terisi (status=ready) DAN user_approved=True
-# User wajib validasi 1-1 di TUI sebelum upload ke Supabase
-edited = []
-for entry in data.get("words", []):
-    ngoko = (entry.get("ngoko") or "").strip()
-    krama = (entry.get("krama") or "").strip()
-    arti = (entry.get("arti") or "").strip()
-    approved = bool(entry.get("user_approved"))
-
-    # 3 field wajib + user_approved
-    if ngoko and krama and arti and approved:
-        ki = (entry.get("krama_inggil") or "").strip()
-        register = (entry.get("register") or "").strip()
-        # SEMUA row harus punya keys yang sama (Supabase PGRST102: all keys must match)
-        row = {
-            "ngoko": ngoko,
-            "aksara": entry.get("aksara", ""),
-            "krama": krama,
-            "krama_inggil": ki,        # opsional, kosong kalau tidak ada
-            "arti": arti,
-            "keterangan": entry.get("keterangan", ""),
-            "register": register,      # kosong/umum kalau tidak ada
-            "sumber": entry.get("sumber", "jv.wiktionary.org"),
-            "status": "ready",
-        }
-        edited.append(row)
-
-if not edited:
-    print("  ⚠ Tidak ada entri yang SIAP UPLOAD.")
-    print("     Syarat: ngoko + krama + arti SEMUA terisi (3 field wajib)")
-    print("            DAN user_approved=True (edit entry di TUI untuk approve).")
-    print("     Flow: Browse SIAP UPLOAD → pilih entry → edit (auto-mark approved)")
-    input("\\n  Tekan Enter...")
-    sys.exit(0)
-
-print(f"  → {len(edited)} entri akan di-upload")
-print(f"  → Supabase: {URL[:40]}...")
-print()
-
-headers = {
-    "apikey": KEY,
-    "Authorization": f"Bearer {KEY}",
-    "Content-Type": "application/json",
-    "Prefer": "resolution=merge-duplicates,return=minimal",
-}
-
-batch_size = 500
-success = 0
-failed = 0
-for i in range(0, len(edited), batch_size):
-    batch = edited[i:i + batch_size]
-    batch_json = json.dumps(batch)
-    ins_url = f"{URL}/rest/v1/kamus"
-    ins_req = urllib.request.Request(
-        ins_url,
-        data=batch_json.encode("utf-8"),
-        headers=headers,
-        method="POST",
-    )
-    try:
-        urllib.request.urlopen(ins_req)
-        success += len(batch)
-        print(f"  → {success}/{len(edited)}...", end="\\r")
-    except urllib.error.HTTPError as e:
-        failed += len(batch)
-        error_body = e.read().decode("utf-8", errors="replace")[:300]
-        print(f"\\n  ❌ HTTP {e.code}: {error_body}")
-        break
-    except Exception as e:
-        failed += len(batch)
-        print(f"\\n  ❌ Error: {e}")
-        break
-
-print(f"\\n  ✅ Upload: {success} sukses, {failed} gagal")
-input("\\n  Tekan Enter untuk kembali...")
-'''
-
-    # Tulis script sementara
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False, dir='/tmp') as f:
-        f.write(script)
-        temp_path = f.name
-
-    try:
-        # Jalankan di subprocess
-        subprocess.run([sys.executable, temp_path])
-    finally:
-        os.unlink(temp_path)
+    # Jalankan sebagai subprocess
+    subprocess.run([sys.executable, str(script_path)])
 
 
 def main():
