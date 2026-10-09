@@ -181,25 +181,53 @@ Workflow:
 
 Jangan pernah: ucapkan note → tutup sesi → harap ingat di sesi berikutnya. Itu gagal.
 
-### R-16 — Ejaan Jawa: diakritik é/è wajib, schwa polos "e"
+### R-16 — Raw files DIHAPUS dari repo (R-22 override)
+
+User 9 Okt 2026: "HAPUS SEMUA SCRIP PARSER TOLOL RAW, HAPUS DOKUMEN TOLOL RAW. SISAKAN HANYA SUMBER NETRAL."
+
+**Status raw files** (R-22 override R-16 lama):
+- SEMUA raw files DIHAPUS dari repo + dari disk:
+  - kamus-jawa-full.json + .gz (legacy, parser tolol)
+  - angka-raw.json (parser tolol)
+  - lampiran-raw.json, lampiran-angka-raw.json (parser tolol)
+  - dasanama-raw.csv (parser tolol)
+  - kamus-jawa-mendeley-raw.json (parser tolol)
+  - kamus-jawa-new-lemma.json (parser tolol)
+  - audit-suspects.json (audit dari raw = tolol)
+  - kamus-jawa-draft-report.txt, kamus-jawa-scrape-report.txt (parser tolol)
+- SEMUA scraper/parser script DIHAPUS (bukan DISABLE, HAPUS):
+  - parse-wiktionary-jv.py
+  - scrape-wiktionary-jv-lemma.py
+  - scrape-lampiran-kamus.py
+  - scrape-lampiran-angka.py
+  - add-entry-id.py
+  - build-kamus-bersih.py
+- SEMUA fix script yang apply ke raw DIHAPUS:
+  - fix-angka-ejaan.py, fix-draft-angka-ejaan.py (apply ke angka-raw)
+  - fix-angka-5-native-jawa.py, fix-dhingkluk.py, neutralize-kamus-draft.py (one-off, sudah di-apply)
+  - audit-otomatis-suspect-patterns.py (audit dari raw pattern = tolol)
+
+**Yang TETAP ada**:
+- `public/kamus-jawa-draft.json` (R-20: rujukan tunggal, NETRAL)
+- `scripts/kamus-tui.py` (TUI editor, BANTU workflow user)
+- `scripts/upload-supabase.py` (upload script, user-triggered only)
+- `scripts/yt-dlp-tui.py` + `demucs-tui.py` + `mix-tui.py` (workflow dubbing, BUKAN kamus)
+- `scripts/srt-frequency-analyzer.py` (analyzer SRT, pakai DB Supabase)
+- `scripts/supabase-migration-v2.sql` + `v3.sql` (SQL untuk DB)
+- `scripts/tutor-*.md` + `README.md` (dokumentasi)
+- Web assets: `public/logo.svg`, `public/robots.txt`, `public/coi-serviceworker.js`, `public/kamus-viewer.html`
+
+**Prinsip**: Kamus-draft.json = NETRAL (buta, word tanpa definisi). BUKAN sumber kebenaran.
+User validasi 1-1 via TUI → status='ready' → upload ke Supabase → Supabase = ground of truth.
+
+### R-16a — Ejaan Jawa (diakritik é/è wajib, schwa polos "e")
 
 Jawa modern pakai 3 diakritik untuk vokal "e":
 - **é** = /e/ close-mid (kayak "e" di "kayu"). Contoh: `séket` (50), `séwu` (1000), `limangéwu` (5000), `éka` (Sanskrit 1), akhiran `wé` di `sèlawé`.
 - **è** = /ɛ/ open-mid (kayak "e" di "lemari"). Contoh: awalan `sè` di `sèlawé` (25).
 - **ê** = /ə/ schwa (kayak "e" di "telu"). **Jawa modern tulis polos "e" TANPA diakritik**. Contoh: `telu`, `enem`, `sepuluh`, `sewelas`, `sedasa`, `sekawan`, `setunggal`, `sewidak`, `selikur`, `ewu`, `welas`.
 
-Aturan praktis audit angka:
-1. Sanskrit loan yang masih /e/ close-mid → wajib **é** (mis. `eka` → `éka`).
-2. Kata native Jawa dengan schwa → polos "e", JANGAN tambah diakritik (mis. `telu`, `enem`, `sepuluh`).
-3. Wiktionary baku: `séket` (50), `séwu` (1000), `sèlawé` (25), `limangéwu` (5000) — sudah pakai diakritik benar di angka-raw.json v6.1+.
-
-Krama-only words (JANGAN taruh di ngoko):
-`éka, dwi, hastha, asta, catur, ponco, panca, sad, sapta, tri, nawa, nowo, songo, doso, yuta, sékawan`
-
-Ngoko words (JANGAN taruh di krama, KECUALI yang betul dipakai di dua register):
-`papat, papat, lima, enem, pitu, wolu, sanga` — sanga & wolong dipakai di dua register.
-
-Verifikasi per angka WAJIB cek isi data (R-12), bukan asumsi dari pola komposisi AI-generated. Setiap angka punya potensi anomali (mis. `séket` (50), `sewidak` (60) = pengecualian komposisi).
+Catatan: R-16a adalah panduan teknis saja. R-22 (GIGO) tetap berlaku — AI TIDAK audit/fix ejaan dari raw. User native Jawa yang putuskan ejaan saat validasi via TUI.
 
 ### R-17 — Skema field kamus: ngoko + krama + arti (krama_inggil masuk krama)
 
