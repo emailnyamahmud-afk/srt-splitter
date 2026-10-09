@@ -1310,3 +1310,41 @@ Stage Summary:
 - Angka 1-1000 = contoh 3-pasangan terdefinisi (AI belajar dari sini)
 - User tetap validasi manual semua entries via TUI (R-12)
 - Pending user: download kamus-jawa-draft.json + kamus-tui.py → mulai validasi
+
+---
+Task ID: kamus-tui-phase-1-6
+Agent: main
+Task: Audit + simplifikasi kamus-tui.py bertahap, tiap phase push GitHub
+
+Work Log:
+- Audit 1341 baris kamus-tui.py, temukan 8 masalah (duplikasi, bloat, R-21 gap)
+- Phase 1 (commit a3cfb19): extract _search_entries() helper
+  - 4 lokasi duplikasi (search_menu, browse_list, bulk_mark, merge_2) → 1 helper
+  - Parameter flexible: fields, exclude_idx, case insensitive
+- Phase 2 (commit d9dce1c): pakai _entry_label() di browse_list
+  - R-21: NETRAL entries (word terisi) sekarang tampil di list (sebelumnya kosong)
+  - 24 baris → 8 baris pakai helper
+- Phase 3 (commit 33689b6): tambah filter NETRAL di main_menu + browse_by_kelengkapan
+  - 39.216 entries NETRAL sekarang bisa diakses langsung dari menu utama
+  - Default selection di browse_by_kelengkapan (mayoritas entries)
+- Phase 4 (commit f1ec792): extract merge_2_entries() jadi fungsi terpisah
+  - 187 baris inline di main_menu → 200 baris fungsi terpisah dengan docstring
+  - R-18 + R-21 compliance documented
+- Phase 5 (commit da155f5): pisah upload-supabase.py jadi file terpisah
+  - 130 baris inline string → 170 baris file terpisah (bisa di-test standalone)
+  - kamus-tui.py upload_to_supabase() jadi wrapper 35 baris
+  - import tempfile dihapus (tidak dipakai lagi)
+- Phase 6 (commit aff4666): polish word-wrap textwrap + main prologue cleanup
+  - Word-wrap manual 12 baris → textwrap.wrap() (1 block)
+  - main() auto-save → read-only check (JANGAN auto-save tanpa user action)
+  - Tambah count NETRAL + mismatch info di startup
+
+Stage Summary:
+- kamus-tui.py: 1341 → 1282 baris (4.4% lebih ringkas)
+- File baru: upload-supabase.py (170 baris, terpisah, bisa di-test standalone)
+- Total: 1341 → 1452 baris (naik 8% tapi 6 phase terstruktur, helper terpusat)
+- Test: 7+ assertions PASS di setiap phase
+- Behavior user-facing preserved (semua menu, filter, merge, upload tetap jalan)
+- R-21 compliance: NETRAL entries tampil di browse + ada filter khusus
+- R-18 compliance: JANGAN auto-save, biarkan user save manual via edit_entry
+- R-12 compliance: save_kamus() tetap recompute status saat user edit
