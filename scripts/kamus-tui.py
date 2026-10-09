@@ -44,8 +44,11 @@ except ImportError:
     print('\n❌ pip3 install questionary')
     sys.exit(1)
 
-# Kamus JSON path — hanya kamus-jawa-full.json (v5, 44.585 entri)
-KAMUS_FULL = Path.home() / 'Dubbing' / 'kamus-jawa-full.json'
+# Kamus JSON path — sekarang pakai kamus-jawa-bersih.json (group by konsep, 43.109 entri)
+# Schema konsep: {entry_id, ngoko, krama, krama_inggil, arti, keterangan, aksara, register, sumber, is_lemma, lemma_words, source_count}
+# Source raw dipertahankan: kamus-jawa-full.json (44.585) + kamus-jawa-lemma-raw.json (2.159) — JANGAN DIHAPUS
+KAMUS_FULL = Path.home() / 'Dubbing' / 'kamus-jawa-bersih.json'
+KAMUS_LEGACY = Path.home() / 'Dubbing' / 'kamus-jawa-full.json'  # fallback kalau bersih.json belum didownload
 
 # .env file di ~/Dubbing/ — user simpan Supabase URL + anon key di sini
 # Format .env:
@@ -92,9 +95,16 @@ SUPABASE_KEY = os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY', '')
 
 
 def get_kamus_path():
-    """Cari kamus JSON di ~/Dubbing/"""
+    """Cari kamus JSON di ~/Dubbing/ — prefer kamus-jawa-bersih.json, fallback ke kamus-jawa-full.json."""
     if KAMUS_FULL.exists():
         return KAMUS_FULL
+    if KAMUS_LEGACY.exists():
+        print(f'  ⚠ {KAMUS_FULL.name} tidak ditemukan, pakai legacy: {KAMUS_LEGACY.name}')
+        print(f'  💡 Download kamus-jawa-bersih.json (43.109 konsep, group by konsep):')
+        print(f'     curl -L -o ~/Dubbing/kamus-jawa-bersih.json \\')
+        print(f'       "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-bersih.json?v=2"')
+        print()
+        return KAMUS_LEGACY
     return None
 
 
@@ -103,10 +113,10 @@ def load_kamus():
     if not path:
         print(f'\n❌ Kamus JSON tidak ada di:')
         print(f'   {KAMUS_FULL}')
-        print(f'\n   Download:')
-        print(f'   curl -L -o ~/Dubbing/kamus-jawa-full.json.gz \\')
-        print(f'     https://github.com/emailnyamahmud-afk/srt-splitter/raw/main/public/kamus-jawa-full.json.gz')
-        print(f'   gunzip ~/Dubbing/kamus-jawa-full.json.gz')
+        print(f'   {KAMUS_LEGACY}')
+        print(f'\n   Download kamus-jawa-bersih.json (43.109 konsep, RECOMMEND):')
+        print(f'   curl -L -o ~/Dubbing/kamus-jawa-bersih.json \\')
+        print(f'     "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-bersih.json?v=2"')
         return None
     with open(path, 'r', encoding='utf-8') as f:
         return json.load(f)
@@ -121,12 +131,18 @@ def save_kamus(data):
 
     SELALU recompute status setiap save (jangan skip yang sudah punya status).
     User edit arti → status harus recompute dari draft → ready.
+
+    entry_id: dipertahankan dari build-kamus-bersih (urut alfabetis).
+    Kalau ada entry yang di-delete (via merge), re-number entry_id 1..N supaya tetap konsisten.
     """
     for w in data['words']:
         ngoko = (w.get('ngoko') or '').strip()
         krama = (w.get('krama') or '').strip()
         arti = (w.get('arti') or '').strip()
         w['status'] = 'ready' if (ngoko and krama and arti) else 'draft'
+    # Re-number entry_id (urut posisi list = urut alfabetis dari build-kamus-bersih)
+    for i, w in enumerate(data['words'], 1):
+        w['entry_id'] = i
     path = get_kamus_path()
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
@@ -846,7 +862,10 @@ import json, sys, os, urllib.request, urllib.error
 KAMUS_PATH = None
 import os.path
 from pathlib import Path
-KAMUS_PATH = Path.home() / "Dubbing" / "kamus-jawa-full.json"
+# Prefer kamus-jawa-bersih.json (v2, group by konsep), fallback ke kamus-jawa-full.json (legacy)
+KAMUS_BERSIH = Path.home() / "Dubbing" / "kamus-jawa-bersih.json"
+KAMUS_LEGACY = Path.home() / "Dubbing" / "kamus-jawa-full.json"
+KAMUS_PATH = KAMUS_BERSIH if KAMUS_BERSIH.exists() else KAMUS_LEGACY
 
 URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
 KEY = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY", "")

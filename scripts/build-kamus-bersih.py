@@ -448,6 +448,11 @@ def main():
     print(f"\n🔤 Sort {len(konseps):,} konsep alfabetis by ngoko pertama...")
     konseps = sort_konseps(konseps)
 
+    # Assign entry_id (1-indexed, urut alfabetis)
+    print(f"🔢 Assign entry_id 1..{len(konseps):,}...")
+    for i, k in enumerate(konseps, 1):
+        k["entry_id"] = i
+
     # Compute stats
     stats = compute_stats(konseps)
     print(f"\n📊 Hasil:")
