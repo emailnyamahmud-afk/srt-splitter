@@ -1166,3 +1166,29 @@ Stage Summary:
 - Commits: e0d7f80, a3aa3dd, 7398ade
 - Pending besok: batch demucs + batch mix + subtitle embed
 
+
+---
+Task ID: kamus-angka-ejaan
+Agent: main
+Task: Audit & fix ejaan Jawa di angka 1-1000 (user complaint: cuma séket yang di-fix, bagaimana yang lain?)
+
+Work Log:
+- Baca ulang angka-raw.json (1009 entries) + lampiran-angka-raw.json (66 entries = Wiktionary ground truth)
+- Cross-check angka-raw.json vs Wiktionary Lampiran:Nama_angka — found 3 discrepancies on key numbers
+- Audit 1009 entries: cari "e" tanpa diakritik → 774 entries. Klaster per token → 15 distinct ngoko + 13 distinct krama tokens.
+- Klasifikasi manual per token: schwa (modern Jawa tulis polos "e" — BENAR) vs close-mid /e/ (perlu é) vs open-mid /ɛ/ (perlu è)
+- Buat scripts/fix-angka-ejaan.py (idempotent): patch 3 masalah di angka-raw.json
+- Buat scripts/fix-draft-angka-ejaan.py: propagasi ke kamus-jawa-draft.json (2 entries affected)
+- Verifikasi 3 fix applied + 5 key numbers no-regression (séket, sèlawé, séwu, limangéwu, sewidak)
+- Tambah R-16 di PROJECT_RULES.md: aturan diakritik é/è/ê + schwa polos "e" + krama-only words list
+- Commit 5ded8ca + push origin main
+
+Stage Summary:
+- 3 fix applied:
+  - angka 1 krama: 'eka' → 'éka' (Sanskrit /eka/)
+  - angka 0 krama: 'Nol' → 'nol'
+  - angka 9 ngoko: 'sanga, songo' → 'sanga' (songo = KRAMA)
+- angka-raw.json v6.0 → v6.1
+- kamus-jawa-draft.json v2.0 → v2.1
+- R-16 added: "Ejaan Jawa: diakritik é/è wajib, schwa polos 'e'"
+- Pending user: re-run kamus-tui.py untuk lihat hasil fix di TUI
