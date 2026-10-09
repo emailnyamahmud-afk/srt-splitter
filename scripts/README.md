@@ -17,6 +17,7 @@ Lihat [`tutor-mode-on-workflow.md`](tutor-mode-on-workflow.md) + [`tutor-demucs-
 | **`mix-tui.py`** ⭐ | TUI Mix MP4 + no_vocals + audio_dub (ducking sidechain) | ✅ Utama |
 | **`kamus-tui.py`** ⭐ | TUI edit kamus Jawa v2 — menu pre-built, .env support, upload Supabase | ✅ Utama |
 | **`srt-frequency-analyzer.py`** ⭐ | Analisis SRT → top 100 kata tak dikenal (pakai Supabase sebagai ground of truth) | ✅ Utama |
+| **`scrape-wiktionary-jv-lemma.py`** ⭐ | Scrape Kategori:jv:Lema di id.wiktionary.org → kamus-jawa-new.json (859 entries) | ✅ Utama |
 | `rapikan-jawa.py` | Rapikan ejaan Jawa di 1 file SRT | ✅ Utility |
 | `split_srt.py` | Split SRT by durasi | ✅ Utility |
 | `srt-to-audio.py` | Generate audio dari SRT (Edge TTS, alternatif lokal) | ✅ Utility |
