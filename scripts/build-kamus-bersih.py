@@ -43,8 +43,8 @@ Schema output:
   }
 
 Output:
-  /home/z/my-project/public/kamus-jawa-bersih.json  (kamus komprehensif)
-  /home/z/my-project/public/kamus-jawa-bersih-report.txt  (statistik)
+  /home/z/my-project/public/kamus-jawa-draft.json  (kamus draft, banyak kosong, user isi bertahap)
+  /home/z/my-project/public/kamus-jawa-draft-report.txt  (statistik)
 
 Usage:
   python3 build-kamus-bersih.py
@@ -63,8 +63,8 @@ from collections import defaultdict
 RAW_FULL = Path("/home/z/my-project/public/kamus-jawa-full.json")
 RAW_LEMMA = Path("/home/z/my-project/download/kamus-jawa-lemma-raw.json")
 
-OUT_BERSIH = Path("/home/z/my-project/public/kamus-jawa-bersih.json")
-OUT_REPORT = Path("/home/z/my-project/public/kamus-jawa-bersih-report.txt")
+OUT_DRAFT = Path("/home/z/my-project/public/kamus-jawa-draft.json")
+OUT_REPORT = Path("/home/z/my-project/public/kamus-jawa-draft-report.txt")
 
 
 # ============================================================
@@ -206,6 +206,8 @@ def merge_full_entries(entries, group_by="krama"):
     ki_parts = []
     aksara_parts = []
     keterangan_merged = ""
+    # Register SEMUA = "umum" (jangan parse ngoko/krama dari Wiktionary — halusinasi/kesalahan parsing).
+    # User bisa set manual di kamus-tui.py kalau perlu.
     register = "umum"
 
     for e in entries:
@@ -214,7 +216,6 @@ def merge_full_entries(entries, group_by="krama"):
         ki = (e.get("krama_inggil", "") or "").strip()
         a = (e.get("aksara", "") or "").strip()
         ket = (e.get("keterangan", "") or "").strip()
-        reg = (e.get("register", "") or "").strip()
 
         if n:
             ngoko_parts.append(n)
@@ -226,8 +227,6 @@ def merge_full_entries(entries, group_by="krama"):
             aksara_parts.append(a)
         if ket:
             keterangan_merged = merge_keterangan_field(keterangan_merged, ket)
-        if reg and register_priority(reg) < register_priority(register):
-            register = reg
 
     # Dedup sinonim per word (split by comma dulu, supaya "ika, iki" + "ika, iku"
     # → "ika, iki, iku" bukan "ika, iki, ika, iku")
@@ -315,7 +314,6 @@ def merge_lemma_to_konseps(konseps, lemma_words):
         lemma_krama = (lemma.get("krama", "") or "").strip()
         lemma_aksara = (lemma.get("aksara", "") or "").strip()
         lemma_ket = (lemma.get("keterangan", "") or "").strip()
-        lemma_register = (lemma.get("register", "") or "umum").strip()
 
         # Cari konsep yang match (by first ngoko)
         matches = konsep_by_ngoko.get(lemma_ngoko, [])
@@ -339,10 +337,7 @@ def merge_lemma_to_konseps(konseps, lemma_words):
             if lemma_ket:
                 k["keterangan"] = merge_keterangan_field(k.get("keterangan", ""), lemma_ket)
 
-            # Update register kalau lemma punya prioritas lebih tinggi
-            if register_priority(lemma_register) < register_priority(k.get("register", "umum")):
-                k["register"] = lemma_register
-
+            # Register tetap "umum" (jangan pakai lemma register — halusinasi/kesalahan parsing)
             # Tag is_lemma
             k["is_lemma"] = True
             k["lemma_words"] = lemma_ngoko
@@ -358,7 +353,7 @@ def merge_lemma_to_konseps(konseps, lemma_words):
                 "arti": lemma_arti,
                 "keterangan": lemma_ket,
                 "aksara": lemma_aksara,
-                "register": lemma_register,
+                "register": "umum",  # SEMUA umum (jangan parse — halusinasi)
                 "sumber": "id.wiktionary.org Kategori:jv:Lema (new)",
                 "is_lemma": True,
                 "lemma_words": lemma_ngoko,
@@ -498,25 +493,27 @@ def main():
         },
         "words": konseps,
     }
-    with open(OUT_BERSIH, "w", encoding="utf-8") as f:
+    with open(OUT_DRAFT, "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
-    print(f"\n✓ Save: {OUT_BERSIH} ({len(konseps):,} konsep)")
+    print(f"\n✓ Save: {OUT_DRAFT} ({len(konseps):,} konsep)")
 
     # Report
     with open(OUT_REPORT, "w", encoding="utf-8") as f:
-        f.write("Build Kamus Bersih v2 Report\n")
+        f.write("Build Kamus DRAFT Report\n")
         f.write("=" * 60 + "\n\n")
         f.write("Source (JANGAN DIHAPUS, tetap utuh):\n")
         f.write(f"  kamus-jawa-full.json        : {len(full_words):>7,} entries (jv.wiktionary.org)\n")
         f.write(f"  kamus-jawa-lemma-raw.json   : {len(lemma_words):>7,} entries (id.wiktionary.org jv:Lema)\n\n")
         f.write("Output:\n")
-        f.write(f"  kamus-jawa-bersih.json      : {stats['total_konsep']:>7,} konsep (group by konsep + gabung sinonim)\n\n")
+        f.write(f"  kamus-jawa-draft.json       : {stats['total_konsep']:>7,} konsep (group by konsep + sinonim)\n\n")
         f.write("Stats:\n")
         for k, v in stats.items():
             f.write(f"  {k:25s}: {v:>7,}\n")
-        f.write("\nWorkflow:\n")
+        f.write("\nRegister: SEMUA 'umum' (jangan parse ngoko/krama dari Wiktionary — halusinasi/kesalahan parsing).\n")
+        f.write("  User bisa set manual di kamus-tui.py kalau perlu.\n\n")
+        f.write("Workflow:\n")
         f.write("  1. Raw preserved (full + lemma) — JANGAN DIHAPUS\n")
-        f.write("  2. Kamus bersih = 1 file komprehensif, group by konsep\n")
+        f.write("  2. Kamus draft = 1 file komprehensif, group by konsep, register umum\n")
         f.write("  3. Sinonim digabung comma (ngoko, krama, arti)\n")
         f.write("  4. Keterangan Jawa asli dipertahankan (gabung '|')\n")
         f.write("  5. Aksara Jawa digabung comma kalau beda\n")

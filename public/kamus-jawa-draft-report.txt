@@ -1,4 +1,4 @@
-Build Kamus Bersih v2 Report
+Build Kamus DRAFT Report
 ============================================================
 
 Source (JANGAN DIHAPUS, tetap utuh):
@@ -6,7 +6,7 @@ Source (JANGAN DIHAPUS, tetap utuh):
   kamus-jawa-lemma-raw.json   :   2,159 entries (id.wiktionary.org jv:Lema)
 
 Output:
-  kamus-jawa-bersih.json      :  43,109 konsep (group by konsep + gabung sinonim)
+  kamus-jawa-draft.json       :  43,109 konsep (group by konsep + sinonim)
 
 Stats:
   total_konsep             :  43,109
@@ -18,9 +18,12 @@ Stats:
   ready_3_field            :     279
   draft_2_field            :   1,768
 
+Register: SEMUA 'umum' (jangan parse ngoko/krama dari Wiktionary — halusinasi/kesalahan parsing).
+  User bisa set manual di kamus-tui.py kalau perlu.
+
 Workflow:
   1. Raw preserved (full + lemma) — JANGAN DIHAPUS
-  2. Kamus bersih = 1 file komprehensif, group by konsep
+  2. Kamus draft = 1 file komprehensif, group by konsep, register umum
   3. Sinonim digabung comma (ngoko, krama, arti)
   4. Keterangan Jawa asli dipertahankan (gabung '|')
   5. Aksara Jawa digabung comma kalau beda
