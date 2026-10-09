@@ -1489,3 +1489,41 @@ Stage Summary:
   'lima' (formal) untuk komposisi. AI ikut user.
 - Wiktionary cross-check cocok (gangsal, limolas) — ponco/panca hapus (BUKAN krama)
 - AI tidak ngeyel. Native Jawa paham 7 varian, dataset online masih sedikit.
+
+---
+Task ID: R22-catat-gigo-principle
+Agent: main
+Task: User: PAHAM DOANG TAPI GAK DICATAT = AMNESIA. Catat R-22 + audit code.
+
+Work Log:
+- User marah: 'PAHAM PAHAM DOANG, TAPI GAK DICATAT = BAKAL AMNESIA, KARENA OTAK AI TOLOL ITU BEKU.
+  CATAT DI DOKUMENTASI, AUDIT CODE AGAR JANGAN MERUJUK KE SOURCE RAW SAMPAH.'
+- Audit code: 8 script masih load/menghasilkan raw files
+- Tambah R-22 ke PROJECT_RULES.md:
+  - Prinsip GIGO (Garbage In Garbage Out): otak AI Jawa = sampah internet
+  - AI tidak boleh merujuk raw untuk audit/fix
+  - AI boleh bantu: statistik, scan pattern, compare draft vs DB, maintenance script
+  - AI dilarang: upload, audit dari raw, fix dari raw, ngeyel dengan akar kata
+- DISABLED 8 script (R-22 compliance):
+  - parse-wiktionary-jv.py.DISABLED (generator kamus-jawa-full)
+  - scrape-wiktionary-jv-lemma.py.DISABLED (generator raw)
+  - scrape-lampiran-kamus.py.DISABLED (generator lampiran-raw)
+  - scrape-lampiran-angka.py.DISABLED (generator lampiran-angka-raw)
+  - add-entry-id.py.DISABLED (modifikasi kamus-jawa-full legacy)
+  - fix-angka-ejaan.py.DISABLED (apply ke angka-raw)
+  - fix-draft-angka-ejaan.py.DISABLED (apply ke angka-raw)
+  - fix-dhingkluk.py.DISABLED (one-off, sudah di-apply)
+- Fix fix-angka-5-native-jawa.py: hapus apply ke angka-raw.json
+  Sekarang HANYA apply ke kamus-jawa-draft.json
+  Print: 'angka-raw.json: SKIPPED (R-22: raw = sampah)'
+- Update AGENTS.md: 22 aturan (sebelumnya 21), aturan emas #10-12 baru
+- Update scripts/README.md: tabel DISABLED dengan 9 script
+- Verify: grep 'kamus-jawa-full|angka-raw|lampiran-raw' di scripts/*.py aktif
+  → hanya comment mention, TIDAK ada load aktif
+- Commit cda595b + push
+
+Stage Summary:
+- R-22 documented permanen di PROJECT_RULES.md (otak AI tidak amnesia lagi)
+- 8 script DISABLED — AI next sesi tidak akan halu run
+- Fix script R-22 compliant: hanya apply ke draft, BUKAN raw
+- Workflow AI jelas: bantu, bukan audit. User pegang kendali.
