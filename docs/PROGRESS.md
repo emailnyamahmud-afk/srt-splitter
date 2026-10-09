@@ -2,7 +2,7 @@
 
 Dokumen ini catatan status project untuk AI / developer next time baca. Update setiap sesi kerja.
 
-**Last updated:** 9 Oktober 2026, 17:00 WIB
+**Last updated:** 9 Oktober 2026, 22:00 WIB
 
 ---
 
@@ -15,19 +15,21 @@ Dokumen ini catatan status project untuk AI / developer next time baca. Update s
 | **Bidirectional alias lookup (word + ngoko + krama + krama_inggil + arti)** | ✅ Deployed |
 | **Auto-strip aksen Jawa di TTS (SRT final tetap utuh)** | ✅ Deployed |
 | **UI panel "Top 100 Unknown Words" + badge per cue** | ✅ Deployed (8 Okt 2026) |
-| **Kamus schema v6.1 (R-21: field 'word' netral + R-17: krama_inggil masuk krama)** | ✅ Code ready |
-| **Kamus JSON 45.021 entries (5.803 paired + 39.216 NETRAL)** | ✅ User bisa download |
-| **kamus-tui.py v2.3 (Phase 1-6 refactor + R-21 filter NETRAL)** | ✅ User bisa pakai |
-| **upload-supabase.py (Phase 5, file terpisah)** | ✅ User bisa pakai |
-| **audit-otomatis-suspect-patterns.py (R-19, 124 suspect)** | ✅ User bisa pakai |
+| **UI panel "Unknown Words" fix — DB kosong = semua tak dikenal (R-22)** | ✅ Fixed (9 Okt 2026) |
+| **Kamus schema v2.27 (R-21: word netral + R-17: krama_inggil masuk krama + merge duplikat)** | ✅ Code ready |
+| **Kamus JSON 44.004 entries (2.936 paired 3-field + 39.230 NETRAL + 2 empty)** | ✅ User bisa download |
+| **kamus-tui.py v9 (Phase 1-6 refactor + filter NETRAL + Deteksi Duplikat)** | ✅ User bisa pakai |
+| **upload-supabase.py (Phase 5, user-triggered only, R-12 konfirmasi 'y')** | ✅ User bisa pakai |
+| **Duplikat audit (211 ngoko + 192 krama + 140 cross-field)** | ✅ Catatan untuk TUI |
 | **Web app kamus READ-ONLY (jangan rusak kamus dari UI)** | ✅ Audited |
 | **Mode ON + Smart Fit (video = ground truth)** | ✅ User rating 9/10 (cap 2.0x, pitch -15Hz laki) |
 | **Python `demucs-tui.py` + `mix-tui.py`** | ✅ Working (MILESTONE Test #25, 10000% sync) |
 | Pitch control (Edge TTS -10Hz laki, +10Hz perempuan) | ✅ Working, user pakai -15Hz |
 | User run migration v2+v3 SQL di Supabase | ✅ Done (8 Okt 2026) |
-| User upload 2 entries ke Supabase (test awal) | ✅ Done (8 Okt 2026) |
-| User validasi entries NETRAL (39.216) via TUI | 🔄 In progress (R-21) |
-| User validasi audit-suspects (124 entries) | 🔄 In progress (R-19) |
+| User upload 2 entries ke Supabase (test awal) | ✅ Done (8 Okt 2026) → DIHAPUS (logika lama, R-22) |
+| DB Supabase kamus = 0 entries (fresh start, R-22 compliance) | ✅ Clean |
+| User validasi entries NETRAL (39.230) via TUI → status='ready' → upload | 🔄 In progress (R-21) |
+| User bersihkan duplikat via TUI menu 'Deteksi Duplikat' (JANGAN HAPUS, R-18) | 🔄 In progress |
 | Test full season S7-id (2.5 jam) | ⏳ Pending user |
 | Workflow multi-bahasa (Jawa/Sunda/dll) | 🔜 Next step |
 

@@ -54,17 +54,21 @@ Kalau ada konflik antara dokumen, `PROJECT_RULES.md` menang.
 ⏳ Fase 4: mix-tui       → mp4-{lang}-final.mp4 (nunggu dub ready)
 ```
 
-## Kamus Jawa status (v2.3, 9 Okt 2026)
+## Kamus Jawa status (v2.27, 9 Okt 2026)
 
 ```
-Total entries:           45.021
-✅ PAIRED (terdefinisi):    5.803  (12.9%)  ← ngoko+krama/arti atau krama+arti
-⚠ NETRAL (word-only):    39.216  (87.1%)  ← R-21: belum terdefinisi, user validasi manual
+Total entries:           44.004 (setelah merge 611 duplikat)
+✅ PAIRED 3-field:        2.936  (6.7%)  ← ngoko+krama+arti lengkap
+⚠ NETRAL (word+arti):   39.230  (89.2%)  ← arti=word (fallback), user tentukan ngoko/krama
 ✅ Empty (R-18 tetap):        2  (0.0%)
 
-Angka 1-1000: 100% 3-pasangan terdefinisi (contoh sederhana untuk AI belajar)
-Krama terisi: 3.493 (7.76%) — dari Mendeley (krama+kramainggil), Wiktionary, Lampiran
-Audit suspect: 124 entries (R-19) — user validasi ulang 1-1
+Arti terisi:    44.002 (100%)  ← semua punya arti minimal (fallback=word)
+Ngoko terisi:   4.703 (10.7%)
+Krama terisi:   3.005 (6.8%)
+Keterangan:     42.925 (97.5%)  ← PETUNJUK konteks
+
+Duplikat: 0 arti (sudah merge), 211 ngoko + 192 krama + 140 cross-field
+  → user bersihkan via TUI menu 'Deteksi Duplikat' (JANGAN HAPUS otomatis)
 Build script: DISABLED (R-20) — parser tolol merusak data
 ```
 
@@ -106,6 +110,7 @@ Build script: DISABLED (R-20) — parser tolol merusak data
 
 - `audio-id-dub.wav` dari web app Mode ON (Fase 3a)
 - Code fix SRT editor Jawa: default voice Dimas otomatis untuk semua cue (Fase 3b)
-- Kamus Jawa Supabase progressif (50 entries/minggu, target 10.000 entries 3-pasangan terverifikasi dalam 1-6 bulan)
-- User validasi entries NETRAL (39.216) via TUI → status 'ready' → upload Supabase
+- Kamus Jawa Supabase progressif (50 entries/minggu, target 10.000 entries 3-pasangan terverifikasi)
+- User validasi entries NETRAL (39.230) via TUI → isi ngoko/krama → status='ready' → upload Supabase
+- User bersihkan duplikat via TUI menu 'Deteksi Duplikat' (JANGAN HAPUS otomatis, R-18)
 - AI bantu workflow: statistik, scan pattern, compare draft vs DB (read-only). AI TIDAK upload.

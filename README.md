@@ -131,17 +131,21 @@ Fase 5 (opsional): Edit final di DaVinci Resolve (manual)
 R-22: **kamus-jawa-draft.json = satu-satunya sumber (NETRAL)**. Semua raw files + parser scripts DIHAPUS dari repo — isinya parsing AI tolol.
 
 ```bash
-# Download kamus draft (17MB, v2.6 — pasca netral R-21, R-22 raw dihapus)
+# Download kamus draft (17MB, v2.27 — merge 611 duplikat + fallback arti=word)
 curl -L -o kamus-jawa-draft.json \
-  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?v=26"
+  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?v=27"
 
-# Download TUI editor (v2.6, Phase 1-6 refactor)
+# Download TUI editor (v9, menu Deteksi Duplikat + filter NETRAL)
 curl -L -o kamus-tui.py \
-  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/kamus-tui.py?v=8"
+  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/kamus-tui.py?v=9"
 
-# Download upload script (Phase 5 — file terpisah, user-triggered only)
+# Download upload script (Phase 5, user-triggered only, R-12 konfirmasi 'y')
 curl -L -o upload-supabase.py \
   "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py?v=2"
+
+# Download audit duplikat (catatan, bukan perintah hapus)
+curl -L -o duplikat-audit.json \
+  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/duplikat-audit.json?v=1"
 ```
 
 > ⚠ **R-22: SEMUA raw files + parser scripts DIHAPUS dari repo.**
@@ -192,24 +196,50 @@ Lihat [`scripts/tutor-python-lokal.md`](scripts/tutor-python-lokal.md) untuk det
 }
 ```
 
-### Stats (v2.3, post-neutralize)
+### Stats (v2.27, post-merge + scan + fallback)
 
 ```
-Total entries:           45.021
-✅ PAIRED (terdefinisi):    5.803  (12.9%)
-  - ngoko + krama/arti:    5.678
-  - krama + arti (no ngoko): 125
-⚠ NETRAL (word-only):    39.216  (87.1%)  ← user validasi manual via TUI
+Total entries:           44.004 (setelah merge 611 duplikat)
+✅ PAIRED 3-field:        2.936  (6.7%)  ← ngoko+krama+arti lengkap
+⚠ NETRAL (word+arti):   39.230  (89.2%)  ← arti=word (fallback), user tentukan ngoko/krama
 ✅ Empty (R-18 tetap):        2  (0.0%)
 
-Krama terisi: 3.493 (7.76%) — angka 1-1000 + entries paired (3-pasangan terdefinisi)
-Arti terisi: 4.555 (10.1%)
-3-field lengkap (ready upload): 1.881 (4.2%) — kandidat user validate → upload Supabase
+Arti terisi:    44.002 (100%)  ← semua entries punya arti minimal (fallback=word)
+Ngoko terisi:   4.703 (10.7%)
+Krama terisi:   3.005 (6.8%)
+Keterangan:     42.925 (97.5%)  ← PETUNJUK konteks dari scrap
+Duplikat arti:      0  ← sudah merge
+Duplikat ngoko:   211 tokens  ← user bersihkan via TUI (menu Deteksi Duplikat)
+Duplikat krama:   192 tokens
+Cross-field:      140 tokens
 
-Angka 1-1000 (contoh 3-pasangan terdefinisi, R-21):
-  Coverage: 1000/1000 (100%) — ngoko + krama + arti semua terisi
-  Ejaan baku v6.1: éka (bukan eka), nol (bukan Nol), songo hapus dari ngoko
-  Status tetap 'draft' — user tetap validasi manual (R-12)
+Angka 1-1000 (contoh 3-pasangan terdefinisi):
+  Coverage: 1000/1000 (100%) — ngoko+krama+arti semua terisi
+  Ejaan baku v6.3: limo (5), limolas (15), sèlawé+selawe (25), séket+seket (50)
+  panca+ponco = sinonim Sanskrit, TETAP (R-18 jangan hapus)
+```
+
+### Menu TUI (kamus-tui.py v9)
+
+```
+📊 Statistik kamus
+🔍 Search (cari kata di semua field)
+✅ Browse READY (status=ready, siap upload)
+📋 Browse DRAFT (belum di-edit user)
+⚠ Filter: NETRAL (39.230 entri, word+arti, user tentukan ngoko/krama)
+🟢 Filter: LENGKAP 3-field (2.936 entri, siap review/upload)
+🟡 Filter: NGOKO+KRAMA (perlu isi arti)
+⚪ Filter: NGOKO SAJA (perlu isi krama+arti)
+🔵 Filter: NGOKO+ARTI (perlu isi krama)
+📂 Browse by source (lemma/mendeley/dasanama/angka)
+⭐ Browse entries dengan krama mapping
+📝 Browse entries BELUM ada arti
+🔗 Merge 2 entries (search kata)
+🔍 Deteksi duplikat (JANGAN HAPUS, user putuskan)
+⚡ Mark READY/DRAFT bulk
+🔑 Set Supabase .env
+☁  Upload ke Supabase (hanya yang READY)
+❌ Keluar
 ```
 
 ### Bidirectional alias lookup (di web app)
