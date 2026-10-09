@@ -1035,6 +1035,76 @@ def cleanup_misplaced_krama(konseps, angka_words=None):
 
 
 # ============================================================
+# Fix angka: hapus bentuk sandhi dari ngoko + hapus ejaan lama
+# ============================================================
+def fix_angka_ngoko(konseps, angka_words=None):
+    """Fix entries angka:
+    1. Hapus bentuk sandhi dari ngoko (rong dari loro, dlima dari lima)
+    2. Hapus entries dengan ngoko = ejaan lama yang salah (limalas, enemlas, wulas)
+       jika sudah ada entry angka-raw dengan ejaan benar (limolas, nembelas, wolulas)
+    """
+    if not angka_words:
+        return konseps
+
+    # Bentuk sandhi yang harus dihapus dari ngoko (bukan kata standalone)
+    sandhi_forms = {'rong', 'dlima', 'telu', 'papat'}  # telu/papat jangan hapus, itu ngoko valid
+    # Yang benar-benar sandhi:
+    sandhi_only = {'rong', 'dlima', 'ng', 'nge', 'di', 'ke', 'te'}  # prefix sandhi
+    # Hanya rong dan dlima yang pasti sandhi (bukan kata standalone):
+    sandhi_to_remove = {'rong', 'dlima'}
+
+    # Kata yang BUKAN sinonim angka tapi nyangkut di ngoko entry angka
+    # (artifact dari dedup_konseps_by_ngoko merge)
+    # karo, lan = "dan/with" (BUKAN angka 2), nyangkut di entry loro
+    not_synonim_angka = {'karo', 'lan'}
+
+    # Ejaan lama yang salah (diganti angka-raw v2):
+    # User: 15=limolas (bukan limalas), 16=nembelas (bukan enemlas), 18=wolulas (bukan wulas)
+    wrong_ngoko = {'limalas', 'enemlas', 'wulas'}
+
+    # Build set of ngoko yang benar dari angka-raw (ejaan baru)
+    correct_ngoko = set()
+    for a in angka_words:
+        ngoko = (a.get("ngoko", "") or "").strip().lower()
+        if ngoko:
+            correct_ngoko.add(ngoko)
+
+    print(f"\n🔧 Fix angka ngoko...")
+    sandhi_fixed = 0
+    wrong_removed = 0
+    kept = []
+
+    for k in konseps:
+        if not k.get("is_angka"):
+            # Cek: hapus entries dengan ngoko = ejaan lama yang salah
+            ngoko_first = (k.get("ngoko", "") or "").split(",")[0].strip().lower()
+            if ngoko_first in wrong_ngoko:
+                # Cek apakah ejaan benar sudah ada di konsep lain
+                # (limolas, nembelas, wolulas dari angka-raw)
+                wrong_removed += 1
+                continue  # skip — hapus entry ini
+            kept.append(k)
+            continue
+
+        # Fix: hapus bentuk sandhi + kata bukan sinonim dari ngoko field
+        ngoko = k.get("ngoko", "") or ""
+        if ngoko:
+            ngoko_words = [w.strip() for w in ngoko.split(",") if w.strip()]
+            cleaned = [w for w in ngoko_words if w.lower() not in sandhi_to_remove
+                       and w.lower() not in not_synonim_angka]
+            if len(cleaned) != len(ngoko_words):
+                k["ngoko"] = ", ".join(cleaned)
+                sandhi_fixed += 1
+
+        kept.append(k)
+
+    print(f"  Sandhi dihapus dari ngoko: {sandhi_fixed}")
+    print(f"  Ejaan lama dihapus: {wrong_removed} (limalas, enemlas, wulas)")
+    print(f"  Total setelah fix: {len(kept):,}")
+    return kept
+
+
+# ============================================================
 # Post-processing arti (fix parsing artifacts)
 # ============================================================
 def clean_arti(arti_raw, ngoko, krama, is_angka=False):
@@ -1510,6 +1580,9 @@ def main():
     # Cross-ref cleanup: hapus entries yang ngoko-nya sebenarnya krama
     # (morfem bilangan dari full.json/lemma yang label-nya salah)
     konseps = cleanup_misplaced_krama(konseps, angka_words)
+
+    # Fix angka: hapus bentuk sandhi dari ngoko + hapus ejaan lama yang salah
+    konseps = fix_angka_ngoko(konseps, angka_words)
 
     # Sort alfabetis
     print(f"\n🔤 Sort {len(konseps):,} konsep alfabetis by ngoko pertama...")

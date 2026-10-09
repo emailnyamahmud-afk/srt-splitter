@@ -6,14 +6,14 @@ Source (JANGAN DIHAPUS, tetap utuh):
   kamus-jawa-lemma-raw.json   :   2,159 entries (id.wiktionary.org jv:Lema)
 
 Output:
-  kamus-jawa-draft.json       :  44,064 konsep (group by konsep + sinonim)
+  kamus-jawa-draft.json       :  44,063 konsep (group by konsep + sinonim)
 
 Stats:
-  total_konsep             :  44,064
+  total_konsep             :  44,063
   with_krama               :   2,524
   with_arti                :   3,594
-  with_keterangan          :  42,638
-  with_aksara              :  41,763
+  with_keterangan          :  42,637
+  with_aksara              :  41,762
   is_lemma                 :   2,121
   ready_3_field            :     907
   draft_2_field            :   2,554
