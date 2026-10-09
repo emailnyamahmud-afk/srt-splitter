@@ -3,9 +3,8 @@
 upload-supabase.py — Upload entri kamus ke Supabase (USER-TRIGGERED ONLY)
 
 ⚠ KRITIS — R-12 + R-18 + R-22 COMPLIANCE:
-  - HANYA entries dengan status='ready' (3-field: ngoko+krama+arti lengkap) di-upload.
-    Status='ready' = USER EXPLICIT APPROVE via TUI (save_kamus set 'ready' saat user
-    save entry dengan 3-field lengkap, R-12 implicit approval).
+  - HANYA entries dengan status='ready' (USER EXPLICIT APPROVE via menu "Mark READY").
+    3-field lengkap TIDAK otomatis = ready. User harus explicit mark ready di TUI.
   - JANGAN upload entries NETRAL (field 'word' terisi, ngoko kosong) — belum terdefinisi.
   - JANGAN upload entries dengan status='draft' — belum user validate.
   - JANGAN auto-run script ini. Hanya jalan kalau user klik menu '☁ Upload ke Supabase'
@@ -62,12 +61,12 @@ def load_env_file():
 
 
 def collect_ready_entries(data):
-    """Filter entries yang status='ready' (R-12: user explicit approve via TUI).
+    """Filter entries yang status='ready' (R-12: user EXPLICIT approve via menu).
 
     Returns:
         list of dict (DB-ready rows) — hanya entries dengan:
+        - status == 'ready' (USER EXPLICIT mark via menu "Mark READY/DRAFT bulk")
         - ngoko + krama + arti SEMUA terisi (3-field lengkap)
-        - status == 'ready' (set oleh save_kamus saat user save entry paired)
     """
     ready = []
     skipped_draft = 0
@@ -91,7 +90,7 @@ def collect_ready_entries(data):
             skipped_incomplete += 1
             continue
 
-        # R-12: HANYA status='ready' (user explicit approve via TUI save_kamus)
+        # R-12: HANYA status='ready' (user EXPLICIT mark via menu, bukan auto dari 3-field)
         if status != "ready":
             skipped_draft += 1
             continue
