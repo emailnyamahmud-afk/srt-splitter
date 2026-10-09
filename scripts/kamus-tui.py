@@ -1243,7 +1243,9 @@ def main():
         and (w.get('arti') or '').strip()
     )
     status_ready = sum(1 for w in data['words'] if w.get('status') == 'ready')
-    approved_count = sum(1 for w in data['words'] if w.get('user_approved'))
+    # R-12: 'user_approved' field TIDAK ADA lagi. Approval = status='ready'
+    # (set oleh save_kamus saat user save entry dengan 3-field lengkap).
+    # Upload script pakai status='ready' sebagai proxy approval (R-12 + R-20).
     netral_count = sum(
         1 for w in data['words']
         if (w.get('word') or '').strip()
@@ -1258,7 +1260,7 @@ def main():
         print(f'  ℹ Info: {ready_count} entries 3-field lengkap, {status_ready} marked ready')
         print(f'    Kalau status tidak match, edit entry → save → status auto-recompute (R-12)')
         print()
-    print(f'  📊 Total: {len(data["words"]):,} | NETRAL: {netral_count:,} | 3-field ready: {ready_count:,} | Approved: {approved_count}')
+    print(f'  📊 Total: {len(data["words"]):,} | NETRAL: {netral_count:,} | 3-field ready: {ready_count:,} | Status ready: {status_ready}')
     print()
 
     main_menu(data)
