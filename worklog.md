@@ -1655,3 +1655,24 @@ Stage Summary:
   CEK DULU apakah angka entries sudah ada (is_angka=True, arti cocok)
 - Angka 1-1000 SUDAH LENGKAP 3-pasangan, jangan koreksi entries NETRAL yang duplikat
 - R-18: duplikat tetap disimpan, user merge via TUI
+
+---
+Task ID: docs-update-v2.27
+Agent: main
+Task: User garap TUI, AI update dokumentasi
+
+Work Log:
+- User garap TUI (validasi entries + bersihkan duplikat)
+- AI update dokumentasi:
+  - README.md: stats v2.27 (44.004 entries, arti 100%, ngoko 10.7%, krama 6.8%)
+  - README.md: menu TUI v9 lengkap (16 menu termasuk Deteksi Duplikat)
+  - README.md: curl commands update (v27, v9, duplikat-audit v1)
+  - AGENTS.md: kamus status v2.27 (44.004, 2.936 paired, 39.230 NETRAL)
+  - AGENTS.md: yang sedang nunggu update (user bersihkan duplikat)
+  - docs/PROGRESS.md: Quick Status update (v2.27, TUI v9, DB clean, uji SRT)
+- Commit 8e9f756 + push
+
+Stage Summary:
+- Dokumentasi konsisten dengan code terkini
+- User download v2.27 + TUI v9 → mulai validasi via TUI
+- AI tunggu instruksi user berikutnya
