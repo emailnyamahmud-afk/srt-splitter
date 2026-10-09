@@ -1,21 +1,21 @@
 {
   "metadata": {
-    "version": "1.0",
-    "source": "AI built-in (Jawa grammar reference)",
-    "description": "Angka dasar 1-20, puluhan, ratusan, ribuan — lengkap ngoko + krama + arti Indonesia",
-    "entries": 26
+    "version": "2.0",
+    "source": "AI built-in (Jawa grammar reference) + cross-ref Lampiran",
+    "description": "Angka dasar 1-20, puluhan, ratusan, ribuan + morfem bilangan (dasa, welas, dwi, éka, dst.) — cross-ref Lampiran untuk pastikan ngoko vs krama",
+    "entries": 39
   },
   "words": [
-    {"ngoko": "siji", "krama": "satunggal, setunggal", "arti": "satu", "keterangan": "angka 1"},
-    {"ngoko": "loro", "krama": "kalih", "arti": "dua", "keterangan": "angka 2"},
+    {"ngoko": "siji", "krama": "satunggal, setunggal, éka", "arti": "satu", "keterangan": "angka 1. éka = krama/kawi"},
+    {"ngoko": "loro", "krama": "kalih, dwi", "arti": "dua", "keterangan": "angka 2. dwi = krama/kawi"},
     {"ngoko": "telu", "krama": "tiga", "arti": "tiga", "keterangan": "angka 3"},
-    {"ngoko": "papat", "krama": "kawan, sekawan, sakawan", "arti": "empat", "keterangan": "angka 4"},
-    {"ngoko": "lima", "krama": "gangsal", "arti": "lima", "keterangan": "angka 5"},
+    {"ngoko": "papat", "krama": "kawan, sekawan, sakawan, catur", "arti": "empat", "keterangan": "angka 4. catur = krama/kawi"},
+    {"ngoko": "lima", "krama": "gangsal, ponco", "arti": "lima", "keterangan": "angka 5. ponco = krama"},
     {"ngoko": "enem", "krama": "enem", "arti": "enam", "keterangan": "angka 6"},
     {"ngoko": "pitu", "krama": "pitu", "arti": "tujuh", "keterangan": "angka 7"},
-    {"ngoko": "wolu", "krama": "wolu", "arti": "delapan", "keterangan": "angka 8"},
-    {"ngoko": "sanga", "krama": "sanga", "arti": "sembilan", "keterangan": "angka 9"},
-    {"ngoko": "sepuluh", "krama": "sedasa", "arti": "sepuluh", "keterangan": "angka 10"},
+    {"ngoko": "wolu", "krama": "wolu, hastha", "arti": "delapan", "keterangan": "angka 8. hastha = krama/kawi"},
+    {"ngoko": "sanga", "krama": "sanga, nowo, songo", "arti": "sembilan", "keterangan": "angka 9. nowo/songo = krama"},
+    {"ngoko": "sepuluh", "krama": "sedasa, doso", "arti": "sepuluh", "keterangan": "angka 10. doso = krama (dari Lampiran)"},
     {"ngoko": "sawelas", "krama": "setunggal welas, satunggal welas", "arti": "sebelas", "keterangan": "angka 11"},
     {"ngoko": "rolas", "krama": "kalih welas", "arti": "dua belas", "keterangan": "angka 12"},
     {"ngoko": "telulas", "krama": "tigang welas", "arti": "tiga belas", "keterangan": "angka 13"},
@@ -31,6 +31,17 @@
     {"ngoko": "sèket", "krama": "sèket", "arti": "lima puluh", "keterangan": "angka 50"},
     {"ngoko": "seatus", "krama": "sa-atus, satunggal atus", "arti": "seratus", "keterangan": "angka 100"},
     {"ngoko": "ewu", "krama": "siwu, sa-éwu", "arti": "seribu", "keterangan": "angka 1000"},
-    {"ngoko": "sayuta", "krama": "sayuta", "arti": "satu juta", "keterangan": "angka 1.000.000"}
+    {"ngoko": "sayuta", "krama": "sayuta, yuta", "arti": "satu juta", "keterangan": "angka 1.000.000. yuta = krama (dari Lampiran)"},
+    {"ngoko": "", "krama": "dasa", "arti": "puluh", "keterangan": "morfem bilangan krama (suffix puluhan). Mis. kalih dasa=20, tigang dasa=30. Cross-ref angka-raw: muncul di krama field. Lampiran label ngoko SALAH."},
+    {"ngoko": "", "krama": "welas", "arti": "belas", "keterangan": "morfem bilangan krama (suffix belasan). Mis. kalih welas=12, tigang welas=13."},
+    {"ngoko": "", "krama": "doso", "arti": "sepuluh", "keterangan": "krama untuk sepuluh (dari Lampiran). Ngoko=sepuluh."},
+    {"ngoko": "", "krama": "nowo", "arti": "sembilan", "keterangan": "krama untuk sembilan (dari Lampiran). Ngoko=sanga."},
+    {"ngoko": "", "krama": "songo", "arti": "sembilan", "keterangan": "krama untuk sembilan (dari Lampiran). Ngoko=sanga."},
+    {"ngoko": "", "krama": "ponco", "arti": "lima", "keterangan": "krama untuk lima (dari Lampiran). Ngoko=lima."},
+    {"ngoko": "", "krama": "catur", "arti": "empat", "keterangan": "krama/kawi untuk empat (dari Lampiran). Ngoko=papat."},
+    {"ngoko": "", "krama": "dwi", "arti": "dua", "keterangan": "krama/kawi untuk dua (dari Lampiran). Ngoko=loro. Cross-ref: tidak ada di angka-raw, tapi jelas bukan ngoko."},
+    {"ngoko": "", "krama": "éka", "arti": "satu", "keterangan": "krama/kawi untuk satu (dari Lampiran). Ngoko=siji. Cross-ref: tidak ada di angka-raw, tapi jelas bukan ngoko."},
+    {"ngoko": "", "krama": "hastha", "arti": "delapan", "keterangan": "krama/kawi untuk delapan (dari Lampiran). Ngoko=wolu. Cross-ref: tidak ada di angka-raw, tapi jelas bukan ngoko."},
+    {"ngoko": "", "krama": "yuta", "arti": "juta", "keterangan": "krama untuk juta (dari Lampiran). Ngoko=sayuta."}
   ]
 }

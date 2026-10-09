@@ -813,23 +813,35 @@ def load_lampiran_json(path):
     return data.get("words", data if isinstance(data, list) else [])
 
 
-def merge_lampiran_to_konseps(konseps, lampiran_words):
+def merge_lampiran_to_konseps(konseps, lampiran_words, angka_words=None):
     """Merge Lampiran entries ke konsep existing.
 
     Cross-reference logic (BUKAN trust field label):
       - is_krama=True  → word ini KRAMA, match by krama index
       - is_krama=False → word ini NGOKO, match by ngoko index
+      - Cross-ref dengan angka-raw: kalau word muncul di krama field angka-raw,
+        override is_krama=False → treat sebagai KRAMA (Lampiran label sering salah)
 
     Enrich arti: gabung sinonim (bukan override, bukan pick one).
     Tambah field kelas (bonus metadata dari Lampiran).
-    Arti panjang (>30 char) → pindah ke keterangan (post-process handle).
 
     No match:
       - is_krama=True  → new concept: krama=word, ngoko="", arti=arti
-        (user isi ngoko manual — mis. "ajeng" krama dari "arep")
       - is_krama=False → new concept: ngoko=word, arti=arti
     """
     print(f"\n🔗 Merge {len(lampiran_words):,} Lampiran entries ke konsep...")
+
+    # Build set of krama words dari angka-raw (cross-ref override)
+    angka_krama_words = set()
+    if angka_words:
+        for a in angka_words:
+            krama = (a.get("krama", "") or "").strip().lower()
+            if krama:
+                for k in krama.split(","):
+                    k = k.strip()
+                    if k:
+                        angka_krama_words.add(k)
+    print(f"  Cross-ref angka-raw krama words: {len(angka_krama_words)} words")
 
     # Build indices: by primary ngoko AND by primary krama
     konsep_by_ngoko = defaultdict(list)
@@ -845,6 +857,7 @@ def merge_lampiran_to_konseps(konseps, lampiran_words):
     matched = 0
     matched_by_krama = 0
     new_from_lampiran = 0
+    cross_ref_overrides = 0
     for entry in lampiran_words:
         word = (entry.get("ngoko", "") or "").strip().lower()
         arti = (entry.get("arti", "") or "").strip()
@@ -854,6 +867,12 @@ def merge_lampiran_to_konseps(konseps, lampiran_words):
 
         if not word or not arti:
             continue
+
+        # Cross-ref override: kalau word ada di angka-raw krama words → treat sebagai KRAMA
+        # Lampiran label is_krama=False sering SALAH untuk morfem bilangan krama
+        if not is_krama and word in angka_krama_words:
+            is_krama = True
+            cross_ref_overrides += 1
 
         # Match logic:
         # - is_krama=True  → match by krama index (word is KRAMA)
@@ -923,6 +942,7 @@ def merge_lampiran_to_konseps(konseps, lampiran_words):
     print(f"  Match & enrich konsep existing: {matched}")
     print(f"    (match by krama index): {matched_by_krama}")
     print(f"    (match by ngoko index): {matched - matched_by_krama}")
+    print(f"    (cross-ref override ngoko→krama): {cross_ref_overrides}")
     print(f"  New konsep dari Lampiran (no match): {new_from_lampiran}")
     return konseps
 
@@ -1387,11 +1407,12 @@ def main():
         konseps = merge_angka_to_konseps(konseps, angka_words)
 
     # Merge Lampiran Kamus Jawa-Indonesia (2724 entries, curated)
-    # Cross-reference: cek is_krama flag, JANGAN trust field label "ngoko"
+    # Cross-reference: cek is_krama flag + cross-ref angka-raw krama words
+    # JANGAN trust field label "ngoko" dari Lampiran — cek is_krama + cross-ref
     lampiran_words = load_lampiran_json(RAW_LAMPIRAN)
     print(f"  lampiran.json: {len(lampiran_words):,} entries (Lampiran Kamus Jawa-Indonesia)")
     if lampiran_words:
-        konseps = merge_lampiran_to_konseps(konseps, lampiran_words)
+        konseps = merge_lampiran_to_konseps(konseps, lampiran_words, angka_words=angka_words)
 
     # Post-process arti (clean artifact, move long_def ke keterangan)
     konseps = post_process_konseps(konseps)
