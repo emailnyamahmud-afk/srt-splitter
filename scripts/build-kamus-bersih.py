@@ -843,6 +843,165 @@ def post_process_konseps(konseps):
     print(f"  Colon stripped: {stats['colon_stripped']}")
     print(f"  Dup deduped: {stats['dup_deduped']}")
     return konseps
+
+
+# ============================================================
+# Dedup konsep by primary ngoko
+# Merge entries dengan primary ngoko sama (ejaan beda, krama beda, dst.)
+# ============================================================
+def dedup_konseps_by_ngoko(konseps):
+    """Merge konsep dengan primary ngoko sama.
+
+    Penyebab duplikat:
+      - Ejaan beda (asrep vs asrêp) → group_by_krama pisah
+      - Entries dengan ngoko sama tapi krama beda (1 ada, 1 kosong)
+      - Entries dengan krama sama tapi ngoko beda
+
+    Merge logic:
+      - ngoko: gabung comma (dedup word-level)
+      - krama: gabung comma (dedup word-level)
+      - krama_inggil: gabung comma (dedup word-level)
+      - arti: gabung ; (dedup, prioritaskan yang non-empty)
+      - keterangan: gabung | (jangan buang, audit trail)
+      - aksara: gabung comma (dedup)
+      - register: tetap 'umum' (semua umum)
+      - source_count: sum dari semua merged
+      - sumber: gabung uniq
+      - is_lemma, is_mendeley, is_dasanama: OR (true kalau salah satu ada)
+      - dasanama_count: max
+      - mendeley_id, lemma_words: gabung
+    """
+    print(f"\n🧹 Dedup konsep by primary ngoko ({len(konseps):,} entries)...")
+
+    # Group by primary ngoko (lowercase)
+    groups = defaultdict(list)
+    no_ngoko = []
+    for k in konseps:
+        n_first = (k.get("ngoko", "") or "").split(",")[0].strip().lower()
+        if n_first:
+            groups[n_first].append(k)
+        else:
+            no_ngoko.append(k)  # entries tanpa ngoko (orphan krama-only)
+
+    print(f"  Unique primary ngoko: {len(groups):,}")
+    print(f"  Orphan (no ngoko, krama-only): {len(no_ngoko):,}")
+    print(f"  Duplikat groups (>1 entry): {sum(1 for v in groups.values() if len(v) > 1):,}")
+    print(f"  Total entries duplikat: {sum(len(v) for v in groups.values() if len(v) > 1):,}")
+
+    merged_konseps = []
+    merged_count = 0
+    for ngoko_key, entries in groups.items():
+        if len(entries) == 1:
+            merged_konseps.append(entries[0])
+            continue
+
+        # Merge multiple entries jadi 1
+        merged_count += 1
+        merged = merge_konsep_group(entries)
+        merged_konseps.append(merged)
+
+    # Tambah orphan entries (no ngoko)
+    merged_konseps.extend(no_ngoko)
+
+    print(f"  Merged groups: {merged_count:,}")
+    print(f"  Total setelah dedup: {len(merged_konseps):,}")
+    return merged_konseps
+
+
+def merge_konsep_group(entries):
+    """Merge multiple konsep (primary ngoko sama) jadi 1."""
+    # Collect semua field gabungan
+    ngoko_words = []
+    krama_words = []
+    ki_words = []
+    aksara_words = []
+    arti_parts = []
+    keterangan_parts = []
+    sumber_parts = []
+    lemma_words_set = set()
+    mendeley_ids = set()
+    source_count = 0
+    is_lemma = False
+    is_mendeley = False
+    is_dasanama = False
+    dasanama_count = 0
+
+    for e in entries:
+        # ngoko: split per word
+        for w in (e.get("ngoko", "") or "").split(","):
+            w = w.strip().lower()
+            if w and w not in ngoko_words:
+                ngoko_words.append(w)
+        # krama: split per word
+        for w in (e.get("krama", "") or "").split(","):
+            w = w.strip().lower()
+            if w and w not in krama_words:
+                krama_words.append(w)
+        # krama_inggil
+        for w in (e.get("krama_inggil", "") or "").split(","):
+            w = w.strip().lower()
+            if w and w not in ki_words:
+                ki_words.append(w)
+        # aksara (preserve case)
+        for w in (e.get("aksara", "") or "").split(","):
+            w = w.strip()
+            if w and w not in aksara_words:
+                aksara_words.append(w)
+        # arti: split per segment (;)
+        for seg in (e.get("arti", "") or "").split(";"):
+            seg = seg.strip()
+            if seg and seg.lower() not in [a.lower() for a in arti_parts]:
+                arti_parts.append(seg)
+        # keterangan: gabung | (dedup)
+        ket = (e.get("keterangan", "") or "").strip()
+        if ket and ket not in keterangan_parts:
+            keterangan_parts.append(ket)
+        # sumber: gabung uniq
+        s = (e.get("sumber", "") or "").strip()
+        if s and s not in sumber_parts:
+            sumber_parts.append(s)
+        # tags
+        if e.get("is_lemma"):
+            is_lemma = True
+            for lw in (e.get("lemma_words", "") or "").split(","):
+                lw = lw.strip().lower()
+                if lw:
+                    lemma_words_set.add(lw)
+        if e.get("is_mendeley"):
+            is_mendeley = True
+            mid = (e.get("mendeley_id", "") or "").strip()
+            if mid:
+                mendeley_ids.add(mid)
+        if e.get("is_dasanama"):
+            is_dasanama = True
+            dc = e.get("dasanama_count", 0) or 0
+            if dc > dasanama_count:
+                dasanama_count = dc
+        source_count += e.get("source_count", 1) or 1
+
+    merged = {
+        "ngoko": ", ".join(ngoko_words),
+        "krama": ", ".join(krama_words),
+        "krama_inggil": ", ".join(ki_words),
+        "arti": "; ".join(arti_parts),
+        "keterangan": " | ".join(keterangan_parts),
+        "aksara": ", ".join(aksara_words),
+        "register": "umum",
+        "sumber": " + ".join(sumber_parts),
+        "source_count": source_count,
+    }
+    if is_lemma:
+        merged["is_lemma"] = True
+        merged["lemma_words"] = ", ".join(sorted(lemma_words_set))
+    if is_mendeley:
+        merged["is_mendeley"] = True
+        merged["mendeley_id"] = ", ".join(sorted(mendeley_ids))
+    if is_dasanama:
+        merged["is_dasanama"] = True
+        merged["dasanama_count"] = dasanama_count
+    return merged
+
+
 # ============================================================
 def compute_stats(konseps):
     stats = {
@@ -927,6 +1086,9 @@ def main():
 
     # Post-process arti (clean artifact, move long_def ke keterangan)
     konseps = post_process_konseps(konseps)
+
+    # Dedup konsep by primary ngoko (merge entries dengan ngoko sama)
+    konseps = dedup_konseps_by_ngoko(konseps)
 
     # Sort alfabetis
     print(f"\n🔤 Sort {len(konseps):,} konsep alfabetis by ngoko pertama...")
