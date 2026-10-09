@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "version": "2.1",
+    "version": "2.2",
     "description": "Kamus Jawa komprehensif — group by konsep, gabung sinonim",
     "sources": [
       "jv.wiktionary.org (44,585 entries, raw preserved)",
@@ -37,7 +37,7 @@
       "4. Target: 2.000 entries dengan 3-field lengkap dalam 1 tahun (50/minggu)",
       "5. Upload yang lengkap ke Supabase (DB = ground of truth)"
     ],
-    "last_fix": "fix-draft-angka-ejaan.py: eka→éka, songo dari ngoko→hapus, Nol→nol"
+    "last_fix": "fix-dhingkluk.py: arti='menunduk', long form ke keterangan (per user 9 Okt 2026)"
   },
   "words": [
     {
@@ -66075,8 +66075,8 @@
       "ngoko": "dhingkluk",
       "krama": "",
       "krama_inggil": "",
-      "arti": "tunduk/menghadap ke bawah; menunduk",
-      "keterangan": "",
+      "arti": "menunduk",
+      "keterangan": "tunduk/menghadap ke bawah; menunduk",
       "aksara": "",
       "register": "umum",
       "status": "draft",
