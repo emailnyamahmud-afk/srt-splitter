@@ -189,10 +189,10 @@ def parse_entries(html):
             kelas = normalize_kelas(kelas_raw) if kelas_raw else ""
 
             # Validate kelas (kalau ada)
+            # JANGAN skip entries kalau kelas tidak valid — itu typo wiki,
+            # entries-nya (ngoko + arti) tetap valid. Pakai kelas='tsb' (tidak standar).
             if kelas and kelas not in valid_kelas:
-                # Skip kalau kelas masih tidak valid (mis. "kowe")
-                skipped_count += 1
-                continue
+                kelas = "tsb"  # fallback ke tsb, jangan skip entries
 
             # Skip kalau kata kosong atau arti kosong
             if not kata or not arti:

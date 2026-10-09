@@ -3,7 +3,7 @@
     "version": "1.0",
     "source": "id.wiktionary.org/wiki/Lampiran:Kamus_bahasa_Jawa_–_bahasa_Indonesia",
     "description": "Lampiran Kamus bahasa Jawa – bahasa Indonesia (2724 kata)",
-    "entries": 2035,
+    "entries": 2059,
     "kelas_breakdown": {
       "t.a.": 583,
       "t.s.": 258,
@@ -14,7 +14,7 @@
       "K": 56,
       "t.pb": 1,
       "t.py.": 8,
-      "tsb": 5,
+      "tsb": 29,
       "t.pr.": 2,
       "t.sd.": 2,
       "ta": 1,
@@ -5064,6 +5064,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "dika",
+      "arti": "kamu",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
       "ngoko": "dingkik",
       "arti": "intip",
       "kelas": "",
@@ -7402,9 +7409,30 @@
       "is_krama": false
     },
     {
+      "ngoko": "kasur",
+      "arti": "kasur",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "kathok",
+      "arti": "celana",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
       "ngoko": "katrek",
       "arti": "bodoh",
       "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "kawat",
+      "arti": "kawat",
+      "kelas": "tsb",
       "kelas_nama": "tidak standar",
       "is_krama": false
     },
@@ -7433,6 +7461,13 @@
       "ngoko": "keduwung",
       "arti": "menyesal",
       "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "kajeng",
+      "arti": "ingin",
+      "kelas": "tsb",
       "kelas_nama": "tidak standar",
       "is_krama": false
     },
@@ -8564,6 +8599,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "lembah",
+      "arti": "sopan",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
       "ngoko": "lemes",
       "arti": "lemas",
       "kelas": "",
@@ -9054,6 +9096,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "madya",
+      "arti": "tengah",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
       "ngoko": "magèl",
       "arti": "kenyal",
       "kelas": "",
@@ -9194,9 +9243,23 @@
       "is_krama": false
     },
     {
+      "ngoko": "margo",
+      "arti": "jalan",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
       "ngoko": "marunan",
       "arti": "ngambek-ngambekan",
       "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "maruto",
+      "arti": "angin",
+      "kelas": "tsb",
       "kelas_nama": "tidak standar",
       "is_krama": false
     },
@@ -9579,6 +9642,20 @@
       "is_krama": false
     },
     {
+      "ngoko": "mriki",
+      "arti": "kemari; ke sini",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "mriku",
+      "arti": "di situ",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
       "ngoko": "mringis",
       "arti": "meringis",
       "kelas": "",
@@ -9589,6 +9666,13 @@
       "ngoko": "mripat",
       "arti": "mata",
       "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "mriko",
+      "arti": "di sana",
+      "kelas": "tsb",
       "kelas_nama": "tidak standar",
       "is_krama": false
     },
@@ -9880,9 +9964,30 @@
       "is_krama": false
     },
     {
+      "ngoko": "niki",
+      "arti": "ini",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "niku",
+      "arti": "itu",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
       "ngoko": "ning",
       "arti": "panggilan untuk kakak perempuan",
       "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ninggal'aken",
+      "arti": "meninggalkan",
+      "kelas": "tsb",
       "kelas_nama": "tidak standar",
       "is_krama": false
     },
@@ -10545,6 +10650,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "onjokolo",
+      "arti": "petang",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
       "ngoko": "ondhé-ondhé",
       "arti": "sejenis jajan tradisional yang bagian luarnya ditaburi wijen",
       "kelas": "",
@@ -10661,6 +10773,13 @@
       "arti": "lima bersaudara yang semuanya perempuan",
       "kelas": "t.a.",
       "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "pancer",
+      "arti": "tengah",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
       "is_krama": false
     },
     {
@@ -11063,6 +11182,13 @@
       "is_krama": true
     },
     {
+      "ngoko": "purwo",
+      "arti": "awal, permulaan",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
       "ngoko": "putu",
       "arti": "cucu; kue putu",
       "kelas": "t.a.",
@@ -11311,6 +11437,13 @@
       "ngoko": "ribet",
       "arti": "banyak hambatan",
       "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ridhu",
+      "arti": "godaan/halangan",
+      "kelas": "tsb",
       "kelas_nama": "tidak standar",
       "is_krama": false
     },
@@ -12414,6 +12547,13 @@
       "is_krama": true
     },
     {
+      "ngoko": "tuku",
+      "arti": "beli",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
       "ngoko": "tumben",
       "arti": "tidak seperti biasanya (lihat kadingaren)",
       "kelas": "",
@@ -12494,6 +12634,13 @@
       "ngoko": "turangga",
       "arti": "jaran",
       "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "turu",
+      "arti": "tidur",
+      "kelas": "tsb",
       "kelas_nama": "tidak standar",
       "is_krama": false
     },
@@ -13989,6 +14136,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "wondho",
+      "arti": "bentuk/rupa",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
       "ngoko": "wong",
       "arti": "orang",
       "kelas": "t.a.",
@@ -14125,6 +14279,20 @@
       "ngoko": "wuru",
       "arti": "mabuk",
       "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wruhaniró",
+      "arti": "pengetahuanmu",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "werdhi",
+      "arti": "arti",
+      "kelas": "tsb",
       "kelas_nama": "tidak standar",
       "is_krama": false
     },
