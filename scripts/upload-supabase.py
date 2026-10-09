@@ -20,7 +20,7 @@ DB Supabase struktur aktual (10 Okt 2026, verified via REST API):
   Table `kamus` (12 kolom):
     id (uuid, auto-gen), ngoko, aksara, krama, krama_inggil, arti, keterangan,
     register, sumber, status, created_at, updated_at
-  Total rows saat ini: 2 (test awal 7 Okt 2026)
+  Total rows saat ini: 0 (DB clean sejak task docs-update-v2.27)
 
 Usage:
   # Dipanggil dari kamus-tui.py (menu '☁ Upload ke Supabase'):

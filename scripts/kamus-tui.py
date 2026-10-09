@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-kamus-tui.py v2 — TUI edit kamus Jawa dengan menu pre-built (arrow keys, no jq needed)
+kamus-tui.py v9 — TUI edit kamus Jawa dengan menu pre-built (arrow keys, no jq needed)
 
 User tinggal tab/panah, pilih menu:
   📊 Statistik kamus
@@ -9,23 +9,24 @@ User tinggal tab/panah, pilih menu:
   ⭐ Browse entri dengan krama mapping (auto-filled)
   📝 Browse entri yang BELUM ada arti
   🎯 Browse per register (ngoko / krama / krama_inggil / kawi / umum)
-  ☁  Upload ke Supabase (hanya yang sudah diedit user)
+  📊 Browse per kelengkapan (NETRAL / ngoko-only / paired / lengkap)
+  🔍 Deteksi Duplikat (audit, JANGAN hapus, user putuskan)
+  ☁  Upload ke Supabase (hanya yang sudah di-mark ready oleh user)
   ❌ Keluar
-
-Edit per entri: ngoko, krama, krama_inggil, arti (Indonesia)
-  - keterangan JAWA read-only (JANGAN HAPUS)
-  - register read-only (info dari Wiktionary)
-
-Status tracking:
-  status='draft' = belum di-edit user (hanya auto-filled dari template)
-  status='clean' = sudah di-edit user (arti diisi, atau krama_inggil ditambah)
 
 Edit per entri: ngoko, krama, krama_inggil, arti (Indonesia), register
   - keterangan JAWA read-only (JANGAN HAPUS)
   - register BISA di-edit (dropdown: ngoko/krama/krama_inggil/kawi/umum)
+  - R-21: field 'word' otomatis kosong kalau paired (ngoko/krama terisi)
+  - R-21: field 'word' terisi hanya untuk entries NETRAL (belum ada ngoko/krama)
+
+Status tracking (R-12 compliance — JANGAN auto-set ready):
+  status='draft' = default (belum di-mark ready oleh user)
+  status='ready' = user EXPLICIT mark via menu 'Mark READY/DRAFT bulk'
+  3-field lengkap (ngoko+krama+arti) TIDAK otomatis = ready
 
 Merge: menu khusus, search kata 1 → search kata 2 → preview → konfirmasi
-Upload: HANYA entries dengan ngoko+krama+arti lengkap (3 field wajib)
+Upload: HANYA entries dengan status='ready' + 3-field lengkap (R-12)
 
 Install: pip3 install questionary
 Usage: python3 kamus-tui.py
@@ -113,26 +114,24 @@ def load_kamus():
         print(f'\n   R-22: kamus-jawa-draft.json = satu-satunya sumber (NETRAL).')
         print(f'\n   Download:')
         print(f'   curl -L -o ~/Dubbing/kamus-jawa-draft.json \\')
-        print(f'     "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?v=23"')
+        print(f'     "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?v=26"')
         return None
     with open(KAMUS_PATH, 'r', encoding='utf-8') as f:
         return json.load(f)
 
 
 def save_kamus(data):
-    """Save ke JSON file + recompute status untuk SEMUA entries.
+    """Save ke JSON file + re-number entry_id (urut posisi list).
 
-    Status logic:
-    - 'ready' = ngoko + krama + arti SEMUA terisi → siap upload ke Supabase
-    - 'draft' = belum lengkap
-
-    SELALU recompute status setiap save (jangan skip yang sudah punya status).
-    User edit arti → status harus recompute dari draft → ready.
+    R-12 compliance: JANGAN recompute status di sini.
+      - status='ready' HANYA lewat menu 'Mark READY/DRAFT bulk' (user EXPLICIT approve).
+      - 3-field lengkap TIDAK otomatis = ready.
+      - save_kamus() pertahankan status existing (jangan timpa).
 
     entry_id: urut posisi list (1-indexed). Kalau ada entry di-delete (via merge),
     re-number entry_id 1..N supaya tetap konsisten.
     """
-    # R-12: JANGAN auto-set status='ready'. 
+    # R-12: JANGAN auto-set status='ready'.
     # 3-field lengkap TIDAK otomatis = siap upload.
     # User harus EXPLICIT mark ready via menu "Mark READY/DRAFT bulk".
     # save_kamus() hanya pertahankan status existing (jangan recompute).
@@ -1352,7 +1351,7 @@ def upload_to_supabase():
         print()
         print('  Download dari GitHub:')
         print('  curl -L -o upload-supabase.py \\')
-        print('    "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py?v=1"')
+        print('    "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py?v=2"')
         input('\n  Tekan Enter...')
         return
 
