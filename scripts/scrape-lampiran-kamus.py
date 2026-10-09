@@ -86,7 +86,40 @@ def parse_entries(html):
         "t.w.": "kata bilangan",
         "K": "krama",
         "tsb": "tidak standar",
+        # Alias typo yang sering muncul di wiki
+        "t.a": "kata benda",  # tanpa titik akhir
+        "t.k": "kata kerja",
+        "t.s": "kata sifat",
+        "t.kr": "kata keadaan",
+        "t.pw": "kata seru",
+        "t.pr": "kata depan",
+        "t.py": "kata sambung",
+        "t.g": "kata ganti",
+        "t.sd": "kata sandang",
+        "t.w": "kata bilangan",
+        "tk.": "kata kerja",  # typo
+        "ta, ts": "kata benda+sifat",  # multi-kelas
+        "ta": "kata benda",
+        "ts": "kata sifat",
+        "t.pb": "kata banding",  # tidak standar tapi ada di wiki
     }
+
+    # Normalize kelas: hapus typo, fallback ke kelas baku
+    def normalize_kelas(kelas_raw):
+        """Normalize kelas — handle typo di wiki."""
+        kelas = kelas_raw.strip()
+        # Strip prefix "{", "(", "Templat:", "}}", ")"
+        kelas = kelas.lstrip("{(").rstrip("})")
+        # Strip "Templat:" prefix
+        kelas = kelas.replace("Templat:", "").strip()
+        # Strip trailing dot (untuk kelas yang tidak ada titik)
+        # Ambil first word kalau ada comma (multi-kelas)
+        if "," in kelas:
+            kelas = kelas.split(",")[0].strip()
+        # Normalize: t.k → t.k.
+        if kelas in ("t.a", "t.k", "t.s", "t.kr", "t.pw", "t.pr", "t.py", "t.g", "t.sd", "t.w"):
+            kelas = kelas + "."
+        return kelas
 
     # Skip nav items (selalu mulai dengan kata-kata ini)
     nav_items = (
@@ -129,7 +162,7 @@ def parse_entries(html):
             match = pattern_kelas_k.match(sub_clean)
             if match:
                 kata = match.group(1).strip()
-                kelas = match.group(2).strip()
+                kelas_raw = match.group(2).strip()
                 arti = match.group(3).strip()
                 is_krama = True
             else:
@@ -137,40 +170,38 @@ def parse_entries(html):
                 match = pattern_kelas.match(sub_clean)
                 if match:
                     kata = match.group(1).strip()
-                    kelas = match.group(2).strip()
+                    kelas_raw = match.group(2).strip()
                     arti = match.group(3).strip()
-                    is_krama = kelas == "K"
+                    is_krama = kelas_raw == "K"
                 else:
                     # Try pattern 3: "kata: arti" (tanpa kelas)
                     match = pattern_no_kelas.match(sub_clean)
                     if match:
                         kata = match.group(1).strip()
-                        kelas = ""
+                        kelas_raw = ""
                         arti = match.group(2).strip()
                         is_krama = False
                     else:
                         skipped_count += 1
                         continue
 
+            # Normalize kelas (handle typo wiki)
+            kelas = normalize_kelas(kelas_raw) if kelas_raw else ""
+
             # Validate kelas (kalau ada)
             if kelas and kelas not in valid_kelas:
-                # Coba strip prefix/suffix
-                kelas_stripped = kelas.strip(" .,")
-                if kelas_stripped not in valid_kelas:
-                    # Skip kalau kelas tidak valid (mis. "tsb", "kowe", dll.)
-                    skipped_count += 1
-                    continue
-                kelas = kelas_stripped
+                # Skip kalau kelas masih tidak valid (mis. "kowe")
+                skipped_count += 1
+                continue
 
             # Skip kalau kata kosong atau arti kosong
             if not kata or not arti:
                 skipped_count += 1
                 continue
 
-            # Skip kalau ada "[" (artinya template Wiktionary gak ke-parse)
-            if "[" in kata or "[" in arti:
-                skipped_count += 1
-                continue
+            # Strip [contoh] dari arti (bukan skip, cuma bersihkan)
+            # Mis. 'memberi [eg. atur pambagya: memberi sambutan]' → 'memberi'
+            arti = re.sub(r"\s*\[[^\]]*\]\s*", " ", arti).strip()
 
             parsed.append({
                 "ngoko": kata.lower(),
