@@ -1210,3 +1210,22 @@ Stage Summary:
 - Aku koreksi audit sebelumnya yang bilang "krama_inggil: 0" sebagai bug — itu BY DESIGN, bukan bug
 - R-17 document skema: ngoko + krama + arti (krama_inggil MASUK krama, bukan field terpisah)
 - Commit d465612
+
+---
+Task ID: kamus-fix-dhingkluk
+Agent: main
+Task: Patch dhingkluk per user: arti='menunduk', long form ke keterangan
+
+Work Log:
+- User konfirm: dhingkluk arti = 'menunduk' (long form pindah ke keterangan)
+- User konfirm: kotang arti = 'bh' BENAR (jangan diubah)
+- Buat scripts/fix-dhingkluk.py (idempotent)
+- Apply: index 4804 — arti 35 chars → 8 chars, keterangan diisi long form
+- Verifikasi: BEFORE/AFTER printed, isi sesuai user spec
+- Commit c3a26fd + push
+
+Stage Summary:
+- Draft v2.1 → v2.2
+- dhingkluk R-12 violation: FIXED
+- kotang: TIDAK diubah (user confirm 'bh' benar)
+- Pending user: bulak + 2 empty entries (kakap, mletre) + aksara Jawa + typo beridiri
