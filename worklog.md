@@ -1382,3 +1382,35 @@ Stage Summary:
 - Total dokumentasi: 1097 → 1354 baris (+257 baris untuk R-16 sampai R-21 + Phase 1-6)
 - Filosofi R-20 dipelihara: kamus-draft.json = rujukan tunggal, raw = arsip
 - Build script DISABLED, file besar hapus, dokumentasi konsisten dengan code terkini
+
+---
+Task ID: fix-R20-hapus-legacy-fallback
+Agent: main
+Task: User: AI melanggar R-20, masih sisakan kamus-jawa-full.json sebagai fallback. Hapus total.
+
+Work Log:
+- User marah: 'TOLOL, capek-capek nyuruh bikin kamus draft jadi netral, malah masih pertahankan yg lama'
+- Cari semua referensi KAMUS_LEGACY/kamus-jawa-full di 3 script
+- Patch kamus-tui.py: hapus KAMUS_LEGACY constant (line 52), get_kamus_path() hapus fallback,
+  load_kamus() langsung pakai KAMUS_PATH, ganti KAMUS_FULL → KAMUS_PATH, update header R-20/R-21/R-17
+- Patch upload-supabase.py: hapus kamus_draft + kamus_legacy fallback, ganti ke kamus_path tunggal
+- Patch srt-frequency-analyzer.py: docstring R-20 compliance
+- git rm public/kamus-jawa-full.json.gz + rm fisik kamus-jawa-full.json (12 MiB, sudah tidak di-git sejak 866e010)
+- Update .gitignore: tambah /public/kamus-jawa-full.json.gz explicit, hapus dari list TETAP di-git,
+  tambah DIHAPUS list dengan R-20 alasan
+- Update README.md: hapus section 'Backup compressed (legacy)' + curl command,
+  tambah warning blockquote R-20, hapus dari struktur folder diagram
+- Update scripts/README.md: parse-wiktionary-jv.py header 'R-20: ARSIP, bukan rujukan'
+- Update docs/PROGRESS.md: table Files di GitHub (hapus kamus-jawa-full, tambah draft),
+  Filosofi kamus R-20 compliance, Workflow user (hapus gunzip step), File Path Conventions
+- Commit 5e8f34d (hapus file .gz) + cffda02 (patch code + docs)
+- Final verify: 6 check all clean (no KAMUS_LEGACY, no fallback, no file, .gitignore explicit,
+  tracked files tidak ada kamus-jawa-full, sync clean)
+
+Stage Summary:
+- R-20 compliance TOTAL: TIDAK ada lagi referensi kamus-jawa-full.json sebagai rujukan
+- Hanya mention sebagai ARSIP di comments (R-16 jangan hapus raw, tapi bukan rujukan)
+- 3 script patched: kamus-tui.py, upload-supabase.py, srt-frequency-analyzer.py
+- 4 docs updated: README, scripts/README, docs/PROGRESS, .gitignore
+- File dihapus: public/kamus-jawa-full.json (12 MiB) + public/kamus-jawa-full.json.gz (1.5 MiB)
+- AI akui tolol — capek-capek netral kamus-draft, masih sisain legacy fallback. Sekarang bersih.
