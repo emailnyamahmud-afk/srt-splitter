@@ -108,4 +108,4 @@ Build script: DISABLED (R-20) — parser tolol merusak data
 - Code fix SRT editor Jawa: default voice Dimas otomatis untuk semua cue (Fase 3b)
 - Kamus Jawa Supabase progressif (50 entries/minggu, target 10.000 entries 3-pasangan terverifikasi dalam 1-6 bulan)
 - User validasi entries NETRAL (39.216) via TUI → status 'ready' → upload Supabase
-- User validasi audit-suspects (124 entries paired yang suspect parsing artifact)
+- AI bantu workflow: statistik, scan pattern, compare draft vs DB (read-only). AI TIDAK upload.

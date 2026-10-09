@@ -1,137 +1,110 @@
 # Scripts — SRT Splitter + Dubbing
 
-Script Python untuk memproses SRT, generate audio, mix dub, dan **edit kamus Jawa** untuk dubbing Mandarin → Jawa/Indonesia.
+Script Python untuk workflow dubbing Mandarin → Jawa + edit kamus Jawa.
 
-## ⭐ Workflow Utama (yt-dlp → Demucs → Web → Mix)
+**R-22 compliance**: SEMUA parser/scraper/raw script DIHAPUS. Hanya workflow script aktif.
+Raw files = sampah parsing AI tolol. Yang TINGGAL: kamus-jawa-draft.json (NETRAL).
 
-Strategi (9 Okt 2026): Sumber terpisah sejak fase yt-dlp, MP3 320 kbps output Demucs (hemat ~10x storage), mix SFX + dub dengan ducking.
-
-Lihat [`tutor-mode-on-workflow.md`](tutor-mode-on-workflow.md) + [`tutor-demucs-setup.md`](tutor-demucs-setup.md) untuk panduan lengkap.
-
-## Quick Index
-
-### Workflow Dubbing (Fase 1-4)
-
-| Script | Untuk Apa | Status |
-|---|---|---|
-| **`yt-dlp-tui.py`** ⭐ | TUI Download YouTube (pilih resolusi 480/720/1080) + audio terpisah | ✅ Utama |
-| **`demucs-tui.py`** ⭐ | TUI Demucs SFX separation → no_vocals.mp3 (MP3 320, MPS acceleration) | ✅ Utama |
-| **`mix-tui.py`** ⭐ | TUI Mix MP4 + no_vocals + audio_dub (ducking sidechain) | ✅ Utama |
-| `srt-frequency-analyzer.py` ⭐ | Analisis SRT → top 100 kata tak dikenal (pakai Supabase) | ✅ Utama |
-
-### Kamus Jawa Editor & Tools
-
-| Script | Untuk Apa | Status |
-|---|---|---|
-| **`kamus-tui.py`** ⭐ | TUI edit kamus Jawa v2.3 (Phase 1-6 refactor, R-21 word field) | ✅ Utama |
-| **`upload-supabase.py`** ⭐ | Upload entries approved ke Supabase (Phase 5, file terpisah) | ✅ Utama |
-| `audit-otomatis-suspect-patterns.py` | R-19 audit suspect entries (124 paired suspect) | ✅ Audit |
-| `neutralize-kamus-draft.py` | R-21 netralisasi entries belum berpasangan → field 'word' | ✅ Utility |
-| `fix-angka-5-native-jawa.py` | R-22 fix angka 5/15/25/50 per native Jawa 7 varian (HANYA apply ke draft) | ✅ Utility |
-
-### DISABLED (R-20 + R-22: raw = sampah, jangan run)
-
-| Script | Status | Catatan |
-|---|---|---|
-| `build-kamus-bersih.py.DISABLED` | ⚠️ DISABLED | R-20: parser tolol merusak data |
-| `parse-wiktionary-jv.py.DISABLED` | ⚠️ DISABLED | R-22: generator kamus-jawa-full.json (raw sampah) |
-| `scrape-wiktionary-jv-lemma.py.DISABLED` | ⚠️ DISABLED | R-22: generator raw sampah |
-| `scrape-lampiran-kamus.py.DISABLED` | ⚠️ DISABLED | R-22: generator raw sampah |
-| `scrape-lampiran-angka.py.DISABLED` | ⚠️ DISABLED | R-22: generator raw sampah |
-| `add-entry-id.py.DISABLED` | ⚠️ DISABLED | R-22: modifikasi kamus-jawa-full.json (legacy) |
-| `fix-angka-ejaan.py.DISABLED` | ⚠️ DISABLED | R-22: apply ke angka-raw (raw = sampah) |
-| `fix-draft-angka-ejaan.py.DISABLED` | ⚠️ DISABLED | R-22: apply ke angka-raw (raw = sampah) |
-| `fix-dhingkluk.py.DISABLED` | ⚠️ DISABLED | R-22: one-off fix, sudah di-apply, tidak perlu run lagi |
-
-### SQL Migrations (Supabase)
-
-| File | Untuk Apa |
-|---|---|
-| `supabase-migration-v2.sql` | srt_projects + srt_cues (Editor SRT Jawa project-based) |
-| `supabase-migration-v3.sql` | kamus: krama_inggil + register |
-
-### DISABLED (R-20 — JANGAN RUN)
-
-| Script | Status | Catatan |
-|---|---|---|
-| `build-kamus-bersih.py.DISABLED` | ⚠️ DISABLED | R-20: parser tolol merusak data. Kamus-draft.json = rujukan tunggal. Lihat `build-kamus-bersih.py.DISABLED.README.md` |
-
----
-
-## ⭐ Workflow Utama (4 Fase, sumber terpisah)
+## ⭐ Workflow Utama (Dubbing 4 Fase)
 
 ```bash
 # Setup (sekali saja)
 brew install ffmpeg
 pip3 install demucs questionary numpy
 
-# Fase 1: Download dari YouTube (pilih resolusi 480/720/1080)
+# Fase 1: Download dari YouTube
 python3 scripts/yt-dlp-tui.py
-# → mp4-ori.mp4 (video) + audio.wav (terpisah, untuk Demucs)
+# → mp4-ori.mp4 + audio.wav
 
-# Fase 2: SFX separation (Demucs, output MP3 320 kbps)
+# Fase 2: SFX separation (Demucs)
 python3 scripts/demucs-tui.py
-# → output/htdemucs/{namafile}/no_vocals.mp3 (SFX bersih, ~140 MB per 2 jam)
+# → no_vocals.mp3 (MP3 320 kbps)
 
-# Fase 3a: Web app — Mode ON (Bahasa Indonesia, cara cepat)
+# Fase 3a: Web app Mode ON (Indonesia) — SUDAH JALAN
 # https://srt-splitter.vercel.app/
-# Upload SRT ori → mode ON → Smart Fit (cap 2.0x) → pitch (-15Hz laki)
-# → audio-id-dub.wav (dialog, 100% sync) — SUDAH JALAN
+# → audio-id-dub.wav
 
-# Fase 3b: Web app — SRT editor (Bahasa Jawa, per cue) — NUNGGU CODE FIX
-# + Project Baru → upload SRT ID + SRT Jawa → simpan ke Supabase
-# → audio-jw-dub.wav — code perlu dibereskan (web app side)
+# Fase 3b: Web app SRT editor (Jawa) — NUNGGU CODE FIX
+# → audio-jw-dub.wav
 
 # Fase 4: Mix (~7 detik)
 python3 scripts/mix-tui.py
-# → mp4-id-final.mp4 (video ori + SFX bersih + dialog dub, 0 DTS warnings)
+# → mp4-{lang}-final.mp4
 ```
 
 Lihat [`tutor-mode-on-workflow.md`](tutor-mode-on-workflow.md) + [`tutor-demucs-setup.md`](tutor-demucs-setup.md) untuk detail.
 
+## Quick Index
+
+### Workflow Scripts
+
+| Script | Untuk Apa | Status |
+|---|---|---|
+| **`yt-dlp-tui.py`** ⭐ | TUI Download YouTube (pilih resolusi 480/720/1080) + audio terpisah | ✅ Utama |
+| **`demucs-tui.py`** ⭐ | TUI Demucs SFX separation → no_vocals.mp3 (MP3 320, MPS) | ✅ Utama |
+| **`mix-tui.py`** ⭐ | TUI Mix MP4 + no_vocals + audio_dub (ducking sidechain) | ✅ Utama |
+| **`srt-frequency-analyzer.py`** ⭐ | Analisis SRT → top 100 kata tak dikenal (pakai Supabase) | ✅ Utama |
+
+### Kamus Workflow Scripts
+
+| Script | Untuk Apa | Status |
+|---|---|---|
+| **`kamus-tui.py`** ⭐ | TUI edit kamus Jawa v2.6 (Phase 1-6 refactor, R-21 word field) | ✅ Utama |
+| **`upload-supabase.py`** | Upload entries approved ke Supabase (user-triggered only, R-12) | ✅ Utama |
+
+### SQL Migrations (Supabase)
+
+| File | Untuk Apa |
+|---|---|
+| `supabase-migration-v2.sql` | srt_projects + srt_cues (Editor SRT Jawa project-based) |
+| `supabase-migration-v3.sql` | kamus krama_inggil + register |
+
+### Dokumentasi
+
+- `tutor-mode-on-workflow.md` — panduan workflow Mode ON
+- `tutor-demucs-setup.md` — setup Demucs M1 16GB
+- `tutor-python-lokal.md` — setup Python lokal
+- `README.md` — file ini
+
 ---
 
-## Kamus Jawa Workflow (v2.3, post-R-21 netral)
+## Kamus Jawa Workflow (v2.6, post-R-22)
 
 ```bash
-# Download (sekali saja) — R-20: kamus-draft.json = rujukan tunggal
+# Download (sekali saja) — R-22: hanya kamus-draft.json, raw dihapus
 curl -L -o kamus-jawa-draft.json \
-  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?v=23"
+  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?v=26"
 curl -L -o kamus-tui.py \
-  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/kamus-tui.py?v=7"
+  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/kamus-tui.py?v=8"
 curl -L -o upload-supabase.py \
-  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py?v=1"
-curl -L -o audit-suspects.json \
-  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/audit-suspects.json?v=2"
+  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py?v=2"
 
 # Setup .env (sekali saja via TUI menu "🔑 Set Supabase .env")
 python3 kamus-tui.py
 
-# Statistik startup: Total | NETRAL | 3-field ready | Approved
+# Statistik startup: Total | NETRAL | 3-field ready | Status ready
 # Menu utama → "⚠ Filter: NETRAL" → browse 39.216 entries word-only
-# Edit entry → isi ngoko/krama/arti (2 dari 3 → paired, word otomatis kosong)
+# Edit entry → isi ngoko/krama/arti (2 dari 3 → paired) → save
 # Setelah 3-field lengkap → status 'ready' → siap upload Supabase
 
-# Menu "☁ Upload ke Supabase" → upload entries dengan user_approved=True (R-12)
-
-# Re-run audit kapan saja:
-python3 audit-otomatis-suspect-patterns.py
-# → Output: audit-suspects.json (124 suspect entries untuk user validasi ulang)
+# Menu "☁ Upload ke Supabase" → konfirmasi 'y' eksplisit → upload batch 500
 ```
 
-### Aturan kamus (R-12 sampai R-21)
+### Aturan kamus (R-12 sampai R-22)
 
-- **R-12**: User wajib validasi 1-1 sebelum upload Supabase
-- **R-16**: Ejaan Jawa — diakritik é/è wajib, schwa polos "e"
+- **R-12**: User wajib validasi 1-1 sebelum upload Supabase (status='ready')
+- **R-16**: Raw files DIHAPUS dari repo (R-22 override)
+- **R-16a**: Ejaan Jawa (panduan teknis, AI tidak audit ejaan dari raw)
 - **R-17**: krama_inggil masuk field krama (sinonim comma)
 - **R-18**: JANGAN HAPUS entry kamus (kosong/aksara/keterangan-only tetap disimpan)
-- **R-19**: Parser AI tolol, audit suspect otomatis (124 entries)
-- **R-20**: kamus-draft.json = rujukan tunggal, raw = arsip, build-kamus-bersih.py DISABLED
+- **R-19**: Parser AI tolol, raw = sampah
+- **R-20**: kamus-draft.json = rujukan tunggal, raw = DIHAPUS
 - **R-21**: field 'word' = netral, belum terdefinisi register
+- **R-22**: GIGO — AI tidak merujuk raw untuk audit/fix, bantu workflow saja
 
 ### User fallback (kata belum dikenali)
 
-Per R-20: cari manual di kamus resmi Kemendikbud:
+Per R-22: cari manual di kamus resmi Kemendikbud:
 - https://kesakata.kemdikbud.go.id
 - https://bahasa.kemdikbud.go.id
 - Wiktionary online langsung (jangan batch scrape)
@@ -140,7 +113,7 @@ Per R-20: cari manual di kamus resmi Kemendikbud:
 
 ## Multi-bahasa Output (rencana masa depan)
 
-Setelah audio-jw-dub.wav ready (nunggu SRT editor fix + kamus Supabase lengkap):
+Setelah audio-jw-dub.wav ready:
 
 | Opsi | Bentuk | Cocok untuk |
 |---|---|---|
@@ -182,8 +155,6 @@ python3 scripts/demucs-tui.py
 # Output: no_vocals.mp3 (SFX bersih, MP3 320 kbps, ~140 MB per 2 jam)
 ```
 
-Lihat [`tutor-demucs-setup.md`](tutor-demucs-setup.md) untuk setup M1 16GB.
-
 ### `mix-tui.py` ⭐ — Mix TUI
 
 ```bash
@@ -192,34 +163,25 @@ python3 scripts/mix-tui.py
 # Output: mp4-id-final.mp4 (video stream copy + SFX + dub, 0 DTS warnings)
 ```
 
-### `kamus-tui.py` ⭐ — Kamus Jawa Editor TUI v2.3
+### `kamus-tui.py` ⭐ — Kamus Jawa Editor TUI v2.6
 
 ```bash
 python3 scripts/kamus-tui.py
 # Phase 1-6 refactor: helper _search_entries, _entry_label, filter NETRAL,
 # merge_2_entries terpisah, upload via upload-supabase.py, textwrap
-# Statistik startup: Total + NETRAL + 3-field ready + Approved
+# Statistik startup: Total + NETRAL + 3-field ready + Status ready
 # Menu: Search, Browse READY/DRAFT, Filter NETRAL/3-field/NGOKO+KRAMA/etc,
 #        Merge 2 entries, Mark READY bulk, Set Supabase .env, Upload
 ```
 
-### `upload-supabase.py` ⭐ — Upload ke Supabase (Phase 5)
+### `upload-supabase.py` ⭐ — Upload ke Supabase
 
 ```bash
 python3 upload-supabase.py
 # Dipanggil dari kamus-tui.py (wrapper) atau standalone
-# Filter: HANYA entries dengan user_approved=True (R-12 compliance)
+# Filter: HANYA entries dengan status='ready' (R-12: user explicit approve via TUI)
+# Konfirmasi: user harus ketik 'y' eksplisit sebelum POST
 # Batch POST 500 entries per request ke Supabase REST API
-```
-
-### `audit-otomatis-suspect-patterns.py` — Audit suspect (R-19)
-
-```bash
-python3 audit-otomatis-suspect-patterns.py
-# Output: public/audit-suspects.json
-# Pattern: parsing_artifact_ngoko (Indonesia word nyangkut),
-#          parsing_artifact_arti (arti non-baku), krama_inggil_no_tag,
-#          too_many_ngoko_synonyms (>8), too_many_krama_synonyms (>3)
 ```
 
 ### `srt-frequency-analyzer.py` ⭐ — Frequency Analyzer
@@ -227,65 +189,8 @@ python3 audit-otomatis-suspect-patterns.py
 ```bash
 python3 srt-frequency-analyzer.py ~/Dubbing/S1-jw.srt
 # Output: ~/Dubbing/srt-freq-report.txt (top 100 kata tak dikenal + frequency)
+# Pakai Supabase DB sebagai ground of truth (bukan JSON lokal)
 # User copy list → paste di kamus-tui.py → search + add entry
-```
-
-### `parse-wiktionary-jv.py` — Parser Wiktionary XML (R-20: ARSIP, bukan rujukan)
-
-```bash
-python3 scripts/parse-wiktionary-jv.py
-# Input: jv.wiktionary XML dump → Output: kamus-jawa-full.json (44.585 entries)
-# Parser v5: register tag + krama_inggil + xref
-# ⚠ R-20: Output ini = ARSIP raw, BUKAN rujukan. Jangan rebuild kamus-draft.json dari sini.
-#   Build script (build-kamus-bersih.py.DISABLED) sudah di-disable — parser tolol merusak data.
-```
-
-### `scrape-lampiran-kamus.py` — Scraper Lampiran Kamus
-
-```bash
-python3 scripts/scrape-lampiran-kamus.py
-# Source: id.wiktionary.org Lampiran Kamus Jawa-Indonesia
-# Output: lampiran-raw.json (2.724 entries)
-```
-
-### `scrape-lampiran-angka.py` — Scraper Lampiran Nama Angka
-
-```bash
-python3 scripts/scrape-lampiran-angka.py
-# Source: id.wiktionary.org Lampiran:Nama_angka_dalam_bahasa_Jawa
-# Output: lampiran-angka-raw.json (66 entries, ground truth angka 1-1000)
-```
-
-### `scrape-wiktionary-jv-lemma.py` — Scraper jv:Lema
-
-```bash
-python3 scripts/scrape-wiktionary-jv-lemma.py
-# Source: id.wiktionary.org Kategori:jv:Lema
-# Output: kamus-jawa-new-lemma.json (859 entries)
-```
-
-### `neutralize-kamus-draft.py` — R-21 Netralisasi
-
-```bash
-python3 scripts/neutralize-kamus-draft.py
-# Entries belum berpasangan (ngoko-only atau krama-only) → pindah ke field 'word'
-# Sudah dijalankan sekali (v2.2 → v2.3), idempotent
-```
-
-### `fix-angka-ejaan.py` — R-16 Ejaan Angka
-
-```bash
-python3 scripts/fix-angka-ejaan.py
-# Fix 3 masalah: eka→éka, Nol→nol, songo dari ngoko→hapus
-# Idempotent — re-run aman
-```
-
-### `fix-dhingkluk.py` — R-12 Fix dhingkluk
-
-```bash
-python3 scripts/fix-dhingkluk.py
-# Fix 1 entry: dhingkluk arti 'menunduk', long form pindah ke keterangan
-# Per user konfirmasi 9 Okt 2026
 ```
 
 ---
@@ -296,5 +201,5 @@ python3 scripts/fix-dhingkluk.py
 - **Multi-bahasa**: Mode ON untuk ID (sudah jalan), SRT editor untuk Jawa (nunggu code fix + kamus)
 - **Mode manual**: DaVinci Resolve (tarik file ke timeline, edit sendiri)
 - **Audio utuh 100%** — tidak ada potongan di TTS mode ON + Smart Fit (no truncate)
-- **Kamus Jawa** — v2.3 (post-R-21 netral), 45.021 entries, 5.803 paired + 39.216 NETRAL
-- Script aman dijalankan ulang (idempotent) — kecuali `build-kamus-bersih.py.DISABLED` (R-20: JANGAN RUN)
+- **Kamus Jawa** — v2.6 (post-R-22 raw dihapus), 45.021 entries, 5.803 paired + 39.216 NETRAL
+- R-22: SEMUA raw + parser script DIHAPUS. Hanya workflow script aktif.
