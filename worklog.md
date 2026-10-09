@@ -1348,3 +1348,37 @@ Stage Summary:
 - R-21 compliance: NETRAL entries tampil di browse + ada filter khusus
 - R-18 compliance: JANGAN auto-save, biarkan user save manual via edit_entry
 - R-12 compliance: save_kamus() tetap recompute status saat user edit
+
+---
+Task ID: repo-audit-docs-update
+Agent: main
+Task: Audit source code GitHub, hapus file besar, update dokumentasi
+
+Work Log:
+- Cek git sync: clean, no ahead/behind
+- Audit repo: 149 tracked files, 25.85 MiB pack size
+- Identifikasi 10 file besar yang tidak perlu di GitHub:
+  - public/kamus-jawa-full.json (12 MiB, LEGACY — sudah ada .gz 1.5 MiB backup)
+  - public/srt-splitter-source.zip (76 KiB)
+  - tool-results/read_*.txt (2 file, 104 KiB) — debug output
+  - upload/Screenshot*.png (2 file, 928 KiB) — screenshot user
+  - upload/mendeley/kamus-2cba6-export.json (148 KiB) — duplikat public/
+  - download/kamus-jawa-*.json (3 file, ~932 KiB) — hasil download user
+- Update .gitignore: tambah /upload/*.png, /upload/mendeley/, *.zip,
+  /public/kamus-jawa-full.json, *.bak + *.bak.*
+- git rm --cached 10 file + hapus fisik yang gak perlu (tool-results, zip, mendeley)
+- Tracked files: 149 → 139 (10 file besar dihapus, ~14.5 MiB freed)
+- Baca semua dokumentasi: README.md, AGENTS.md, PROJECT_RULES.md, scripts/README.md, docs/PROGRESS.md
+- Update README.md (381 → 401): R-21 schema v6.1, stats 45.021 entries, curl commands baru
+- Update AGENTS.md (79 → 107): 21 aturan, status kamus v2.3, 3 aturan emas baru
+- Update scripts/README.md (186 → 271): tambah semua script baru, hapus script tidak ada
+- Update docs/PROGRESS.md (451 → 575): milestone 9 Okt 2026, 12 commit baru, 8 sub-section
+- Commit ad8820e + push
+
+Stage Summary:
+- Repo GitHub bersih: 139 tracked files (sebelumnya 149)
+- 14.5 MiB file besar dihapus dari GitHub (kamus-jawa-full.json 12M, dll)
+- 4 file dokumentasi update komprehensif: README, AGENTS, scripts/README, docs/PROGRESS
+- Total dokumentasi: 1097 → 1354 baris (+257 baris untuk R-16 sampai R-21 + Phase 1-6)
+- Filosofi R-20 dipelihara: kamus-draft.json = rujukan tunggal, raw = arsip
+- Build script DISABLED, file besar hapus, dokumentasi konsisten dengan code terkini
