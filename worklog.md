@@ -1720,3 +1720,41 @@ Stage Summary:
 - Code sekarang konsisten dengan dokumentasi di README.md
 - Docstrings sekarang akurat ke R-12 (no auto-ready) + R-21 (word kosong kalau paired)
 - Total: kamus-tui.py 1417 → 1418 baris, upload-supabase.py 277 baris
+
+---
+Task ID: fix-tui-header-v9
+Agent: main
+Task: User share output TUI runtime, header masih bilang 'TUI v2' padahal docstring v9
+
+Work Log:
+- User share output TUI runtime yang header-nya 'TUI v2'
+- Padahal docstring (yang sudah di-fix audit sebelumnya) sudah v9
+- Grep 'TUI v' → 2 lokasi hard-coded 'TUI v2':
+  - L1216 (header di loop menu utama)
+  - L1365 (header di main() awal)
+- Edit keduanya: 'TUI v2' → 'TUI v9'
+- Padding 28 space tetap (5 char vs 5 char, sama)
+- Verify: py_compile OK
+- Cross-check statistik TUI dari output user:
+  - total 44005 ✓ match draft json
+  - arti_filled 44003 ✓ match (2 belum ada arti)
+  - netral 39230 ✓ match (word terisi, ngoko kosong)
+  - ngoko+krama+arti 2937 ✓ match
+  - ngoko+arti (no krama) 1767 ✓ match
+  - no_ngoko 39301 = netral 39230 + 69 krama-only + 2 anomali
+  - 2 anomali = entries dengan keterangan tapi word/ngoko/krama/arti semua kosong
+  - status ready=0, draft=44005 ✓ match (R-12: user belum mark ready)
+- Investigasi 2 entries tanpa arti (entry_id=43678, 43679):
+  - word='', ngoko='', krama='', arti=''
+  - keterangan ADA (Jawa context dari Wiksastra)
+  - sumber='id.wiktionary.org Kategori:jv:Lema (new)'
+  - Bukan totally empty, hanya entry dengan keterangan-only
+  - R-18: JANGAN HAPUS, user inspect & isi manual via TUI nanti
+- Commit a429960 + push
+
+Stage Summary:
+- Header runtime TUI sekarang v9 (konsisten dengan docstring + fitur aktual)
+- Statistik TUI verified match draft json (semua angka benar)
+- 2 entries entry_id=43678, 43679 anomaly: keterangan-only tanpa word/ngoko/krama/arti
+  (R-18: preserve, user isi manual via TUI)
+- 69 entries krama+arti no-ngoko no-word (paired valid krama-only, bukan anomali)
