@@ -3,23 +3,24 @@
     "version": "1.0",
     "source": "id.wiktionary.org/wiki/Lampiran:Kamus_bahasa_Jawa_–_bahasa_Indonesia",
     "description": "Lampiran Kamus bahasa Jawa – bahasa Indonesia (2724 kata)",
-    "entries": 2059,
+    "entries": 2715,
     "kelas_breakdown": {
-      "t.a.": 583,
-      "t.s.": 258,
-      "t.k.": 291,
-      "t.kr.": 48,
-      "": 771,
-      "t.pw.": 4,
-      "K": 56,
+      "t.a.": 840,
+      "t.s.": 381,
+      "t.k.": 471,
+      "t.kr.": 86,
+      "": 787,
+      "t.pw.": 8,
+      "K": 62,
       "t.pb": 1,
-      "t.py.": 8,
-      "tsb": 29,
+      "t.py.": 14,
+      "tsb": 43,
       "t.pr.": 2,
+      "ts": 2,
+      "ta": 5,
       "t.sd.": 2,
-      "ta": 1,
       "tk.": 1,
-      "t.w.": 4
+      "t.w.": 10
     }
   },
   "words": [
@@ -521,6 +522,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "alit",
+      "arti": "kecil",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": true
+    },
+    {
       "ngoko": "alok",
       "arti": "berkata",
       "kelas": "t.k.",
@@ -652,6 +660,20 @@
       "kelas": "t.k.",
       "kelas_nama": "kata kerja",
       "is_krama": false
+    },
+    {
+      "ngoko": "amburat",
+      "arti": "bersinar",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": true
+    },
+    {
+      "ngoko": "ambet",
+      "arti": "bau",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": true
     },
     {
       "ngoko": "amblas",
@@ -921,7 +943,7 @@
     },
     {
       "ngoko": "anakan",
-      "arti": "anakan; bunga (uang)",
+      "arti": "anakan",
       "kelas": "t.a.",
       "kelas_nama": "kata benda",
       "is_krama": false
@@ -1221,6 +1243,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "angsal",
+      "arti": "boleh, dapat, mendapatkan",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": true
+    },
+    {
       "ngoko": "angslup",
       "arti": "tenggelam",
       "kelas": "t.k.",
@@ -1361,6 +1390,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "antop",
+      "arti": "bersendawa",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "antu",
       "arti": "tunggu",
       "kelas": "",
@@ -1368,10 +1404,73 @@
       "is_krama": false
     },
     {
+      "ngoko": "antuk",
+      "arti": "dapat, mendapatkan, memperoleh",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "pikantuk",
+      "arti": "mendapatkan",
+      "kelas": "K",
+      "kelas_nama": "krama",
+      "is_krama": true
+    },
+    {
       "ngoko": "anut",
       "arti": "ikut; anut-grubyuk: ikut-ikutan",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "anyang-anyangen",
+      "arti": "merasa seperti ingin kencing",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "anyang",
+      "arti": "tawar (harga)",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "anyar",
+      "arti": "baru; nganyari: menggunakan pertama kali",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "anyel",
+      "arti": "jengkel",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "anyep",
+      "arti": "dingin (tubuh atau bagian tubuh)",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "anyep",
+      "arti": "tawar, rasa hambar karena kurang garam",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "anyes",
+      "arti": "dingin (benda)",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
       "is_krama": false
     },
     {
@@ -1382,9 +1481,149 @@
       "is_krama": false
     },
     {
+      "ngoko": "anèh",
+      "arti": "aneh",
+      "kelas": "ts",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "anèm",
+      "arti": "muda",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "apa",
+      "arti": "apa",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "apek",
+      "arti": "bau tidak sedap yang berasal dari barang usang atau kamar yang lama tertutup",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "apem",
+      "arti": "apam",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "apes",
+      "arti": "sial",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "api-api",
+      "arti": "pura-pura",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "apik",
+      "arti": "baik, bagus",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "apu",
+      "arti": "kapur sirih;",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "apura",
+      "arti": "maaf",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "apus",
+      "arti": "sejenis bambu",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "apus",
+      "arti": "bohong, tipu; kapusan: tertipu; ngapusi: menipu",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ara-ara",
+      "arti": "padang",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "arah",
+      "arti": "arah",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "aran",
+      "arti": "nama",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "arang-arang",
+      "arti": "jarang",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "arang",
+      "arti": "jarang",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
       "ngoko": "aras",
       "arti": "cium, bagian paling dalam dari batang pohon pisang",
       "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "aren",
+      "arti": "enau",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "areng",
+      "arti": "arang",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "arep",
+      "arti": "hendak",
+      "kelas": "tsb",
       "kelas_nama": "tidak standar",
       "is_krama": false
     },
@@ -1396,6 +1635,27 @@
       "is_krama": false
     },
     {
+      "ngoko": "arga",
+      "arti": "gunung",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ari-ari",
+      "arti": "tali pusat",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ari",
+      "arti": "adik",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "arip",
       "arti": "mengantuk; karipan: bangun lebih siang dari biasanya",
       "kelas": "K",
@@ -1403,10 +1663,45 @@
       "is_krama": true
     },
     {
+      "ngoko": "aris",
+      "arti": "lugas",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "arit",
+      "arti": "sabit",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "arsa",
+      "arti": "akan; depan",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
       "ngoko": "arsa",
       "arti": "mau, akan, niat, bermaksud; pangarsa: pemimpin",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "arta",
+      "arti": "uang",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "aruh-aruh",
+      "arti": "menyapa",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
       "is_krama": false
     },
     {
@@ -1417,11 +1712,109 @@
       "is_krama": false
     },
     {
+      "ngoko": "arus",
+      "arti": "anyir",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "arwah",
+      "arti": "arwah",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "asah",
+      "arti": "asah",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "asal",
+      "arti": "asal",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "asat",
+      "arti": "kering, habis airnya (untuk sungai, danau, dsb.)",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "asem",
+      "arti": "asam, masam (buah), juga sejenis umpatan biasanya dilakukan oleh orang Yogya",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "asih",
+      "arti": "kasih, sayang",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "asin",
+      "arti": "asin",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
       "ngoko": "asma",
       "arti": "nama",
       "kelas": "t.a.",
       "kelas_nama": "kata benda",
       "is_krama": true
+    },
+    {
+      "ngoko": "asmara",
+      "arti": "asmara",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "asmarandana",
+      "arti": "nama metrum macapat",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "asor",
+      "arti": "kalah",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "asor",
+      "arti": "nista",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "asrep",
+      "arti": "dingin",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "asri",
+      "arti": "indah, menyenangkan untuk dipandang",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
     },
     {
       "ngoko": "asta",
@@ -1431,10 +1824,66 @@
       "is_krama": true
     },
     {
+      "ngoko": "asta",
+      "arti": "bawa",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ngasta",
+      "arti": "membawa, bekerja",
+      "kelas": "K",
+      "kelas_nama": "krama",
+      "is_krama": true
+    },
+    {
+      "ngoko": "asu",
+      "arti": "anjing",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "asuh",
       "arti": "rawat",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "asung",
+      "arti": "menghaturkan",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ati-ati",
+      "arti": "hati-hati",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ati",
+      "arti": "hati; ngati-ati: berhati-hati, waspada",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "atis",
+      "arti": "dingin (untuk hawa, udara)",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "atos",
+      "arti": "keras",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
       "is_krama": false
     },
     {
@@ -1445,10 +1894,213 @@
       "is_krama": true
     },
     {
+      "ngoko": "atur",
+      "arti": "atur",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "aturi",
+      "arti": "beri; persilakan",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "atus",
+      "arti": "tidak lagi mengandung air",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
       "ngoko": "atut",
       "arti": "akrab, jinak",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awak",
+      "arti": "badan, tubuh",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awan",
+      "arti": "siang",
+      "kelas": "ta",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awang-awang",
+      "arti": "langit bebas",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awang",
+      "arti": "berhitung tanpa alat bantu",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awas",
+      "arti": "awas",
+      "kelas": "t.pw.",
+      "kelas_nama": "kata seru",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awas",
+      "arti": "tajam (pengelihatan)",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awis-awis",
+      "arti": "jarang",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awis",
+      "arti": "mahal",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awit",
+      "arti": "mulai, karena",
+      "kelas": "t.py.",
+      "kelas_nama": "kata sambung",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awoh",
+      "arti": "berbuah",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awon awon",
+      "arti": "jelek/buruk",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awor",
+      "arti": "bercampur dengan",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awrat",
+      "arti": "berat",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awu",
+      "arti": "abu; awu-awu: berpura-pura",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awur",
+      "arti": "sebar",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awur",
+      "arti": "asal-asalan",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awut",
+      "arti": "membuat berantakan",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awèh",
+      "arti": "beri",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "awèt",
+      "arti": "tidak cepat rusak, tahan lama, tidak kunjung habis",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ayahan",
+      "arti": "kewajiban",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ayam",
+      "arti": "ayam",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ayem",
+      "arti": "tentram (hati)",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ayo",
+      "arti": "ayo",
+      "kelas": "t.pw.",
+      "kelas_nama": "kata seru",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ayom",
+      "arti": "perlindungan",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ayu",
+      "arti": "cantik",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "aywa",
+      "arti": "jangan",
+      "kelas": "t.pw.",
+      "kelas_nama": "kata seru",
       "is_krama": false
     },
     {
@@ -1512,6 +2164,13 @@
       "arti": "bagian dalam usus sapi",
       "kelas": "t.a.",
       "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "babat",
+      "arti": "tebang, tebas; mbabat suket: memotong rumput",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
       "is_krama": false
     },
     {
@@ -1592,6 +2251,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "bacut",
+      "arti": "lanjut, masuk",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "kebacut",
       "arti": "kebablasan",
       "kelas": "t.s.",
@@ -1622,6 +2288,13 @@
     {
       "ngoko": "badhèk-badhèkan",
       "arti": "tebak-tebakan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "badhèk",
+      "arti": "air tapai",
       "kelas": "t.a.",
       "kelas_nama": "kata benda",
       "is_krama": false
@@ -1673,6 +2346,13 @@
       "arti": "penguasa",
       "kelas": "t.a.",
       "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "bajang",
+      "arti": "kerdil",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
       "is_krama": false
     },
     {
@@ -2278,6 +2958,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "bawang",
+      "arti": "bawang",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "bawang lanang",
       "arti": "bawang berumbi tunggal",
       "kelas": "t.a.",
@@ -2824,6 +3511,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "beta",
+      "arti": "bawa",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": true
+    },
+    {
       "ngoko": "betah",
       "arti": "butuh",
       "kelas": "t.k.",
@@ -2930,7 +3624,7 @@
     },
     {
       "ngoko": "blalak-blalak",
-      "arti": "membeliak; besar (untuk mata)",
+      "arti": "membeliak",
       "kelas": "t.s.",
       "kelas_nama": "kata sifat",
       "is_krama": false
@@ -3057,6 +3751,13 @@
     {
       "ngoko": "blusuk",
       "arti": "nyungsep",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "blusak-blusuk/blusukan",
+      "arti": "keluar masuk (kampung)",
       "kelas": "",
       "kelas_nama": "tidak standar",
       "is_krama": false
@@ -3546,7 +4247,7 @@
     },
     {
       "ngoko": "bumbung",
-      "arti": "tempat berbentuk pipa besar atau terbuat dari bambu; tabung (dari seruas bambu)",
+      "arti": "tempat berbentuk pipa besar atau terbuat dari bambu",
       "kelas": "t.a.",
       "kelas_nama": "kata benda",
       "is_krama": false
@@ -3979,6 +4680,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "cambah",
+      "arti": "tauge",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "camilan",
       "arti": "makanan kecil",
       "kelas": "",
@@ -3986,10 +4694,24 @@
       "is_krama": false
     },
     {
+      "ngoko": "campur",
+      "arti": "campur",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "cancut",
       "arti": "siap untuk bekerja",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "candala",
+      "arti": "jahat",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
       "is_krama": false
     },
     {
@@ -4007,6 +4729,34 @@
       "is_krama": true
     },
     {
+      "ngoko": "candhik kala",
+      "arti": "semburat merah di langit pada saat senja hari",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "candra",
+      "arti": "bulan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "candra",
+      "arti": "kiasan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "candramawa",
+      "arti": "kucing hitam",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "cangak",
       "arti": "sejenis burung",
       "kelas": "",
@@ -4018,6 +4768,41 @@
       "arti": "keturunan ke 5",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cangkem",
+      "arti": "mulut",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cangking",
+      "arti": "bawa sebagai tambahan bawaan, jinjing",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cangkir",
+      "arti": "cangkir",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cangklong",
+      "arti": "pipa",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cangklong",
+      "arti": "menyandang di bahu (mis. tas); membawa dengan cara digantungkan di bahu",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
       "is_krama": false
     },
     {
@@ -4049,10 +4834,122 @@
       "is_krama": false
     },
     {
+      "ngoko": "canthas",
+      "arti": "bicaranya lantang (untuk wanita)",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cantheng",
+      "arti": "radang di jari, umumnya di ibu jari kaki akibat tertusuk kuku",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "canthing",
+      "arti": "alat untuk membatik, untuk menampung lilin sementara sebagai alat batik tulis sebelum di gambarkan ke selembar kain",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "canthol",
+      "arti": "cantol, gantung, kait",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "canthèl",
+      "arti": "sejenis jagung",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cantrik",
+      "arti": "murid padepokan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "caos",
       "arti": "Memberi (e.g caos dhahar = memberi makan)",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "capil",
+      "arti": "topi petani, bentuknya bulat berujung runcing",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "caping",
+      "arti": "topi petani, bentuknya bulat berujung runcing, dari anyaman bambu",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "caplak",
+      "arti": "penyakit kulit",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "caplok",
+      "arti": "memasukkan semua ke dalam mulut",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cara",
+      "arti": "cara",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "caraka",
+      "arti": "utusan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "carang",
+      "arti": "ranting",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "carita",
+      "arti": "cerita",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "carup",
+      "arti": "raup",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cathet",
+      "arti": "catat",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
       "is_krama": false
     },
     {
@@ -4063,6 +4960,83 @@
       "is_krama": false
     },
     {
+      "ngoko": "cathèk",
+      "arti": "gigit (anjing)",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "catur",
+      "arti": "empat",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "caturan",
+      "arti": "bercakap-cakap",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cawang",
+      "arti": "tanda V, centang",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cawet",
+      "arti": "celana dalam",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cawik",
+      "arti": "cebok",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cawis",
+      "arti": "sedia, saji",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cawuk",
+      "arti": "mengambil dengan cara menyendokkan tangan",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cawé-cawé",
+      "arti": "turun tangan, ikut campur",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ceblok/ciblok",
+      "arti": "jatuh",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cecak",
+      "arti": "cicak",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "cecep",
       "arti": "hisap",
       "kelas": "",
@@ -4070,10 +5044,52 @@
       "is_krama": false
     },
     {
+      "ngoko": "cedhak",
+      "arti": "dekat",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cegat",
+      "arti": "hadang",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cekak",
+      "arti": "pendek, pendek sekali; tidak mencukupi; ukurannya tidak memadai;",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cekakak, cekakakan",
+      "arti": "tertawa terbahak-bahak dengan keras",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cekakik",
+      "arti": "ampas kopi (sisa setelah diminum)",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "cekap",
       "arti": "cukup (bhs Jawa halus)",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cekel",
+      "arti": "pegang",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
       "is_krama": false
     },
     {
@@ -4098,6 +5114,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "cekot/cekot-cekot",
+      "arti": "ngilu",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
       "ngoko": "celak",
       "arti": "dekat",
       "kelas": "t.s.",
@@ -4105,10 +5128,52 @@
       "is_krama": true
     },
     {
+      "ngoko": "celak",
+      "arti": "pensil alis, penegas garis tepi mata",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "celathu/clathu",
+      "arti": "berbicara",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "celempung",
+      "arti": "alat musik bagian dari gamelan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "celuk",
+      "arti": "panggil",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "celup",
       "arti": "memasukkan ke dalam cairan",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cemani",
+      "arti": "hitam",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cemawis",
+      "arti": "tersedia",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
       "is_krama": false
     },
     {
@@ -4119,10 +5184,24 @@
       "is_krama": true
     },
     {
+      "ngoko": "cemèng",
+      "arti": "anak kucing",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "cempeh",
       "arti": "tempe belum jadi",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cemplang",
+      "arti": "tidak sedap/kurang pas (mis. nada, rasa)",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
       "is_krama": false
     },
     {
@@ -4133,10 +5212,31 @@
       "is_krama": false
     },
     {
+      "ngoko": "cemplung",
+      "arti": "masuk (dalam cairan); memasukkan ke dalam air",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "cempé",
       "arti": "anak kambing",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cemèt",
+      "arti": "gepeng, pipih karena tertimpa/tertekan beban berat",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cendhak/cendhèk",
+      "arti": "pendek, rendah",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
       "is_krama": false
     },
     {
@@ -4161,6 +5261,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "cengkir",
+      "arti": "buah kelapa yang masih sebesar kepalan, belum berdaging buah;: kelapa sangat muda (urutan kelapa sesuai umur: manggar (bunga)-bluluk-cengkir-degan-kelapa)",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "cengkorongan",
       "arti": "pola, bentuk dasar, tidak detil",
       "kelas": "",
@@ -4175,10 +5282,73 @@
       "is_krama": false
     },
     {
+      "ngoko": "cepak-cepak",
+      "arti": "siap-siap",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cepak",
+      "arti": "tersedia, siap",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cepeng",
+      "arti": "pegang",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ceplus",
+      "arti": "gigit (untuk cabai)",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cepuk",
+      "arti": "wadah kecil, biasanya untuk menyimpan perhiasan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "cepèr",
       "arti": "rata",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cerek",
+      "arti": "tanda bunyi \"re\" pada aksara Jawa",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cerek",
+      "arti": "tanda bunyi “re” pada aksara Jawa",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ceriwis",
+      "arti": "banyak bicara",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cetha",
+      "arti": "jelas",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
       "is_krama": false
     },
     {
@@ -4191,6 +5361,13 @@
     {
       "ngoko": "cethèk",
       "arti": "dangkal",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cethik",
+      "arti": "menyalakan (api)",
       "kelas": "t.k.",
       "kelas_nama": "kata kerja",
       "is_krama": false
@@ -4483,6 +5660,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "colok",
+      "arti": "penerangan; obor",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "colong",
       "arti": "curi",
       "kelas": "",
@@ -4546,6 +5730,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "copot",
+      "arti": "tanggal, cabut, lepas",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
       "ngoko": "nyopot",
       "arti": "mencabut, menanggalkan, melepas",
       "kelas": "t.k.",
@@ -4593,6 +5784,13 @@
       "kelas": "t.k.",
       "kelas_nama": "kata kerja",
       "is_krama": false
+    },
+    {
+      "ngoko": "nyrita'aken",
+      "arti": "menceritakan; bercerita",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": true
     },
     {
       "ngoko": "criwis",
@@ -4688,6 +5886,13 @@
     {
       "ngoko": "cundhuk",
       "arti": "tusuk sanggul",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "cundrik",
+      "arti": "keris kecil; sejenis pisau kecil, biasanya untuk senjata wanita jaman dulu",
       "kelas": "t.a.",
       "kelas_nama": "kata benda",
       "is_krama": false
@@ -5064,6 +6269,41 @@
       "is_krama": false
     },
     {
+      "ngoko": "degan",
+      "arti": "kelapa muda",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "deling",
+      "arti": "bambu",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "delok/deleng",
+      "arti": "lihat",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "demèk",
+      "arti": "pegang, sentuh",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dengkul",
+      "arti": "lutut",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "dika",
       "arti": "kamu",
       "kelas": "tsb",
@@ -5078,6 +6318,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "dingklik",
+      "arti": "bangku kecil",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "dipun-",
       "arti": "di- (awalan)",
       "kelas": "K",
@@ -5085,10 +6332,45 @@
       "is_krama": true
     },
     {
+      "ngoko": "disik",
+      "arti": "terlebih dulu",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dluwang",
+      "arti": "kertas",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "dodol",
       "arti": "berjualan",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dolan/dolén",
+      "arti": "bertandang; pergi bermain",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dolanan",
+      "arti": "bermain, mainan, permainan",
+      "kelas": "ta",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "donga/dunga",
+      "arti": "doa",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5099,6 +6381,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "dora",
+      "arti": "tidak terus terang",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
       "ngoko": "doso",
       "arti": "sepuluh",
       "kelas": "t.s.",
@@ -5106,10 +6395,38 @@
       "is_krama": true
     },
     {
+      "ngoko": "dosa",
+      "arti": "dosa",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "doyan",
       "arti": "senang makan",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "driji",
+      "arti": "jari",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "drèngès",
+      "arti": "bunga sirih",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dubang",
+      "arti": "ludah merah/ludah orang yang makan sirih",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5120,10 +6437,59 @@
       "is_krama": false
     },
     {
+      "ngoko": "duduh",
+      "arti": "kuah",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "duduh",
+      "arti": "beritahu",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dugang",
+      "arti": "tendang dengan lutut",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "duku",
       "arti": "buah duku",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dulit",
+      "arti": "colek",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dulur",
+      "arti": "saudara",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dumuk",
+      "arti": "sentuh, pegang, rengkuh",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dumunung",
+      "arti": "berada; bertempat",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
       "is_krama": false
     },
     {
@@ -5148,10 +6514,59 @@
       "is_krama": false
     },
     {
+      "ngoko": "dunung",
+      "arti": "tempat",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "duratmaka",
+      "arti": "pencuri",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "durèn",
+      "arti": "durian",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "durung",
+      "arti": "belum",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dustha",
+      "arti": "curi",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "duwa",
+      "arti": "tentang, lawan, tidak menyetujui",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "duwé",
       "arti": "punya",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dwi",
+      "arti": "dua",
+      "kelas": "t.w.",
+      "kelas_nama": "kata bilangan",
       "is_krama": false
     },
     {
@@ -5166,6 +6581,83 @@
       "arti": "oleh",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "déné",
+      "arti": "sedangkan",
+      "kelas": "t.py.",
+      "kelas_nama": "kata sambung",
+      "is_krama": false
+    },
+    {
+      "ngoko": "désa",
+      "arti": "desa",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "déwa",
+      "arti": "dewa",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhadha",
+      "arti": "dada",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhadha",
+      "arti": "mengakui kesalahan",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhadhak",
+      "arti": "getah",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhadhakmerak",
+      "arti": "pemain dalam kesenian reog yang memakai hiasan bulu merak di kepalanya",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhadhal",
+      "arti": "runtuh terbawa arus air",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhadhu",
+      "arti": "dadu",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhadhung",
+      "arti": "tali",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhagelan",
+      "arti": "lawak",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5198,9 +6690,23 @@
     },
     {
       "ngoko": "dhalang",
+      "arti": "dalang",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhalang",
       "arti": "yang menjalankan wayang",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhangka",
+      "arti": "tempat asal",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5225,11 +6731,53 @@
       "is_krama": true
     },
     {
+      "ngoko": "dhawah",
+      "arti": "jatuh",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "dhawuh",
       "arti": "perintah",
       "kelas": "K",
       "kelas_nama": "krama",
       "is_krama": true
+    },
+    {
+      "ngoko": "dhawuh",
+      "arti": "ucapan, perintah",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhawuh",
+      "arti": "memerintahkan",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhayoh",
+      "arti": "tamu",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhedhes",
+      "arti": "mendesak seseorang dengan pertanyaan agar ybs mengaku/membuka rahasia",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhemen",
+      "arti": "suka",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
     },
     {
       "ngoko": "dhemit",
@@ -5239,10 +6787,24 @@
       "is_krama": false
     },
     {
+      "ngoko": "dhidhis",
+      "arti": "mencari kutu di kepala sendiril",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "dhimas",
       "arti": "panggilan untuk adik",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhingklang",
+      "arti": "pincang",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
       "is_krama": false
     },
     {
@@ -5254,9 +6816,23 @@
     },
     {
       "ngoko": "dhingkluk",
+      "arti": "tunduk/menghadap ke bawah",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhingkluk",
       "arti": "menunduk",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhodhog",
+      "arti": "ketuk pintu",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
       "is_krama": false
     },
     {
@@ -5274,6 +6850,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "dhodhos",
+      "arti": "lubangi dari bawah",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "dhom",
       "arti": "jarum",
       "kelas": "",
@@ -5281,10 +6864,52 @@
       "is_krama": false
     },
     {
+      "ngoko": "dhompol",
+      "arti": "untaian dalam 1 tangkai (untuk buah)",
+      "kelas": "t.w.",
+      "kelas_nama": "kata bilangan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhondhong",
+      "arti": "nama buah",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhongkol",
+      "arti": "mantan pejabat",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhoyong",
+      "arti": "miring",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhudha",
+      "arti": "duda",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "dhuku",
       "arti": "buah duku",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhupak",
+      "arti": "tendang menggunakan tumit",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
       "is_krama": false
     },
     {
@@ -5297,8 +6922,22 @@
     {
       "ngoko": "dhuwit",
       "arti": "uang",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhuwit",
+      "arti": "uang",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhuwur",
+      "arti": "tinggi",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
       "is_krama": false
     },
     {
@@ -5309,10 +6948,248 @@
       "is_krama": false
     },
     {
+      "ngoko": "dhèdhèl",
+      "arti": "terlepas jahitannya",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhèdhès",
+      "arti": "bau harum yang keluar dari tubuh musang",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhèmpèt",
+      "arti": "melekat/rapat",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhèndhèng",
+      "arti": "daging dikeringkan dengan bumbu tertentu",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhédhé",
+      "arti": "berjemur",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
       "ngoko": "dhédhé",
       "arti": "berjemur",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "dhéwé",
+      "arti": "sendiri; sendirian",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "eden",
+      "arti": "ejan",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "elar",
+      "arti": "bulu unggas",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "eluk",
+      "arti": "tekuk",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "embah",
+      "arti": "nenek/kakek",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "embuh",
+      "arti": "entah",
+      "kelas": "t.pw.",
+      "kelas_nama": "kata seru",
+      "is_krama": false
+    },
+    {
+      "ngoko": "emoh",
+      "arti": "tidak mau",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "emplok",
+      "arti": "memasukkan ke mulut",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "empuk",
+      "arti": "lembut",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "emut",
+      "arti": "kulum",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "enak",
+      "arti": "enak",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "endas",
+      "arti": "kepala binatang",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "endi",
+      "arti": "mana",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "endog",
+      "arti": "telur",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "enek",
+      "arti": "mual",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "enem",
+      "arti": "enam",
+      "kelas": "t.w.",
+      "kelas_nama": "kata bilangan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "enep",
+      "arti": "endap",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ener",
+      "arti": "arah",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "enggon",
+      "arti": "tempat",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "enggèlèk",
+      "arti": "bangkit secara tiba-tiba",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "enjing",
+      "arti": "pagi",
+      "kelas": "ta",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "entas",
+      "arti": "angkat, ambil",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "entup",
+      "arti": "sengat",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "entut",
+      "arti": "kentut",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "enték",
+      "arti": "habis",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "entén-entén",
+      "arti": "isi jajanan terbuat dari partan kelapa dimasak dengan gula merah",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "entén",
+      "arti": "tunggu",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "enyang",
+      "arti": "tawar (harga)",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "epang",
+      "arti": "dahan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5323,10 +7200,353 @@
       "is_krama": false
     },
     {
+      "ngoko": "erah",
+      "arti": "ambil",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "eri",
+      "arti": "duri",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "esthi",
+      "arti": "latih; pelajari",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "estu",
+      "arti": "sungguh, jadi",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ésuk",
+      "arti": "pagi",
+      "kelas": "ta",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "èdi",
+      "arti": "indah",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "èlèk",
+      "arti": "jelek",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "èncèr",
+      "arti": "cair",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "éca",
+      "arti": "enak",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "édan",
+      "arti": "gila",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "édhum",
+      "arti": "terlindung dari sinar matahari",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "éka",
+      "arti": "satu",
+      "kelas": "t.w.",
+      "kelas_nama": "kata bilangan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "éling",
+      "arti": "ingat, sadar",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "élok",
+      "arti": "aneh, ajaib",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "éman",
+      "arti": "sayang kalau hilang atau rusak",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "émut",
+      "arti": "ingat",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "éndah",
+      "arti": "indah",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "éndha",
+      "arti": "berkelit",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "éndhang",
+      "arti": "gadis padepokan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "éndhang",
+      "arti": "jenguk",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "énggal",
+      "arti": "cepat",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "énggal",
+      "arti": "baru",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "énggar",
+      "arti": "hibur",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "énggok",
+      "arti": "belok",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "énthong",
+      "arti": "sendok nasi",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "énthéng",
+      "arti": "ringan",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "éntuk",
+      "arti": "dapat, boleh",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "éram",
+      "arti": "heran",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "éthok-éthok",
+      "arti": "pura-pura",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "éwa",
+      "arti": "kecewa",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "éwadéné",
+      "arti": "walaupun demikian",
+      "kelas": "t.py.",
+      "kelas_nama": "kata sambung",
+      "is_krama": false
+    },
+    {
+      "ngoko": "éwah",
+      "arti": "ubah; berubah",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "éwuh",
+      "arti": "rikuh; serba salah",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "éyang",
+      "arti": "kakek",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "éyup",
+      "arti": "terlindung dari sinar matahari atau hujan",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gabah",
+      "arti": "padi yang telah terlepas dari tangkainya",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gada",
+      "arti": "gada; senjata pemukul",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gadhah",
+      "arti": "mempunyai",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "gaduk",
       "arti": "mampu menggapai (sesuatu di tempat yang tinggi)",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gagah",
+      "arti": "gagah",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gagak",
+      "arti": "burung pemakan bangkai",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gagang",
+      "arti": "tangkai",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gagas",
+      "arti": "pikir",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gagasan",
+      "arti": "pemikiran",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gagé",
+      "arti": "cepat",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gajah",
+      "arti": "gajah",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gajih",
+      "arti": "lemak jenuh",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "galak",
+      "arti": "galak",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "galar",
+      "arti": "batang bambu; alas kasur",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "galengan",
+      "arti": "jalur pembatas petak sawah",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5338,9 +7558,86 @@
     },
     {
       "ngoko": "galih",
+      "arti": "merasakan dalam hati",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "galih",
       "arti": "bagian tengah kayu yang paling keras, pikiran",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gaman",
+      "arti": "senjata",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gambang",
+      "arti": "alat musik pukul, bagian dari gamelan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gambar",
+      "arti": "gambar",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gambas",
+      "arti": "petola",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gambir anom",
+      "arti": "nama tarian ksatria",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gambir",
+      "arti": "buah pinang yang sudah diolah",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gambyong",
+      "arti": "nama tarian untuk menyambut tamu",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gamel",
+      "arti": "tukang merawat kuda",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gamelan",
+      "arti": "alat musik Jawa",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gampang",
+      "arti": "senang; mudah",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
       "is_krama": false
     },
     {
@@ -5358,10 +7655,66 @@
       "is_krama": false
     },
     {
+      "ngoko": "gamping",
+      "arti": "kapur tembok",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "gampèng",
       "arti": "tebing",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ganda",
+      "arti": "bau",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gandarwa",
+      "arti": "hantu besar hitam",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gandhen",
+      "arti": "palu /martil",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gandheng",
+      "arti": "gandeng",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gandhes",
+      "arti": "luwes",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gandhol",
+      "arti": "bergantung pada sesuatu",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gandhul",
+      "arti": "tergantung (untuk benda yang berat); menggantung, buah pepaya",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
       "is_krama": false
     },
     {
@@ -5379,10 +7732,45 @@
       "is_krama": false
     },
     {
+      "ngoko": "ganep",
+      "arti": "gebap",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gangsal",
+      "arti": "lima",
+      "kelas": "t.w.",
+      "kelas_nama": "kata bilangan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gangsar",
+      "arti": "lancar",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
       "ngoko": "gangsir",
       "arti": "sejenis jangkrik",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ganjar",
+      "arti": "ganjar",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ganjaran",
+      "arti": "hadiah / imbalan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5393,10 +7781,52 @@
       "is_krama": false
     },
     {
+      "ngoko": "ganjil",
+      "arti": "ganjil",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gantung",
+      "arti": "gantung",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "gapit",
       "arti": "penjepit",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gaplek",
+      "arti": "singkong yang dikeringkan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gapuk",
+      "arti": "rapuh dimakan usia (untuk kayu)",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gapyuk",
+      "arti": "tidak sengaja bertemu berhadapan / memeluk dari belakang",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "garan",
+      "arti": "gagang",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5407,11 +7837,60 @@
       "is_krama": false
     },
     {
+      "ngoko": "garing",
+      "arti": "kering",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "garu",
+      "arti": "alat penggaruk tanah; alat meratakan tanah di sawah dengan menggunakan tenaga ternak (kerbau atau sapi)",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "garu",
+      "arti": "menggaruk tanah",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "garudha",
+      "arti": "garuda, nama burung dalam mitos Jawa ( elang )",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "garwa",
       "arti": "suami/istri",
       "kelas": "t.a.",
       "kelas_nama": "kata benda",
       "is_krama": true
+    },
+    {
+      "ngoko": "gasik",
+      "arti": "awal",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gatel",
+      "arti": "gatal",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gathot",
+      "arti": "makanan dari gaplek",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
     },
     {
       "ngoko": "gathuk",
@@ -5428,10 +7907,73 @@
       "is_krama": false
     },
     {
+      "ngoko": "gawa, nggawa",
+      "arti": "bawa, membawa",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gawan",
+      "arti": "bawaan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gawang-gawang",
+      "arti": "terbayang",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gawat",
+      "arti": "gawat",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gawé",
+      "arti": "buat, membuat, hajat",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gayuh",
+      "arti": "capai",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "gayok",
       "arti": "gapai",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "geber",
+      "arti": "layar penutup panggung",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gebug",
+      "arti": "hantam badan dengan benda keras; pemukul besar",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gedhang",
+      "arti": "pisang",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5442,10 +7984,101 @@
       "is_krama": false
     },
     {
+      "ngoko": "gedhé",
+      "arti": "besar",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gegana",
+      "arti": "angkasa",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gegayuhan",
+      "arti": "keinginan/cita-cita",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gegedhug",
+      "arti": "pimpinan (untuk kelompok penjahat, pembuat onar)",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "geger",
+      "arti": "punggung",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "geger",
+      "arti": "ribut",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gela",
+      "arti": "menyesal, kecewa",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gelak",
+      "arti": "percepat",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gelang",
+      "arti": "gelang",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "gelap",
       "arti": "petir",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gelar",
+      "arti": "bentang (tikar)",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gelas",
+      "arti": "gelas",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gelem",
+      "arti": "mau",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gelis",
+      "arti": "cepat",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
       "is_krama": false
     },
     {
@@ -5456,10 +8089,73 @@
       "is_krama": false
     },
     {
+      "ngoko": "gem lethak",
+      "arti": "bergeletakan",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gem lundung",
+      "arti": "bergelundungan",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "gemah",
       "arti": "makmur",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gemak",
+      "arti": "burung puyuh",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gemang",
+      "arti": "tidak mau",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gembili",
+      "arti": "sejenis ubi/talas",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gemblak",
+      "arti": "anak lelaki yang dijadikan kekasih seorang lelaki",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gemblung",
+      "arti": "tidak normal pikirannya, gila",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gembok",
+      "arti": "gembok",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gembor",
+      "arti": "alat untuk menyiram tanaman",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5470,10 +8166,101 @@
       "is_krama": false
     },
     {
+      "ngoko": "gemes",
+      "arti": "gemas",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gemlethak",
+      "arti": "bergeletakan",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gemlundung",
+      "arti": "bergelundungan",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "gempur",
       "arti": "serang",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gemrubug",
+      "arti": "menderu (suara angin)",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gemrudug",
+      "arti": "pergi/datangnya dalam jumlah besar",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gemré gah",
+      "arti": "bangkit seketika",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gemrégah",
+      "arti": "bangkit seketika",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gemuk",
+      "arti": "lemak; pelumas",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "genah",
+      "arti": "gampang",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "genah",
+      "arti": "jelas",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gendhakan",
+      "arti": "wanita simpanan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gendheng",
+      "arti": "gila, gila",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gendhing",
+      "arti": "musik Jawa; lagu pada gamelan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5484,10 +8271,143 @@
       "is_krama": true
     },
     {
+      "ngoko": "gendhuk",
+      "arti": "panggilan untuk anak perempuan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gendhèng",
+      "arti": "atap seng",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gendruwo",
+      "arti": "hantu besar hitam",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gendul",
+      "arti": "botol",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gendèr",
+      "arti": "nama alat musik pukul",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "gendéra",
       "arti": "bendera",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "geni",
+      "arti": "api",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "genjot",
+      "arti": "genjot",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "genthong",
+      "arti": "tempayan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "genthèng",
+      "arti": "genteng",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "genuk",
+      "arti": "tempayan kecil",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "geplak",
+      "arti": "nama jajanan terbuat dari kelapa parut dan gula",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gepuk",
+      "arti": "pukul",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gerah",
+      "arti": "sakit",
+      "kelas": "K",
+      "kelas_nama": "krama",
+      "is_krama": true
+    },
+    {
+      "ngoko": "gerah",
+      "arti": "sakit",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gerang",
+      "arti": "dewasa",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gering",
+      "arti": "sakit",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "germo",
+      "arti": "mucikari",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gero-gero",
+      "arti": "menangis melolong-lolong",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gerèh",
+      "arti": "ikan asin",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5498,10 +8418,80 @@
       "is_krama": false
     },
     {
+      "ngoko": "geseng",
+      "arti": "hitam",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "getak",
+      "arti": "hardik",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "getap",
+      "arti": "cepat bertindak/bereaksi",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "getas",
+      "arti": "retas; mudah patah",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gething",
+      "arti": "benci",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gethuk",
+      "arti": "singkong rebus tumbuk; makanan dari ubi jalar",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "getih",
+      "arti": "darah",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "getir",
+      "arti": "rasa antara pahit menusuk",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "getun",
+      "arti": "menyesal",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
       "ngoko": "gibeng",
       "arti": "pukul, tinju",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gila",
+      "arti": "jijik; gilani: menjijikan",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
       "is_krama": false
     },
     {
@@ -5512,10 +8502,31 @@
       "is_krama": false
     },
     {
+      "ngoko": "gilig",
+      "arti": "tidak pipih",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
       "ngoko": "gimbal",
       "arti": "rambut yang panjang tapi kotor dan lengket",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ginanjar",
+      "arti": "diberi hadiah/ganjaran",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "giris",
+      "arti": "ngeri",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
       "is_krama": false
     },
     {
@@ -5530,6 +8541,13 @@
       "arti": "segera, cepat",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "githok",
+      "arti": "belakang leher, tengkuk",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5575,10 +8593,52 @@
       "is_krama": false
     },
     {
+      "ngoko": "glangsaran",
+      "arti": "jatuh terkapar",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "glathik",
+      "arti": "burung gelatik",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "glenik",
+      "arti": "bujuk",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "glethak",
+      "arti": "terletak",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "glindhing",
+      "arti": "menggelinding; bergulir",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "glondhang",
       "arti": "suara tong kosong, kosong",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gludhug",
+      "arti": "guruh",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5589,10 +8649,59 @@
       "is_krama": false
     },
     {
+      "ngoko": "glundhung",
+      "arti": "menggelinding; terguling",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gobang",
+      "arti": "uang logam",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "goblog",
       "arti": "bodoh",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gocèk",
+      "arti": "berpegang",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "godhag",
+      "arti": "mampu berbuat",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "godhog",
+      "arti": "rebus",
+      "kelas": "ts",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "godhong",
+      "arti": "daun",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gogor",
+      "arti": "anak harimau",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5610,10 +8719,66 @@
       "is_krama": false
     },
     {
+      "ngoko": "gombak",
+      "arti": "surai kuda",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gombal",
+      "arti": "kain usang, kain bekas untuk lap",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "gombong",
       "arti": "nama sebuah kota di Jawa Tengah, besar tapi kurang berisi",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gondhal-gandhul",
+      "arti": "berayun-ayun (untuk benda yang tergantung)",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gondhangen",
+      "arti": "bengkak setelah dikhitan",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gondhelan",
+      "arti": "berpegang",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gondhok",
+      "arti": "bengkak pada kelenjar di leher",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gondhol",
+      "arti": "bawa lari/gonggong",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gondhong",
+      "arti": "bengkak pada leher",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5628,6 +8793,83 @@
       "arti": "menggoreng dengan sedikit minyak goreng atau dengan tempayan tanpa menggunakan minyak goreng",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gori",
+      "arti": "nangka muda",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gosong/geseng",
+      "arti": "hangus",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gothot",
+      "arti": "berotot",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gotong",
+      "arti": "angkat",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gowang",
+      "arti": "berlubang pada tepi (gigi, pisau)",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "grabah",
+      "arti": "perlengkapan rumah/perkakas dapur yang terbuat dari tanah liat",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gragal",
+      "arti": "kerikil besar",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gragapan",
+      "arti": "dalam keadaan belum sepenuhnya terjaga dari tidur",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "grahana",
+      "arti": "gerhana",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "grana",
+      "arti": "hidung",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "grapyak",
+      "arti": "ramah",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
       "is_krama": false
     },
     {
@@ -5659,6 +8901,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "grenengan",
+      "arti": "berbicara dengan suara rendah",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "gribik",
       "arti": "atap rumah yang terbuat dari anyaman rumput",
       "kelas": "",
@@ -5673,8 +8922,36 @@
       "is_krama": false
     },
     {
+      "ngoko": "gringgingen",
+      "arti": "kesemutan",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gringsing",
+      "arti": "jenis kain/tenunan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "griya",
+      "arti": "rumah",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "grojogan",
       "arti": "air terjun",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gronjal/gronjalan",
+      "arti": "jalanan tidak rata",
       "kelas": "",
       "kelas_nama": "tidak standar",
       "is_krama": false
@@ -5701,10 +8978,59 @@
       "is_krama": false
     },
     {
+      "ngoko": "grudhal",
+      "arti": "kotoran gigi",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "grudug",
+      "arti": "pergi/datang dalam jumlah besar; datang berramai-ramai",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gruwung",
+      "arti": "berlubang",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "grèsèk",
+      "arti": "mencari di antara sisa-sisa",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "gubuk",
       "arti": "rumah kecil dan sangat sederhana",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gudheg",
+      "arti": "masakan terbuat dari nangka muda",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gudig",
+      "arti": "kudis",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gudir",
+      "arti": "agar-agar",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5715,6 +9041,83 @@
       "is_krama": false
     },
     {
+      "ngoko": "gugah",
+      "arti": "bangunkan",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gugu",
+      "arti": "percaya",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gugur",
+      "arti": "mati di medan perang",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "guling",
+      "arti": "guling",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gulu",
+      "arti": "leher",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gulung",
+      "arti": "gulung",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gumpil",
+      "arti": "runtuh (tanah)",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gumuk",
+      "arti": "bukit kecil",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gumyak",
+      "arti": "ramai; ceria",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gundhul",
+      "arti": "kepala",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gundhul",
+      "arti": "tidak berambut; kepala, tanpa rambut kepala",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
       "ngoko": "gupuh",
       "arti": "tergopoh-gopoh",
       "kelas": "",
@@ -5722,10 +9125,38 @@
       "is_krama": false
     },
     {
+      "ngoko": "gurah",
+      "arti": "nama tanaman",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gurah",
+      "arti": "membersihkan saluran pernafasan menggunakan getah tanaman gurah",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gusah",
+      "arti": "halau",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "gutuk",
       "arti": "sesuai, impas",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "guwa",
+      "arti": "gua",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -5737,9 +9168,30 @@
     },
     {
       "ngoko": "guyu",
-      "arti": "tertawa, tawa; guyon (t.k.) gurau, bercanda",
+      "arti": "tertawa, tawa",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "guyon",
+      "arti": "gurau, bercanda",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "guyub",
+      "arti": "rukun damai",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gya",
+      "arti": "segera",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
       "is_krama": false
     },
     {
@@ -5748,6 +9200,83 @@
       "kelas": "",
       "kelas_nama": "tidak standar",
       "is_krama": false
+    },
+    {
+      "ngoko": "gègèr",
+      "arti": "riuh, kacau",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gènjèr",
+      "arti": "nama sayuran",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gèntèr",
+      "arti": "galah",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gèpèng",
+      "arti": "pipih",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gèsèh",
+      "arti": "berbeda; tidak pas",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "gèthèk",
+      "arti": "rakit",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "haldhoko",
+      "arti": "gunung",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": true
+    },
+    {
+      "ngoko": "handhoko",
+      "arti": "banteng",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": true
+    },
+    {
+      "ngoko": "hangasto",
+      "arti": "membawa",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": true
+    },
+    {
+      "ngoko": "hangganiro",
+      "arti": "badanmu, tubuhmu",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": true
+    },
+    {
+      "ngoko": "hapsoro",
+      "arti": "buku/kitab",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": true
     },
     {
       "ngoko": "hara",
@@ -5783,6 +9312,13 @@
       "kelas": "t.w.",
       "kelas_nama": "kata bilangan",
       "is_krama": false
+    },
+    {
+      "ngoko": "hastho",
+      "arti": "langit",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": true
     },
     {
       "ngoko": "hasti",
@@ -5839,6 +9375,13 @@
       "kelas": "t.a.",
       "kelas_nama": "kata benda",
       "is_krama": false
+    },
+    {
+      "ngoko": "ical",
+      "arti": "hilang",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": true
     },
     {
       "ngoko": "idep",
@@ -6436,6 +9979,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "jancuk/jancok",
+      "arti": "salah satu bentuk umpatan, kalau di surabaya 'Cuk' biasa digunakan dalam bahasa sapaan sehari-hari bagi yang sudah kenal akrab",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
       "ngoko": "jangan",
       "arti": "sayur (masakan)",
       "kelas": "t.a.",
@@ -6629,6 +10179,13 @@
       "arti": "bertanggung jawab; tahu kewajibannya",
       "kelas": "t.s.",
       "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "jawah",
+      "arti": "hujan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -7112,6 +10669,20 @@
       "arti": "bertemu, cocok (untuk pendapat, pemikiran)",
       "kelas": "t.s.",
       "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "jumpalitan/jempalitan",
+      "arti": "(t.k.) berguling-guling (koprol); jungkir balik",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "jungkat/jongkat",
+      "arti": "sisir rambut",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -8487,6 +12058,20 @@
       "is_krama": false
     },
     {
+      "ngoko": "larah/larahan",
+      "arti": "sampah",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "larah/larahe",
+      "arti": "penyebabnya",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
       "ngoko": "larang",
       "arti": "mahal",
       "kelas": "",
@@ -8797,6 +12382,13 @@
     {
       "ngoko": "lobok",
       "arti": "kebesaran/kegedean",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "lobot/klobot",
+      "arti": "kulit jagung",
       "kelas": "",
       "kelas_nama": "tidak standar",
       "is_krama": false
@@ -9299,6 +12891,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "mbok",
+      "arti": "ibu",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": true
+    },
+    {
       "ngoko": "medal",
       "arti": "pergi (ke luar)",
       "kelas": "K",
@@ -9622,7 +13221,14 @@
     },
     {
       "ngoko": "mrambat",
-      "arti": "bergerak dengan pelan (hewan melata); merambat (tanaman)",
+      "arti": "bergerak dengan pelan (hewan melata)",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "mrantak/mratak",
+      "arti": "merata",
       "kelas": "",
       "kelas_nama": "tidak standar",
       "is_krama": false
@@ -10392,7 +13998,7 @@
     },
     {
       "ngoko": "nyandhak",
-      "arti": "memegang; mengerjakan (sesuatu)",
+      "arti": "memegang",
       "kelas": "",
       "kelas_nama": "tidak standar",
       "is_krama": false
@@ -10587,10 +14193,52 @@
       "is_krama": false
     },
     {
+      "ngoko": "obah",
+      "arti": "bergerak",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "obok-obok",
+      "arti": "aduk-aduk menggunakan tangan (biasanya ke air)",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "obong",
+      "arti": "bakar",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "obor",
+      "arti": "obor",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "obrak",
       "arti": "usir",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "oceh",
+      "arti": "cakap",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ogak",
+      "arti": "goyang (untuk gigi)",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
       "is_krama": false
     },
     {
@@ -10636,6 +14284,55 @@
       "is_krama": false
     },
     {
+      "ngoko": "ombak",
+      "arti": "ombak",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ombe",
+      "arti": "minum",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "omben-omben",
+      "arti": "minuman",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "omber",
+      "arti": "luas",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ombyok",
+      "arti": "ikatan besar (untuk sayuran, buah- buahan, dsb.)",
+      "kelas": "t.w.",
+      "kelas_nama": "kata bilangan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "omong",
+      "arti": "cakap, bicara",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ompol",
+      "arti": "air kencing yang dikeluarkan dalam tidur",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "ompong",
       "arti": "ompong",
       "kelas": "",
@@ -10678,10 +14375,73 @@
       "is_krama": false
     },
     {
+      "ngoko": "opak",
+      "arti": "kerupuk dari umbi-umbian",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ora",
+      "arti": "tidak",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "orak-arik",
+      "arti": "masakan dari telur",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "orat-arit",
+      "arti": "berantakan",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "osik",
+      "arti": "gerak",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "owah",
+      "arti": "berubah",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "owah",
+      "arti": "gila",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
       "ngoko": "oyak",
       "arti": "kejar / buru",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "oyok",
+      "arti": "rebut",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "oyot",
+      "arti": "akar",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -10732,6 +14492,13 @@
       "kelas": "t.s.",
       "kelas_nama": "kata sifat",
       "is_krama": false
+    },
+    {
+      "ngoko": "pajeng",
+      "arti": "(t.k.: laku",
+      "kelas": "K",
+      "kelas_nama": "krama",
+      "is_krama": true
     },
     {
       "ngoko": "panjenengan",
@@ -10958,6 +14725,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "pethak",
+      "arti": "(t.s.): putih",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
       "ngoko": "petheng",
       "arti": "gelap",
       "kelas": "t.s.",
@@ -10991,6 +14765,13 @@
       "kelas": "",
       "kelas_nama": "tidak standar",
       "is_krama": false
+    },
+    {
+      "ngoko": "pinarak",
+      "arti": "mampir",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": true
     },
     {
       "ngoko": "pindang",
@@ -11198,6 +14979,13 @@
     {
       "ngoko": "rabi",
       "arti": "nikah",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "rada/radi",
+      "arti": "Agak",
       "kelas": "",
       "kelas_nama": "tidak standar",
       "is_krama": false
@@ -12085,6 +15873,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "sonten",
+      "arti": "sore",
+      "kelas": "K",
+      "kelas_nama": "krama",
+      "is_krama": true
+    },
+    {
       "ngoko": "srei",
       "arti": "Iri",
       "kelas": "",
@@ -12111,6 +15906,13 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "is_krama": true
+    },
+    {
+      "ngoko": "sumerap/sumerep",
+      "arti": "tahu, melihat",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
     },
     {
       "ngoko": "sumet",
@@ -12449,10 +16251,24 @@
       "is_krama": false
     },
     {
+      "ngoko": "tilem",
+      "arti": "(k): tidur",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "tilik",
       "arti": "menjenguk",
       "kelas": "t.k.",
       "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "timbang/tinimbang",
+      "arti": "daripada",
+      "kelas": "t.py.",
+      "kelas_nama": "kata sambung",
       "is_krama": false
     },
     {
@@ -12514,6 +16330,20 @@
     {
       "ngoko": "tresna",
       "arti": "Suka, Cinta",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "trimah/nrimah",
+      "arti": "menerima apa adanya/kenyataannya",
+      "kelas": "K",
+      "kelas_nama": "krama",
+      "is_krama": true
+    },
+    {
+      "ngoko": "tritis/tritisan",
+      "arti": "tiris, tempat air jatuh dari atap ke tanah",
       "kelas": "",
       "kelas_nama": "tidak standar",
       "is_krama": false
@@ -12701,6 +16531,62 @@
       "is_krama": false
     },
     {
+      "ngoko": "ucul",
+      "arti": "terlepas",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "udakara",
+      "arti": "kira-kira, kurang lebih",
+      "kelas": "t.py.",
+      "kelas_nama": "kata sambung",
+      "is_krama": false
+    },
+    {
+      "ngoko": "udal-udal",
+      "arti": "membongkar",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "udan",
+      "arti": "hujan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "udani",
+      "arti": "telanjangi",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "udel",
+      "arti": "pusar",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "udheng",
+      "arti": "ikat kepala",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "udi",
+      "arti": "ajar; pelajari",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "udik",
       "arti": "dusun",
       "kelas": "",
@@ -12715,10 +16601,80 @@
       "is_krama": false
     },
     {
+      "ngoko": "udud",
+      "arti": "rokok",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "udun",
+      "arti": "bisul",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "udur",
+      "arti": "berdebat",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "uga",
+      "arti": "juga",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ugal-ugalan",
+      "arti": "bertindak tanpa mengindahkan aturan; kurang ajar",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ugel-ugel",
+      "arti": "pergelangan tangan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "ugeran",
       "arti": "pegangan / sebuah pedoman",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "uger-uger",
+      "arti": "kusen",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "uget-uget",
+      "arti": "larva",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ugi",
+      "arti": "juga",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ugungan",
+      "arti": "senang dipuji",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
       "is_krama": false
     },
     {
@@ -12743,10 +16699,45 @@
       "is_krama": false
     },
     {
+      "ngoko": "uja",
+      "arti": "penuhi segala keinginan",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ujar",
+      "arti": "perkataan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "ujaripun",
       "arti": "katanya",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ujub",
+      "arti": "laksanakan",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ujur",
+      "arti": "membujur",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ukara",
+      "arti": "kalimat",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -12757,10 +16748,31 @@
       "is_krama": false
     },
     {
+      "ngoko": "ukir",
+      "arti": "ukir",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ula",
+      "arti": "ular",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
       "ngoko": "ulap",
       "arti": "silau",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ular-ular",
+      "arti": "petuah",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {
@@ -12771,6 +16783,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "ulem",
+      "arti": "undang",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "ulatipun",
       "arti": "wajahnya",
       "kelas": "",
@@ -12778,10 +16797,199 @@
       "is_krama": false
     },
     {
+      "ngoko": "uler",
+      "arti": "ulat",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ules",
+      "arti": "warna (untuk binatang)",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ulet",
+      "arti": "liat",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
       "ngoko": "uleten",
       "arti": "campurlah",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ulu",
+      "arti": "telan",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ulung",
+      "arti": "serah",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "uman",
+      "arti": "kebagian",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "umbar",
+      "arti": "biarkan/lepaskan; dibiarkan bebas",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "umbel",
+      "arti": "ingus",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "umbul-umbul",
+      "arti": "bendera",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "umbul",
+      "arti": "gambar",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "umbul",
+      "arti": "mata air; diumbul: dilempar ke atas",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "umek",
+      "arti": "tidak bisa diam",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "umik-umik",
+      "arti": "komat-kamit",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "umob",
+      "arti": "mendidih",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "umpak",
+      "arti": "alas tiang rumah, biasanya terbuat dari batu",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "umplung",
+      "arti": "kaleng",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "umum",
+      "arti": "umum",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "umur",
+      "arti": "umur",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "umyek",
+      "arti": "sibuk sendiri",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "undamana",
+      "arti": "maki-maki",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "undang",
+      "arti": "panggil",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "under",
+      "arti": "pusat, inti",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "undha-undhi",
+      "arti": "sama saja, selisih usianya sedikit",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "undha",
+      "arti": "terbangkan (untuk layang-layang)",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "undhuh",
+      "arti": "petik/tuai",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "undur-undur",
+      "arti": "nama serangga",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "undur",
+      "arti": "gerak ke belakang",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
       "is_krama": false
     },
     {
@@ -12796,6 +17004,90 @@
       "arti": "menang, lebih dari yang lain",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "uni",
+      "arti": "bunyi, suara",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "unjuk",
+      "arti": "geser naik",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "unjuk",
+      "arti": "minum",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "unta",
+      "arti": "onta",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "untab",
+      "arti": "temani saat-saat keberangkatan",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "untal",
+      "arti": "telan ; makan tanpa menguyah",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "untel-untel",
+      "arti": "*membuat kertas dsb. menjadi gumpalan",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "unthuk",
+      "arti": "busa, buih",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "unting",
+      "arti": "ikat segepok",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "untir",
+      "arti": "pelintir",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "untu",
+      "arti": "gigi",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "untup-untup",
+      "arti": "muncul sedikit",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
       "is_krama": false
     },
     {
@@ -12820,9 +17112,37 @@
       "is_krama": false
     },
     {
+      "ngoko": "upaya",
+      "arti": "upaya",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "ura-ura",
+      "arti": "bernyanyi",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
       "ngoko": "urap-urap",
       "arti": "sayuran yang dicampur dengan bumbu dari kelapa parut",
       "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "urik",
+      "arti": "curang",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "urip",
+      "arti": "hidup",
+      "kelas": "tsb",
       "kelas_nama": "tidak standar",
       "is_krama": false
     },
@@ -12897,6 +17217,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "utami",
+      "arti": "utama",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": true
+    },
+    {
       "ngoko": "utang",
       "arti": "utang",
       "kelas": "t.a.",
@@ -12967,10 +17294,31 @@
       "is_krama": false
     },
     {
+      "ngoko": "uwos-uwos",
+      "arti": "mencuci pakaian",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": true
+    },
+    {
       "ngoko": "uyah",
       "arti": "garam",
       "kelas": "t.a.",
       "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "uyuh",
+      "arti": "air seni",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "uyup",
+      "arti": "hirup (untuk cairan, mis. kuah sayur)",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
       "is_krama": false
     },
     {
@@ -13119,6 +17467,13 @@
       "kelas": "t.a.",
       "kelas_nama": "kata benda",
       "is_krama": false
+    },
+    {
+      "ngoko": "waja",
+      "arti": "gigi",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": true
     },
     {
       "ngoko": "waja",
@@ -13296,6 +17651,20 @@
       "is_krama": false
     },
     {
+      "ngoko": "wangsul",
+      "arti": "pulang",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": true
+    },
+    {
+      "ngoko": "wangsulan",
+      "arti": "kembalian; umpan balik, jawaban",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": true
+    },
+    {
       "ngoko": "wangun",
       "arti": "bentuk",
       "kelas": "t.a.",
@@ -13359,10 +17728,24 @@
       "is_krama": false
     },
     {
+      "ngoko": "waos",
+      "arti": "baca",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": true
+    },
+    {
       "ngoko": "wara-wara",
       "arti": "pengumuman",
       "kelas": "t.a.",
       "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "warah",
+      "arti": "tunjuk/ajar; berkata",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
       "is_krama": false
     },
     {
@@ -13590,6 +17973,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "wau",
+      "arti": "tadi",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": true
+    },
+    {
       "ngoko": "waung",
       "arti": "anjing",
       "kelas": "t.a.",
@@ -13695,6 +18085,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "wedi",
+      "arti": "takut",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
       "ngoko": "wegah",
       "arti": "enggan; malas/kurang semangat",
       "kelas": "t.s.",
@@ -13725,6 +18122,13 @@
     {
       "ngoko": "wekasan",
       "arti": "akhir",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wektu/wekdal",
+      "arti": "waktu",
       "kelas": "t.a.",
       "kelas_nama": "kata benda",
       "is_krama": false
@@ -13982,6 +18386,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "wingking",
+      "arti": "belakang",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": true
+    },
+    {
       "ngoko": "wingènané",
       "arti": "dua hari yang lalu/selumbari",
       "kelas": "t.a.",
@@ -14136,6 +18547,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "wondene",
+      "arti": "sedangkan, dalam hal.....",
+      "kelas": "t.py.",
+      "kelas_nama": "kata sambung",
+      "is_krama": true
+    },
+    {
       "ngoko": "wondho",
       "arti": "bentuk/rupa",
       "kelas": "tsb",
@@ -14154,6 +18572,13 @@
       "arti": "ada",
       "kelas": "K",
       "kelas_nama": "krama",
+      "is_krama": true
+    },
+    {
+      "ngoko": "wos",
+      "arti": "beras",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": true
     },
     {
@@ -14234,6 +18659,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "wulan",
+      "arti": "bulan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": true
+    },
+    {
       "ngoko": "wulang",
       "arti": "ajar",
       "kelas": "",
@@ -14276,10 +18708,171 @@
       "is_krama": false
     },
     {
+      "ngoko": "wungkuk",
+      "arti": "bongkok",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wungu",
+      "arti": "bangun",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wungu",
+      "arti": "ungu",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wuninga",
+      "arti": "tahu",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wuri",
+      "arti": "belakang",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
       "ngoko": "wuru",
       "arti": "mabuk",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wuruk",
+      "arti": "tunjuk/ajar",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wurung",
+      "arti": "batal",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wus",
+      "arti": "sudah",
+      "kelas": "t.kr.",
+      "kelas_nama": "kata keadaan",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wusana",
+      "arti": "akhir, kemudian",
+      "kelas": "tsb",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wuta",
+      "arti": "buta",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wutah",
+      "arti": "tumpah",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wutuh",
+      "arti": "utuh",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wuwuh",
+      "arti": "tambah",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wuwung",
+      "arti": "bubungan atap",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wuwus",
+      "arti": "bicara, kata-kata",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wuyung",
+      "arti": "kasmaran; tergila-gila, jatuh cinta",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wèt",
+      "arti": "hukum",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wèwèh",
+      "arti": "memberi; pemberian",
+      "kelas": "t.k.",
+      "kelas_nama": "kata kerja",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wé",
+      "arti": "air",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wédang",
+      "arti": "air matang; minuman hangat",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wédhok",
+      "arti": "perempuan",
+      "kelas": "t.s.",
+      "kelas_nama": "kata sifat",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wétan",
+      "arti": "timur",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
+      "is_krama": false
+    },
+    {
+      "ngoko": "wéwé",
+      "arti": "hantu perempuan",
+      "kelas": "t.a.",
+      "kelas_nama": "kata benda",
       "is_krama": false
     },
     {

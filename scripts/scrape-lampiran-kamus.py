@@ -132,16 +132,19 @@ def parse_entries(html):
     parsed = []
     skipped_count = 0
 
-    # Patterns: 1. (kelas) (K): arti  2. (kelas): arti  3. tanpa kelas: arti
-    pattern_kelas_k = re.compile(
-        r"^([a-zA-ZĕĕêêèéÉíàáâãäåæçìíîïðñòóôõöøùúûüýþÿ'\-\.\s]+?)\s*\(([^)]+)\)\s*\(K\)\s*:\s*(.+)$"
-    )
-    pattern_kelas = re.compile(
-        r"^([a-zA-ZĕĕêêèéÉíàáâãäåæçìíîïðñòóôõöøùúûüýþÿ'\-\.\s]+?)\s*\(([^)]+)\)\s*:\s*(.+)$"
-    )
-    pattern_no_kelas = re.compile(
-        r"^([a-zA-ZĕĕêêèéÉíàáâãäåæçìíîïðñòóôõöøùúûüýþÿ'\-\.\s]+?)\s*:\s*(.+)$"
-    )
+    # Patterns (urutan trial, paling spesifik dulu):
+    # 1. "kata (K) (kelas): arti"  — krama dulu, kelas di belakang
+    # 2. "kata (kelas) (K): arti"  — kelas dulu, krama di belakang
+    # 3. "kata (kelas): arti"      — format standar
+    # 4. "kata (kelas) arti"       — tanpa colon (hanya spasi)
+    # 5. "kata: arti"              — tanpa kelas
+    # Allow slash (/) dan comma (,) di kata untuk handle: "delok/deleng", "gawa, nggawa"
+    KATA_PATTERN = r"[a-zA-ZĕĕêêèéÉíàáâãäåæçìíîïðñòóôõöøùúûüýþÿ'\-\.\s/,]+?"
+    pattern_k_kelas = re.compile(rf"^({KATA_PATTERN})\s*\(K\)\s*\(([^)]+)\)\s*:?\s*(.+)$")
+    pattern_kelas_k = re.compile(rf"^({KATA_PATTERN})\s*\(([^)]+)\)\s*\(K\)\s*:?\s*(.+)$")
+    pattern_kelas = re.compile(rf"^({KATA_PATTERN})\s*\(([^)]+)\)\s*:\s*(.+)$")
+    pattern_kelas_no_colon = re.compile(rf"^({KATA_PATTERN})\s*\(([^)]+)\)\s+(.+)$")
+    pattern_no_kelas = re.compile(rf"^({KATA_PATTERN})\s*:\s*(.+)$")
 
     for m in matches:
         text = re.sub(r"<[^>]+>", "", m).strip()
@@ -150,40 +153,73 @@ def parse_entries(html):
         if text.startswith(nav_items):
             continue
 
-        # Handle multiple entries per <li> (split by \n)
-        sub_entries = [s.strip() for s in text.split("\n") if s.strip()]
+        # Handle multiple entries per <li> (split by \n dan ;)
+        # Pattern: "kata1 (kelas): arti1; kata2 (kelas): arti2"
+        # Split by ; kalau ada (K) setelahnya, untuk entries multi-krama
+        sub_entries = []
+        for s in text.split("\n"):
+            s = s.strip()
+            if not s:
+                continue
+            # Cek apakah ada ; dengan (K) atau (kelas) setelahnya (multi-entry)
+            # Mis. "antuk (t.k.) dapat; pikantuk (K): mendapatkan"
+            # Simple split: split by " ; " kalau ada (K) atau (t.X) di belakang
+            if ";" in s and re.search(r';\s*[a-zA-Z]+\s*\(', s):
+                # Multi-entry, split by ;
+                parts = re.split(r'\s*;\s*(?=[a-zA-Z])', s)
+                sub_entries.extend([p.strip() for p in parts if p.strip()])
+            else:
+                sub_entries.append(s)
+        
         for sub in sub_entries:
             if len(sub) > 300:
                 continue
             # Strip "Templat:" prefix di kelas
             sub_clean = sub.replace("Templat:", "").replace("}}", "").replace("{{", "")
 
-            # Try pattern 1: "kata (kelas) (K): arti"
-            match = pattern_kelas_k.match(sub_clean)
+            # Try patterns berurutan (paling spesifik dulu)
+            # 1. kata (K) (kelas): arti  — krama + kelas
+            match = pattern_k_kelas.match(sub_clean)
             if match:
                 kata = match.group(1).strip()
                 kelas_raw = match.group(2).strip()
                 arti = match.group(3).strip()
                 is_krama = True
             else:
-                # Try pattern 2: "kata (kelas): arti"
-                match = pattern_kelas.match(sub_clean)
+                # 2. kata (kelas) (K): arti  — kelas + krama
+                match = pattern_kelas_k.match(sub_clean)
                 if match:
                     kata = match.group(1).strip()
                     kelas_raw = match.group(2).strip()
                     arti = match.group(3).strip()
-                    is_krama = kelas_raw == "K"
+                    is_krama = True
                 else:
-                    # Try pattern 3: "kata: arti" (tanpa kelas)
-                    match = pattern_no_kelas.match(sub_clean)
+                    # 3. kata (kelas): arti  — format standar
+                    match = pattern_kelas.match(sub_clean)
                     if match:
                         kata = match.group(1).strip()
-                        kelas_raw = ""
-                        arti = match.group(2).strip()
-                        is_krama = False
+                        kelas_raw = match.group(2).strip()
+                        arti = match.group(3).strip()
+                        is_krama = kelas_raw == "K"
                     else:
-                        skipped_count += 1
-                        continue
+                        # 4. kata (kelas) arti  — tanpa colon
+                        match = pattern_kelas_no_colon.match(sub_clean)
+                        if match:
+                            kata = match.group(1).strip()
+                            kelas_raw = match.group(2).strip()
+                            arti = match.group(3).strip()
+                            is_krama = kelas_raw == "K"
+                        else:
+                            # 5. kata: arti  — tanpa kelas
+                            match = pattern_no_kelas.match(sub_clean)
+                            if match:
+                                kata = match.group(1).strip()
+                                kelas_raw = ""
+                                arti = match.group(2).strip()
+                                is_krama = False
+                            else:
+                                skipped_count += 1
+                                continue
 
             # Normalize kelas (handle typo wiki)
             kelas = normalize_kelas(kelas_raw) if kelas_raw else ""
