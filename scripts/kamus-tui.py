@@ -836,12 +836,21 @@ def main_menu(data):
             print(f'  ☁  Supabase: ⚠ belum di-set (gunakan menu "🔑 Set Supabase .env")')
         print()
 
+        # Compute counts for filter menu labels
+        count_3field = sum(1 for w in words if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and (w.get('arti') or '').strip())
+        count_ngoko_krama = sum(1 for w in words if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and not (w.get('arti') or '').strip())
+        count_ngoko_only = sum(1 for w in words if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and not (w.get('arti') or '').strip())
+        count_ngoko_arti = sum(1 for w in words if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and (w.get('arti') or '').strip())
+
         choices = [
             '📊 Statistik kamus',
             '🔍 Search (cari kata di semua field)',
             '✅ Browse READY (status=ready, siap upload)',
             '📋 Browse DRAFT (belum di-edit user)',
-            '📊 Browse by kelengkapan (ngoko / ngoko+krama / 3-field)',
+            f'🟢 Filter: LENGKAP 3-field ({count_3field} entri, siap review/upload)',
+            f'🟡 Filter: NGOKO+KRAMA ({count_ngoko_krama} entri, perlu isi arti)',
+            f'⚪ Filter: NGOKO SAJA ({count_ngoko_only} entri, perlu isi krama+arti)',
+            f'🔵 Filter: NGOKO+ARTI ({count_ngoko_arti} entri, perlu isi krama)',
             '📂 Browse by source (lemma/mendeley/dasanama/angka)',
             '⭐ Browse entries dengan krama mapping (auto-filled, butuh arti)',
             '📝 Browse entries BELUM ada arti (Indonesia)',
@@ -875,8 +884,26 @@ def main_menu(data):
             # Entries yang status='draft' (belum di-edit user)
             draft_entries = [(i, w) for i, w in enumerate(data['words']) if w.get('status') != 'ready']
             browse_list(data, draft_entries, f'📋 DRAFT ({len(draft_entries)} entri belum di-edit)')
-        elif 'by kelengkapan' in selected:
-            browse_by_kelengkapan(data)
+        elif 'LENGKAP 3-field' in selected:
+            # Filter: ngoko + krama + arti semua terisi (siap review/upload)
+            matches = [(i, w) for i, w in enumerate(data['words'])
+                       if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and (w.get('arti') or '').strip()]
+            browse_list(data, matches, f'🟢 LENGKAP 3-field ({len(matches)} entri, siap review)')
+        elif 'NGOKO+KRAMA' in selected:
+            # Filter: ngoko + krama terisi, arti kosong (perlu isi arti)
+            matches = [(i, w) for i, w in enumerate(data['words'])
+                       if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and not (w.get('arti') or '').strip()]
+            browse_list(data, matches, f'🟡 NGOKO+KRAMA ({len(matches)} entri, perlu isi arti)')
+        elif 'NGOKO SAJA' in selected:
+            # Filter: ngoko terisi, krama + arti kosong (perlu isi krama+arti)
+            matches = [(i, w) for i, w in enumerate(data['words'])
+                       if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and not (w.get('arti') or '').strip()]
+            browse_list(data, matches, f'⚪ NGOKO SAJA ({len(matches)} entri, perlu isi krama+arti)')
+        elif 'NGOKO+ARTI' in selected:
+            # Filter: ngoko + arti terisi, krama kosong (perlu isi krama)
+            matches = [(i, w) for i, w in enumerate(data['words'])
+                       if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and (w.get('arti') or '').strip()]
+            browse_list(data, matches, f'🔵 NGOKO+ARTI ({len(matches)} entri, perlu isi krama)')
         elif 'by source' in selected:
             browse_by_source(data)
         elif 'krama mapping' in selected:
