@@ -2,7 +2,119 @@
 
 Dokumen ini catatan status project untuk AI / developer next time baca. Update setiap sesi kerja.
 
-**Last updated:** 8 Oktober 2026, 22:00 WIB
+**Last updated:** 9 Oktober 2026, 17:00 WIB
+
+---
+
+## 📌 Quick Status
+
+| Item | Status |
+|---|---|
+| **Web app Editor SRT Jawa (project-based + auto-save Supabase)** | ✅ Production ready |
+| **Per-cue Preview + browser cache (IndexedDB)** | ✅ Deployed |
+| **Bidirectional alias lookup (word + ngoko + krama + krama_inggil + arti)** | ✅ Deployed |
+| **Auto-strip aksen Jawa di TTS (SRT final tetap utuh)** | ✅ Deployed |
+| **UI panel "Top 100 Unknown Words" + badge per cue** | ✅ Deployed (8 Okt 2026) |
+| **Kamus schema v6.1 (R-21: field 'word' netral + R-17: krama_inggil masuk krama)** | ✅ Code ready |
+| **Kamus JSON 45.021 entries (5.803 paired + 39.216 NETRAL)** | ✅ User bisa download |
+| **kamus-tui.py v2.3 (Phase 1-6 refactor + R-21 filter NETRAL)** | ✅ User bisa pakai |
+| **upload-supabase.py (Phase 5, file terpisah)** | ✅ User bisa pakai |
+| **audit-otomatis-suspect-patterns.py (R-19, 124 suspect)** | ✅ User bisa pakai |
+| **Web app kamus READ-ONLY (jangan rusak kamus dari UI)** | ✅ Audited |
+| **Mode ON + Smart Fit (video = ground truth)** | ✅ User rating 9/10 (cap 2.0x, pitch -15Hz laki) |
+| **Python `demucs-tui.py` + `mix-tui.py`** | ✅ Working (MILESTONE Test #25, 10000% sync) |
+| Pitch control (Edge TTS -10Hz laki, +10Hz perempuan) | ✅ Working, user pakai -15Hz |
+| User run migration v2+v3 SQL di Supabase | ✅ Done (8 Okt 2026) |
+| User upload 2 entries ke Supabase (test awal) | ✅ Done (8 Okt 2026) |
+| User validasi entries NETRAL (39.216) via TUI | 🔄 In progress (R-21) |
+| User validasi audit-suspects (124 entries) | 🔄 In progress (R-19) |
+| Test full season S7-id (2.5 jam) | ⏳ Pending user |
+| Workflow multi-bahasa (Jawa/Sunda/dll) | 🔜 Next step |
+
+---
+
+## 🎉 MILESTONE: Kamus Netral + R-21 + Repo Cleanup (9 Okt 2026)
+
+### Commits terbaru (urut kronologis)
+
+| Commit | Deskripsi |
+|---|---|
+| `5ded8ca` | R-16: fix ejaan angka (eka→éka, Nol→nol, songo dari ngoko→hapus) |
+| `dd51227` | R-18: JANGAN HAPUS entry kamus (kosong/aksara/keterangan-only tetap disimpan) |
+| `996a5c6` | R-19: audit otomatis 205 suspect entries (parser AI tolol detector) |
+| `d79f22f` | R-20/R-21: netralisasi kamus-draft.json — 39.216 entries jadi 'word' netral |
+| `866e010` | Repo cleanup: hapus 10 file besar (~14.5 MiB) dari GitHub |
+| `a3cfb19` | TUI Phase 1: extract `_search_entries()` helper (4 lokasi duplikasi → 1 helper) |
+| `d9dce1c` | TUI Phase 2: pakai `_entry_label()` di browse_list (R-21 word tampil) |
+| `33689b6` | TUI Phase 3: tambah filter NETRAL di main_menu + browse_by_kelengkapan |
+| `f1ec792` | TUI Phase 4: extract `merge_2_entries()` jadi fungsi terpisah (187 → 3 baris di main_menu) |
+| `da155f5` | TUI Phase 5: pisah `upload-supabase.py` jadi file terpisah (170 baris) |
+| `aff4666` | TUI Phase 6: polish `textwrap.wrap()` + main() read-only (no auto-save) |
+| `8adcc16` | Update README + AGENTS.md + scripts/README.md dengan R-21 status |
+
+### Yang sudah jadi (9 Okt 2026)
+
+1. **R-16 — Ejaan Jawa (é/è/ê)**:
+   - Audit 1009 entries angka-raw.json, fix 3 masalah
+   - Sanskrit `eka` → `éka` (close-mid /e/)
+   - `Nol` kapital → `nol` lowercase
+   - `songo` di ngoko padahal = KRAMA → hapus
+   - Schwa polos `e` (telu, enem, sepuluh) TETAP polos (modern Jawa TIDAK menandai schwa)
+   - `séket` (50), `sèlawé` (25), `séwu` (1000), `limangéwu` (5000) — baku
+
+2. **R-17 — krama_inggil masuk krama**:
+   - Audit 955 Mendeley entries: 100% kramainggil SUDAH ter-merge ke krama di draft
+   - Field `krama_inggil` di draft sengaja kosong BY DESIGN
+   - Sample: `mangan` → krama=`nedha, dhahar` (kramainggil Dhahar masuk)
+   - Skema final: ngoko + krama + arti (kramainggil sebagai sinonim di krama)
+
+3. **R-18 — JANGAN HAPUS entry kamus**:
+   - Filosofi user: data ada, lengkap atau tidak, valid atau tidak
+   - JANGAN hapus entry meski kosong/aksara/keterangan-only
+   - Aksi yang benar: fix (pindah ke keterangan, kosongkan arti artifact)
+   - Pengecualian: duplikat persis (semua field identik)
+
+4. **R-19 — Parser AI tolol detector**:
+   - Audit 205 suspect entries dari 45.021 (post-neutralize: 124 entries)
+   - Pattern: parsing_artifact_ngoko (Indonesia word nyangkut), parsing_artifact_arti,
+     krama_inggil_no_tag (info), too_many_ngoko_synonyms, too_many_krama_synonyms
+   - Script `audit-otomatis-suspect-patterns.py` (idempotent, TIDAK edit JSON)
+   - Output: `audit-suspects.json` untuk user reference
+
+5. **R-20 — kamus-draft.json = rujukan tunggal**:
+   - `build-kamus-bersih.py` → `.DISABLED` + README besar "JANGAN RUN"
+   - Raw files tetap ada sebagai ARSIP, BUKAN rujukan lagi
+   - User fallback: kamus resmi Kemendikbud (https://kesakata.kemdikbud.go.id)
+
+6. **R-21 — Field 'word' = netral**:
+   - 39.216 entries ngoko-only/krama-only → pindah ke field 'word' (netral)
+   - 5.803 paired (tetap di ngoko/krama/arti)
+   - 2 empty (R-18 tetap disimpan)
+   - Sample: angka 1-1000 = contoh 3-pasangan terdefinisi (AI belajar dari sini)
+   - Workflow: edit entry → isi 2 dari 3 field (paired) → word otomatis kosong
+
+7. **TUI Phase 1-6 refactor** (kamus-tui.py 1341 → 1282 baris):
+   - Phase 1: `_search_entries()` helper (4 lokasi duplikasi → 1)
+   - Phase 2: `_entry_label()` helper (R-21: word tampil di browse list)
+   - Phase 3: filter NETRAL di main_menu + browse_by_kelengkapan
+   - Phase 4: `merge_2_entries()` jadi fungsi terpisah (187 baris inline → fungsi)
+   - Phase 5: `upload-supabase.py` jadi file terpisah (130 baris string → file 170 baris)
+   - Phase 6: `textwrap.wrap()` + main() read-only (JANGAN auto-save)
+
+8. **Repo cleanup** (GitHub size):
+   - Hapus 10 file besar (~14.5 MiB): kamus-jawa-full.json 12M, screenshot, tool-results,
+     upload/mendeley (duplikat), download/kamus-jawa-*, srt-splitter-source.zip
+   - Update .gitignore: `/upload/*.png`, `/upload/mendeley/`, `*.zip`, `*.bak`
+   - Tracked files: 149 → 139 (10 file besar dihapus dari git tracking)
+
+### Filosofi yang dipelihara (9 Okt 2026)
+
+1. **Jangan hapus data (R-18)** — data ada, lengkap atau tidak, valid atau tidak
+2. **Jangan rebuild dari raw (R-20)** — kamus-draft.json = rujukan tunggal
+3. **Jangan auto-fix data (R-19)** — bikin audit script + user validasi 1-1
+4. **Netral > tebakan AI (R-21)** — entries belum berpasangan = field 'word', bukan asumsi ngoko
+5. **Krama_inggil = sinonim krama (R-17)** — bukan field terpisah, masuk comma di krama
+6. **Ejaan Jawa modern (R-16)** — é/è diakritik wajib, schwa polos `e` tanpa diakritik
 
 ---
 
