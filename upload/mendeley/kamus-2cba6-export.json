@@ -1,0 +1,5734 @@
+{
+  "employees" : {
+    "-L8GUkmLYNOLacE4aRME" : {
+      "indonesia" : "Makan",
+      "kramaalus" : "Nedha",
+      "kramainggil" : "Dhahar",
+      "ngoko" : "Mangan"
+    },
+    "-L8G_H9SNu1kWZBlRUeA" : {
+      "indonesia" : "Tidur",
+      "kramaalus" : "Tilem",
+      "kramainggil" : "Sare",
+      "ngoko" : "Turu"
+    },
+    "-L9mtWO1yRnspn8t9w7A" : {
+      "indonesia" : "Perintah",
+      "kramaalus" : "Aba",
+      "kramainggil" : "Dhawuh",
+      "ngoko" : "Aba"
+    },
+    "-L9mtcBN1fLcHFt1Tddm" : {
+      "indonesia" : "Diperintah",
+      "kramaalus" : "Dipun abani",
+      "kramainggil" : "Dipun dhawuhi",
+      "ngoko" : "Diabani"
+    },
+    "-L9mtmEkeIhW7ETqPJZF" : {
+      "indonesia" : "Memerintah",
+      "kramaalus" : "Ngabani",
+      "kramainggil" : "Ndhawuhi",
+      "ngoko" : "Ngabani"
+    },
+    "-L9mtunHZNY2brbEEOv9" : {
+      "indonesia" : "Pelana",
+      "kramaalus" : "Abah-abah",
+      "kramainggil" : "Kambil",
+      "ngoko" : "Abah-abah"
+    },
+    "-L9mu-1-eqMY9qwBj9d-" : {
+      "indonesia" : "Merah",
+      "kramaalus" : "Abrit",
+      "kramainggil" : "Abrit",
+      "ngoko" : "Abang"
+    },
+    "-L9mu5yi8FgGf0M8jJ6f" : {
+      "indonesia" : "Terbang",
+      "kramaalus" : "Abur",
+      "kramainggil" : "Abur",
+      "ngoko" : "Abur"
+    },
+    "-L9mu8MbbKyQBtqWMVLC" : {
+      "indonesia" : "Terbang",
+      "kramaalus" : "Mabur",
+      "kramainggil" : "Mabur",
+      "ngoko" : "Mabur"
+    },
+    "-L9muD5WN6HcM0W_dW5J" : {
+      "indonesia" : "Berat",
+      "kramaalus" : "Awrat",
+      "kramainggil" : "Awrat",
+      "ngoko" : "Abot"
+    },
+    "-L9muNGJ8izCabGDXtt3" : {
+      "indonesia" : "Memberatkan",
+      "kramaalus" : "Ngawrat-awrati",
+      "kramainggil" : "Ngawrat-awrati",
+      "ngoko" : "Ngabot-aboti"
+    },
+    "-L9muSo6TsJ0mB-faonj" : {
+      "indonesia" : "Keberatan",
+      "kramaalus" : "Kawratan",
+      "kramainggil" : "Kawratan",
+      "ngoko" : "Kabotan"
+    },
+    "-L9muZ-vJIwfLiZWVQ2L" : {
+      "indonesia" : "Menanak nasi",
+      "kramaalus" : "Bethak",
+      "kramainggil" : "Bethak",
+      "ngoko" : "Adang"
+    },
+    "-L9mudzybMCOTOyCufeJ" : {
+      "indonesia" : "Takaran beras",
+      "kramaalus" : "Bethakan",
+      "kramainggil" : "Bethakan",
+      "ngoko" : "Dangan"
+    },
+    "-L9mumFMDpCN8-6LONkM" : {
+      "indonesia" : "Hasil Nanak Nasi",
+      "kramaalus" : "Bethakan",
+      "kramainggil" : "Bethakan",
+      "ngoko" : "Dang-dangan "
+    },
+    "-L9muqfOwk9ESWCB6KDA" : {
+      "indonesia" : "Berdiri",
+      "kramaalus" : "Adeg",
+      "kramainggil" : "Jumeneng",
+      "ngoko" : "Adeg"
+    },
+    "-L9muv_7Vu8GGCmpInDP" : {
+      "indonesia" : "Berdiri",
+      "kramaalus" : "Ngadeg",
+      "kramainggil" : "Jumeneng",
+      "ngoko" : "Ngadeg"
+    },
+    "-L9muz4ULbkIYKR7vgEh" : {
+      "indonesia" : "Sambil Beridiri",
+      "kramaalus" : "Adeg-adegan",
+      "kramainggil" : "Jumenengan",
+      "ngoko" : "Adeg-adegan"
+    },
+    "-L9mv9BWtdsR2IkisyRL" : {
+      "indonesia" : "Manja",
+      "kramaalus" : "Adi-adi",
+      "kramainggil" : "Adi-adi",
+      "ngoko" : "Adi-adi"
+    },
+    "-L9mvEhQCItShWaLYLeb" : {
+      "indonesia" : "Bermanja",
+      "kramaalus" : "Ngadi-gadi",
+      "kramainggil" : "Ngadi-gadi",
+      "ngoko" : "Ngadi-gadi"
+    },
+    "-L9mvHJk76bUMzmxEbOP" : {
+      "indonesia" : "Jauh",
+      "kramaalus" : "Tebih",
+      "kramainggil" : "Tebih",
+      "ngoko" : "Adoh"
+    },
+    "-L9mvL60bQv5ImH82lRg" : {
+      "indonesia" : "Menjauh",
+      "kramaalus" : "Nebih",
+      "kramainggil" : "Nebih",
+      "ngoko" : "Ngadoh"
+    },
+    "-L9mvQlps2IGoX4KgCIA" : {
+      "indonesia" : "Terlalu jauh",
+      "kramaalus" : "Ketebihen",
+      "kramainggil" : "Ketebihen",
+      "ngoko" : "Kadohan"
+    },
+    "-L9mvTomf0sBdHv2Zzgy" : {
+      "indonesia" : "Jual",
+      "kramaalus" : "Sade",
+      "kramainggil" : "Sade",
+      "ngoko" : "Adol"
+    },
+    "-L9mvWNv5JngMU25lCN6" : {
+      "indonesia" : "Menjual",
+      "kramaalus" : "Nyade",
+      "kramainggil" : "Nyade",
+      "ngoko" : "Ngedol"
+    },
+    "-L9mvfrxAAsxma59XZ3p" : {
+      "indonesia" : "Sabungan",
+      "kramaalus" : "Aben",
+      "kramainggil" : "Aben",
+      "ngoko" : "Adon"
+    },
+    "-L9mvkwdbuSXJuy0Xilr" : {
+      "indonesia" : "Sabungan",
+      "kramaalus" : "Abenan",
+      "kramainggil" : "Abenan",
+      "ngoko" : "Adon"
+    },
+    "-L9mwAYBNVAibwZeft16" : {
+      "indonesia" : "Sabungan",
+      "kramaalus" : "Aben-aben",
+      "kramainggil" : "Aben-aben",
+      "ngoko" : "Adon-adon"
+    },
+    "-L9mwT2VZufWqxC7RGr3" : {
+      "indonesia" : "Menyabung",
+      "kramaalus" : "Aben",
+      "kramainggil" : "Aben",
+      "ngoko" : "Adu"
+    },
+    "-L9mwcte7qnRH4A0xFoH" : {
+      "indonesia" : "Berhadapan",
+      "kramaalus" : "Aben Ajeng",
+      "kramainggil" : "Aben Ajeng",
+      "ngoko" : "Adu Arep"
+    },
+    "-L9mwicmOMp83ftuzpO2" : {
+      "indonesia" : "Mengadukan",
+      "kramaalus" : "Aben-aben",
+      "kramainggil" : "Aben-aben",
+      "ngoko" : "Adu-adu"
+    },
+    "-L9mwo5tA6Crw9J6-tsa" : {
+      "indonesia" : "Menyambung",
+      "kramaalus" : "Ngaben",
+      "kramainggil" : "Ngaben",
+      "ngoko" : "Ngedu"
+    },
+    "-L9mwsvIVnxFluqM2PBN" : {
+      "indonesia" : "Bertengkar",
+      "kramaalus" : "Paben",
+      "kramainggil" : "Paben",
+      "ngoko" : "Padu"
+    },
+    "-L9mwwUJpPFbugpzCzvm" : {
+      "indonesia" : "Mandi",
+      "kramaalus" : "Adus",
+      "kramainggil" : "Siram",
+      "ngoko" : "Adus"
+    },
+    "-L9mx2QLz3T3EQ3wCeAU" : {
+      "indonesia" : "Tempat mandi",
+      "kramaalus" : "Padusan",
+      "kramainggil" : "Pasiraman",
+      "ngoko" : "Padusan"
+    },
+    "-L9mx8kIeJaR1VqqSEx1" : {
+      "indonesia" : "Mandi sebelum puasa",
+      "kramaalus" : "Padusan",
+      "kramainggil" : "Siraman",
+      "ngoko" : "Padusan"
+    },
+    "-L9mxCCoeLHtvngb350J" : {
+      "indonesia" : "Dingin",
+      "kramaalus" : "Asrep",
+      "kramainggil" : "Asrep",
+      "ngoko" : "Adhem"
+    },
+    "-L9mxGd4Ips8CPNS7J2N" : {
+      "indonesia" : "Kedinginan",
+      "kramaalus" : "Kasrepen",
+      "kramainggil" : "Kasrepen",
+      "ngoko" : "Kadhemen"
+    },
+    "-L9mxNfmEMwAe3d9P1Ud" : {
+      "indonesia" : "Demam",
+      "kramaalus" : "Asrep benter",
+      "kramainggil" : "Asrep benter",
+      "ngoko" : "Adhem panas"
+    },
+    "-L9mxQKnMMualvr_H6Za" : {
+      "indonesia" : "Hadap",
+      "kramaalus" : "Ajeg",
+      "kramainggil" : "Ajeg",
+      "ngoko" : "Adhep"
+    },
+    "-L9mxVBzjbtm9BpkrEX0" : {
+      "indonesia" : "Menghadap",
+      "kramaalus" : "Majeng",
+      "kramainggil" : "Majeng",
+      "ngoko" : "Madep"
+    },
+    "-L9mxaNt_eyrvWizAU3v" : {
+      "indonesia" : "Berhadapan",
+      "kramaalus" : "Ajeng-ajengan",
+      "kramainggil" : "Ajeng-ajengan",
+      "ngoko" : "Adhep-adhepan"
+    },
+    "-L9mxeWZbrRrkyqmW9-I" : {
+      "indonesia" : "Menghadap",
+      "kramaalus" : "Sowan",
+      "kramainggil" : "Marak",
+      "ngoko" : "Ngadep"
+    },
+    "-L9mxhdzu7e8YqeG65FG" : {
+      "indonesia" : "Adik",
+      "kramaalus" : "Adhi",
+      "kramainggil" : "Rayi",
+      "ngoko" : "Adhi"
+    },
+    "-L9mxkHNEBsEJk-fgCEz" : {
+      "indonesia" : "Agama",
+      "kramaalus" : "Agami",
+      "kramainggil" : "Agami",
+      "ngoko" : "Agama"
+    },
+    "-L9mxoMMCyAadVrQdfkw" : {
+      "indonesia" : "Cepat",
+      "kramaalus" : "Enggal",
+      "kramainggil" : "Enggal",
+      "ngoko" : "Age"
+    },
+    "-L9mxuB6QSyvg0O11SRl" : {
+      "indonesia" : "Jangan",
+      "kramaalus" : "Sampun",
+      "kramainggil" : "Sampun",
+      "ngoko" : "Aja"
+    },
+    "-L9mxzn2i10CZtaF-NN4" : {
+      "indonesia" : "Jangan berkata",
+      "kramaalus" : "ampun matur",
+      "kramainggil" : "ampun ngendika",
+      "ngoko" : "Aja ngomong"
+    },
+    "-L9my5J97u1Qc1175DVe" : {
+      "indonesia" : "Nilai",
+      "kramaalus" : "Aos",
+      "kramainggil" : "Aos",
+      "ngoko" : "Aji"
+    },
+    "-L9my8_6qi3icTFcl9U8" : {
+      "indonesia" : "Menilai",
+      "kramaalus" : "Ngaosi",
+      "kramainggil" : "Ngaosi",
+      "ngoko" : "Ngajeni"
+    },
+    "-L9myCjNmVtZsifCpmvu" : {
+      "indonesia" : "Bernilai",
+      "kramaalus" : "Pengaos",
+      "kramainggil" : "Pengaos",
+      "ngoko" : "Pangaji"
+    },
+    "-L9myFnIvwrCh33-B9fy" : {
+      "indonesia" : "Maju",
+      "kramaalus" : "Ajeng",
+      "kramainggil" : "Ajeng",
+      "ngoko" : "Aju"
+    },
+    "-L9myJt0jBg8N2rcJvyW" : {
+      "indonesia" : "Maju",
+      "kramaalus" : "Majeng",
+      "kramainggil" : "Majeng",
+      "ngoko" : "Maju"
+    },
+    "-L9myq5rMlU58zNP5Y64" : {
+      "indonesia" : "Mengajukan",
+      "kramaalus" : "Ngajengaken",
+      "kramainggil" : "Ngajengaken",
+      "ngoko" : "Ngajokake"
+    },
+    "-L9mywvo1ke-rZNOEsQN" : {
+      "indonesia" : "Barangkali",
+      "kramaalus" : "Mbok menawi",
+      "kramainggil" : "Mbok menawi",
+      "ngoko" : "Ayake"
+    },
+    "-L9mz-iKmR2iTClORqmw" : {
+      "indonesia" : "Mari",
+      "kramaalus" : "Mangga",
+      "kramainggil" : "Suwawi",
+      "ngoko" : "Ayo"
+    },
+    "-L9mz2jW1DqLHcmyjFve" : {
+      "indonesia" : "Silahkan",
+      "kramaalus" : "Mangga",
+      "kramainggil" : "Suwawi",
+      "ngoko" : "Ayo"
+    },
+    "-L9mz9SDFAWYJVBPJWQQ" : {
+      "indonesia" : "Banyak",
+      "kramaalus" : "Kathah",
+      "kramainggil" : "Kathah",
+      "ngoko" : "Akeh"
+    },
+    "-L9mzFNvp26DIgwG-FVK" : {
+      "indonesia" : "Kebanyakan",
+      "kramaalus" : "Kekathahen",
+      "kramainggil" : "Kekathahen",
+      "ngoko" : "Kakehan"
+    },
+    "-L9mzOyFOXxUzL9knsdO" : {
+      "indonesia" : "Umumnya",
+      "kramaalus" : "Kathahipun",
+      "kramainggil" : "Kathahipun",
+      "ngoko" : "Akehe"
+    },
+    "-L9mzT6ry5kWdi-CyXQY" : {
+      "indonesia" : "Suruh",
+      "kramaalus" : "Aken",
+      "kramainggil" : "Dhawuh",
+      "ngoko" : "Akon"
+    },
+    "-L9mzZFhvBvE-l93XhVv" : {
+      "indonesia" : "Menyuruh",
+      "kramaalus" : "Ngeken",
+      "kramainggil" : "Dhawuhi",
+      "ngoko" : "Ngakon"
+    },
+    "-L9mzkQgHAtOqrItsxEE" : {
+      "indonesia" : "Ampun",
+      "kramaalus" : "Aksama",
+      "kramainggil" : "Aksama",
+      "ngoko" : "Aksama"
+    },
+    "-L9nLYaPVcHNTsRXzApR" : {
+      "indonesia" : "Saya",
+      "kramaalus" : "Kula",
+      "kramainggil" : "Dalem",
+      "ngoko" : "Aku"
+    },
+    "-L9nLfre7x-j6XicZJ6F" : {
+      "indonesia" : "Mengaku",
+      "kramaalus" : "Ngaken",
+      "kramainggil" : "Ngaken",
+      "ngoko" : "Ngaku"
+    },
+    "-L9nLxZwCOk24HJj_1FA" : {
+      "indonesia" : "Mengaku",
+      "kramaalus" : "Ngakeni",
+      "kramainggil" : "Ngakeni",
+      "ngoko" : "Ngakoni"
+    },
+    "-L9nM0Oo8pb7LMSvc4iF" : {
+      "indonesia" : "Diakui",
+      "kramaalus" : "Dipunaken",
+      "kramainggil" : "Dipunaken",
+      "ngoko" : "Diaku"
+    },
+    "-L9nM6CRU0DPhdaBVG8_" : {
+      "indonesia" : "Dianggap",
+      "kramaalus" : "Aken",
+      "kramainggil" : "Aken",
+      "ngoko" : "Akon"
+    },
+    "-L9nMATNGDrHicmPJLu_" : {
+      "indonesia" : "Mengakui",
+      "kramaalus" : "Ngaken",
+      "kramainggil" : "Ngaken",
+      "ngoko" : "Ngaku"
+    },
+    "-L9nMEDnL3r8RfKBtXIl" : {
+      "indonesia" : "Jelek",
+      "kramaalus" : "Awon",
+      "kramainggil" : "Awon",
+      "ngoko" : "Ala"
+    },
+    "-L9nMHaOspJN8BTaQMe3" : {
+      "indonesia" : "Kejelekan",
+      "kramaalus" : "Piawon",
+      "kramainggil" : "Piawon",
+      "ngoko" : "Piala"
+    },
+    "-L9nMQZNetPivrvvB9aU" : {
+      "indonesia" : "Meskipun",
+      "kramaalus" : "Awon-awon",
+      "kramainggil" : "Awon-awon",
+      "ngoko" : "Ala-ala"
+    },
+    "-L9nMXMBAtK8HOMY-MaQ" : {
+      "indonesia" : "Halangan",
+      "kramaalus" : "Pambeng",
+      "kramainggil" : "Pambeng",
+      "ngoko" : "Alang"
+    },
+    "-L9nM_nqkutMNfe9G7Jg" : {
+      "indonesia" : "Halangan",
+      "kramaalus" : "Pambengan ",
+      "kramainggil" : "Pambengan",
+      "ngoko" : "Alangan "
+    },
+    "-L9nMeh4VaGc4MY0WAVv" : {
+      "indonesia" : "Menghalangi",
+      "kramaalus" : "Mambengi",
+      "kramainggil" : "Mambengi",
+      "ngoko" : "Ngalang-alangi"
+    },
+    "-L9nMiH18EbNKzJhiboL" : {
+      "indonesia" : "Hutan",
+      "kramaalus" : "Wana",
+      "kramainggil" : "Wana",
+      "ngoko" : "Alas"
+    },
+    "-L9nMmgfJxwW-fO-lQW6" : {
+      "indonesia" : "Cincin",
+      "kramaalus" : "Sesupe",
+      "kramainggil" : "Sesupe",
+      "ngoko" : "Ali-ali"
+    },
+    "-L9nN5JKjOjQhcYJcfDn" : {
+      "indonesia" : "Pindah",
+      "kramaalus" : "Pindah",
+      "kramainggil" : "Pindah",
+      "ngoko" : "Alih"
+    },
+    "-L9nN7QCT-1UF6pUWr1R" : {
+      "indonesia" : "Alis",
+      "kramaalus" : "Alis",
+      "kramainggil" : "Imba",
+      "ngoko" : "Alis"
+    },
+    "-L9nNBLSBv6gwKW0U3T4" : {
+      "indonesia" : "Karena",
+      "kramaalus" : "Amargi",
+      "kramainggil" : "Amargi",
+      "ngoko" : "Amarga"
+    },
+    "-L9nNGc260TYNJt3laLn" : {
+      "indonesia" : "Luas",
+      "kramaalus" : "Wiyar",
+      "kramainggil" : "Wiyar",
+      "ngoko" : "Amba "
+    },
+    "-L9nNJgDXeuQR-0fDRiZ" : {
+      "indonesia" : "Luas",
+      "kramaalus" : "Wiyar",
+      "kramainggil" : "Wiyar",
+      "ngoko" : "Jembar"
+    },
+    "-L9nNQPr0DONNvDw_UOh" : {
+      "indonesia" : "Memperluas",
+      "kramaalus" : "Miyaraken",
+      "kramainggil" : "Miyaraken",
+      "ngoko" : "Ngambakake"
+    },
+    "-L9nNUnP-U5wDxST9yuB" : {
+      "indonesia" : "Bau",
+      "kramaalus" : "Ambet",
+      "kramainggil" : "Ambet",
+      "ngoko" : "Ambu"
+    },
+    "-L9nNY799k1h_BlL8d2a" : {
+      "indonesia" : "Mencium",
+      "kramaalus" : "Ngambet",
+      "kramainggil" : "Ngambet",
+      "ngoko" : "Ngambu"
+    },
+    "-L9nNfiw_3-ARmhPdV47" : {
+      "indonesia" : "Bau-bauan",
+      "kramaalus" : "Ambet-ambetan",
+      "kramainggil" : "Ambet-ambetan",
+      "ngoko" : "Ambon-ambon"
+    },
+    "-L9nNjXYYmEhL9mImzVR" : {
+      "indonesia" : "Cium",
+      "kramaalus" : "Ambung",
+      "kramainggil" : "Aras",
+      "ngoko" : "Ambung"
+    },
+    "-L9nNqP3X9c6iovtJj62" : {
+      "indonesia" : "Mencium",
+      "kramaalus" : "Ngambung",
+      "kramainggil" : "Ngaras",
+      "ngoko" : "Ngambung"
+    },
+    "-L9nNuvyA2IF1psPq5-a" : {
+      "indonesia" : "Minta maaf",
+      "kramaalus" : "Amit",
+      "kramainggil" : "Nuwun Sewu",
+      "ngoko" : "Amit"
+    },
+    "-L9nNyJoGB31HtWMuxty" : {
+      "indonesia" : "Singgah",
+      "kramaalus" : "Ampir",
+      "kramainggil" : "Pinarak",
+      "ngoko" : "Ampir"
+    },
+    "-L9nO2fpnqgmnCsQ8l-9" : {
+      "indonesia" : "Ada",
+      "kramaalus" : "Wonten",
+      "kramainggil" : "Wonten",
+      "ngoko" : "Ono"
+    },
+    "-L9nO6wvgDFn7dhpI0sj" : {
+      "indonesia" : "Mengadakan",
+      "kramaalus" : "Ngawontenake",
+      "kramainggil" : "Ngawontenake",
+      "ngoko" : "Nganakake"
+    },
+    "-L9nO9xRhZp-PUy7XjaZ" : {
+      "indonesia" : "Keadaan",
+      "kramaalus" : "Kawontenan",
+      "kramainggil" : "Kawontenan",
+      "ngoko" : "Kahanan"
+    },
+    "-L9nOEZpAizS5ayOUqje" : {
+      "indonesia" : "Adapun",
+      "kramaalus" : "Wondene",
+      "kramainggil" : "Wondene",
+      "ngoko" : "Ana dene"
+    },
+    "-L9nOGnEJTxq75XE7KVZ" : {
+      "indonesia" : "Anak",
+      "kramaalus" : "Anak ",
+      "kramainggil" : "Putra",
+      "ngoko" : "Anak"
+    },
+    "-L9nOJt0QPqNLgOpBu2u" : {
+      "indonesia" : "Bersalin",
+      "kramaalus" : "Gadhah Lare",
+      "kramainggil" : "Babaran",
+      "ngoko" : "Manak"
+    },
+    "-L9nOTP9XyWrlro67IdE" : {
+      "indonesia" : "Beranak",
+      "kramaalus" : "Anak-anak",
+      "kramainggil" : "Peputra",
+      "ngoko" : "Anak-anak"
+    },
+    "-L9nRdu4Qa2wjb_mFVLV" : {
+      "indonesia" : "Percaya",
+      "kramaalus" : "Pitados",
+      "kramainggil" : "Pitados",
+      "ngoko" : "Andel"
+    },
+    "-L9nRifWWP1pJ8USkuQ8" : {
+      "indonesia" : "Kepercayaan",
+      "kramaalus" : "Kapitadosan",
+      "kramainggil" : "Kapitadosan",
+      "ngoko" : "Piandel"
+    },
+    "-L9nRn3hAo3_xka2aU5t" : {
+      "indonesia" : "Menuai",
+      "kramaalus" : "Mugut",
+      "kramainggil" : "Mugut",
+      "ngoko" : "Ngeneni"
+    },
+    "-L9nRqMzfw-CadkyUUYj" : {
+      "indonesia" : "Muda",
+      "kramaalus" : "Enem",
+      "kramainggil" : "Enem",
+      "ngoko" : "Anom"
+    },
+    "-L9nRuc63LqLd_opqEvF" : {
+      "indonesia" : "Antara",
+      "kramaalus" : "Antawis",
+      "kramainggil" : "Antawis",
+      "ngoko" : "Antara"
+    },
+    "-L9nS0V68RKoau-hfvwF" : {
+      "indonesia" : "Tunggu",
+      "kramaalus" : "Antos",
+      "kramainggil" : "Antos",
+      "ngoko" : "Anti"
+    },
+    "-L9nS5T9BA8jHdaUVIlt" : {
+      "indonesia" : "Sampai",
+      "kramaalus" : "Ngantos",
+      "kramainggil" : "Ngantos",
+      "ngoko" : "Nganti"
+    },
+    "-L9nSC7BxTBHfLB5CdXT" : {
+      "indonesia" : "Menunggu",
+      "kramaalus" : "Ngantos-ngantos",
+      "kramainggil" : "Ngantos-ngantos",
+      "ngoko" : "Nganti-nganti"
+    },
+    "-L9nSKyJV2QWdjDnnErm" : {
+      "indonesia" : "Turut",
+      "kramaalus" : "Tumut",
+      "kramainggil" : "Dherek",
+      "ngoko" : "Anut"
+    },
+    "-L9nSNXpjwip2KfQu3w-" : {
+      "indonesia" : "Asalkan",
+      "kramaalus" : "Uger",
+      "kramainggil" : "Uger",
+      "ngoko" : "Angger"
+    },
+    "-L9nSSc-NyuN54vXy4qG" : {
+      "indonesia" : "Menggembala",
+      "kramaalus" : "Angen",
+      "kramainggil" : "Angen",
+      "ngoko" : "Angon"
+    },
+    "-L9nSahaBbRtQ2nhOvMj" : {
+      "indonesia" : "Penggembala",
+      "kramaalus" : "Pangen",
+      "kramainggil" : "Pangen",
+      "ngoko" : "Pangon"
+    },
+    "-L9nSjBbqs3ToYlpQIOQ" : {
+      "indonesia" : "Tawar",
+      "kramaalus" : "Awis",
+      "kramainggil" : "Awis",
+      "ngoko" : "Ayang"
+    },
+    "-L9nXXCDPbo2QSMHymEs" : {
+      "indonesia" : "Menawar",
+      "kramaalus" : "Ngawis",
+      "kramainggil" : "Ngawis",
+      "ngoko" : "Nganyang"
+    },
+    "-L9nXdmywvUH-9NIkdhT" : {
+      "indonesia" : "Tawar-menawar",
+      "kramaalus" : "Awis-awisan",
+      "kramainggil" : "Awis-awisan",
+      "ngoko" : "Anyang-anyangan"
+    },
+    "-L9nXi1BuozhC2F9lRvK" : {
+      "indonesia" : "Baru",
+      "kramaalus" : "Enggal",
+      "kramainggil" : "Enggal",
+      "ngoko" : "Anyar"
+    },
+    "-L9nXmiNOyFGpnrWkWGl" : {
+      "indonesia" : "Apa",
+      "kramaalus" : "Menapa",
+      "kramainggil" : "Punapa",
+      "ngoko" : "Apa"
+    },
+    "-L9nXpykFWk0ORlhj_iE" : {
+      "indonesia" : "Hapal",
+      "kramaalus" : "Apal",
+      "kramainggil" : "Apal",
+      "ngoko" : "Apal"
+    },
+    "-L9nXvi4QlYEe6z5FJKj" : {
+      "indonesia" : "Hapalan",
+      "kramaalus" : "Apalan",
+      "kramainggil" : "Apalan",
+      "ngoko" : "Apalan"
+    },
+    "-L9nY-wQ1ANI_h0uXdN5" : {
+      "indonesia" : "Baik",
+      "kramaalus" : "Sae",
+      "kramainggil" : "Sae",
+      "ngoko" : "Apik"
+    },
+    "-L9nY3EhaLapgWC9CqYd" : {
+      "indonesia" : "Bagus",
+      "kramaalus" : "Sae",
+      "kramainggil" : "Sae",
+      "ngoko" : "Becik"
+    },
+    "-L9nY7EDfq-1r8lSGwpR" : {
+      "indonesia" : "Maaf",
+      "kramaalus" : "Apunten",
+      "kramainggil" : "Apunten",
+      "ngoko" : "Apura"
+    },
+    "-L9nYCUrVQXZQ3N4tnms" : {
+      "indonesia" : "Memaafkan",
+      "kramaalus" : "Ngapunten",
+      "kramainggil" : "Ngapunten",
+      "ngoko" : "Ngapura"
+    },
+    "-L9nYIJT0zVs8UZrNQCQ" : {
+      "indonesia" : "Nama",
+      "kramaalus" : "Nama",
+      "kramainggil" : "Asma",
+      "ngoko" : "Aran"
+    },
+    "-L9nYKhcXOXA-NNELzVb" : {
+      "indonesia" : "Nama",
+      "kramaalus" : "Nama",
+      "kramainggil" : "Asma",
+      "ngoko" : "Jeneng"
+    },
+    "-L9nYOrUN5TSHoA7ezm6" : {
+      "indonesia" : "Nama (barang)",
+      "kramaalus" : "Wasta",
+      "kramainggil" : "Wasta",
+      "ngoko" : "Aean "
+    },
+    "-L9nYWUdWTFPAaCy9_TS" : {
+      "indonesia" : "Menyebut",
+      "kramaalus" : "Mastani",
+      "kramainggil" : "Mastani",
+      "ngoko" : "Ngarani"
+    },
+    "-L9nYa-PmblYj2hsbL1u" : {
+      "indonesia" : "Jarang",
+      "kramaalus" : "Awis",
+      "kramainggil" : "Awis",
+      "ngoko" : "Arang"
+    },
+    "-L9nYmA7FJucZdD86XDD" : {
+      "indonesia" : "Mau",
+      "kramaalus" : "Doyan",
+      "kramainggil" : "Kersa",
+      "ngoko" : "Arep"
+    },
+    "-L9nYqo5rLtAruF3w-sD" : {
+      "indonesia" : "Hadap",
+      "kramaalus" : "Ajeng",
+      "kramainggil" : "Ajeng",
+      "ngoko" : "Arep"
+    },
+    "-L9nZEGSjqiIPW3r-T1d" : {
+      "indonesia" : "Depan",
+      "kramaalus" : "Ngajeng",
+      "kramainggil" : "Ngajeng",
+      "ngoko" : "Ngarep"
+    },
+    "-L9nZKD_zk9f7Tvjymvy" : {
+      "indonesia" : "Bagian depan",
+      "kramaalus" : "Ngajengan",
+      "kramainggil" : "Ngajengan",
+      "ngoko" : "Ngarepan"
+    },
+    "-L9nZYrjch-kVrrAyUhX" : {
+      "indonesia" : "Adik",
+      "kramaalus" : "Ari",
+      "kramainggil" : "Rayi",
+      "ngoko" : "Ari"
+    },
+    "-L9nZcrkCzUs6OnaN_wi" : {
+      "indonesia" : "Ari-ari",
+      "kramaalus" : "ari-ari",
+      "kramainggil" : "Tuntunan",
+      "ngoko" : "Ari-ari"
+    },
+    "-L9n_22Em2zsVWMaIWCq" : {
+      "indonesia" : "Rendah",
+      "kramaalus" : "Awon",
+      "kramainggil" : "Andhap",
+      "ngoko" : "Asor"
+    },
+    "-L9n_6PK7CUQBgVuc-pB" : {
+      "indonesia" : "Kalah",
+      "kramaalus" : "Kawon",
+      "kramainggil" : "Kandhapan",
+      "ngoko" : "Kasoran"
+    },
+    "-L9n_A19CIXzId0m9mXC" : {
+      "indonesia" : "Mengalah",
+      "kramaalus" : "Ngawon",
+      "kramainggil" : "Ngawon",
+      "ngoko" : "Ngasor"
+    },
+    "-L9n_DPfP9fdtWHVgnK-" : {
+      "indonesia" : "Anjing",
+      "kramaalus" : "Segawon",
+      "kramainggil" : "Segawon",
+      "ngoko" : "Asu"
+    },
+    "-L9n_cF1ZvcDSmH-K2Vw" : {
+      "indonesia" : "Hati",
+      "kramaalus" : "Manah",
+      "kramainggil" : "Penggalih",
+      "ngoko" : "Ati"
+    },
+    "-L9n_iMyV_H2qjfl5Wge" : {
+      "indonesia" : "Hati-hati",
+      "kramaalus" : "Atos-atos",
+      "kramainggil" : "Atos-atos",
+      "ngoko" : "Ati-ati"
+    },
+    "-L9n_pz6uM9SyGRBVonv" : {
+      "indonesia" : "Berhati-hati",
+      "kramaalus" : "Ngatos-ngatos",
+      "kramainggil" : "Ngatos-ngatos",
+      "ngoko" : "Ngati-ati"
+    },
+    "-L9n_u3ctKhpaC1rmsFd" : {
+      "indonesia" : "Badan",
+      "kramaalus" : "Badan",
+      "kramainggil" : "Salira",
+      "ngoko" : "Awak"
+    },
+    "-L9n_vy8LC35T6-YlcNu" : {
+      "indonesia" : "Tubuh",
+      "kramaalus" : "Badan",
+      "kramainggil" : "Salira",
+      "ngoko" : "Awak"
+    },
+    "-L9na0QcqFtlz9V8-AtT" : {
+      "indonesia" : "Melakukan sendiri",
+      "kramaalus" : "Ngawaki",
+      "kramainggil" : "Nyelirani",
+      "ngoko" : "Ngawaki"
+    },
+    "-L9na2c-b5qngSwU2IQz" : {
+      "indonesia" : "Siang",
+      "kramaalus" : "Siyang",
+      "kramainggil" : "Siyang",
+      "ngoko" : "Awan"
+    },
+    "-L9na6IhcL7-06wryuwL" : {
+      "indonesia" : "Kesiangan",
+      "kramaalus" : "Kesiangan",
+      "kramainggil" : "Kesiangan",
+      "ngoko" : "Kawanen"
+    },
+    "-L9naEwgx8798KyuPSTW" : {
+      "indonesia" : "Meskipun siang",
+      "kramaalus" : "Siyang-siyang",
+      "kramainggil" : "Siyang-siyang",
+      "ngoko" : "Awan-awan"
+    },
+    "-L9naL6G1n4KuMRHd7lH" : {
+      "indonesia" : "Mari",
+      "kramaalus" : "Mangga",
+      "kramainggil" : "Mangga",
+      "ngoko" : "Ayo"
+    },
+    "-L9naPbd1Y27jXo-I09A" : {
+      "indonesia" : "Hanya",
+      "kramaalus" : "Kemawon",
+      "kramainggil" : "Kemawon",
+      "ngoko" : "Bae"
+    },
+    "-L9nab8aUKGgo6elx2_d" : {
+      "indonesia" : "Kemudian",
+      "kramaalus" : "Lajeng",
+      "kramainggil" : "Lajeng",
+      "ngoko" : "Bacut"
+    },
+    "-L9nafLeDJkOLSPms2Xa" : {
+      "indonesia" : "Terlanjur",
+      "kramaalus" : "Kelajeng",
+      "kramainggil" : "Kelajeng",
+      "ngoko" : "Kebacut"
+    },
+    "-L9naoj5_9ywMt6pSYWW" : {
+      "indonesia" : "Melahirkan",
+      "kramaalus" : "Nglairaken",
+      "kramainggil" : "Babaran",
+      "ngoko" : "Bayen"
+    },
+    "-L9nauo0tD9WaNVTJqnc" : {
+      "indonesia" : "Akan",
+      "kramaalus" : "Badhe",
+      "kramainggil" : "Badhe",
+      "ngoko" : "Bakal"
+    },
+    "-L9nayyaqziyLRRvCPPP" : {
+      "indonesia" : "Tembakau",
+      "kramaalus" : "Sata",
+      "kramainggil" : "Sata",
+      "ngoko" : "Bako"
+    },
+    "-L9nb30z2Ugk1yfMayFo" : {
+      "indonesia" : "Pokok",
+      "kramaalus" : "Baken",
+      "kramainggil" : "Baken",
+      "ngoko" : "Baku"
+    },
+    "-L9ne-zh8AdzhkcAdFDx" : {
+      "indonesia" : "Kembali",
+      "kramaalus" : "Wangsung",
+      "kramainggil" : "Kondhur",
+      "ngoko" : "Bali"
+    },
+    "-L9ne4Et_rIr6a8vv-Qm" : {
+      "indonesia" : "Berkali-kali",
+      "kramaalus" : "Wongsal-wangsul",
+      "kramainggil" : "Wongsal-wangsul",
+      "ngoko" : "Bola-bali"
+    },
+    "-L9ne7QKT2s5t_ls55hp" : {
+      "indonesia" : "Tulang",
+      "kramaalus" : "Balung",
+      "kramainggil" : "Tosan",
+      "ngoko" : "Balung"
+    },
+    "-L9neG6ZAMe9rC2D18gF" : {
+      "indonesia" : "Borgol",
+      "kramaalus" : "Banda",
+      "kramainggil" : "Besta",
+      "ngoko" : "Banda"
+    },
+    "-L9neJyW74hVGsrxF9Q7" : {
+      "indonesia" : "Tawanan",
+      "kramaalus" : "Bebadan",
+      "kramainggil" : "Bestan",
+      "ngoko" : "Bebadan"
+    },
+    "-L9neNXIc8d5KQ7zkqm6" : {
+      "indonesia" : "Banjir",
+      "kramaalus" : "Bena",
+      "kramainggil" : "Bena",
+      "ngoko" : "Banjir"
+    },
+    "-L9neRc6p-a9ok_BiKkI" : {
+      "indonesia" : "Kemudian",
+      "kramaalus" : "Lajeng",
+      "kramainggil" : "Lajeng",
+      "ngoko" : "Banjur"
+    },
+    "-L9neWacwQ-yYlHvQqmh" : {
+      "indonesia" : "Terlanjur",
+      "kramaalus" : "Kelajeng",
+      "kramainggil" : "Kelajeng",
+      "ngoko" : "Kebanjur"
+    },
+    "-L9nea-N3XQOVVZmYZuB" : {
+      "indonesia" : "Sangat",
+      "kramaalus" : "Sanget",
+      "kramainggil" : "Sanget",
+      "ngoko" : "Banget"
+    },
+    "-L9neeI1NNUnz_EM-0sP" : {
+      "indonesia" : "Keterlaluan",
+      "kramaalus" : "Kesangeten",
+      "kramainggil" : "Kesangeten",
+      "ngoko" : "Kebangeten"
+    },
+    "-L9nejfBxi1iItMdkyf4" : {
+      "indonesia" : "Terlalu",
+      "kramaalus" : "Sanget-sanget",
+      "kramainggil" : "Sanget-sanget",
+      "ngoko" : "Banget-banget"
+    },
+    "-L9nf38_NBgN7Sgo_Fo3" : {
+      "indonesia" : "Bantal",
+      "kramaalus" : "Bantal",
+      "kramainggil" : "Kajang",
+      "ngoko" : "Bantal"
+    },
+    "-L9nf8AMOF2O2Wc-xZur" : {
+      "indonesia" : "Bantalan",
+      "kramaalus" : "Bantalan",
+      "kramainggil" : "Kajangan",
+      "ngoko" : "Bantalan"
+    },
+    "-L9nfAnm9hlkGnr4lvaY" : {
+      "indonesia" : "Air",
+      "kramaalus" : "Toya",
+      "kramainggil" : "Toya",
+      "ngoko" : "Banyu"
+    },
+    "-L9nfHP-_rj7Lykeswcn" : {
+      "indonesia" : "Ayah",
+      "kramaalus" : "Bapak",
+      "kramainggil" : "Rama",
+      "ngoko" : "Bapak"
+    },
+    "-L9nfKpumC1uXuaMAbDD" : {
+      "indonesia" : "Bersama",
+      "kramaalus" : "Sareng",
+      "kramainggil" : "Sareng",
+      "ngoko" : "Bareng"
+    },
+    "-L9nfQAn-owXOEZvsFV1" : {
+      "indonesia" : "Bersama(datang)",
+      "kramaalus" : "Sesarengan",
+      "kramainggil" : "Sesarengan",
+      "ngoko" : "Bebarengan"
+    },
+    "-L9nfUK6zUBhbtw10aIB" : {
+      "indonesia" : "Sulung",
+      "kramaalus" : "Pembajeng",
+      "kramainggil" : "Pembajeng",
+      "ngoko" : "Mbarep"
+    },
+    "-L9nfXadhaAcaUdZnGI6" : {
+      "indonesia" : "Batu bata",
+      "kramaalus" : "Banon",
+      "kramainggil" : "Banon",
+      "ngoko" : "Bata"
+    },
+    "-L9nf_hQgZ2ghhjUAC-o" : {
+      "indonesia" : "Batin",
+      "kramaalus" : "Batos",
+      "kramainggil" : "Batos",
+      "ngoko" : "Batin"
+    },
+    "-L9nfgATDtSfsQL2mbet" : {
+      "indonesia" : "Memikir",
+      "kramaalus" : "Mbatos",
+      "kramainggil" : "Mbatos",
+      "ngoko" : "Mbatin"
+    },
+    "-L9nfk_DLrSOhq4idwLZ" : {
+      "indonesia" : "Kebatinan",
+      "kramaalus" : "Kebatosan",
+      "kramainggil" : "Kebatosan",
+      "ngoko" : "Kebatinan"
+    },
+    "-L9nfoFJBbYjHmGWnjXS" : {
+      "indonesia" : "Batu",
+      "kramaalus" : "Sela",
+      "kramainggil" : "Sela",
+      "ngoko" : "Watu"
+    },
+    "-L9nftoGVIbu9cQazkGo" : {
+      "indonesia" : "Pembantu",
+      "kramaalus" : "Rencang",
+      "kramainggil" : "Abdi",
+      "ngoko" : "Batur"
+    },
+    "-L9nfzEW4MHO0jRljSD-" : {
+      "indonesia" : "Mengabdi",
+      "kramaalus" : "Ngerencang",
+      "kramainggil" : "Ngabdi",
+      "ngoko" : "Mbatur"
+    },
+    "-L9ng68r6Wp0QYY-YHPu" : {
+      "indonesia" : "Menemani",
+      "kramaalus" : "Ngrencangi",
+      "kramainggil" : "Ngrencangi",
+      "ngoko" : "Mbaturi"
+    },
+    "-L9njSL36dI_xELy-khZ" : {
+      "indonesia" : "Batik",
+      "kramaalus" : "Serat",
+      "kramainggil" : "Serat",
+      "ngoko" : "Bathik"
+    },
+    "-L9njei15KgAJUDCocGe" : {
+      "indonesia" : "Membatik",
+      "kramaalus" : "Nyerat",
+      "kramainggil" : "Nyerat",
+      "ngoko" : "Mbatik"
+    },
+    "-L9njj7Yj-k51woGKzYg" : {
+      "indonesia" : "Dahi",
+      "kramaalus" : "Bathuk",
+      "kramainggil" : "Pelarapan",
+      "ngoko" : "Bathuk"
+    },
+    "-L9njoMDwkTbTyXji_qw" : {
+      "indonesia" : "Jarik",
+      "kramaalus" : "Bebed",
+      "kramainggil" : "Nyamping",
+      "ngoko" : "Bebed"
+    },
+    "-L9njsKaqEk5O9HA13uT" : {
+      "indonesia" : "Itik",
+      "kramaalus" : "Kembangan",
+      "kramainggil" : "Kembangan",
+      "ngoko" : "Bebek"
+    },
+    "-L9njvH_c9lxCuw7vvMT" : {
+      "indonesia" : "Beda",
+      "kramaalus" : "Benten",
+      "kramainggil" : "Benten",
+      "ngoko" : "Beda"
+    },
+    "-L9nk-8Zu4vD5_hEi0Y0" : {
+      "indonesia" : "Pipa rokok",
+      "kramaalus" : "Bedudan",
+      "kramainggil" : "Watangan",
+      "ngoko" : "Bedudan"
+    },
+    "-L9nk1lMmB31TIuBRX3N" : {
+      "indonesia" : "Hormat",
+      "kramaalus" : "Bekti",
+      "kramainggil" : "Bekti",
+      "ngoko" : "Bekti"
+    },
+    "-L9nk5yqYOXI5pLAgNf0" : {
+      "indonesia" : "Berbakti",
+      "kramaalus" : "Ngabekti",
+      "kramainggil" : "Ngabekti",
+      "ngoko" : "Ngabekti"
+    },
+    "-L9nkPjgws0a4SdEx-cD" : {
+      "indonesia" : "Biar",
+      "kramaalus" : "Kajengipun",
+      "kramainggil" : "Kersanipun",
+      "ngoko" : "Ben"
+    },
+    "-L9nkUw9NgpYE8-eoCpy" : {
+      "indonesia" : "Malam",
+      "kramaalus" : "Dalu",
+      "kramainggil" : "Dalu",
+      "ngoko" : "Bengi"
+    },
+    "-L9nkYPN0aLQmn1MqzWG" : {
+      "indonesia" : "Kemalaman",
+      "kramaalus" : "Kedalon",
+      "kramainggil" : "Kedalon",
+      "ngoko" : "Kewengen"
+    },
+    "-L9nkaVgZ1OO_O_i0DEk" : {
+      "indonesia" : "Beras",
+      "kramaalus" : "Uwos",
+      "kramainggil" : "Uwos",
+      "ngoko" : "Beras"
+    },
+    "-L9nkf7pHFE9u5HF0UPJ" : {
+      "indonesia" : "Besok",
+      "kramaalus" : "Benjing",
+      "kramainggil" : "Benjing",
+      "ngoko" : "Sesuk"
+    },
+    "-L9nkiczNUOCt8mXYAOp" : {
+      "indonesia" : "Baik",
+      "kramaalus" : "Sae",
+      "kramainggil" : "Sae",
+      "ngoko" : "Becik"
+    },
+    "-L9nknswszyuaShlkp_d" : {
+      "indonesia" : "Kebaikan",
+      "kramaalus" : "Kasaenan",
+      "kramainggil" : "Kasaenan",
+      "ngoko" : "Kebecikan"
+    },
+    "-L9nkrg1cdycWqdZrGQV" : {
+      "indonesia" : "Dahulu",
+      "kramaalus" : "Rumiyin",
+      "kramainggil" : "Rumiyin",
+      "ngoko" : "Biyen"
+    },
+    "-L9nkv0iFKw26E_eD_0t" : {
+      "indonesia" : "Dahulunya",
+      "kramaalus" : "Rumiyinipun",
+      "kramainggil" : "Rumiyinipun",
+      "ngoko" : "Mbiyene"
+    },
+    "-L9np5ehb-IN4VcLXZwI" : {
+      "indonesia" : "Dapat",
+      "kramaalus" : "Saged",
+      "kramainggil" : "Saged",
+      "ngoko" : "Bisa"
+    },
+    "-L9np9X9JdbLBwyg5VH5" : {
+      "indonesia" : "Berat",
+      "kramaalus" : "Awrat",
+      "kramainggil" : "Wawrat",
+      "ngoko" : "Bobot"
+    },
+    "-L9npFaw1GckTdzksZ6u" : {
+      "indonesia" : "Suami-istri",
+      "kramaalus" : "Semah",
+      "kramainggil" : "Garwa",
+      "ngoko" : "Bojo"
+    },
+    "-L9npJlD8JgDMDSMpfE5" : {
+      "indonesia" : "Pantat",
+      "kramaalus" : "Bokong",
+      "kramainggil" : "Pocong",
+      "ngoko" : "Bokong"
+    },
+    "-L9npNsQEsEOad6Fhw5A" : {
+      "indonesia" : "Benang",
+      "kramaalus" : "Benang",
+      "kramainggil" : "Benang",
+      "ngoko" : "Bolah"
+    },
+    "-L9npSzzwc2YfI11mG7A" : {
+      "indonesia" : "Bedak",
+      "kramaalus" : "Boreh",
+      "kramainggil" : "Konyoh",
+      "ngoko" : "Boreh"
+    },
+    "-L9npVm0xT8ASNUka78L" : {
+      "indonesia" : "Anak",
+      "kramaalus" : "Lare",
+      "kramainggil" : "Lare",
+      "ngoko" : "Bocak"
+    },
+    "-L9npZpS-KJaIimeJD3B" : {
+      "indonesia" : "Kumis",
+      "kramaalus" : "Rawis",
+      "kramainggil" : "Gumbala",
+      "ngoko" : "Brengos"
+    },
+    "-L9npbZt7vGSWVFD2x3k" : {
+      "indonesia" : "Selesai",
+      "kramaalus" : "Bibar",
+      "kramainggil" : "Bibar",
+      "ngoko" : "Bubar"
+    },
+    "-L9nplqt49QvU8lqTzPG" : {
+      "indonesia" : "Rusak",
+      "kramaalus" : "Risak",
+      "kramainggil" : "Risak",
+      "ngoko" : "Bubrak"
+    },
+    "-L9rWBIb9xk_jwELedZS" : {
+      "indonesia" : "Budi",
+      "kramaalus" : "Manah",
+      "kramainggil" : "Penggalih",
+      "ngoko" : "Budi"
+    },
+    "-L9rWGhplUPbPG6nKjEY" : {
+      "indonesia" : "Berangkat",
+      "kramaalus" : "Bidhal",
+      "kramainggil" : "Bidhal",
+      "ngoko" : "Budhal"
+    },
+    "-L9rWNByL20brR1sz247" : {
+      "indonesia" : "Bubaran",
+      "kramaalus" : "Bidhalan",
+      "kramainggil" : "Bidhalan",
+      "ngoko" : "Budahalan"
+    },
+    "-L9rWSD2LFQzkx5rPPZi" : {
+      "indonesia" : "Gembira",
+      "kramaalus" : "Bingah",
+      "kramainggil" : "Rena",
+      "ngoko" : "Bungah"
+    },
+    "-L9rWY0wwr6M3TNbznLG" : {
+      "indonesia" : "Bergembira",
+      "kramaalus" : "Bingah-bingah",
+      "kramainggil" : "Bingah-bingah",
+      "ngoko" : "Bungah-bungah"
+    },
+    "-L9rWaxbVGyINTnTfiva" : {
+      "indonesia" : "Bupati",
+      "kramaalus" : "Bupati",
+      "kramainggil" : "Bupati",
+      "ngoko" : "Bupati"
+    },
+    "-L9rWduJ_V683Qs1rPd0" : {
+      "indonesia" : "Belakang",
+      "kramaalus" : "Wingking",
+      "kramainggil" : "Wingking",
+      "ngoko" : "Buri"
+    },
+    "-L9rWgTVujBuMtCqfbg8" : {
+      "indonesia" : "Kejar",
+      "kramaalus" : "Bujeng",
+      "kramainggil" : "Bujeng",
+      "ngoko" : "Buru"
+    },
+    "-L9rWkIqKFC1Vq8ktAO8" : {
+      "indonesia" : "Mengejar",
+      "kramaalus" : "Mbujeng",
+      "kramainggil" : "Mbujeng",
+      "ngoko" : "Mburu"
+    },
+    "-L9rWpYo0WuQPZU7Mych" : {
+      "indonesia" : "Berburu",
+      "kramaalus" : "Bebujeng",
+      "kramainggil" : "Mbebujeng",
+      "ngoko" : "Beburu"
+    },
+    "-L9rWtHAXovFhxBQACjN" : {
+      "indonesia" : "Butuh",
+      "kramaalus" : "Betah",
+      "kramainggil" : "Betah",
+      "ngoko" : "Butuh"
+    },
+    "-L9rWxbL8nLq6dFWkQZn" : {
+      "indonesia" : "Kebutuhan",
+      "kramaalus" : "Kebetahan",
+      "kramainggil" : "Kebetahan",
+      "ngoko" : "Kebutuhan"
+    },
+    "-L9rX0rV4KoJdajz7g4v" : {
+      "indonesia" : "Buang",
+      "kramaalus" : "Bucal",
+      "kramainggil" : "Bucal",
+      "ngoko" : "Buwang"
+    },
+    "-L9rX3Vpc665F098DGAE" : {
+      "indonesia" : "Mulut",
+      "kramaalus" : "Lesan",
+      "kramainggil" : "Tutuk",
+      "ngoko" : "Cangkem"
+    },
+    "-L9rX8GSWa8XX-huHXTS" : {
+      "indonesia" : "Dekat",
+      "kramaalus" : "Celak",
+      "kramainggil" : "Celak",
+      "ngoko" : "Cedhak"
+    },
+    "-L9rXBPDwC7ffANL2WSW" : {
+      "indonesia" : "Pegang",
+      "kramaalus" : "Cepeng",
+      "kramainggil" : "Asta",
+      "ngoko" : "Cekel"
+    },
+    "-L9rXFR14hv7dUyoBezQ" : {
+      "indonesia" : "Memegang",
+      "kramaalus" : "Nyepeng",
+      "kramainggil" : "Ngasta",
+      "ngoko" : "Nyekel"
+    },
+    "-L9rXKb-1iVpPoEx0K_J" : {
+      "indonesia" : "Bicara",
+      "kramaalus" : "Wicanten",
+      "kramainggil" : "Ngendika",
+      "ngoko" : "Chelatu"
+    },
+    "-L9rXP3SbJW4h7AVggDC" : {
+      "indonesia" : "Babi hutan",
+      "kramaalus" : "Andaan",
+      "kramainggil" : "Andaan",
+      "ngoko" : "Celeng"
+    },
+    "-L9rXSqrsb5g-v68EmVr" : {
+      "indonesia" : "Pendek",
+      "kramaalus" : "Andhap",
+      "kramainggil" : "Andhap",
+      "ngoko" : "Cendhek"
+    },
+    "-L9rXWWnIMgRs0-gj2Dw" : {
+      "indonesia" : "Rendah",
+      "kramaalus" : "Andhap",
+      "kramainggil" : "Andhap",
+      "ngoko" : "Endhek"
+    },
+    "-L9rXaZr1j7ryzAY-K-y" : {
+      "indonesia" : "Tengkuk",
+      "kramaalus" : "Cengel",
+      "kramainggil" : "Griwa",
+      "ngoko" : "Cengel"
+    },
+    "-L9rXcvmuxfAmrbZ1ELS" : {
+      "indonesia" : "Kecil",
+      "kramaalus" : "Alit",
+      "kramainggil" : "Alit",
+      "ngoko" : "Cilik"
+    },
+    "-L9rXgceI1O-IBaiCas0" : {
+      "indonesia" : "Yang kecil",
+      "kramaalus" : "Alitan",
+      "kramainggil" : "Alitan",
+      "ngoko" : "Cilikan"
+    },
+    "-L9rXyGXDd3HUJNhgSXK" : {
+      "indonesia" : "Coba",
+      "kramaalus" : "Cobi",
+      "kramainggil" : "Cobi",
+      "ngoko" : "Cobi"
+    },
+    "-L9rY0WWzERe7au9BNaE" : {
+      "indonesia" : "Percobaan",
+      "kramaalus" : "Pacoban",
+      "kramainggil" : "Pacoban",
+      "ngoko" : "Pacoban"
+    },
+    "-L9rY2Z9kCXTfYR1lyh7" : {
+      "indonesia" : "Cobaan",
+      "kramaalus" : "Pacoban",
+      "kramainggil" : "Pacoban",
+      "ngoko" : "Pacoban"
+    },
+    "-L9rY6dJG1-kNGS-Lp4q" : {
+      "indonesia" : "Cerita",
+      "kramaalus" : "Ceriyos",
+      "kramainggil" : "Dhusun",
+      "ngoko" : "Cerita"
+    },
+    "-L9rYAToDWs7kVy3qfi9" : {
+      "indonesia" : "Cukup",
+      "kramaalus" : "Cekap",
+      "kramainggil" : "Cekap",
+      "ngoko" : "Cukup"
+    },
+    "-L9rYER4Ye9o1tXvITIS" : {
+      "indonesia" : "Kecukupan",
+      "kramaalus" : "Kecekapan",
+      "kramainggil" : "Kecekapan",
+      "ngoko" : "Kecukupan"
+    },
+    "-L9rYIKyPH82ihmxPqtL" : {
+      "indonesia" : "Cukur",
+      "kramaalus" : "Cukur",
+      "kramainggil" : "Paras",
+      "ngoko" : "Cukur"
+    },
+    "-L9rYMWOIZ2NHkOcQo5o" : {
+      "indonesia" : "Sanggama",
+      "kramaalus" : "Cumbana",
+      "kramainggil" : "Saresmi",
+      "ngoko" : "Cumbana"
+    },
+    "-L9rYQqiA6TBQwxjDpLZ" : {
+      "indonesia" : "Memijit",
+      "kramaalus" : "Dadah",
+      "kramainggil" : "Ngginda",
+      "ngoko" : "Dadah"
+    },
+    "-L9rYTyN53qMjI27F9yJ" : {
+      "indonesia" : "Jadi",
+      "kramaalus" : "Dados",
+      "kramainggil" : "Dados",
+      "ngoko" : "Dadi"
+    },
+    "-L9rYXj7XKBeBGiG4AnZ" : {
+      "indonesia" : "Menjadi",
+      "kramaalus" : "Dumados",
+      "kramainggil" : "Dumados",
+      "ngoko" : "Dumadi"
+    },
+    "-L9rYd5dbmW2wm87CFaQ" : {
+      "indonesia" : "Terjadi",
+      "kramaalus" : "Kedadosan",
+      "kramainggil" : "Kedadosan",
+      "ngoko" : "Kedadeyan"
+    },
+    "-L9rYh894WlSGfL5azeq" : {
+      "indonesia" : "Dagang",
+      "kramaalus" : "Gramen",
+      "kramainggil" : "Gramen",
+      "ngoko" : "Dagang"
+    },
+    "-L9rYkZIUZV5vJ0L70ti" : {
+      "indonesia" : "Jalan",
+      "kramaalus" : "Margi",
+      "kramainggil" : "Margi",
+      "ngoko" : "Dalan"
+    },
+    "-L9rYoZ1trJ4s7V-XAF8" : {
+      "indonesia" : "Berhias",
+      "kramaalus" : "Dandos",
+      "kramainggil" : "Busana",
+      "ngoko" : "Dandan"
+    },
+    "-L9rYsM_45jBDIdx44qE" : {
+      "indonesia" : "Merias",
+      "kramaalus" : "Ndandani",
+      "kramainggil" : "Mbusanani",
+      "ngoko" : "Ndandani"
+    },
+    "-L9rYvEEFe0H9STsSIm3" : {
+      "indonesia" : "Panjang",
+      "kramaalus" : "Panjang",
+      "kramainggil" : "Panjang",
+      "ngoko" : "Dawa"
+    },
+    "-L9rZ0lXffyC4edMY_72" : {
+      "indonesia" : "Memperpanjang",
+      "kramaalus" : "Memanjang",
+      "kramainggil" : "Memanjang",
+      "ngoko" : "Ndedawa"
+    },
+    "-L9rZ47qHg_O5zRFuCEF" : {
+      "indonesia" : "Taruh",
+      "kramaalus" : "Suka",
+      "kramainggil" : "Paring",
+      "ngoko" : "Deleh"
+    },
+    "-L9rZ7-5Hx7MkDurH8Q4" : {
+      "indonesia" : "Letak",
+      "kramaalus" : "Suka",
+      "kramainggil" : "Paring",
+      "ngoko" : "Deleh"
+    },
+    "-L9rZBC0l6N9Rofzn_MX" : {
+      "indonesia" : "Meletakkan",
+      "kramaalus" : "Nyukakaken",
+      "kramainggil" : "Maringaken",
+      "ngoko" : "Ndelehaken"
+    },
+    "-L9rZFWXH-PmC5qULeSZ" : {
+      "indonesia" : "Lihat",
+      "kramaalus" : "Tinggal",
+      "kramainggil" : "Priksa",
+      "ngoko" : "Deleng"
+    },
+    "-L9rZKJy3sWL3bCxIz-l" : {
+      "indonesia" : "Melihat",
+      "kramaalus" : "Ninggali",
+      "kramainggil" : "Mriksani",
+      "ngoko" : "Ndeleng"
+    },
+    "-L9rZRbbrG5ygQTO_0AI" : {
+      "indonesia" : "Sepenglihatan",
+      "kramaalus" : "Sapeninggal",
+      "kramainggil" : "Sapeninggal",
+      "ngoko" : "Sapendeleng"
+    },
+    "-L9rZUmAyw6lr44ElsrC" : {
+      "indonesia" : "Amal",
+      "kramaalus" : "Derma",
+      "kramainggil" : "Derma",
+      "ngoko" : "Derma"
+    },
+    "-L9rZ_5gLE7X__BkLhYz" : {
+      "indonesia" : "Hanya karena",
+      "kramaalus" : "Sadremi",
+      "kramainggil" : "Sadremi",
+      "ngoko" : "Sadrema"
+    },
+    "-L9rZbCSm5uGYxTxAYdV" : {
+      "indonesia" : "Desa",
+      "kramaalus" : "Dhusun",
+      "kramainggil" : "Dhusun",
+      "ngoko" : "Desa"
+    },
+    "-L9rZeOlI2XobN0ef3QC" : {
+      "indonesia" : "Pedesaan",
+      "kramaalus" : "Pedhusunan",
+      "kramainggil" : "Pedhusunan",
+      "ngoko" : "Padesan"
+    },
+    "-L9rZhF2asdVg2LtCPO2" : {
+      "indonesia" : "Dada",
+      "kramaalus" : "Dhadha",
+      "kramainggil" : "Jaja",
+      "ngoko" : "Dhadha"
+    },
+    "-L9rZjdA2fDbb33X43NK" : {
+      "indonesia" : "Tamu",
+      "kramaalus" : "Tamu",
+      "kramainggil" : "Tamu",
+      "ngoko" : "Dhayo"
+    },
+    "-L9rZmQuUvyQAkw9bAOJ" : {
+      "indonesia" : "Ketika",
+      "kramaalus" : "Kala",
+      "kramainggil" : "Nalika",
+      "ngoko" : "Dhek"
+    },
+    "-L9rZq3lH9oX41cB4sN7" : {
+      "indonesia" : "Senang",
+      "kramaalus" : "Remen",
+      "kramainggil" : "Remen",
+      "ngoko" : "Dhemen"
+    },
+    "-L9rZu-fR2Y7iFs4LI05" : {
+      "indonesia" : "Suka",
+      "kramaalus" : "Remen",
+      "kramainggil" : "Remen",
+      "ngoko" : "Dhemen"
+    },
+    "-L9rZxN2X0iPKeGV3aOM" : {
+      "indonesia" : "Kesenangan",
+      "kramaalus" : "Remenan",
+      "kramainggil" : "Remenan",
+      "ngoko" : "Dhemenan"
+    },
+    "-L9r_-IBYH79x7Ya1tTA" : {
+      "indonesia" : "Lutut",
+      "kramaalus" : "Dhengkul",
+      "kramainggil" : "Jengku",
+      "ngoko" : "Dhengkul"
+    },
+    "-L9r_4CfOvdQNwoh4xPH" : {
+      "indonesia" : "Sendiri",
+      "kramaalus" : "Piyambak",
+      "kramainggil" : "Piyambak",
+      "ngoko" : "Dhewe"
+    },
+    "-L9r_7soH3MAf8QldoZf" : {
+      "indonesia" : "Dia",
+      "kramaalus" : "Piyambakipun",
+      "kramainggil" : "Panjenenganipun",
+      "ngoko" : "Dheweke"
+    },
+    "-L9r_CJEw90vj8jTkrTU" : {
+      "indonesia" : "Dahulu",
+      "kramaalus" : "Rumiyin",
+      "kramainggil" : "Rumiyin",
+      "ngoko" : "Dhisik"
+    },
+    "-L9r_Ef_PZtxmnj9VJIf" : {
+      "indonesia" : "Uang",
+      "kramaalus" : "Arta",
+      "kramainggil" : "Arta",
+      "ngoko" : "Dhuwit"
+    },
+    "-L9r_aycXkmC15M_Im-P" : {
+      "indonesia" : "Tinggi",
+      "kramaalus" : "Inggil",
+      "kramainggil" : "Luhur",
+      "ngoko" : "Dhuwur"
+    },
+    "-L9r_fYtYAYr7u3PM-H0" : {
+      "indonesia" : "Di-",
+      "kramaalus" : "Dipun-",
+      "kramainggil" : "Dipun-",
+      "ngoko" : "Di-"
+    },
+    "-L9r_iuKOGYVo_ujL2Nh" : {
+      "indonesia" : "Hari",
+      "kramaalus" : "Dinten",
+      "kramainggil" : "Dipun-",
+      "ngoko" : "Dina"
+    },
+    "-L9r_o9fIFzsxqvcIWve" : {
+      "indonesia" : "Harian",
+      "kramaalus" : "Padintenan",
+      "kramainggil" : "Padintenan",
+      "ngoko" : "Padinan"
+    },
+    "-L9r_tDX9gSd7Z964oRC" : {
+      "indonesia" : "Kertas",
+      "kramaalus" : "Dlancang",
+      "kramainggil" : "Dlancang",
+      "ngoko" : "Dluwang"
+    },
+    "-L9r_wIwALksIOhl8Be5" : {
+      "indonesia" : "Kain",
+      "kramaalus" : "Dodot",
+      "kramainggil" : "Kampuh",
+      "ngoko" : "Dodot"
+    },
+    "-L9r_zfdUnmWmub5cfe8" : {
+      "indonesia" : "Letak",
+      "kramaalus" : "Dekek",
+      "kramainggil" : "Paring",
+      "ngoko" : "Dokok"
+    },
+    "-L9ra3tkoqFPzt5JUZ6O" : {
+      "indonesia" : "Meletakkan",
+      "kramaalus" : "Ddekekaken",
+      "kramainggil" : "Maringaken",
+      "ngoko" : "Ndokokake"
+    },
+    "-L9ra6NMD4xdY97ALT9G" : {
+      "indonesia" : "Mau",
+      "kramaalus" : "Purun",
+      "kramainggil" : "Kersa",
+      "ngoko" : "Doyan"
+    },
+    "-L9raDzKymOAbp_mxt3i" : {
+      "indonesia" : "Jual",
+      "kramaalus" : "Sade",
+      "kramainggil" : "Sade",
+      "ngoko" : "Dol"
+    },
+    "-L9raNpizCn3YoWSbm3E" : {
+      "indonesia" : "Jual beli",
+      "kramaalus" : "Sade tinumbas",
+      "kramainggil" : "Sade tinumbas",
+      "ngoko" : "Dol tinuku"
+    },
+    "-L9raQfWV5AcxrrSP99T" : {
+      "indonesia" : "Main",
+      "kramaalus" : "Dolan",
+      "kramainggil" : "Ameng-ameng",
+      "ngoko" : "Dolan"
+    },
+    "-L9raVIVWB8dOHaSVHJV" : {
+      "indonesia" : "Bermain",
+      "kramaalus" : "Dolanan",
+      "kramainggil" : "Ameng-amengan",
+      "ngoko" : "Dolanan"
+    },
+    "-L9raXPTK6_PppBLZdYA" : {
+      "indonesia" : "Jarum",
+      "kramaalus" : "Jarum",
+      "kramainggil" : "Jarum",
+      "ngoko" : "Dom"
+    },
+    "-L9ra_-CeMTE2xdwDtuh" : {
+      "indonesia" : "Bukan",
+      "kramaalus" : "Sanes",
+      "kramainggil" : "Sanes",
+      "ngoko" : "Dudu"
+    },
+    "-L9raejXMFPxVPfJu6Zp" : {
+      "indonesia" : "Duga",
+      "kramaalus" : "Dugi",
+      "kramainggil" : "Dugi",
+      "ngoko" : "Dugi"
+    },
+    "-L9rakHuakCjqL28_Vnr" : {
+      "indonesia" : "Kira-kira",
+      "kramaalus" : "Kedugi",
+      "kramainggil" : "Kedugi",
+      "ngoko" : "Kaduga"
+    },
+    "-L9rapEvfOPlzLrx0PD-" : {
+      "indonesia" : "Saudara",
+      "kramaalus" : "Dherek",
+      "kramainggil" : "Dherek",
+      "ngoko" : "Dulur"
+    },
+    "-L9rauQX3KLO9RCTV6Vr" : {
+      "indonesia" : "Saudara",
+      "kramaalus" : "Sedherek",
+      "kramainggil" : "Sentana",
+      "ngoko" : "Sedulur"
+    },
+    "-L9rb-kfYOGCE_4RRKRf" : {
+      "indonesia" : "Persaudaraan",
+      "kramaalus" : "Pasedherekan",
+      "kramainggil" : "Pasedherekan",
+      "ngoko" : "Paseduluran"
+    },
+    "-L9rbGhK40OT5m24TzdP" : {
+      "indonesia" : "Belum",
+      "kramaalus" : "Dereng",
+      "kramainggil" : "Dereng",
+      "ngoko" : "Durung"
+    },
+    "-L9rbMOUcUiUH99A3Hxn" : {
+      "indonesia" : "Sebelumnya",
+      "kramaalus" : "Saderengipun",
+      "kramainggil" : "Saderengipun",
+      "ngoko" : "Sadurunge"
+    },
+    "-L9rbPh4dZuctZdVayh-" : {
+      "indonesia" : "Gila",
+      "kramaalus" : "Ewah",
+      "kramainggil" : "Ewah",
+      "ngoko" : "Edan"
+    },
+    "-L9rbW-XVuce5MEGcJO-" : {
+      "indonesia" : "Tergila-gila",
+      "kramaalus" : "Kedanan",
+      "kramainggil" : "Kesengsem",
+      "ngoko" : "kedanan"
+    },
+    "-L9rb_aUInlzQIA1Ga3U" : {
+      "indonesia" : "Ingat",
+      "kramaalus" : "Emut",
+      "kramainggil" : "Emut",
+      "ngoko" : "Eling"
+    },
+    "-L9rbcI8MxsaLFf6D5XM" : {
+      "indonesia" : "Sadar",
+      "kramaalus" : "Enget",
+      "kramainggil" : "Enget",
+      "ngoko" : "Eling"
+    },
+    "-L9rbhs9NVMMFYormG1U" : {
+      "indonesia" : "Teringat",
+      "kramaalus" : "Kemutan",
+      "kramainggil" : "Kemutan",
+      "ngoko" : "Kelingan"
+    },
+    "-L9rblmO3DoOIuRmhn3A" : {
+      "indonesia" : "Teringat",
+      "kramaalus" : "Kengetan",
+      "kramainggil" : "Kengetan",
+      "ngoko" : "Kelingan"
+    },
+    "-L9rbsbYILRbFd2ohaJA" : {
+      "indonesia" : "Mengingat-ingat",
+      "kramaalus" : "Ngemut-emut",
+      "kramainggil" : "Ngemut-emut",
+      "ngoko" : "Ngeling-eling"
+    },
+    "-L9rbxhvXwltbb_WuYOk" : {
+      "indonesia" : "Mengingat",
+      "kramaalus" : "Ngengeti",
+      "kramainggil" : "Ngengeti",
+      "ngoko" : "Ngelingi"
+    },
+    "-L9rc0rWekNHRr3YZyFh" : {
+      "indonesia" : "Ilmu",
+      "kramaalus" : "Elmi",
+      "kramainggil" : "Elmi",
+      "ngoko" : "Elmu"
+    },
+    "-L9rc5n_24tdrZRLZ5cO" : {
+      "indonesia" : "Ikut",
+      "kramaalus" : "Tumut",
+      "kramainggil" : "Dherek",
+      "ngoko" : "Melu"
+    },
+    "-L9rcBIEtoM9Af_yOfuG" : {
+      "indonesia" : "Air mata",
+      "kramaalus" : "Eluh",
+      "kramainggil" : "Waspa",
+      "ngoko" : "Eluh"
+    },
+    "-L9rcDoZjWw06hjmIZbH" : {
+      "indonesia" : "Emas",
+      "kramaalus" : "Jene",
+      "kramainggil" : "Jene",
+      "ngoko" : "Emas"
+    },
+    "-L9rcGsQWqf43qU_TqsT" : {
+      "indonesia" : "Kakek",
+      "kramaalus" : "Simbah",
+      "kramainggil" : "'Eyang",
+      "ngoko" : "Embah"
+    },
+    "-L9rcLzaV9EK0bXjbUOT" : {
+      "indonesia" : "Tidak tahu",
+      "kramaalus" : "Mboten mangertos",
+      "kramainggil" : "Duka",
+      "ngoko" : "Embuh"
+    },
+    "-L9rcQyg3j08DLiH_bxj" : {
+      "indonesia" : "Ubun-ubun",
+      "kramaalus" : "Embun-embun",
+      "kramainggil" : "Sundulan",
+      "ngoko" : "Embun-embun"
+    },
+    "-L9rcUDD8a4S3E9Vzuqk" : {
+      "indonesia" : "Ibu",
+      "kramaalus" : "Embok",
+      "kramainggil" : "Ibu",
+      "ngoko" : "Embok"
+    },
+    "-L9rdHPbdlri9ZJM_epq" : {
+      "indonesia" : "Enak",
+      "kramaalus" : "Eca",
+      "kramainggil" : "Eca",
+      "ngoko" : "Enak"
+    },
+    "-L9rdLgCx6VrT6VV4ptG" : {
+      "indonesia" : "Enak perasaan",
+      "kramaalus" : "Sekeca",
+      "kramainggil" : "Sekeca",
+      "ngoko" : "Kepenak"
+    },
+    "-L9rdPesWWsEyPHggZjG" : {
+      "indonesia" : "Sembuh",
+      "kramaalus" : "Sekeca",
+      "kramainggil" : "Dhangan",
+      "ngoko" : "Kepenak"
+    },
+    "-L9rdTIEsCGjIiqcYIbv" : {
+      "indonesia" : "Mabuk",
+      "kramaalus" : "Mendem",
+      "kramainggil" : "Wuru",
+      "ngoko" : "Mendem"
+    },
+    "-L9rdoxBWKMX9IThGI91" : {
+      "indonesia" : "Mana",
+      "kramaalus" : "Pundi",
+      "kramainggil" : "Pundi",
+      "ngoko" : "Endi"
+    },
+    "-L9rdsJyPgB9hnO9Vh9C" : {
+      "indonesia" : "Kepala",
+      "kramaalus" : "Sirah",
+      "kramainggil" : "Mustaka",
+      "ngoko" : "Endas"
+    },
+    "-L9rdwkJ79nmU105yYck" : {
+      "indonesia" : "Henti",
+      "kramaalus" : "Kendel",
+      "kramainggil" : "Kendel",
+      "ngoko" : "Endheg"
+    },
+    "-L9re3WzUpFEjGEXDnLr" : {
+      "indonesia" : "Berhenti",
+      "kramaalus" : "Kendel",
+      "kramainggil" : "Kendel",
+      "ngoko" : "Mandheg"
+    },
+    "-L9re7xZSjDVFF0NfpAt" : {
+      "indonesia" : "Menghentikan",
+      "kramaalus" : "Ngendelaken",
+      "kramainggil" : "Ngendelaken",
+      "ngoko" : "Ngendhegake"
+    },
+    "-L9reBH9gRHflzFxGGgR" : {
+      "indonesia" : "Telur",
+      "kramaalus" : "Tigan",
+      "kramainggil" : "Tigan",
+      "ngoko" : "Endhog"
+    },
+    "-L9reEpXxbRJK1SfbMh5" : {
+      "indonesia" : "Bertelur",
+      "kramaalus" : "Nigan",
+      "kramainggil" : "Nigan",
+      "ngoko" : "Ngendheg"
+    },
+    "-L9reJvP2bEQ-56P9xf7" : {
+      "indonesia" : "Diam",
+      "kramaalus" : "Mendel",
+      "kramainggil" : "Mendel",
+      "ngoko" : "Meneng"
+    },
+    "-L9reP42hPYDvJzEqOm1" : {
+      "indonesia" : "Membiarkan",
+      "kramaalus" : "Ngendelaken",
+      "kramainggil" : "Ngendelaken",
+      "ngoko" : "Ngenengake"
+    },
+    "-L9reRvPS1NT90WrXWGW" : {
+      "indonesia" : "Arah",
+      "kramaalus" : "Leres",
+      "kramainggil" : "Leres",
+      "ngoko" : "Ener"
+    },
+    "-L9reWDTQm9PFQboqLmY" : {
+      "indonesia" : "Menuju",
+      "kramaalus" : "Ngleres",
+      "kramainggil" : "Ngleres",
+      "ngoko" : "Ngener"
+    },
+    "-L9reZIZ65_mQpG8Nx7x" : {
+      "indonesia" : "Tepat",
+      "kramaalus" : "Leres",
+      "kramainggil" : "Leres",
+      "ngoko" : "Pener"
+    },
+    "-L9redBIgAxPp3qg483b" : {
+      "indonesia" : "Pakai",
+      "kramaalus" : "Engge",
+      "kramainggil" : "Agem",
+      "ngoko" : "Engo"
+    },
+    "-L9redofNsxBtmOxvLQM" : {
+      "indonesia" : "Janggut",
+      "kramaalus" : "Jenggot",
+      "kramainggil" : "Gumbala",
+      "ngoko" : "Jenggot"
+    },
+    "-L9refRIj9H9Zt0VgJJu" : {
+      "indonesia" : "Pakai",
+      "kramaalus" : "Engge",
+      "kramainggil" : "Agem",
+      "ngoko" : "Anggo"
+    },
+    "-L9reiofVVpB_Xr0seB9" : {
+      "indonesia" : "Dalam",
+      "kramaalus" : "Lebet",
+      "kramainggil" : "Lebet",
+      "ngoko" : "Jero"
+    },
+    "-L9rej8_M-lZWFA6y1go" : {
+      "indonesia" : "Untuk",
+      "kramaalus" : "Kangge",
+      "kramainggil" : "Kagem",
+      "ngoko" : "Kanggo"
+    },
+    "-L9remh66OjWCoCOweqy" : {
+      "indonesia" : "Memakai",
+      "kramaalus" : "Ngangge",
+      "kramainggil" : "Ngagem",
+      "ngoko" : "Nganggo"
+    },
+    "-L9repWEMg5PiMQmnxdA" : {
+      "indonesia" : "Tempat",
+      "kramaalus" : "Enggen",
+      "kramainggil" : "Enggen",
+      "ngoko" : "Enggon"
+    },
+    "-L9retA8GZpI0QbtVxo8" : {
+      "indonesia" : "Tinggal",
+      "kramaalus" : "Manggen",
+      "kramainggil" : "Lenggah",
+      "ngoko" : "Manggon"
+    },
+    "-L9rexki5cDhsDTLCK4G" : {
+      "indonesia" : "Menempati",
+      "kramaalus" : "Ngenggeni",
+      "kramainggil" : "Nglenggahi",
+      "ngoko" : "Ngenggoni"
+    },
+    "-L9rf0KfO5M0xt6DgmwM" : {
+      "indonesia" : "Tempat",
+      "kramaalus" : "Panggenan",
+      "kramainggil" : "Panggenan",
+      "ngoko" : "Panggonan"
+    },
+    "-L9rf2SWGE8lFCBDq1Hd" : {
+      "indonesia" : "Muda",
+      "kramaalus" : "Enem",
+      "kramainggil" : "Enem",
+      "ngoko" : "Enom"
+    },
+    "-L9rf5yfW2qgzrPJM5W-" : {
+      "indonesia" : "Masa muda",
+      "kramaalus" : "Enem-eneman",
+      "kramainggil" : "Enem-eneman",
+      "ngoko" : "Enom-enoman"
+    },
+    "-L9rfEDTG0MvuwOeW3Yt" : {
+      "indonesia" : "Habis",
+      "kramaalus" : "Telas",
+      "kramainggil" : "Telas",
+      "ngoko" : "Entek"
+    },
+    "-L9rfIz13OOJ-8s8xu9C" : {
+      "indonesia" : "Kehabisan",
+      "kramaalus" : "Ketelasan",
+      "kramainggil" : "Ketelasan",
+      "ngoko" : "Kentekan"
+    },
+    "-L9rfMMuKH7HRzeKvRfZ" : {
+      "indonesia" : "Ambil",
+      "kramaalus" : "Pendhet",
+      "kramainggil" : "Pundhut",
+      "ngoko" : "Epek"
+    },
+    "-L9rfSDdvZu8LVfzf9jF" : {
+      "indonesia" : "Mengambil",
+      "kramaalus" : "Mendhet",
+      "kramainggil" : "Mundhut",
+      "ngoko" : "Ngepek"
+    },
+    "-L9rf_6UHlHMmYapxRS7" : {
+      "indonesia" : "Mengambilkan",
+      "kramaalus" : "Mendhetaken",
+      "kramainggil" : "Mundhutaken",
+      "ngoko" : "Ngepekake"
+    },
+    "-L9rfcfxBUdLM-hDn7sb" : {
+      "indonesia" : "Silahkan",
+      "kramaalus" : "Mangga",
+      "kramainggil" : "Mangga",
+      "ngoko" : "Enya"
+    },
+    "-L9rffkp6NID43CgZiPb" : {
+      "indonesia" : "Ganti",
+      "kramaalus" : "Gantos",
+      "kramainggil" : "Gantos",
+      "ngoko" : "Gadhe"
+    },
+    "-L9rfk3_iPZbJS1W32B2" : {
+      "indonesia" : "Mengganti",
+      "kramaalus" : "Nggantos",
+      "kramainggil" : "Nggantos",
+      "ngoko" : "Nggandhe"
+    },
+    "-L9rfm_ZcJTy9jMqLoUH" : {
+      "indonesia" : "Alat",
+      "kramaalus" : "Dedamel",
+      "kramainggil" : "Dedamel",
+      "ngoko" : "Gaman"
+    },
+    "-L9rfpTpeIsxm57z6n2X" : {
+      "indonesia" : "Gamelan",
+      "kramaalus" : "Gangsa",
+      "kramainggil" : "Gangsa",
+      "ngoko" : "Gamelan"
+    },
+    "-L9rfrTQ15efcDTcwYTJ" : {
+      "indonesia" : "Mudah",
+      "kramaalus" : "Gampil",
+      "kramainggil" : "Gampil",
+      "ngoko" : "Gampang"
+    },
+    "-L9rfvEMZ2zhOjGTupbx" : {
+      "indonesia" : "Meremehkan",
+      "kramaalus" : "Nggampilaken",
+      "kramainggil" : "Nggampilaken",
+      "ngoko" : "Nggampangake"
+    },
+    "-L9rg--ikkdVXtQrdUc5" : {
+      "indonesia" : "Masuk",
+      "kramaalus" : "Mlebet",
+      "kramainggil" : "Mlebet",
+      "ngoko" : "Menjero"
+    },
+    "-L9rg8o2j-gd6hf64F5M" : {
+      "indonesia" : "Memperdalam",
+      "kramaalus" : "Nglebetaken",
+      "kramainggil" : "Nglebetaken",
+      "ngoko" : "Njerokake"
+    },
+    "-L9rgEBArXVnuHlIYVue" : {
+      "indonesia" : "Jeruk",
+      "kramaalus" : "Jeram",
+      "kramainggil" : "Jeram",
+      "ngoko" : "Jeruk"
+    },
+    "-L9rgHyZY7yscGL4cmMv" : {
+      "indonesia" : "Tari",
+      "kramaalus" : "Joged",
+      "kramainggil" : "Beksa",
+      "ngoko" : "Joged"
+    },
+    "-L9rgRoM7Sh6T_fPspie" : {
+      "indonesia" : "Tarian",
+      "kramaalus" : "Jogedan",
+      "kramainggil" : "Beksan",
+      "ngoko" : "Jogedan"
+    },
+    "-L9rgvrs3FRPePyCrA6w" : {
+      "indonesia" : "Menari",
+      "kramaalus" : "Njoged",
+      "kramainggil" : "Mbeksa",
+      "ngoko" : "Njoged"
+    },
+    "-L9rh224KtFtOGSQqucs" : {
+      "indonesia" : "Sisir",
+      "kramaalus" : "Serat",
+      "kramainggil" : "Pethat",
+      "ngoko" : "Jungkat"
+    },
+    "-L9rhTMPYrl7GAPTxTmQ" : {
+      "indonesia" : "Bersisir",
+      "kramaalus" : "Seratan",
+      "kramainggil" : "Pethatan",
+      "ngoko" : "Jungkatan"
+    },
+    "-L9riiwrSQSgZdaNS2Tr" : {
+      "indonesia" : "Menyisir",
+      "kramaalus" : "Nyerati",
+      "kramainggil" : "Methati",
+      "ngoko" : "Njungkati"
+    },
+    "-L9risICOz9n-GRqNOAy" : {
+      "indonesia" : "Ambil",
+      "kramaalus" : "Pendhet",
+      "kramainggil" : "Pundhut",
+      "ngoko" : "Jupuk"
+    },
+    "-L9rj-EEr5Gp1OhAGTE_" : {
+      "indonesia" : "Mengambil",
+      "kramaalus" : "Mendhet",
+      "kramainggil" : "Mundhut",
+      "ngoko" : "Njupuk"
+    },
+    "-L9rj7OjRnuMGm1x83Gy" : {
+      "indonesia" : "Mencuri",
+      "kramaalus" : "Memendhet",
+      "kramainggil" : "Memendhet",
+      "ngoko" : "Njejupuk"
+    },
+    "-L9rjCjbv8mQtu_mfAVC" : {
+      "indonesia" : "Semua",
+      "kramaalus" : "Sedaya",
+      "kramainggil" : "Sedaya",
+      "ngoko" : "Kabeh"
+    },
+    "-L9rjJ7NFFoPYFxi9-dB" : {
+      "indonesia" : "Beda",
+      "kramaalus" : "Kaot",
+      "kramainggil" : "Kaot",
+      "ngoko" : "Kacek"
+    },
+    "-L9rjfKetE6QadvJzC52" : {
+      "indonesia" : "Istimewa",
+      "kramaalus" : "Kinaot",
+      "kramainggil" : "Kinaot",
+      "ngoko" : "Kinacek"
+    },
+    "-L9rjvg6tJ1UNNM9qjSK" : {
+      "indonesia" : "Mengaji",
+      "kramaalus" : "Ngaos",
+      "kramainggil" : "Ngaos",
+      "ngoko" : "Ngaji"
+    },
+    "-L9rk16HGpEGvjFp87hw" : {
+      "indonesia" : "Pengajian",
+      "kramaalus" : "Pengaosan",
+      "kramainggil" : "Pengaosan",
+      "ngoko" : "Pengajian"
+    },
+    "-L9rk7rZq_YLZdVj30xj" : {
+      "indonesia" : "Naik Haji",
+      "kramaalus" : "Minggah Kaji",
+      "kramainggil" : "Minggah Kji",
+      "ngoko" : "Munggah Kaji"
+    },
+    "-L9rkGLIdaphq5CAJ24V" : {
+      "indonesia" : "Kakak",
+      "kramaalus" : "Kakang",
+      "kramainggil" : "Kangmas",
+      "ngoko" : "Kakang"
+    },
+    "-L9rkKnzTENBN_chZAo8" : {
+      "indonesia" : "Kalah",
+      "kramaalus" : "Kawon",
+      "kramainggil" : "Kasoran",
+      "ngoko" : "Kalah"
+    },
+    "-L9rkYdBrhIkrfAf5_xV" : {
+      "indonesia" : "Mengalah",
+      "kramaalus" : "Ngawon",
+      "kramainggil" : "Ngawon",
+      "ngoko" : "Ngalah"
+    },
+    "-L9rkbuhDUHl3YwBQlBZ" : {
+      "indonesia" : "Sungai",
+      "kramaalus" : "Lepen",
+      "kramainggil" : "Lepen",
+      "ngoko" : "Kali"
+    },
+    "-L9rkjh8ZQ4XFSYY9OW0" : {
+      "indonesia" : "Kalung",
+      "kramaalus" : "Kalung",
+      "kramainggil" : "Sangsangan",
+      "ngoko" : "Kalung"
+    },
+    "-L9rkpMGTt7JOzpyExjr" : {
+      "indonesia" : "Kelapa",
+      "kramaalus" : "Klapa",
+      "kramainggil" : "Klapa",
+      "ngoko" : "Kambil"
+    },
+    "-L9rkxOO8_G9IJv114Ab" : {
+      "indonesia" : "Pimpinan Desa",
+      "kramaalus" : "Kami Sepuh",
+      "kramainggil" : "Kami Sepuh",
+      "ngoko" : "Kami Tuwa"
+    },
+    "-L9rl0YRD1B0Omj6NtL0" : {
+      "indonesia" : "Sana",
+      "kramaalus" : "Rika",
+      "kramainggil" : "Rika",
+      "ngoko" : "Kana"
+    },
+    "-L9rl53qcRkNk1xCZtdj" : {
+      "indonesia" : "Teman",
+      "kramaalus" : "Rencang",
+      "kramainggil" : "Rencang",
+      "ngoko" : "Kanca"
+    },
+    "-L9rlDDUwzL7KW14FjN6" : {
+      "indonesia" : "Berkata",
+      "kramaalus" : "Criyos",
+      "kramainggil" : "Ngendhika, Matur",
+      "ngoko" : "Kandha"
+    },
+    "-L9rlvSGuj6nYPaCEFQ8" : {
+      "indonesia" : "Kapan",
+      "kramaalus" : "Benjing Menapa, Kala Menap, Kajeng",
+      "kramainggil" : "Benjing Menapa, Kala Menapa, Kersa",
+      "ngoko" : "Kapan"
+    },
+    "-L9rmCz3LKwZnyTx0CDx" : {
+      "indonesia" : "Kehendak",
+      "kramaalus" : "Kajeng",
+      "kramainggil" : "Kersa",
+      "ngoko" : "Karep"
+    },
+    "-L9rmJFmta1KzjzQxyjT" : {
+      "indonesia" : "Biarlah",
+      "kramaalus" : "Kajengipun",
+      "kramainggil" : "Kersanipun",
+      "ngoko" : "Karepe"
+    },
+    "-L9rmPtsZqb-lIlpSqBG" : {
+      "indonesia" : "Tertinggal",
+      "kramaalus" : "Kantun",
+      "kramainggil" : "Kantun",
+      "ngoko" : "Kari"
+    },
+    "-L9rmwZvRmoIm2OdB6AY" : {
+      "indonesia" : "Ternyata",
+      "kramaalus" : "Kantun-kantun",
+      "kramainggil" : "Kantun-kantun",
+      "ngoko" : "Kari-kari"
+    },
+    "-L9rn-nZVk7iZ9mKv5zj" : {
+      "indonesia" : "Dengan",
+      "kramaalus" : "Kaliyan",
+      "kramainggil" : "Kaliyan",
+      "ngoko" : "Karo"
+    },
+    "-L9rnCk7v0UCiSPzIXVM" : {
+      "indonesia" : "Keduanya",
+      "kramaalus" : "Kalih-kalihipun",
+      "kramainggil" : "Kalih-kalihipun",
+      "ngoko" : "Karo-karone"
+    },
+    "-L9rnLlwoev7ZoxIjum_" : {
+      "indonesia" : "Tentu",
+      "kramaalus" : "Kantenan",
+      "kramainggil" : "Kantenan",
+      "ngoko" : "Karuwan"
+    },
+    "-L9rnW2OE75eoVpoxUR7" : {
+      "indonesia" : "Tidak Tentu",
+      "kramaalus" : "Mboten kantentan",
+      "kramainggil" : "Mboten kantentan",
+      "ngoko" : "Ora karuwan"
+    },
+    "-L9rnbMJT6BpnPMKU64I" : {
+      "indonesia" : "Celana",
+      "kramaalus" : "Suwal",
+      "kramainggil" : "Lancingan",
+      "ngoko" : "Katok"
+    },
+    "-L9rnic3ajgHzwRLfCdI" : {
+      "indonesia" : "Bercelana",
+      "kramaalus" : "Suwalan",
+      "kramainggil" : "Lancingan",
+      "ngoko" : "Kathokan"
+    },
+    "-L9rnpymnZjOUHkZ4MbZ" : {
+      "indonesia" : "Ke",
+      "kramaalus" : "Kaping",
+      "kramainggil" : "Kaping",
+      "ngoko" : "Kaping"
+    },
+    "-L9rnwF-VJjdtVHc83Nn" : {
+      "indonesia" : "Kerbau",
+      "kramaalus" : "Maesa",
+      "kramainggil" : "Maesa",
+      "ngoko" : "Kebo"
+    },
+    "-L9ro0oyIsd7FdhJFRpA" : {
+      "indonesia" : "Kuat",
+      "kramaalus" : "Kuwawi",
+      "kramainggil" : "Kuwawi",
+      "ngoko" : "Kuat"
+    },
+    "-L9ro6T4qm4KSqJcE35d" : {
+      "indonesia" : "Keguguran",
+      "kramaalus" : "Keluron",
+      "kramainggil" : "Terag",
+      "ngoko" : "Keluron"
+    },
+    "-L9roBur68_FUTMn1zye" : {
+      "indonesia" : "Bunga",
+      "kramaalus" : "Sekar",
+      "kramainggil" : "Sekar",
+      "ngoko" : "Kembang"
+    },
+    "-L9roHfHCyEgy96dIomQ" : {
+      "indonesia" : "Hiasan",
+      "kramaalus" : "Sekaran",
+      "kramainggil" : "Sekaran",
+      "ngoko" : "Kembangan"
+    },
+    "-L9roSSjSVOn84gsdD44" : {
+      "indonesia" : "Bunga tiga warna",
+      "kramaalus" : "Sekar tigan",
+      "kramainggil" : "Sekar tigan",
+      "ngoko" : "Kembang telon"
+    },
+    "-L9roWHUaFl_FaaNHLuI" : {
+      "indonesia" : "Kemenyan",
+      "kramaalus" : "Sela",
+      "kramainggil" : "Sela",
+      "ngoko" : "Kemenyan"
+    },
+    "-L9ro_GV_4DmW9a9eDtJ" : {
+      "indonesia" : "Kumur",
+      "kramaalus" : "Kemu",
+      "kramainggil" : "Kembeng",
+      "ngoko" : "Kemu"
+    },
+    "-L9rog15UJLrD7Z0HWIc" : {
+      "indonesia" : "Berkumur",
+      "kramaalus" : "Kekemon",
+      "kramainggil" : "Kekembeng",
+      "ngoko" : "Kekemon"
+    },
+    "-L9rokkQwsa4V2BLzGna" : {
+      "indonesia" : "Selimut",
+      "kramaalus" : "Kemul",
+      "kramainggil" : "Singeb",
+      "ngoko" : "Kemul"
+    },
+    "-L9roq9Fq0kpPUT-smH4" : {
+      "indonesia" : "Berselimut",
+      "kramaalus" : "Kemulan",
+      "kramainggil" : "Singeban",
+      "ngoko" : "Kemulan"
+    },
+    "-L9royImev0X8LQ0Sg6d" : {
+      "indonesia" : "Boleh",
+      "kramaalus" : "Kenging",
+      "kramainggil" : "Kenging",
+      "ngoko" : "Kena"
+    },
+    "-L9uDaxDUtBKOZy18Pja" : {
+      "indonesia" : "Mengenai",
+      "kramaalus" : "Ngengingi",
+      "kramainggil" : "Ngengingi",
+      "ngoko" : "Ngenani"
+    },
+    "-L9uDe4AYVhLQ93RvC9V" : {
+      "indonesia" : "sini",
+      "kramaalus" : "Riki",
+      "kramainggil" : "Riki",
+      "ngoko" : "Kene"
+    },
+    "-L9uEz5r4c3T2NIFHI42" : {
+      "indonesia" : "Begitu",
+      "kramaalus" : "Mekaten",
+      "kramainggil" : "Mekaten",
+      "ngoko" : "Mengkene"
+    },
+    "-L9uF4SO52dO_qMma-b4" : {
+      "indonesia" : "Bagaimana",
+      "kramaalus" : "Kados pundi",
+      "kramainggil" : "Kados pundi",
+      "ngoko" : "Kepriye"
+    },
+    "-L9uFATBmttEwBL91BXe" : {
+      "indonesia" : "Dikelilingi",
+      "kramaalus" : "Kepang",
+      "kramainggil" : "Kepang",
+      "ngoko" : "Kepung"
+    },
+    "-L9uFEsvfbNkyJiQAKC8" : {
+      "indonesia" : "Kenduri",
+      "kramaalus" : "Kepangan",
+      "kramainggil" : "Kepangan",
+      "ngoko" : "Kepungan"
+    },
+    "-L9uFLr7CGTtlggeD_4j" : {
+      "indonesia" : "Sering",
+      "kramaalus" : "Asring, sering",
+      "kramainggil" : "Asring, sering",
+      "ngoko" : "Kerep"
+    },
+    "-L9uFPrhwinV0f1ouNBl" : {
+      "indonesia" : "Keris",
+      "kramaalus" : "Duwung",
+      "kramainggil" : "Wangkingan",
+      "ngoko" : "Keris"
+    },
+    "-L9uFUGudWSq6X_eU-7Z" : {
+      "indonesia" : "Tergesa-gesa",
+      "kramaalus" : "Kesesa",
+      "kramainggil" : "Kesesa",
+      "ngoko" : "Kesusu"
+    },
+    "-L9uFaAFgvveq41yTfEQ" : {
+      "indonesia" : "Kentara",
+      "kramaalus" : "Ketawis, ketingal",
+      "kramainggil" : "Ketawis, ketingal",
+      "ngoko" : "Ketara"
+    },
+    "-L9uFk-7mDYjCcSgSYj-" : {
+      "indonesia" : "Menampakkan diri",
+      "kramaalus" : "Ngetawis, ngetingal",
+      "kramainggil" : "Ngetawis, ngetingal",
+      "ngoko" : "Ngetara"
+    },
+    "-L9uFtPNMzW5jpF-YCUW" : {
+      "indonesia" : "Menunjukan tanda",
+      "kramaalus" : "Ngetawisi",
+      "kramainggil" : "Ngetawisi",
+      "ngoko" : "Ngetarani"
+    },
+    "-L9uG1ylf7PF_FUyFd6C" : {
+      "indonesia" : "Kelihatan",
+      "kramaalus" : "Ketingal",
+      "kramainggil" : "Ketingal",
+      "ngoko" : "Ketok"
+    },
+    "-L9uG7bGCVJoj2pxAJdU" : {
+      "indonesia" : "Terbayang",
+      "kramaalus" : "Tetingalen",
+      "kramainggil" : "Tetingalen",
+      "ngoko" : "Ketok-ketoken"
+    },
+    "-L9uGBabj1Lk8Pty5ujm" : {
+      "indonesia" : "Nisan",
+      "kramaalus" : "Kijing",
+      "kramainggil" : "Sekaran",
+      "ngoko" : "Kijing"
+    },
+    "-L9uGGla8tn9SKuicwWS" : {
+      "indonesia" : "Ini",
+      "kramaalus" : "Menika",
+      "kramainggil" : "Menika",
+      "ngoko" : "Niki"
+    },
+    "-L9uGOLY5qCULo-Xi8W-" : {
+      "indonesia" : "Sirih",
+      "kramaalus" : "Ganten",
+      "kramainggil" : "Ganten",
+      "ngoko" : "Kinang"
+    },
+    "-L9uGRa2bQo4rBNQZ7gE" : {
+      "indonesia" : "Kira",
+      "kramaalus" : "Kinten",
+      "kramainggil" : "Kinten",
+      "ngoko" : "Kira"
+    },
+    "-L9uGZvk0s_41seFZ-GM" : {
+      "indonesia" : "Kira-kira",
+      "kramaalus" : "Kinten-kinten",
+      "kramainggil" : "Kinten-kinten",
+      "ngoko" : "Kira-kira"
+    },
+    "-L9uGeOzlz4yJsEJIeA6" : {
+      "indonesia" : "Mengira",
+      "kramaalus" : "Nginten",
+      "kramainggil" : "Nginten",
+      "ngoko" : "Ngira"
+    },
+    "-L9uGiE28FyDD5eH7Nky" : {
+      "indonesia" : "Kirim",
+      "kramaalus" : "Kintun",
+      "kramainggil" : "Kintun",
+      "ngoko" : "Kirim"
+    },
+    "-L9uGmFRAgDKjn3kN-nz" : {
+      "indonesia" : "Mengirim",
+      "kramaalus" : "Ngintun",
+      "kramainggil" : "Ngintun",
+      "ngoko" : "Ngirim"
+    },
+    "-L9uGphOYzfyPkZDxMDx" : {
+      "indonesia" : "Baju",
+      "kramaalus" : "Rasukan",
+      "kramainggil" : "Rasukan",
+      "ngoko" : "Klambi"
+    },
+    "-L9uGuPx3fg2bqllTT-C" : {
+      "indonesia" : "Tikar",
+      "kramaalus" : "Gelaran",
+      "kramainggil" : "Gelaran",
+      "ngoko" : "Klasa"
+    },
+    "-L9uGy7sqj7Mqf46zVal" : {
+      "indonesia" : "Kliru",
+      "kramaalus" : "Klintu",
+      "kramainggil" : "Klintu",
+      "ngoko" : "Kleru"
+    },
+    "-L9uH2iNTl0mqXdWYCLd" : {
+      "indonesia" : "Kumpul",
+      "kramaalus" : "Klempak",
+      "kramainggil" : "Klempak",
+      "ngoko" : "Klumpuk"
+    },
+    "-L9uH7UxvYMYo_DJKI2h" : {
+      "indonesia" : "Kumpulan",
+      "kramaalus" : "Klempakan",
+      "kramainggil" : "Klempakan",
+      "ngoko" : "Klumpukan"
+    },
+    "-L9uHC_6frfCwvGXuDdg" : {
+      "indonesia" : "Berkumpul",
+      "kramaalus" : "Nglempak",
+      "kramainggil" : "Nglempak",
+      "ngoko" : "Nglumpuk"
+    },
+    "-L9uHUcTTuBQW8KuYMjd" : {
+      "indonesia" : "Kau suruh",
+      "kramaalus" : "Sampeyan kengken",
+      "kramainggil" : "Panjenengan Dhawuh",
+      "ngoko" : "Kok kongkon"
+    },
+    "-L9uHajlxYW_5jrnhpjl" : {
+      "indonesia" : "Suruhan",
+      "kramaalus" : "Kengkenan",
+      "kramainggil" : "Utusan, Dhawuhan",
+      "ngoko" : "Kongkonan"
+    },
+    "-L9uHdbX7AKUqRBDvA-N" : {
+      "indonesia" : "Situ",
+      "kramaalus" : "Riku",
+      "kramainggil" : "Riku",
+      "ngoko" : "Kono"
+    },
+    "-L9uHltVcfsHraocufGc" : {
+      "indonesia" : "Kamu",
+      "kramaalus" : "Sampeyan",
+      "kramainggil" : "Panjenengan",
+      "ngoko" : "Kowe"
+    },
+    "-L9uHsydn54fUjksgD0j" : {
+      "indonesia" : "Mandi jamas",
+      "kramaalus" : "Kramas",
+      "kramainggil" : "Jamas",
+      "ngoko" : "Kramas"
+    },
+    "-L9uHwunQrBm0i_7iA4w" : {
+      "indonesia" : "Terasa",
+      "kramaalus" : "Kraos",
+      "kramainggil" : "Kraos",
+      "ngoko" : "Krasa"
+    },
+    "-L9uI1R8gxlO1o9Y3fM5" : {
+      "indonesia" : "Betah",
+      "kramaalus" : "Kraos",
+      "kramainggil" : "Kraos",
+      "ngoko" : "Krasan"
+    },
+    "-L9uIaqtEN72tfyB7g__" : {
+      "indonesia" : "Keringat",
+      "kramaalus" : "Kringet",
+      "kramainggil" : "Riwe",
+      "ngoko" : "Kringet"
+    },
+    "-L9uIdeN12-CRmyWfFVw" : {
+      "indonesia" : "Kubur",
+      "kramaalus" : "Petak",
+      "kramainggil" : "Sare",
+      "ngoko" : "Kubur"
+    },
+    "-L9uIk-_uJoZQJMist8N" : {
+      "indonesia" : "Makam",
+      "kramaalus" : "Kuburan",
+      "kramainggil" : "Pasareyan",
+      "ngoko" : "Kuburan"
+    },
+    "-L9uIsoySnAcFAFcbiIl" : {
+      "indonesia" : "Mengubur",
+      "kramaalus" : "Metak",
+      "kramainggil" : "Nyarekaken",
+      "ngoko" : "Ngubur"
+    },
+    "-L9uIxa0mudt_bs0wBkL" : {
+      "indonesia" : "Harus",
+      "kramaalus" : "Kedah",
+      "kramainggil" : "Kedah",
+      "ngoko" : "Kudu"
+    },
+    "-L9uJ1bP2Va1LKjPNnoe" : {
+      "indonesia" : "Terlahir",
+      "kramaalus" : "Kedalan",
+      "kramainggil" : "Wiyosan",
+      "ngoko" : "Kelahiran"
+    },
+    "-L9uJB9vCuSwrznSPOzP" : {
+      "indonesia" : "Lahir batin",
+      "kramaalus" : "Lair batos",
+      "kramainggil" : "Lair batos",
+      "ngoko" : "Lair batin"
+    },
+    "-L9uJJT2_Dk-SksbeRcm" : {
+      "indonesia" : "Suami",
+      "kramaalus" : "Semah",
+      "kramainggil" : "Garwa",
+      "ngoko" : "Bojo (Lanang)"
+    },
+    "-L9uJN8DNZSOOtt7qhX6" : {
+      "indonesia" : "Jalan",
+      "kramaalus" : "Lampah",
+      "kramainggil" : "Tindak",
+      "ngoko" : "Laku"
+    },
+    "-L9uJTLLx4uXBBuMDKBz" : {
+      "indonesia" : "Cerita",
+      "kramaalus" : "Lampahan, cariyos",
+      "kramainggil" : "Lampahan, cariyos",
+      "ngoko" : "Lakon"
+    },
+    "-L9uJcHSCcF-G2rWD5se" : {
+      "indonesia" : "Terlaksana",
+      "kramaalus" : "Kelampahan",
+      "kramainggil" : "Kelampahan",
+      "ngoko" : "Kelakon"
+    },
+    "-L9uJhX94A8Eox0O4Ekq" : {
+      "indonesia" : "Jalan-jalan",
+      "kramaalus" : "Mlampah-mlampah",
+      "kramainggil" : "Tindak-tindak",
+      "ngoko" : "Mlaku-mlaku"
+    },
+    "-L9uL1mkTa_J5xqk8usw" : {
+      "indonesia" : "Menjalankan",
+      "kramaalus" : "Nglampahi",
+      "kramainggil" : "Nindakaken",
+      "ngoko" : "Nglakoni"
+    },
+    "-L9uLW1S6tvGUbwPiIyk" : {
+      "indonesia" : "Berjalan",
+      "kramaalus" : "Mlampah",
+      "kramainggil" : "Tindak",
+      "ngoko" : "Mlaku"
+    },
+    "-L9uL_FtjF35cnv6cTMq" : {
+      "indonesia" : "Lupa",
+      "kramaalus" : "Supe",
+      "kramainggil" : "Supe",
+      "ngoko" : "Lali"
+    },
+    "-L9uLd94e2Y6k-tHIzil" : {
+      "indonesia" : "Terlupa",
+      "kramaalus" : "Kesupen",
+      "kramainggil" : "Kesupen",
+      "ngoko" : "Kelalen"
+    },
+    "-L9uLhMs4-NLIbIsR52q" : {
+      "indonesia" : "Pelupa",
+      "kramaalus" : "Supenan",
+      "kramainggil" : "Supenan",
+      "ngoko" : "Lalen"
+    },
+    "-L9uLla2jxQ0SHNMZUlu" : {
+      "indonesia" : "Bibir",
+      "kramaalus" : "Lambe",
+      "kramainggil" : "Lathi",
+      "ngoko" : "Lambe"
+    },
+    "-L9w6LN8cXEf8SM-rnz8" : {
+      "indonesia" : "Penting",
+      "kramaalus" : "Gatos",
+      "kramainggil" : "Gatos",
+      "ngoko" : "Gati"
+    },
+    "-L9w6PZ2SQrAJrK7xwat" : {
+      "indonesia" : "Penting",
+      "kramaalus" : "Wigatos",
+      "kramainggil" : "Wigatos",
+      "ngoko" : "Wigati"
+    },
+    "-L9w6WOY4LeEjbctTB-6" : {
+      "indonesia" : "Perhatian",
+      "kramaalus" : "Kawigatosan",
+      "kramainggil" : "Kawigatosan",
+      "ngoko" : "Kawigaten"
+    },
+    "-L9w6Z0IbAsWHiW2qYvc" : {
+      "indonesia" : "Bawa",
+      "kramaalus" : "Bekta",
+      "kramainggil" : "Ambil",
+      "ngoko" : "Gawa"
+    },
+    "-L9w6eX7IcEI0_dmfGBL" : {
+      "indonesia" : "Membawa",
+      "kramaalus" : "Mbekta",
+      "kramainggil" : "Ngambil",
+      "ngoko" : "Nggawa"
+    },
+    "-L9w6iUYpHw5-RVo52eO" : {
+      "indonesia" : "Bawaan",
+      "kramaalus" : "Bektan",
+      "kramainggil" : "Ampilan",
+      "ngoko" : "Gawan"
+    },
+    "-L9w6lx9NQgRWX7x-jzP" : {
+      "indonesia" : "Bekerja",
+      "kramaalus" : "Damel",
+      "kramainggil" : "Ngasta",
+      "ngoko" : "Gawe"
+    },
+    "-L9w6pblbVPhvYoLDpOI" : {
+      "indonesia" : "Pisang",
+      "kramaalus" : "Pisang",
+      "kramainggil" : "Pisang",
+      "ngoko" : "Gedhang"
+    },
+    "-L9w6tJKrrg6UEnhIR4c" : {
+      "indonesia" : "Besar",
+      "kramaalus" : "Ageng",
+      "kramainggil" : "Ageng",
+      "ngoko" : "Gedhe"
+    },
+    "-L9w6zPPK_Lzf7JiLPOQ" : {
+      "indonesia" : "Pembesar",
+      "kramaalus" : "Pengageng",
+      "kramainggil" : "Pengageng",
+      "ngoko" : "Penggedhe"
+    },
+    "-L9w7KPWqkd74SQUPN2F" : {
+      "indonesia" : "Punggung",
+      "kramaalus" : "Geger",
+      "kramainggil" : "Pengekeran",
+      "ngoko" : "Geger"
+    },
+    "-L9w7N5O6jj4GbQF6fjh" : {
+      "indonesia" : "Gelang",
+      "kramaalus" : "Gelang",
+      "kramainggil" : "Binggel",
+      "ngoko" : "Gelang"
+    },
+    "-L9w7PO14xar72HECVUl" : {
+      "indonesia" : "Mau",
+      "kramaalus" : "Purun",
+      "kramainggil" : "Kersa",
+      "ngoko" : "Gelem"
+    },
+    "-L9w7TQKbLBRWGZa_l1g" : {
+      "indonesia" : "Penurut",
+      "kramaalus" : "Purunan",
+      "kramainggil" : "Purunan",
+      "ngoko" : "Geleman"
+    },
+    "-L9w7tJ44v1iQHwiHDLJ" : {
+      "indonesia" : "Gelung",
+      "kramaalus" : "Gelung",
+      "kramainggil" : "Ukel",
+      "ngoko" : "Gelung"
+    },
+    "-L9w8-BArYqY-9WqmgsX" : {
+      "indonesia" : "Mengapa",
+      "kramaalus" : "Kenging menapa",
+      "kramainggil" : "Kenging menapa",
+      "ngoko" : "Ganeya"
+    },
+    "-L9w82BUX45o8o0j-4TY" : {
+      "indonesia" : "Lengap",
+      "kramaalus" : "Jangkep",
+      "kramainggil" : "Jangkep",
+      "ngoko" : "Genep"
+    },
+    "-L9w86j2ilHrKZKc97bm" : {
+      "indonesia" : "Melengkapi",
+      "kramaalus" : "Njangkepi",
+      "kramainggil" : "Njangkepi",
+      "ngoko" : "Ngganepi"
+    },
+    "-L9w89Rn7orOD64k3I_9" : {
+      "indonesia" : "Api",
+      "kramaalus" : "Latu",
+      "kramainggil" : "Grama",
+      "ngoko" : "Geni"
+    },
+    "-L9w8CnLPyigYLxhotpK" : {
+      "indonesia" : "Gilir",
+      "kramaalus" : "Gentos",
+      "kramainggil" : "Gentos",
+      "ngoko" : "Genti"
+    },
+    "-L9w8FllK00U7kxuBQfw" : {
+      "indonesia" : "Ganti",
+      "kramaalus" : "Gentos",
+      "kramainggil" : "Gentos",
+      "ngoko" : "Genti"
+    },
+    "-L9w8M0oP-caoqAv9GAT" : {
+      "indonesia" : "Bergilir",
+      "kramaalus" : "Gentosan",
+      "kramainggil" : "Gentosan",
+      "ngoko" : "Gantenan"
+    },
+    "-L9w8PqmzZouufTsvH_n" : {
+      "indonesia" : "Kurus",
+      "kramaalus" : "Kera",
+      "kramainggil" : "Susut",
+      "ngoko" : "Gering"
+    },
+    "-L9w8T3kT3N1zu1tlKsI" : {
+      "indonesia" : "Sakit",
+      "kramaalus" : "Sakit",
+      "kramainggil" : "Gerah",
+      "ngoko" : "Gering"
+    },
+    "-L9w8Wunf32UNUqtktDm" : {
+      "indonesia" : "Darah",
+      "kramaalus" : "Rah",
+      "kramainggil" : "Rah",
+      "ngoko" : "Getih"
+    },
+    "-L9w8qmHHPG0XAvWxQ0L" : {
+      "indonesia" : "Tengkuk",
+      "kramaalus" : "Githok",
+      "kramainggil" : "Griwa",
+      "ngoko" : "Githok"
+    },
+    "-L9w8y1hT07_N4bWWu2A" : {
+      "indonesia" : "Daun",
+      "kramaalus" : "Ron",
+      "kramainggil" : "Ron",
+      "ngoko" : "Godhong"
+    },
+    "-L9w91iKhU8su6tOQTRP" : {
+      "indonesia" : "Dedaunan",
+      "kramaalus" : "Ron-ronan",
+      "kramainggil" : "Ron-ronan",
+      "ngoko" : "Gegodhongan"
+    },
+    "-L9w94puVsxFbPI8egVi" : {
+      "indonesia" : "Cari",
+      "kramaalus" : "Pados",
+      "kramainggil" : "Pados",
+      "ngoko" : "Golek"
+    },
+    "-L9w9AMofia0e6P-X5QI" : {
+      "indonesia" : "Mencari-cari",
+      "kramaalus" : "Pados-pados",
+      "kramainggil" : "Pados-pados",
+      "ngoko" : "Golek-golek"
+    },
+    "-L9w9E98cZwC-ZvaCrPl" : {
+      "indonesia" : "Yang dicari",
+      "kramaalus" : "Padosan",
+      "kramainggil" : "Padosan",
+      "ngoko" : "Golekan"
+    },
+    "-L9w9LgetuAaS2b0ADrU" : {
+      "indonesia" : "Mencari",
+      "kramaalus" : "Madosi",
+      "kramainggil" : "Madosi",
+      "ngoko" : "Nggoleki"
+    },
+    "-L9w9Q9wV0hbwhK991fs" : {
+      "indonesia" : "Bohong",
+      "kramaalus" : "Dora",
+      "kramainggil" : "Dora",
+      "ngoko" : "Goroh"
+    },
+    "-L9w9VA9RUxV1X3AdcqA" : {
+      "indonesia" : "Bangun",
+      "kramaalus" : "Gigah",
+      "kramainggil" : "Wungu",
+      "ngoko" : "Gugah"
+    },
+    "-L9w9XLT90OAw162kqjf" : {
+      "indonesia" : "Adu",
+      "kramaalus" : "Gigat",
+      "kramainggil" : "Gigat",
+      "ngoko" : "Gugat"
+    },
+    "-L9w9_T9ZLzL9txREyZ3" : {
+      "indonesia" : "Taat",
+      "kramaalus" : "Gega",
+      "kramainggil" : "Ngestokaken",
+      "ngoko" : "Gugu"
+    },
+    "-L9w9eRbEU-qgSBwBznA" : {
+      "indonesia" : "Gula",
+      "kramaalus" : "Gendhis",
+      "kramainggil" : "Gendhis",
+      "ngoko" : "Gula"
+    },
+    "-L9w9haK2MHMpplAcDVl" : {
+      "indonesia" : "Leher",
+      "kramaalus" : "Gulu",
+      "kramainggil" : "Jangga",
+      "ngoko" : "Gulu"
+    },
+    "-L9w9lKan-P3i6oYguwx" : {
+      "indonesia" : "Guna",
+      "kramaalus" : "Gina",
+      "kramainggil" : "Gina",
+      "ngoko" : "Guna"
+    },
+    "-L9wAbIhZLWIObW23vII" : {
+      "indonesia" : "Menggunakan",
+      "kramaalus" : "Ngginakake",
+      "kramainggil" : "Ngginakake",
+      "ngoko" : "Nggunakake"
+    },
+    "-L9wCcncnuFmEIb7WZ3U" : {
+      "indonesia" : "Bicara",
+      "kramaalus" : "Gineman",
+      "kramainggil" : "Ngendikan",
+      "ngoko" : "Gunem"
+    },
+    "-L9wCfmlvFE18bpVFCvi" : {
+      "indonesia" : "Gunung",
+      "kramaalus" : "Redi",
+      "kramainggil" : "Redi",
+      "ngoko" : "Gunung"
+    },
+    "-L9wCjV0zD0sudC4lnp4" : {
+      "indonesia" : "Pegunungan",
+      "kramaalus" : "Pareden",
+      "kramainggil" : "Pareden",
+      "ngoko" : "Pegunungan"
+    },
+    "-L9wCmPhJW3RKPnzHIaG" : {
+      "indonesia" : "Tawa",
+      "kramaalus" : "Gujeng",
+      "kramainggil" : "Gujeng",
+      "ngoko" : "Guyu"
+    },
+    "-L9wCqGnube0Kox_s86c" : {
+      "indonesia" : "Tertawa",
+      "kramaalus" : "Gumujeng",
+      "kramainggil" : "Gumujeng",
+      "ngoko" : "Gumuyu"
+    },
+    "-L9wCwu_S8guuLV4v_7S" : {
+      "indonesia" : "Bercanda",
+      "kramaalus" : "Gegujengan",
+      "kramainggil" : "Gegujengan",
+      "ngoko" : "Guyon"
+    },
+    "-L9wD-atuHalLV4aSYhi" : {
+      "indonesia" : "Menertawakan",
+      "kramaalus" : "Gegujeng",
+      "kramainggil" : "Gegujeng",
+      "ngoko" : "Nggeguyu"
+    },
+    "-L9wD2az4xUNqaWtaSyX" : {
+      "indonesia" : "Ludah",
+      "kramaalus" : "Idu",
+      "kramainggil" : "Kecoh",
+      "ngoko" : "Idu"
+    },
+    "-L9wD5OXxeRMQA-YVEBk" : {
+      "indonesia" : "Hijau",
+      "kramaalus" : "Ijem",
+      "kramainggil" : "Ijem",
+      "ngoko" : "Ijo"
+    },
+    "-L9wD9yeAzHZcTFNBW6y" : {
+      "indonesia" : "Tukar",
+      "kramaalus" : "Lintu",
+      "kramainggil" : "Lintu",
+      "ngoko" : "Ijol"
+    },
+    "-L9wDCKv18ZNzn_oH5gm" : {
+      "indonesia" : "Itu",
+      "kramaalus" : "Menika",
+      "kramainggil" : "Menika",
+      "ngoko" : "Ika"
+    },
+    "-L9wDG5TyfsxYwXabEVg" : {
+      "indonesia" : "Ikat kepala",
+      "kramaalus" : "Udheng",
+      "kramainggil" : "Dhestar",
+      "ngoko" : "Iket"
+    },
+    "-L9wDJFRNQXj2E4cXvE9" : {
+      "indonesia" : "Ini",
+      "kramaalus" : "Menika",
+      "kramainggil" : "Menika",
+      "ngoko" : "Iki"
+    },
+    "-L9wDLEH-ij7j1A3qmqZ" : {
+      "indonesia" : "Itu",
+      "kramaalus" : "Menika",
+      "kramainggil" : "Menika",
+      "ngoko" : "Iku"
+    },
+    "-L9wDNio3WwM6zZ2xdrS" : {
+      "indonesia" : "Hilang",
+      "kramaalus" : "Ical",
+      "kramainggil" : "Ical",
+      "ngoko" : "Ilang"
+    },
+    "-L9wDU2B1r6F0mSpJ3Y6" : {
+      "indonesia" : "Kehilangan",
+      "kramaalus" : "Kecalan",
+      "kramainggil" : "Kecalan",
+      "ngoko" : "Kelangan"
+    },
+    "-L9wFCHph0dybyWDddS1" : {
+      "indonesia" : "Cermin",
+      "kramaalus" : "Ilo",
+      "kramainggil" : "Paningalan",
+      "ngoko" : "Ilo"
+    },
+    "-L9wFF_qwuoB6dDSDwPd" : {
+      "indonesia" : "Peram",
+      "kramaalus" : "Imbet",
+      "kramainggil" : "Imbet",
+      "ngoko" : "Imbu"
+    },
+    "-L9wFJPEcHnDZnEUbPsb" : {
+      "indonesia" : "Peraman",
+      "kramaalus" : "Imbetan",
+      "kramainggil" : "Imbetan",
+      "ngoko" : "Imbon"
+    },
+    "-L9wFO4ujS0rsWjRMD53" : {
+      "indonesia" : "Tambah makan",
+      "kramaalus" : "Imbetan",
+      "kramainggil" : "Tanduk",
+      "ngoko" : "Imbuh"
+    },
+    "-L9wFmpEOoXx7N_dYezi" : {
+      "indonesia" : "Inap",
+      "kramaalus" : "Sipeng",
+      "kramainggil" : "Sipeng",
+      "ngoko" : "Inep"
+    },
+    "-L9wFq4DcGDnJFBUgbIR" : {
+      "indonesia" : "Bermalam",
+      "kramaalus" : "Nyipeng",
+      "kramainggil" : "Nyare",
+      "ngoko" : "Nginep"
+    },
+    "-L9wFsKLUkV2Zy7s6M7J" : {
+      "indonesia" : "Intan",
+      "kramaalus" : "Sela",
+      "kramainggil" : "Sela",
+      "ngoko" : "Inten"
+    },
+    "-L9wFyN3EbKkPDLXfHXn" : {
+      "indonesia" : "Piara",
+      "kramaalus" : "Ingah",
+      "kramainggil" : "Ingah",
+      "ngoko" : "Ingu"
+    },
+    "-L9wG36U2LIJsoxmUR4G" : {
+      "indonesia" : "Ternak",
+      "kramaalus" : "Ingah",
+      "kramainggil" : "Ingah",
+      "ngoko" : "Ingon"
+    },
+    "-L9wG8gEumH964Gjs-1U" : {
+      "indonesia" : "Memelihara",
+      "kramaalus" : "Ngingah",
+      "kramainggil" : "Ngingah",
+      "ngoko" : "Ngingu"
+    },
+    "-L9wGCbQ0ZQyHhDOC50l" : {
+      "indonesia" : "Hitam",
+      "kramaalus" : "Cemeng",
+      "kramainggil" : "Cemeng",
+      "ngoko" : "Ireng"
+    },
+    "-L9wGHjK5f464F0-Rtvl" : {
+      "indonesia" : "Mengiring",
+      "kramaalus" : "Iring",
+      "kramainggil" : "Ndherek",
+      "ngoko" : "Iring"
+    },
+    "-L9wGMLVHosCH7fEFJkm" : {
+      "indonesia" : "Hidung",
+      "kramaalus" : "Irung",
+      "kramainggil" : "Grana",
+      "ngoko" : "Irung"
+    },
+    "-L9wGRKJTbJRCmg1lyl-" : {
+      "indonesia" : "Masih",
+      "kramaalus" : "Taksih",
+      "kramainggil" : "Taksih",
+      "ngoko" : "Isih"
+    },
+    "-L9wGVmUvDdEjIGVhe16" : {
+      "indonesia" : "Malu",
+      "kramaalus" : "Lingsem",
+      "kramainggil" : "Lingsem",
+      "ngoko" : "Isin"
+    },
+    "-L9wGdGWLZii15OMBPUA" : {
+      "indonesia" : "Memalukan",
+      "kramaalus" : "Ngelingsemaken",
+      "kramainggil" : "Ngelingsemaken",
+      "ngoko" : "Ngisin-isinake"
+    },
+    "-L9wGiQfSyqRmRA2tvgg" : {
+      "indonesia" : "Memalukan",
+      "kramaalus" : "Ngelingsemi",
+      "kramainggil" : "Ngelingsemi",
+      "ngoko" : "Ngisin-isini"
+    },
+    "-L9wGoqSSmoHjZNQ8smF" : {
+      "indonesia" : "Buang hajat",
+      "kramaalus" : "Bebucal",
+      "kramainggil" : "Bobotan",
+      "ngoko" : "Ngising"
+    },
+    "-L9wGtp8QvQ3JhBBzy24" : {
+      "indonesia" : "Bawah",
+      "kramaalus" : "Andhap",
+      "kramainggil" : "Andhap",
+      "ngoko" : "Isor"
+    },
+    "-L9wGxVHxoWSoRpWePNE" : {
+      "indonesia" : "Di bawah",
+      "kramaalus" : "Ngandhap",
+      "kramainggil" : "Ngandhap",
+      "ngoko" : "Ngisor"
+    },
+    "-L9wH0HMz3LY9lMficfz" : {
+      "indonesia" : "Ikan",
+      "kramaalus" : "Ulam",
+      "kramainggil" : "Ulam",
+      "ngoko" : "Iwak"
+    },
+    "-L9wH2w-HMz8Tn7GtPXW" : {
+      "indonesia" : "Daging",
+      "kramaalus" : "Ulam",
+      "kramainggil" : "Ulam",
+      "ngoko" : "Iwak"
+    },
+    "-L9wH5XboiWhvQPLjRLA" : {
+      "indonesia" : "Luar",
+      "kramaalus" : "Jawi",
+      "kramainggil" : "Jawi",
+      "ngoko" : "Jaba"
+    },
+    "-L9wH94An-RJK1Ofmy_Z" : {
+      "indonesia" : "Kecuali",
+      "kramaalus" : "Kejawi",
+      "kramainggil" : "Kejawi",
+      "ngoko" : "Kejaba"
+    },
+    "-L9wHDI7j_QzVSn3DHDH" : {
+      "indonesia" : "Di luar",
+      "kramaalus" : "Njawi",
+      "kramainggil" : "Njawi",
+      "ngoko" : "Njaba"
+    },
+    "-L9wHGwUjiPtBZMQ72mU" : {
+      "indonesia" : "Jaga",
+      "kramaalus" : "Jagi",
+      "kramainggil" : "Reksa",
+      "ngoko" : "Jaga"
+    },
+    "-L9wHKS5u9zVAL0PTMJN" : {
+      "indonesia" : "Jago",
+      "kramaalus" : "Sawung",
+      "kramainggil" : "Sawung",
+      "ngoko" : "Jago"
+    },
+    "-L9wHQC_mvoh37nfqXoT" : {
+      "indonesia" : "Mencalonkan",
+      "kramaalus" : "Nyawungaken",
+      "kramainggil" : "Nyawungaken",
+      "ngoko" : "Ngajokake"
+    },
+    "-L9wHVM_i3fjQqDs010b" : {
+      "indonesia" : "Duduk",
+      "kramaalus" : "Jagong",
+      "kramainggil" : "Lenggah",
+      "ngoko" : "Jagong"
+    },
+    "-L9wHrQhE6kmw_mLJXJu" : {
+      "indonesia" : "Duduk-duduk",
+      "kramaalus" : "Jagongan",
+      "kramainggil" : "Lenggahan",
+      "ngoko" : "Jagongan"
+    },
+    "-L9wHuRqGmU3pNGtYh7p" : {
+      "indonesia" : "Taji",
+      "kramaalus" : "Jalu",
+      "kramainggil" : "Jalu",
+      "ngoko" : "Jalu"
+    },
+    "-L9wHy5fbI3zFvIxcT2l" : {
+      "indonesia" : "Pinta",
+      "kramaalus" : "Tedha",
+      "kramainggil" : "Pundhut",
+      "ngoko" : "Jaluk"
+    },
+    "-L9wI5-pKjZTLUm1R7wA" : {
+      "indonesia" : "Minta",
+      "kramaalus" : "Nedha",
+      "kramainggil" : "Mundhut",
+      "ngoko" : "Njaluk"
+    },
+    "-L9wI8h_KSlmX5-p9KsN" : {
+      "indonesia" : "Minta",
+      "kramaalus" : "Nedha",
+      "kramainggil" : "Nyuwun",
+      "ngoko" : "Njaluk"
+    },
+    "-L9wIB2kPsRD5Yn2RX7O" : {
+      "indonesia" : "Jam",
+      "kramaalus" : "Jam",
+      "kramainggil" : "Jam",
+      "ngoko" : "Jam"
+    },
+    "-L9wIEcvBUf7ZN4ojeYU" : {
+      "indonesia" : "Jamu",
+      "kramaalus" : "Jampi",
+      "kramainggil" : "Loloh",
+      "ngoko" : "Jamu"
+    },
+    "-L9wIIZSztZvYkY_g5Sj" : {
+      "indonesia" : "Berobat",
+      "kramaalus" : "Jejampi",
+      "kramainggil" : "Loloh",
+      "ngoko" : "Jejamu"
+    },
+    "-L9wIMW_Nu8eHGwzdFFf" : {
+      "indonesia" : "Mengobati",
+      "kramaalus" : "Jampeni",
+      "kramainggil" : "Nglolohi",
+      "ngoko" : "Njamoni"
+    },
+    "-L9wIQNk6JY--3Y2D9j0" : {
+      "indonesia" : "Dagu",
+      "kramaalus" : "Janggut",
+      "kramainggil" : "Kenthekan",
+      "ngoko" : "Janggut"
+    },
+    "-L9wIUX4k4YUUc9kt06p" : {
+      "indonesia" : "Kuda",
+      "kramaalus" : "Kapal",
+      "kramainggil" : "Turangga",
+      "ngoko" : "Jaran"
+    },
+    "-L9wIZrShmbSlAnoqefC" : {
+      "indonesia" : "Katanya",
+      "kramaalus" : "Cariyosipun",
+      "kramainggil" : "Cariyosipun",
+      "ngoko" : "Jare"
+    },
+    "-L9wIemM8Wwj_0xoUn9v" : {
+      "indonesia" : "Kain panjang",
+      "kramaalus" : "Sinjang",
+      "kramainggil" : "Nyamping",
+      "ngoko" : "Jarit"
+    },
+    "-L9wIit6c2LKWgaOj8Lu" : {
+      "indonesia" : "Arti",
+      "kramaalus" : "Jarwi",
+      "kramainggil" : "Jarwi",
+      "ngoko" : "Jerwa"
+    },
+    "-L9wIqbEA5gj8fsTtKhy" : {
+      "indonesia" : "Menjelaskan",
+      "kramaalus" : "Njarwakaken",
+      "kramainggil" : "Njarwakaken",
+      "ngoko" : "Njarwakake"
+    },
+    "-L9wItUaVgI1LvoYFvKb" : {
+      "indonesia" : "Jati",
+      "kramaalus" : "Jatos",
+      "kramainggil" : "Jatos",
+      "ngoko" : "Jati"
+    },
+    "-L9wIzP9bPnobrBnihZ5" : {
+      "indonesia" : "Kayu jati",
+      "kramaalus" : "Kajeng jatos",
+      "kramainggil" : "Kajeng jatos",
+      "ngoko" : "Kayu jati"
+    },
+    "-L9wJ1_mzXNU_bwoPHPE" : {
+      "indonesia" : "Sejati",
+      "kramaalus" : "Sejatos",
+      "kramainggil" : "Sejatos",
+      "ngoko" : "Sejati"
+    },
+    "-L9wJ53pnhG6AfYTDOgy" : {
+      "indonesia" : "Jawa",
+      "kramaalus" : "Jawi",
+      "kramainggil" : "Jawi",
+      "ngoko" : "Jawa"
+    },
+    "-L9wJ9E6cCTdVO1HCDqh" : {
+      "indonesia" : "Seperti jawa",
+      "kramaalus" : "Njaweni",
+      "kramainggil" : "Njaweni",
+      "ngoko" : "Njawani"
+    },
+    "-L9wJBzaiBtqj9x4RC1o" : {
+      "indonesia" : "Nama",
+      "kramaalus" : "Nama",
+      "kramainggil" : "Asma",
+      "ngoko" : "Jeneng"
+    },
+    "-LADkARAffiS10RTln13" : {
+      "indonesia" : "Pria",
+      "kramaalus" : "Jaler",
+      "kramainggil" : "Kakung",
+      "ngoko" : "Lanang"
+    },
+    "-LADkGNnM8h_KnVli8Hi" : {
+      "indonesia" : "Jantan",
+      "kramaalus" : "Jaleran",
+      "kramainggil" : "Jaleran",
+      "ngoko" : "Lanangan"
+    },
+    "-LADkKl5jVh9Dscg9L41" : {
+      "indonesia" : "Sakit",
+      "kramaalus" : "Sakit",
+      "kramainggil" : "Gerah",
+      "ngoko" : "Lara"
+    },
+    "-LADl1AK2oJr1BdfEQdT" : {
+      "indonesia" : "Sakit hati",
+      "kramaalus" : "Kesakit-sakit",
+      "kramainggil" : "Kesakit-sakit",
+      "ngoko" : "Kelara-lara"
+    },
+    "-LADl5I5lseDrOfbFSp5" : {
+      "indonesia" : "Kesakitan",
+      "kramaalus" : "Kesakitan",
+      "kramainggil" : "Kesakitan",
+      "ngoko" : "Kelaran"
+    },
+    "-LADl9vepeBZMfRpycU-" : {
+      "indonesia" : "Penyakit",
+      "kramaalus" : "Sesakit",
+      "kramainggil" : "Sesakit",
+      "ngoko" : "Lelara"
+    },
+    "-LADpY0L-F2DtT5VR5_g" : {
+      "indonesia" : "Menyakiti",
+      "kramaalus" : "Nyakiti",
+      "kramainggil" : "Nyakiti",
+      "ngoko" : "Nglarani"
+    },
+    "-LADp_AcRT7JG9Gq331K" : {
+      "indonesia" : "Mahal",
+      "kramaalus" : "Awis",
+      "kramainggil" : "Awis",
+      "ngoko" : "Larang"
+    },
+    "-LADpkM0hSvftrf4q3pZ" : {
+      "indonesia" : "Pintu",
+      "kramaalus" : "Konten",
+      "kramainggil" : "Konten",
+      "ngoko" : "Lawang"
+    },
+    "-LADppi-7bD-T0fehFR7" : {
+      "indonesia" : "Lama",
+      "kramaalus" : "Lami",
+      "kramainggil" : "Lami",
+      "ngoko" : "Lawas"
+    },
+    "-LADpuXcHrCXu4m65mXc" : {
+      "indonesia" : "Bekas",
+      "kramaalus" : "Lamen",
+      "kramainggil" : "Lamen",
+      "ngoko" : "Lawasan"
+    },
+    "-LADq0Qy6inKU6BkWCWM" : {
+      "indonesia" : "Dalam",
+      "kramaalus" : "Lebet",
+      "kramainggil" : "Lebet",
+      "ngoko" : "Jero"
+    },
+    "-LADq7TkWBHaRgU_L_nO" : {
+      "indonesia" : "Termasuk",
+      "kramaalus" : "Kelebet",
+      "kramainggil" : "Kelebet",
+      "ngoko" : "Kelebu"
+    },
+    "-LADqBq4pBG4DDSqiCdw" : {
+      "indonesia" : "Kemasukan",
+      "kramaalus" : "Kelebetan",
+      "kramainggil" : "Kelebetan",
+      "ngoko" : "Kelebon"
+    },
+    "-LADqJE2m8aZoySVhF9f" : {
+      "indonesia" : "Masuk",
+      "kramaalus" : "Mlebet",
+      "kramainggil" : "Mlebet",
+      "ngoko" : "Melbu"
+    },
+    "-LADqNp3IR1ju9QvbwPv" : {
+      "indonesia" : "Terjaga",
+      "kramaalus" : "Melek",
+      "kramainggil" : "Wungu",
+      "ngoko" : "Melek"
+    },
+    "-LADqS7QVOqp2v7-PhLV" : {
+      "indonesia" : "Tanah",
+      "kramaalus" : "Siti",
+      "kramainggil" : "Siti",
+      "ngoko" : "Lemah"
+    },
+    "-LADqWVHPQaOO1avC2Tr" : {
+      "indonesia" : "Almari",
+      "kramaalus" : "Lemantun",
+      "kramainggil" : "Lemantun",
+      "ngoko" : "Lemari"
+    },
+    "-LADqgwTBacCEW7wD3Nf" : {
+      "indonesia" : "Halus",
+      "kramaalus" : "Lembat",
+      "kramainggil" : "Lembat",
+      "ngoko" : "Lembut"
+    },
+    "-LADqkoqIWCmNzH1Dcam" : {
+      "indonesia" : "Gemuk",
+      "kramaalus" : "Lemu",
+      "kramainggil" : "Lemu",
+      "ngoko" : "Lemu"
+    },
+    "-LADquwA1WpjmOo2nLmY" : {
+      "indonesia" : "Istirahat",
+      "kramaalus" : "Kendel",
+      "kramainggil" : "Kendel",
+      "ngoko" : "Leren"
+    },
+    "-LADr3ILFBRWl3tB_Hq_" : {
+      "indonesia" : "Salah",
+      "kramaalus" : "Klintu",
+      "kramainggil" : "Klintu",
+      "ngoko" : "Kliru"
+    },
+    "-LADr9k9Pi0bi5vamH4N" : {
+      "indonesia" : "Lewat",
+      "kramaalus" : "Langkung",
+      "kramainggil" : "Miyos",
+      "ngoko" : "Liwat"
+    },
+    "-LADrFQbxo3zOqbtQ1fu" : {
+      "indonesia" : "Kelewat",
+      "kramaalus" : "Kelangkung",
+      "kramainggil" : "Kelangkung",
+      "ngoko" : "Keliwat"
+    },
+    "-LADrJbbstsStLmIzHCI" : {
+      "indonesia" : "Utara",
+      "kramaalus" : "Ler",
+      "kramainggil" : "Ler",
+      "ngoko" : "Lor"
+    },
+    "-LADrPHWPjul8-p4D4jN" : {
+      "indonesia" : "Dua",
+      "kramaalus" : "Kalih",
+      "kramainggil" : "Kalih",
+      "ngoko" : "Loro"
+    },
+    "-LADrTha-H_4KqOn28En" : {
+      "indonesia" : "Bajak",
+      "kramaalus" : "Lujeng",
+      "kramainggil" : "Lujeng",
+      "ngoko" : "Luku"
+    },
+    "-LADrkLzaS7_W3li2Sy_" : {
+      "indonesia" : "Membajak",
+      "kramaalus" : "Mlujeng",
+      "kramainggil" : "Mlujeng",
+      "ngoko" : "Mluku"
+    },
+    "-LADrpjJvVkKFbHxNcbX" : {
+      "indonesia" : "Kulit",
+      "kramaalus" : "Lulang",
+      "kramainggil" : "Cucal",
+      "ngoko" : "Lulang"
+    },
+    "-LADruaOyRNocvSq_4d-" : {
+      "indonesia" : "Biasa",
+      "kramaalus" : "Limrah",
+      "kramainggil" : "Limrah",
+      "ngoko" : "Lumrah"
+    },
+    "-LADrz9Os1ghulGHBppj" : {
+      "indonesia" : "Pergi",
+      "kramaalus" : "Kesah",
+      "kramainggil" : "Tindak",
+      "ngoko" : "Lunga"
+    },
+    "-LADs3p85pnP0ixmjF7b" : {
+      "indonesia" : "Duduk",
+      "kramaalus" : "Lenggah",
+      "kramainggil" : "Linggih",
+      "ngoko" : "Lungguh"
+    },
+    "-LADs81hXRNMl5inUQP_" : {
+      "indonesia" : "Salah",
+      "kramaalus" : "Lepat",
+      "kramainggil" : "Lepat",
+      "ngoko" : "Luput"
+    },
+    "-LADsCWjQvAwIeLi_Rth" : {
+      "indonesia" : "Kesalahan",
+      "kramaalus" : "Kalepatan",
+      "kramainggil" : "Kalepatan",
+      "ngoko" : "Kaluputan"
+    },
+    "-LADsG_J9-EeZVWip-eX" : {
+      "indonesia" : "Lebih",
+      "kramaalus" : "Langkung",
+      "kramainggil" : "Langkung",
+      "ngoko" : "Luwih"
+    },
+    "-LADsMLLABRWKMaXxvIj" : {
+      "indonesia" : "Kelebihan",
+      "kramaalus" : "Kelangkungan",
+      "kramainggil" : "Kelangkungan",
+      "ngoko" : "Keluwihan"
+    },
+    "-LADsSYDpydZrjsJ-ted" : {
+      "indonesia" : "Madu",
+      "kramaalus" : "Maben",
+      "kramainggil" : "Maben",
+      "ngoko" : "Madu"
+    },
+    "-LADsZGXlDdo2JPsraoo" : {
+      "indonesia" : "Pencuri",
+      "kramaalus" : "Pandung",
+      "kramainggil" : "Pandung",
+      "ngoko" : "Maling"
+    },
+    "-LADsc4_cLIW0nJn0wOR" : {
+      "indonesia" : "Mengunyah",
+      "kramaalus" : "Mamah",
+      "kramainggil" : "Nggilut",
+      "ngoko" : "Mamah"
+    },
+    "-LADulYKou7tuOLw2TAK" : {
+      "indonesia" : "Sekian",
+      "kramaalus" : "Semanten",
+      "kramainggil" : "Semanten",
+      "ngoko" : "Semana"
+    },
+    "-LADurWl9yVtNUJ2QbHh" : {
+      "indonesia" : "Berhenti",
+      "kramaalus" : "Kendel",
+      "kramainggil" : "Kendel",
+      "ngoko" : "Mandheg"
+    },
+    "-LADuwDYJCf63WnXNZ7d" : {
+      "indonesia" : "Tambah",
+      "kramaalus" : "Malih",
+      "kramainggil" : "Malih",
+      "ngoko" : "Maneh"
+    },
+    "-LADv-8lLAAg_C4ZuvCK" : {
+      "indonesia" : "Burung",
+      "kramaalus" : "Peksi",
+      "kramainggil" : "Peksi",
+      "ngoko" : "Manuk"
+    },
+    "-LADv3ZSgKRa4WuhdiU4" : {
+      "indonesia" : "Demikian",
+      "kramaalus" : "Mekaten",
+      "kramainggil" : "Mekaten",
+      "ngoko" : "Mangkana"
+    },
+    "-LADvAMyMbO-iSI2W_yF" : {
+      "indonesia" : "Sembuh",
+      "kramaalus" : "Mantun",
+      "kramainggil" : "Dhangan",
+      "ngoko" : "Waras"
+    },
+    "-LADvGftSOtoLSDXR8m8" : {
+      "indonesia" : "Mata",
+      "kramaalus" : "Mripat",
+      "kramainggil" : "Paningal",
+      "ngoko" : "Mata"
+    },
+    "-LADvLV1DK4o0wU2Z0aL" : {
+      "indonesia" : "Mati",
+      "kramaalus" : "Tilar",
+      "kramainggil" : "Seda",
+      "ngoko" : "Mati"
+    },
+    "-LADvRFQYF9RwzAeSBHK" : {
+      "indonesia" : "Membunuh",
+      "kramaalus" : "Mejahi",
+      "kramainggil" : "Nyedani",
+      "ngoko" : "Mateni"
+    },
+    "-LADvU7iYls-R5zREXxM" : {
+      "indonesia" : "Tadi",
+      "kramaalus" : "Wau",
+      "kramainggil" : "Wau",
+      "ngoko" : "Mau"
+    },
+    "-LADvYacSuHpEmljuVQX" : {
+      "indonesia" : "Dengan",
+      "kramaalus" : "Mawi",
+      "kramainggil" : "Mawi",
+      "ngoko" : "Mawa"
+    },
+    "-LADvdKTlA3OhuQPqPoE" : {
+      "indonesia" : "Tergantung",
+      "kramaalus" : "Mawi-mawi",
+      "kramainggil" : "Mawi-mawi",
+      "ngoko" : "Mawa-mawa"
+    },
+    "-LADvhwOxvecRthJQvPb" : {
+      "indonesia" : "Jenazah",
+      "kramaalus" : "Jisim",
+      "kramainggil" : "Layon",
+      "ngoko" : "Mayit"
+    },
+    "-LADvvycOREPSEY1D8Df" : {
+      "indonesia" : "Ikut",
+      "kramaalus" : "Tumut",
+      "kramainggil" : "Ndherek",
+      "ngoko" : "Melok"
+    },
+    "-LADw0N9AfF786gJumFK" : {
+      "indonesia" : "Menang",
+      "kramaalus" : "Mimpang",
+      "kramainggil" : "Mimpang",
+      "ngoko" : "Menang"
+    },
+    "-LADw5QQBgVN20NTRAM5" : {
+      "indonesia" : "Jika",
+      "kramaalus" : "Menawi",
+      "kramainggil" : "Menawi",
+      "ngoko" : "Menawa"
+    },
+    "-LADwFKuF1PTCjh60Nhm" : {
+      "indonesia" : "Rusa",
+      "kramaalus" : "Sangsam",
+      "kramainggil" : "Sangsam",
+      "ngoko" : "Menjangan"
+    },
+    "-LADwKdrBBI_DY53V3tP" : {
+      "indonesia" : "Nanti",
+      "kramaalus" : "Mangke",
+      "kramainggil" : "Mangke",
+      "ngoko" : "Mengko"
+    },
+    "-LADwTTjD1m3W7Mlvf8a" : {
+      "indonesia" : "Baru",
+      "kramaalus" : "Nembe",
+      "kramainggil" : "Nembe",
+      "ngoko" : "Jektas"
+    },
+    "-LADwXKBlOFqi9lCxcJV" : {
+      "indonesia" : "Ke",
+      "kramaalus" : "Dateng",
+      "kramainggil" : "Dateng",
+      "ngoko" : "Menyang"
+    },
+    "-LADw_uH4kymOobx1dKr" : {
+      "indonesia" : "Karena",
+      "kramaalus" : "Margi",
+      "kramainggil" : "Margi",
+      "ngoko" : "Merga"
+    },
+    "-LADweW0PgBHp3Qf91YI" : {
+      "indonesia" : "Hamil",
+      "kramaalus" : "Ngandeg",
+      "kramainggil" : "Mbobot",
+      "ngoko" : "Meteng"
+    },
+    "-LADwkJnMswcN5TTs2Wn" : {
+      "indonesia" : "Kumpul",
+      "kramaalus" : "Kempal",
+      "kramainggil" : "Kempal",
+      "ngoko" : "Kumpul"
+    },
+    "-LADwmxjYuTDEUmX-SdL" : {
+      "indonesia" : "Kafan",
+      "kramaalus" : "Monten",
+      "kramainggil" : "Monten",
+      "ngoko" : "Mori"
+    },
+    "-LAwdEA0jzE7BptKPhyU" : {
+      "indonesia" : "Muat",
+      "kramaalus" : "Wrat",
+      "kramainggil" : "Wrat",
+      "ngoko" : "Mot"
+    },
+    "-LAwdUY5hx1Cf8pjPF-U" : {
+      "indonesia" : "Memuat",
+      "kramaalus" : "Kawrat",
+      "kramainggil" : "Kawrat",
+      "ngoko" : "Kamot"
+    },
+    "-LAwddu30fdk9uXJ8oei" : {
+      "indonesia" : "Mudah-mudahan",
+      "kramaalus" : "Mugi-mugi",
+      "kramainggil" : "Mugi-mugi",
+      "ngoko" : "Muga-muga"
+    },
+    "-LAwdrO2YiWODmGzLofr" : {
+      "indonesia" : "Maka",
+      "kramaalus" : "Mila",
+      "kramainggil" : "Mila",
+      "ngoko" : "Mula"
+    },
+    "-LAwdvkr93nfiogiBwVp" : {
+      "indonesia" : "Tambah",
+      "kramaalus" : "Mindhak",
+      "kramainggil" : "Mindhak",
+      "ngoko" : "Mundhak"
+    },
+    "-LAwe-xC6_Okzp7Uxioh" : {
+      "indonesia" : "Hanya",
+      "kramaalus" : "Namung",
+      "kramainggil" : "Namung",
+      "ngoko" : "Mung"
+    },
+    "-LAwe77gn94vnYIWtLBp" : {
+      "indonesia" : "Mengenai",
+      "kramaalus" : "Menggah",
+      "kramainggil" : "Menggah",
+      "ngoko" : "Mungguh"
+    },
+    "-LAweDJGhT83G0piUnRC" : {
+      "indonesia" : "Musuh",
+      "kramaalus" : "Mengsah",
+      "kramainggil" : "Mengsah",
+      "ngoko" : "Mungsuh"
+    },
+    "-LAwecWmj_AlH5ChrFN2" : {
+      "indonesia" : "Bermusuhan",
+      "kramaalus" : "Mengsahan",
+      "kramainggil" : "Mengsahan",
+      "ngoko" : "Mungsuhan"
+    },
+    "-LAwegtWUd30L7dGjAZj" : {
+      "indonesia" : "Murah",
+      "kramaalus" : "Mirah",
+      "kramainggil" : "Mirah",
+      "ngoko" : "Mirah"
+    },
+    "-LAwemOIk9ybYZXmyVcM" : {
+      "indonesia" : "Kemurahan",
+      "kramaalus" : "Kemirahan",
+      "kramainggil" : "Kemirahan",
+      "ngoko" : "Kemurahan"
+    },
+    "-LAwess5xB6SO8oEU1Sw" : {
+      "indonesia" : "Murahan",
+      "kramaalus" : "Mirahan",
+      "kramainggil" : "Mirahan",
+      "ngoko" : "Murahan"
+    },
+    "-LAwf02JVKcNwaw8JHP_" : {
+      "indonesia" : "Serba murah",
+      "kramaalus" : "Mirah-mirahan",
+      "kramainggil" : "Mira-mirahan",
+      "ngoko" : "Murah-murahan"
+    },
+    "-LAwf6IOKdd06Cggr3f5" : {
+      "indonesia" : "Marah",
+      "kramaalus" : "Muring",
+      "kramainggil" : "Duka",
+      "ngoko" : "Muring"
+    },
+    "-LAwfHccrTdbvub0GDUU" : {
+      "indonesia" : "Marah-marah",
+      "kramaalus" : "Muring-muring",
+      "kramainggil" : "Duka-duka",
+      "ngoko" : "Muring-muring"
+    },
+    "-LAwfMPzE8YDXvwo6H8v" : {
+      "indonesia" : "Muntah",
+      "kramaalus" : "Mutah",
+      "kramainggil" : "Luntak",
+      "ngoko" : "Mutah"
+    },
+    "-LAwfRwmY0mZUZEs687D" : {
+      "indonesia" : "Bahaya",
+      "kramaalus" : "Mutawatos",
+      "kramainggil" : "Mutawatos",
+      "ngoko" : "Mutawatir"
+    },
+    "-LAwfaElKi-JyoRz5JrV" : {
+      "indonesia" : "Membahayakan",
+      "kramaalus" : "Mutawatosi",
+      "kramainggil" : "Mutawatos",
+      "ngoko" : "Mutawatiri"
+    },
+    "-LAwfjU0sp9cq4jgeTFX" : {
+      "indonesia" : "Membahayakan",
+      "kramaalus" : "Mutawatosaken",
+      "kramainggil" : "Mutawatosaken",
+      "ngoko" : "Mutawatirake"
+    },
+    "-LAwfqh27rsF6DvdYZzC" : {
+      "indonesia" : "Dan juga",
+      "kramaalus" : "Miwah",
+      "kramainggil" : "Miwah",
+      "ngoko" : "Muwah"
+    },
+    "-LAwfvGThqdqS6wCGa-i" : {
+      "indonesia" : "Negara",
+      "kramaalus" : "Nagari",
+      "kramainggil" : "Nagari",
+      "ngoko" : "Nagara"
+    },
+    "-LAwfzyBIPivdKip-a-f" : {
+      "indonesia" : "Marah",
+      "kramaalus" : "Srengen",
+      "kramainggil" : "Duka",
+      "ngoko" : "Nesu"
+    },
+    "-LAwg5IBNdFcG0cjVo09" : {
+      "indonesia" : "Memarahi",
+      "kramaalus" : "Nyrengeni",
+      "kramainggil" : "Ndukani",
+      "ngoko" : "Nesoni"
+    },
+    "-LAwgDniLc7qyYtWo0FP" : {
+      "indonesia" : "Haus",
+      "kramaalus" : "Ngelak",
+      "kramainggil" : "Salit",
+      "ngoko" : "Ngelak"
+    },
+    "-LAwgIbiwFz9XbAYWCX3" : {
+      "indonesia" : "Pusing",
+      "kramaalus" : "Puyeng",
+      "kramainggil" : "Puyeng",
+      "ngoko" : "Ngelu"
+    },
+    "-LAwgaZLwTy7H8Pbx63A" : {
+      "indonesia" : "Mengabdi",
+      "kramaalus" : "Ngenger",
+      "kramainggil" : "Ngabdi",
+      "ngoko" : "Ngenger"
+    },
+    "-LAwgfp7hLqzl8GIumtf" : {
+      "indonesia" : "Tahu",
+      "kramaalus" : "Ngertos",
+      "kramainggil" : "Priksa",
+      "ngoko" : "Ngerti"
+    },
+    "-LAwgn5iyM2KaC0NM1u4" : {
+      "indonesia" : "Pengertian",
+      "kramaalus" : "Pangertosan",
+      "kramainggil" : "Pangertosan",
+      "ngoko" : "Pangerten"
+    },
+    "-LAwgtWZ6qy0-Ctk_FsK" : {
+      "indonesia" : "Ketahuan",
+      "kramaalus" : "Kangertosan",
+      "kramainggil" : "Kangertosan",
+      "ngoko" : "Kangerten"
+    },
+    "-LAwgyLKGjdOd3L5W5o5" : {
+      "indonesia" : "Muda",
+      "kramaalus" : "Enem",
+      "kramainggil" : "Timur",
+      "ngoko" : "Enom"
+    },
+    "-LAwh2JifdWsdIp9iSuj" : {
+      "indonesia" : "Lalu",
+      "kramaalus" : "Lajeng",
+      "kramainggil" : "Lajeng",
+      "ngoko" : "Nuli"
+    },
+    "-LAwh7Z_8s-hMbv66Swl" : {
+      "indonesia" : "Segera",
+      "kramaalus" : "Tumunten",
+      "kramainggil" : "Tumunten",
+      "ngoko" : "Tumuli"
+    },
+    "-LAwhBt5vOsR8i4BMFId" : {
+      "indonesia" : "Bergerak",
+      "kramaalus" : "Ebah",
+      "kramainggil" : "Ebah",
+      "ngoko" : "Obah"
+    },
+    "-LAwhHiHSWB9T0F1f5Tn" : {
+      "indonesia" : "Bakar",
+      "kramaalus" : "Besmi",
+      "kramainggil" : "Basmi",
+      "ngoko" : "Obong"
+    },
+    "-LAwhNHklKYTicbtm5EJ" : {
+      "indonesia" : "Terbakar",
+      "kramaalus" : "Kabesmi",
+      "kramainggil" : "Kabesmi",
+      "ngoko" : "Kobong"
+    },
+    "-LAwhR6B0bDrjUkEk9AE" : {
+      "indonesia" : "Kebakaran",
+      "kramaalus" : "Kabesmen",
+      "kramainggil" : "Kabesmen",
+      "ngoko" : "Kobongan"
+    },
+    "-LAwhuEnmgXukLL01Xyl" : {
+      "indonesia" : "Dapat",
+      "kramaalus" : "Angsal",
+      "kramainggil" : "Angsal",
+      "ngoko" : "Oleh"
+    },
+    "-LAwi2ttblXiRTtMCHoK" : {
+      "indonesia" : "Boleh",
+      "kramaalus" : "Angsal",
+      "kramainggil" : "Kepareng",
+      "ngoko" : "Oleh"
+    },
+    "-LAwiAC8SSlt5lNrL5no" : {
+      "indonesia" : "Oleh-oleh",
+      "kramaalus" : "Angsal-angsal",
+      "kramainggil" : "Angsal-angsal",
+      "ngoko" : "Oleh-oleh"
+    },
+    "-LAwiG92uvSvlUfANi29" : {
+      "indonesia" : "Rumah",
+      "kramaalus" : "Griya",
+      "kramainggil" : "Dalem",
+      "ngoko" : "Omah"
+    },
+    "-LAwiN3Q0qp8UrRra919" : {
+      "indonesia" : "Kawin",
+      "kramaalus" : "Emah-emah",
+      "kramainggil" : "Krama",
+      "ngoko" : "Omah-omah"
+    },
+    "-LAwiRwt-cZrQpb6Uraj" : {
+      "indonesia" : "Pekarangan",
+      "kramaalus" : "Pekawisan",
+      "kramainggil" : "Pekawisan",
+      "ngoko" : "Pomahan"
+    },
+    "-LAwiWu1lT8g8mbJGFGv" : {
+      "indonesia" : "Suami",
+      "kramaalus" : "Sema",
+      "kramainggil" : "Garwa",
+      "ngoko" : "Somah"
+    },
+    "-LAwiayWEv1zzOSw-jdl" : {
+      "indonesia" : "Minum",
+      "kramaalus" : "Ombe",
+      "kramainggil" : "Unjuk",
+      "ngoko" : "Ombe"
+    },
+    "-LAwifca3tWOVqJGJQTH" : {
+      "indonesia" : "Minuman",
+      "kramaalus" : "Omben-omben",
+      "kramainggil" : "Unjukan",
+      "ngoko" : "Omben-omben"
+    },
+    "-LAwim70O5N_c92O1BsE" : {
+      "indonesia" : "Minum",
+      "kramaalus" : "Ngombe",
+      "kramainggil" : "Ngunjuk",
+      "ngoko" : "Ngombe"
+    },
+    "-LAwirIdllTdYKZyiXhu" : {
+      "indonesia" : "Bicara",
+      "kramaalus" : "Ginem",
+      "kramainggil" : "Ngendika",
+      "ngoko" : "Omong"
+    },
+    "-LAwj04UaA6VZMI0-bRi" : {
+      "indonesia" : "Bercakap-cakap",
+      "kramaalus" : "Gineman",
+      "kramainggil" : "Ngendikan",
+      "ngoko" : "Omong-omong"
+    },
+    "-LAwj6MoRzCzC_JVcWGu" : {
+      "indonesia" : "Upah",
+      "kramaalus" : "Epah",
+      "kramainggil" : "Epah",
+      "ngoko" : "Opah"
+    },
+    "-LAwjBZRrgJ3kcm_jgzn" : {
+      "indonesia" : "Bayaran",
+      "kramaalus" : "Epahan",
+      "kramainggil" : "Epahan",
+      "ngoko" : "Opahan"
+    },
+    "-LAwjHh1tYVACdaz87o8" : {
+      "indonesia" : "Mengupah",
+      "kramaalus" : "Ngepahi",
+      "kramainggil" : "Ngepahi",
+      "ngoko" : "Ngopahi"
+    },
+    "-LAwjN8b_rg585YUZoa7" : {
+      "indonesia" : "Ompong",
+      "kramaalus" : "Ompong",
+      "kramainggil" : "Dhaut",
+      "ngoko" : "Ompong"
+    },
+    "-LAwjXrN63ZKFe3GQjXb" : {
+      "indonesia" : "Tidak",
+      "kramaalus" : "Mboten",
+      "kramainggil" : "Mboten",
+      "ngoko" : "Ora"
+    },
+    "-LAwjfG5R6KBk25eupyp" : {
+      "indonesia" : "Tidak mungkin",
+      "kramaalus" : "Mboten-mbotenipun",
+      "kramainggil" : "Mboten-mbotenipun",
+      "ngoko" : "Ora-orane"
+    },
+    "-LAwjoiPBaYhJRo-xJbn" : {
+      "indonesia" : "Sempit",
+      "kramaalus" : "Ripak",
+      "kramainggil" : "Ripak",
+      "ngoko" : "Rupak"
+    },
+    "-LAwjsdkv0eYNE6xuqvf" : {
+      "indonesia" : "Rusak",
+      "kramaalus" : "Risak",
+      "kramainggil" : "Risak",
+      "ngoko" : "Rusak"
+    },
+    "-LAwjwhKHtan6MjZIt6X" : {
+      "indonesia" : "Rusuh",
+      "kramaalus" : "Resah",
+      "kramainggil" : "Resah",
+      "ngoko" : "Rusuh"
+    },
+    "-LAwk1_aUQbpIQx4kKZM" : {
+      "indonesia" : "Menganggu",
+      "kramaalus" : "Ngresahi",
+      "kramainggil" : "Ngresahi",
+      "ngoko" : "Ngrusuhi"
+    },
+    "-LAwk7JJwxPjQYbm2fp6" : {
+      "indonesia" : "Sabuk",
+      "kramaalus" : "Sabuk",
+      "kramainggil" : "Paningset",
+      "ngoko" : "Sabuk"
+    },
+    "-LAwkDYxFZyGRTtlO6UZ" : {
+      "indonesia" : "Sanggup",
+      "kramaalus" : "Sagah",
+      "kramainggil" : "Sagah",
+      "ngoko" : "Saguh"
+    },
+    "-LAwkLJMb0bD56H4OXGA" : {
+      "indonesia" : "Sekarang",
+      "kramaalus" : "Sakmenika",
+      "kramainggil" : "Sakmenika",
+      "ngoko" : "Saiki"
+    },
+    "-LAwkRGyMSHHsn-jahYu" : {
+      "indonesia" : "Melayani",
+      "kramaalus" : "Saji",
+      "kramainggil" : "Caos",
+      "ngoko" : "Saji"
+    },
+    "-LAwkWNiKa-wteNVwZgn" : {
+      "indonesia" : "Sajian",
+      "kramaalus" : "Sajen",
+      "kramainggil" : "Caosan",
+      "ngoko" : "Sajen"
+    },
+    "-LAwk_BNb8H6LVrGFFKR" : {
+      "indonesia" : "Dari",
+      "kramaalus" : "Saking",
+      "kramainggil" : "Saking",
+      "ngoko" : "Saka"
+    },
+    "-LAwkdESqI3qWOD9Y8GH" : {
+      "indonesia" : "Salah",
+      "kramaalus" : "Lepat",
+      "kramainggil" : "Lepat",
+      "ngoko" : "Salah"
+    },
+    "-LAwkjAWRbAzEQ2nojLv" : {
+      "indonesia" : "Ganti pakaian",
+      "kramaalus" : "Gantos",
+      "kramainggil" : "Santun",
+      "ngoko" : "Salin"
+    },
+    "-LAwkpImsyyu1QV6dcT_" : {
+      "indonesia" : "Mengganti",
+      "kramaalus" : "Nggantosi",
+      "kramainggil" : "Nggantosi",
+      "ngoko" : "Nyalini"
+    },
+    "-LAwkxMwIMxxkXIbrZD0" : {
+      "indonesia" : "Berganti-ganti",
+      "kramaalus" : "Gantos-gantos",
+      "kramainggil" : "Gantos-gantos",
+      "ngoko" : "Salin-salin"
+    },
+    "-LAwl1VQ3mggrgLIYrQk" : {
+      "indonesia" : "Sambung",
+      "kramaalus" : "Sambet",
+      "kramainggil" : "Sambet",
+      "ngoko" : "Sambung"
+    },
+    "-LAwl6_vyTuN5qvDb6lt" : {
+      "indonesia" : "Berhubungan",
+      "kramaalus" : "Sesambetan",
+      "kramainggil" : "Sesambetan",
+      "ngoko" : "Sesambungan"
+    },
+    "-LAwlC8VW47XQaa8gATI" : {
+      "indonesia" : "Segala sesuatu",
+      "kramaalus" : "Samukawis",
+      "kramainggil" : "Samukawis",
+      "ngoko" : "Samubarang"
+    },
+    "-LAwlLLI31s5KH1ACIuz" : {
+      "indonesia" : "Angkat",
+      "kramaalus" : "Sanggi",
+      "kramainggil" : "Sanggi",
+      "ngoko" : "Sangga"
+    },
+    "-LAwlP-4_TEg5z7FgRQM" : {
+      "indonesia" : "Siapa",
+      "kramaalus" : "Sinten",
+      "kramainggil" : "Sinten",
+      "ngoko" : "Sapa"
+    },
+    "-LAwnc4XCE7yfhq_PDXQ" : {
+      "indonesia" : "Sapi",
+      "kramaalus" : "Lembu",
+      "kramainggil" : "Lembu",
+      "ngoko" : "Sapi"
+    },
+    "-LAwnhNg9b0rOEcemgiT" : {
+      "indonesia" : "Serba",
+      "kramaalus" : "Sarwi",
+      "kramainggil" : "Sarwi",
+      "ngoko" : "Sarwa"
+    },
+    "-LAwnlvv6iqoGINPEkH4" : {
+      "indonesia" : "Bulan",
+      "kramaalus" : "Wulan",
+      "kramainggil" : "Wulan",
+      "ngoko" : "Sasi"
+    },
+    "-LAwnrQNJsdjhhTFUigr" : {
+      "indonesia" : "Berbulan-bulan",
+      "kramaalus" : "Wewulanan",
+      "kramainggil" : "Wewulanan",
+      "ngoko" : "Sasen-sasen"
+    },
+    "-LAwnzfWex3FnkGDJyM8" : {
+      "indonesia" : "Sawah",
+      "kramaalus" : "Sabin",
+      "kramainggil" : "Sabin",
+      "ngoko" : "Sawah"
+    },
+    "-LAwo437pQARyf_ndpvT" : {
+      "indonesia" : "Persawahan",
+      "kramaalus" : "Pesabinan",
+      "kramainggil" : "Pesabinan",
+      "ngoko" : "Pesawahan"
+    },
+    "-LAwo8uoVvZ7jJzOOvBT" : {
+      "indonesia" : "Satu",
+      "kramaalus" : "Satunggal",
+      "kramainggil" : "Satunggal",
+      "ngoko" : "Siji"
+    },
+    "-LAwoHYm-va7d7JuTvu2" : {
+      "indonesia" : "Sebar benih padi",
+      "kramaalus" : "Dhawah",
+      "kramainggil" : "Dhawah",
+      "ngoko" : "Sebar"
+    },
+    "-LAwoPiG9BUG3OYXc-z6" : {
+      "indonesia" : "Menyebar benih",
+      "kramaalus" : "Ndhawahaken",
+      "kramainggil" : "Ndhawahaken",
+      "ngoko" : "Nyebar"
+    },
+    "-LAwoc8LimaYTfPZFqWM" : {
+      "indonesia" : "Mengatakan",
+      "kramaalus" : "Sebat",
+      "kramainggil" : "Sebat",
+      "ngoko" : "Sebut"
+    },
+    "-LAwohIkZz0T9hV8agn2" : {
+      "indonesia" : "Menyebutkan",
+      "kramaalus" : "Nyebat",
+      "kramainggil" : "Nyebat",
+      "ngoko" : "Nyebut"
+    },
+    "-LAwoodBwdmRcw7jVv-7" : {
+      "indonesia" : "Nama",
+      "kramaalus" : "Jenenng",
+      "kramainggil" : "Asma",
+      "ngoko" : "Jeneng"
+    },
+    "-LAwotJVMdsChYNVptAb" : {
+      "indonesia" : "Sebentar",
+      "kramaalus" : "Sekedhap",
+      "kramainggil" : "Sekedhap",
+      "ngoko" : "Sedhela"
+    },
+    "-LAwoyfE0EwlG_5JNDHR" : {
+      "indonesia" : "Cukup",
+      "kramaalus" : "Cekap",
+      "kramainggil" : "Cekap",
+      "ngoko" : "Sedheng"
+    },
+    "-LAwpEShLwRtzPWE1gQN" : {
+      "indonesia" : "Cukupan",
+      "kramaalus" : "Cekapan",
+      "kramainggil" : "Cekapan",
+      "ngoko" : "Sedhengan"
+    },
+    "-LAwpI2zjoOcaQ3_ZKG0" : {
+      "indonesia" : "Nasi",
+      "kramaalus" : "Sekul",
+      "kramainggil" : "Sekul",
+      "ngoko" : "Sega"
+    },
+    "-LAwpNE_RIblJQuJ_E82" : {
+      "indonesia" : "Baru senang makan",
+      "kramaalus" : "Sumekul",
+      "kramainggil" : "Sumekul",
+      "ngoko" : "Sumega"
+    },
+    "-LAwpRk99PCAFm739vZP" : {
+      "indonesia" : "Laut",
+      "kramaalus" : "Seganten",
+      "kramainggil" : "Seganten",
+      "ngoko" : "Segara"
+    },
+    "-LAwpVBNqtH3wkTRPjxA" : {
+      "indonesia" : "Lain",
+      "kramaalus" : "Sanes",
+      "kramainggil" : "Sanes",
+      "ngoko" : "Seje"
+    },
+    "-LAwp_95CLuD2roMrcWo" : {
+      "indonesia" : "Lain-lain",
+      "kramaalus" : "Sanes-sanes",
+      "kramainggil" : "Sanes-sanes",
+      "ngoko" : "Seje-seje"
+    },
+    "-LAwq-gSbAlr-H91d-Xo" : {
+      "indonesia" : "Dari",
+      "kramaalus" : "Saking",
+      "kramainggil" : "Saking",
+      "ngoko" : "Saka"
+    },
+    "-LAwq5TDMPnFy9ajpHjr" : {
+      "indonesia" : "Dua puluh lima",
+      "kramaalus" : "Selangkung",
+      "kramainggil" : "Selangkung",
+      "ngoko" : "Selawe"
+    },
+    "-LAwqB3eL5NI-o2F3fQr" : {
+      "indonesia" : "Sekian itu",
+      "kramaalus" : "Semanten",
+      "kramainggil" : "Semanten",
+      "ngoko" : "Semana"
+    },
+    "-LAwqFcggV6S3wRVgBd8" : {
+      "indonesia" : "Menangguhkan",
+      "kramaalus" : "Semados",
+      "kramainggil" : "Semados",
+      "ngoko" : "Semaya"
+    },
+    "-LAwqK4Y0BYMX86BSc6U" : {
+      "indonesia" : "Menyembelih",
+      "kramaalus" : "Pragat",
+      "kramainggil" : "Pragat",
+      "ngoko" : "Sambelih"
+    },
+    "-LAwqQ6Nk37nz_78lg-I" : {
+      "indonesia" : "Sebesar itu",
+      "kramaalus" : "Semanten",
+      "kramainggil" : "Semanten",
+      "ngoko" : "Semono"
+    },
+    "-LAwqVlsbTJZZLeKI3RJ" : {
+      "indonesia" : "Sendok",
+      "kramaalus" : "Sendhok",
+      "kramainggil" : "Lantaran",
+      "ngoko" : "Sendhok"
+    },
+    "-LAwq_Y3BnFBXi3k_6_0" : {
+      "indonesia" : "Senang",
+      "kramaalus" : "Remen",
+      "kramainggil" : "Tresna",
+      "ngoko" : "Seneng"
+    },
+    "-LAwqghBZii-al1K1l-d" : {
+      "indonesia" : "Menyenangkan",
+      "kramaalus" : "Ngremenaken",
+      "kramainggil" : "Ngremenaken",
+      "ngoko" : "Nyenengake"
+    },
+    "-LAwqmWZnLSHisHUVqxv" : {
+      "indonesia" : "Mencintai",
+      "kramaalus" : "Ngremeni",
+      "kramainggil" : "Nresnani",
+      "ngoko" : "Nyenengi"
+    },
+    "-LAwqrYPihla2KVMGX3_" : {
+      "indonesia" : "Separo",
+      "kramaalus" : "Sepalih",
+      "kramainggil" : "Sepalih",
+      "ngoko" : "Separo"
+    },
+    "-LAwqxly5cNlpaZUwMME" : {
+      "indonesia" : "Membagi dua",
+      "kramaalus" : "Malih",
+      "kramainggil" : "Malih",
+      "ngoko" : "Maro"
+    },
+    "-LAwr3n9lXT4EmyAJhWQ" : {
+      "indonesia" : "Masing-masing",
+      "kramaalus" : "Nyepalih",
+      "kramainggil" : "Nyepalih",
+      "ngoko" : "Nyeparo"
+    },
+    "-LAwrFK0w7ho73mexIrc" : {
+      "indonesia" : "Sepi",
+      "kramaalus" : "Sepen",
+      "kramainggil" : "Sepen",
+      "ngoko" : "Sepi"
+    },
+    "-LAwrKtCc5t42RIU2m-z" : {
+      "indonesia" : "Menyepi",
+      "kramaalus" : "Nyepen",
+      "kramainggil" : "Nyepen",
+      "ngoko" : "Nyepi"
+    },
+    "-LAwrSt1vYnKkCKOKBft" : {
+      "indonesia" : "Tanpa pamrih",
+      "kramaalus" : "Sepen ing pamrih",
+      "kramainggil" : "Sepi ing pamrih",
+      "ngoko" : "Sepi ing pamrih"
+    },
+    "-LAwrXDj9cygidCtW1gP" : {
+      "indonesia" : "Sejak dahulu",
+      "kramaalus" : "Seprika",
+      "kramainggil" : "Seprika",
+      "ngoko" : "Seprana"
+    },
+    "-LAwr_nx-XuQcGHJ0leb" : {
+      "indonesia" : "Sampai sekarang",
+      "kramaalus" : "Sepriki",
+      "kramainggil" : "Sepriki",
+      "ngoko" : "Seprene"
+    },
+    "-LAwrykvXOARxiLKxSjx" : {
+      "indonesia" : "Keras (suara)",
+      "kramaalus" : "Sora",
+      "kramainggil" : "Sora",
+      "ngoko" : "Seru"
+    },
+    "-LAws3GjQABd_BnssQfc" : {
+      "indonesia" : "Besok",
+      "kramaalus" : "Benjang",
+      "kramainggil" : "Benjing",
+      "ngoko" : "Sesok"
+    },
+    "-LAwsA1BU6JKbQYwavaA" : {
+      "indonesia" : "Besok pagi",
+      "kramaalus" : "Benjang enjang",
+      "kramainggil" : "Benjing enjing",
+      "ngoko" : "Sesuk esuk"
+    },
+    "-LAwsHABLU-ohCsb2oz2" : {
+      "indonesia" : "25 sen",
+      "kramaalus" : "Setangsul",
+      "kramainggil" : "Setangsul",
+      "ngoko" : "setali"
+    },
+    "-LAwsPb1xh4kFGEP4Lgf" : {
+      "indonesia" : "Sedikit",
+      "kramaalus" : "Sekedhik",
+      "kramainggil" : "Sekedhik",
+      "ngoko" : "Sethitik"
+    },
+    "-LAwsVgQ9J6ss7YhIECY" : {
+      "indonesia" : "Jadi",
+      "kramaalus" : "Siyos",
+      "kramainggil" : "Estu",
+      "ngoko" : "Sido"
+    },
+    "-LAwsa1mMlMxAptYCESg" : {
+      "indonesia" : "Satu",
+      "kramaalus" : "Setunggal",
+      "kramainggil" : "Setunggal",
+      "ngoko" : "Siji"
+    },
+    "-LAwsecjd6qLKyRa3yz7" : {
+      "indonesia" : "Kaki",
+      "kramaalus" : "Suku",
+      "kramainggil" : "Sampeyan",
+      "ngoko" : "Sikil"
+    },
+    "-LAwshya-nWCaumPD5WO" : {
+      "indonesia" : "Siku",
+      "kramaalus" : "Sikut",
+      "kramainggil" : "Siku",
+      "ngoko" : "Sikut"
+    },
+    "-LAwsmL-PM4udDXlotJx" : {
+      "indonesia" : "Pinjam",
+      "kramaalus" : "Sambut",
+      "kramainggil" : "Pundhut",
+      "ngoko" : "Silih"
+    },
+    "-LAwssUMkQmgdIJmSWnb" : {
+      "indonesia" : "Pinjaman",
+      "kramaalus" : "Sambutan",
+      "kramainggil" : "Ampilan",
+      "ngoko" : "Silihan"
+    },
+    "-LAwsyIR7Bep6iDhKOW2" : {
+      "indonesia" : "Meminjam",
+      "kramaalus" : "Nyambut",
+      "kramainggil" : "Ngampil",
+      "ngoko" : "Nyilih"
+    },
+    "-LAwt1qgKfiEkXZ0Ox2E" : {
+      "indonesia" : "Yang",
+      "kramaalus" : "Ingkang",
+      "kramainggil" : "Ingkang",
+      "ngoko" : "Sing"
+    },
+    "-LAwt7j2FotBkUV78DO7" : {
+      "indonesia" : "Selamat",
+      "kramaalus" : "Wilujeng",
+      "kramainggil" : "Sugeng",
+      "ngoko" : "Slamet"
+    },
+    "-LAwtFeZXb2jzIFT-skZ" : {
+      "indonesia" : "Selamatan",
+      "kramaalus" : "Wilujengan",
+      "kramainggil" : "Sugengan",
+      "ngoko" : "Slametan"
+    },
+    "-LAwtKs4jFTLWQ140Yns" : {
+      "indonesia" : "Kadang-kadang",
+      "kramaalus" : "Asring",
+      "kramainggil" : "Asring",
+      "ngoko" : "Sok"
+    },
+    "-LAwtP-kd-3sXPRrk9Tx" : {
+      "indonesia" : "Mungkin",
+      "kramaalus" : "Sok ugi",
+      "kramainggil" : "Sok ugi",
+      "ngoko" : "Sok uga"
+    },
+    "-LAwtScVcFSYyQxwg-OD" : {
+      "indonesia" : "Sore",
+      "kramaalus" : "Sonten",
+      "kramainggil" : "Sonten",
+      "ngoko" : "Sore"
+    },
+    "-LAwtZ-gFFo6Uki_vzKL" : {
+      "indonesia" : "Pada sore hari",
+      "kramaalus" : "Sonten-sonten",
+      "kramainggil" : "Sonten-sonten",
+      "ngoko" : "Sore-sore"
+    },
+    "-LAwteucxwPKjYcCUpRA" : {
+      "indonesia" : "Sabar",
+      "kramaalus" : "Srantos",
+      "kramainggil" : "Srantos",
+      "ngoko" : "Sranta"
+    },
+    "-LAwti_j9o70BU6po1XK" : {
+      "indonesia" : "Tunggu",
+      "kramaalus" : "Srantos",
+      "kramainggil" : "Srantos",
+      "ngoko" : "Sranti"
+    },
+    "-LAwtppnoovh9xCqDpto" : {
+      "indonesia" : "Marah",
+      "kramaalus" : "Srengen",
+      "kramainggil" : "Duka",
+      "ngoko" : "Srengen"
+    },
+    "-LAwtyHNlCtCvt4SIFmW" : {
+      "indonesia" : "Memarahi",
+      "kramaalus" : "Nyrengeni",
+      "kramainggil" : "Ndukani",
+      "ngoko" : "Nyrengeni"
+    },
+    "-LAwu1xkiLtW9TNwtidZ" : {
+      "indonesia" : "Matahari",
+      "kramaalus" : "Srengenge",
+      "kramainggil" : "Surya",
+      "ngoko" : "Srengenge"
+    },
+    "-LAwu5HgAKdUzmhJHPP9" : {
+      "indonesia" : "Jamuan",
+      "kramaalus" : "Segah",
+      "kramainggil" : "Sugata",
+      "ngoko" : "Suguh"
+    },
+    "-LAwuDMSIuF6dkJYG82n" : {
+      "indonesia" : "Jamuan",
+      "kramaalus" : "Segahan",
+      "kramainggil" : "Pasugatan",
+      "ngoko" : "Suguhan"
+    },
+    "-LAwuKOv_h6zO8ctNvKS" : {
+      "indonesia" : "Menjamu",
+      "kramaalus" : "Nyegah",
+      "kramainggil" : "Nyugata",
+      "ngoko" : "Nyuguh"
+    },
+    "-LAwuOKFpO5cUXxINN5J" : {
+      "indonesia" : "Rumput",
+      "kramaalus" : "Rumput",
+      "kramainggil" : "Rumput",
+      "ngoko" : "Suket"
+    },
+    "-LAwuRzXeyU8IHj0kC6P" : {
+      "indonesia" : "Tahu",
+      "kramaalus" : "Sumerep",
+      "kramainggil" : "Priksa",
+      "ngoko" : "Sumurup"
+    },
+    "-LAwuUj_-mI7kF93f7yr" : {
+      "indonesia" : "Khitan",
+      "kramaalus" : "Sunat",
+      "kramainggil" : "Tetes",
+      "ngoko" : "Sunat"
+    },
+    "-LAwubI3OWejfSCQ2XQR" : {
+      "indonesia" : "Supaya",
+      "kramaalus" : "Supados",
+      "kramainggil" : "Supados",
+      "ngoko" : "Supaya"
+    },
+    "-LAwugbUtF1fr-WNdezZ" : {
+      "indonesia" : "Arti",
+      "kramaalus" : "Suraos",
+      "kramainggil" : "Suraos",
+      "ngoko" : "Surasa"
+    },
+    "-LAwujiDTziioa5XweyW" : {
+      "indonesia" : "Sirih",
+      "kramaalus" : "Sedhah",
+      "kramainggil" : "Sedhah",
+      "ngoko" : "Suruh"
+    },
+    "-LAwupiWBpoArThWM76u" : {
+      "indonesia" : "Mengundang",
+      "kramaalus" : "Nyedahi",
+      "kramainggil" : "Nyedahi",
+      "ngoko" : "Nyuruhi"
+    },
+    "-LAwutIGTnv9yXvq6Rzp" : {
+      "indonesia" : "Petang",
+      "kramaalus" : "Serap",
+      "kramainggil" : "Serap",
+      "ngoko" : "Surup"
+    },
+    "-LAwv3TdzjxnsWtcof9N" : {
+      "indonesia" : "Matahari terbenam",
+      "kramaalus" : "Serap surya",
+      "kramainggil" : "Serap surya",
+      "ngoko" : "Surup srengenge"
+    },
+    "-LAwvBRwD5lIxhjf1TGb" : {
+      "indonesia" : "Sampai petang",
+      "kramaalus" : "Keserapan",
+      "kramainggil" : "Keserapan",
+      "ngoko" : "Kesurupan"
+    },
+    "-LAwvFJEjKAWjwnsGDEr" : {
+      "indonesia" : "Susah",
+      "kramaalus" : "Sisah",
+      "kramainggil" : "Sekel",
+      "ngoko" : "Susah"
+    },
+    "-LAwvRtVJQcPfm-gcxXj" : {
+      "indonesia" : "Susah hati",
+      "kramaalus" : "sisah manah",
+      "kramainggil" : "Sekel penggalih",
+      "ngoko" : "Susah ati"
+    },
+    "-LAwvXjKXahPKCxwxI22" : {
+      "indonesia" : "Susu",
+      "kramaalus" : "Susu",
+      "kramainggil" : "Pembayun",
+      "ngoko" : "Susu"
+    },
+    "-LAwvcD3pS7L0D_snrEI" : {
+      "indonesia" : "Menyusu",
+      "kramaalus" : "Nyesep",
+      "kramainggil" : "Nyesep",
+      "ngoko" : "Nusu"
+    },
+    "-LAwvkIb-QiONd2DHtrw" : {
+      "indonesia" : "Masih menyusu",
+      "kramaalus" : "Sesepan",
+      "kramainggil" : "Sesapan",
+      "ngoko" : "Suson"
+    },
+    "-LAxEtuvRXsrrXcGpAy9" : {
+      "indonesia" : "Sugi",
+      "kramaalus" : "Susur",
+      "kramainggil" : "Penasar",
+      "ngoko" : "Susur"
+    },
+    "-LAxF-uHho8tCL8T-oVw" : {
+      "indonesia" : "Bersugi",
+      "kramaalus" : "Susuran",
+      "kramainggil" : "Penasaran",
+      "ngoko" : "Susuran"
+    },
+    "-LAxF5mG3j571N6CJipy" : {
+      "indonesia" : "Suara",
+      "kramaalus" : "Suwantenan",
+      "kramainggil" : "Suwantenan",
+      "ngoko" : "Suwara"
+    },
+    "-LAxFAtu7G3rR-nl6hOP" : {
+      "indonesia" : "Menegur",
+      "kramaalus" : "Nyuwanteni",
+      "kramainggil" : "Nyuwanteni",
+      "ngoko" : "Nyuwara"
+    },
+    "-LAxFGDxU6Q_kLnZjbDh" : {
+      "indonesia" : "Surga",
+      "kramaalus" : "Suwargi",
+      "kramainggil" : "Suwargi",
+      "ngoko" : "Suwarga"
+    },
+    "-LAxFoPzSX7hk-TfdpMa" : {
+      "indonesia" : "Lama",
+      "kramaalus" : "Dangu",
+      "kramainggil" : "Dangu",
+      "ngoko" : "Suwe"
+    },
+    "-LAxFzTlwgsIa0-V0vJ0" : {
+      "indonesia" : "Lama-kelamaan",
+      "kramaalus" : "Dangu-dangu",
+      "kramainggil" : "Dangu-dangu",
+      "ngoko" : "Suwe-suwe"
+    },
+    "-LAxG4v42kQrrf8j9KHm" : {
+      "indonesia" : "Teralu lama",
+      "kramaalus" : "Kedangon",
+      "kramainggil" : "Kedangon",
+      "ngoko" : "Kesuwen"
+    },
+    "-LAxGCBzPU9_36XWmPRp" : {
+      "indonesia" : "Membuat lama",
+      "kramaalus" : "Ndedangu",
+      "kramainggil" : "Ndedangu",
+      "ngoko" : "Nyuweni"
+    },
+    "-LAxGGiiah-GFuZftPCQ" : {
+      "indonesia" : "Subang",
+      "kramaalus" : "Sengkang",
+      "kramainggil" : "Sengkang",
+      "ngoko" : "Suweng"
+    },
+    "-LAxGeVLex8ePxdoBelj" : {
+      "indonesia" : "Tahi",
+      "kramaalus" : "Tinja",
+      "kramainggil" : "Tinja",
+      "ngoko" : "Tai"
+    },
+    "-LAxGj0kUlZSAFrrDb_H" : {
+      "indonesia" : "Saya",
+      "kramaalus" : "Kula",
+      "kramainggil" : "Dalem",
+      "ngoko" : "Aku"
+    },
+    "-LAxGq2fjU1i4l5xoIV5" : {
+      "indonesia" : "Bertanya",
+      "kramaalus" : "Taken",
+      "kramainggil" : "Tangglet",
+      "ngoko" : "Takon"
+    },
+    "-LAxGvDDXLc6UAcJ8wc_" : {
+      "indonesia" : "Tali",
+      "kramaalus" : "Tangsul",
+      "kramainggil" : "Tangsul",
+      "ngoko" : "Tali"
+    },
+    "-LAxGzAf_Kye3i7y_VYh" : {
+      "indonesia" : "Obat",
+      "kramaalus" : "Jampi",
+      "kramainggil" : "Usada",
+      "ngoko" : "Tamba"
+    },
+    "-LAxH8AIe5P5SF-0dCgQ" : {
+      "indonesia" : "Terima",
+      "kramaalus" : "Tampi",
+      "kramainggil" : "Tampi",
+      "ngoko" : "Tampa"
+    },
+    "-LAxHDOm1U7EcFLApYuN" : {
+      "indonesia" : "Tanam",
+      "kramaalus" : "Tanem",
+      "kramainggil" : "Tanem",
+      "ngoko" : "Tandur"
+    },
+    "-LAxHHesZOJok12pOzHe" : {
+      "indonesia" : "Tangan",
+      "kramaalus" : "Tangan",
+      "kramainggil" : "Asta",
+      "ngoko" : "Tangan"
+    },
+    "-LAxHOzN1wULHERZWPIx" : {
+      "indonesia" : "Mengerjakan",
+      "kramaalus" : "Nangani",
+      "kramainggil" : "Ngasta",
+      "ngoko" : "Nangani"
+    },
+    "-LAxHWFR5knoscqY1g00" : {
+      "indonesia" : "Tanda tangan",
+      "kramaalus" : "Tanda Tangan",
+      "kramainggil" : "Tapak asta",
+      "ngoko" : "Tanda tangan"
+    },
+    "-LAxH_UC_C8WRWPDF56K" : {
+      "indonesia" : "Tetangga",
+      "kramaalus" : "Tanggi",
+      "kramainggil" : "Tanggi",
+      "ngoko" : "Tangga"
+    },
+    "-LAxHghTccKSNGcAlTTD" : {
+      "indonesia" : "Para tetangga",
+      "kramaalus" : "Tangga terpilih",
+      "kramainggil" : "Tangga terpilih",
+      "ngoko" : "Tangga teparo"
+    },
+    "-LAxHlyWhCLbGCgn7-wA" : {
+      "indonesia" : "Tanggung",
+      "kramaalus" : "Tanggel",
+      "kramainggil" : "Tanggel",
+      "ngoko" : "Tanggung"
+    },
+    "-LAxHsRqiUosKry_8KMO" : {
+      "indonesia" : "Kurang banyak",
+      "kramaalus" : "Ketanggelan",
+      "kramainggil" : "Ketanggelan",
+      "ngoko" : "Ketanggungan"
+    },
+    "-LAxI1TGLf9dKaA_CD8l" : {
+      "indonesia" : "Menanggung",
+      "kramaalus" : "Nanggel",
+      "kramainggil" : "Nanggel",
+      "ngoko" : "Nanggung"
+    },
+    "-LAxICzszT_TlXTejZ8A" : {
+      "indonesia" : "Tanggung jawab",
+      "kramaalus" : "Tanggel jawab",
+      "kramainggil" : "Tanggel jawab",
+      "ngoko" : "Tanggung jawab"
+    },
+    "-LAxILSVZeEjO7WF3kdM" : {
+      "indonesia" : "Bangun",
+      "kramaalus" : "Tangi",
+      "kramainggil" : "Wungu",
+      "ngoko" : "Tangi"
+    },
+    "-LAxIP5iIIDiGzZM3X6h" : {
+      "indonesia" : "Menangis",
+      "kramaalus" : "Tangis",
+      "kramainggil" : "Muwun",
+      "ngoko" : "Tangis"
+    },
+    "-LAxIVGXhuVrQqe-dqC8" : {
+      "indonesia" : "Tapal",
+      "kramaalus" : "Tapel",
+      "kramainggil" : "Raketan",
+      "ngoko" : "Tapel"
+    },
+    "-LAxI_m8GZ5Y3QRSoR6o" : {
+      "indonesia" : "Kain wanita",
+      "kramaalus" : "tapih",
+      "kramainggil" : "Sinjang",
+      "ngoko" : "tapih"
+    },
+    "-LAxIeqGLzGVO2E87gh9" : {
+      "indonesia" : "Tawar",
+      "kramaalus" : "Taros",
+      "kramainggil" : "Taros",
+      "ngoko" : "Tari"
+    },
+    "-LAxIjDwWIUVlMQeYKj1" : {
+      "indonesia" : "Menawar",
+      "kramaalus" : "Naros",
+      "kramainggil" : "Naros",
+      "ngoko" : "Nari"
+    },
+    "-LAxImrUiR-rfEpcR1L9" : {
+      "indonesia" : "Pernah",
+      "kramaalus" : "Nate",
+      "kramainggil" : "Nate",
+      "ngoko" : "Tau"
+    },
+    "-LAxIqwEvvzoQ9eL0FuC" : {
+      "indonesia" : "Tawar",
+      "kramaalus" : "Tawi",
+      "kramainggil" : "Tawi",
+      "ngoko" : "Tawa"
+    },
+    "-LAxIttiVnwPY9_epevB" : {
+      "indonesia" : "Tebu",
+      "kramaalus" : "Rosan",
+      "kramainggil" : "Rosan",
+      "ngoko" : "Tebu"
+    },
+    "-LAxIyYI3OIg3yxDAaL-" : {
+      "indonesia" : "Datang",
+      "kramaalus" : "Dhateng",
+      "kramainggil" : "Rawuh",
+      "ngoko" : "Teka"
+    },
+    "-LAxJ2mNDF5LBicqM-yS" : {
+      "indonesia" : "Kedatangan",
+      "kramaalus" : "Kedhatengan",
+      "kramainggil" : "Kerawuhan",
+      "ngoko" : "Katekan"
+    },
+    "-LAxJ8CZ2ujbhNUxUjlU" : {
+      "indonesia" : "Tiba",
+      "kramaalus" : "Dumugi",
+      "kramainggil" : "Dumugi",
+      "ngoko" : "Tekan"
+    },
+    "-LAxJEU-pG4gHzTW01I1" : {
+      "indonesia" : "Kesampaian",
+      "kramaalus" : "Kadumungen",
+      "kramainggil" : "Kadumungen",
+      "ngoko" : "Katekan"
+    },
+    "-LAxJIGzQje1-UB84oV6" : {
+      "indonesia" : "Tongkat",
+      "kramaalus" : "Teken",
+      "kramainggil" : "Lantaran",
+      "ngoko" : "Teken"
+    },
+    "-LAxJLbXPJ9lQ0zvZ7RG" : {
+      "indonesia" : "Tiga",
+      "kramaalus" : "Tiga",
+      "kramainggil" : "Tiga",
+      "ngoko" : "Telu"
+    },
+    "-LAxJQA5eLs3iXU5KMXy" : {
+      "indonesia" : "Tembaga",
+      "kramaalus" : "Tembagi",
+      "kramainggil" : "Tembagi",
+      "ngoko" : "Tembaga"
+    },
+    "-LAxJUnP52_T1NGIK3ym" : {
+      "indonesia" : "Lagu",
+      "kramaalus" : "Sekar",
+      "kramainggil" : "Sekar",
+      "ngoko" : "Tembang"
+    },
+    "-LAxJZzYjEaF-ghUEdzK" : {
+      "indonesia" : "Menyanyi",
+      "kramaalus" : "Nyekar",
+      "kramainggil" : "Nyekar",
+      "ngoko" : "Nembang"
+    },
+    "-LAxJdt-SAVYjUQFbFDk" : {
+      "indonesia" : "Sungguh",
+      "kramaalus" : "Estu",
+      "kramainggil" : "Estu",
+      "ngoko" : "Temen"
+    },
+    "-LAxJwzIvGA6d8w9GKLu" : {
+      "indonesia" : "Temu",
+      "kramaalus" : "Panggih",
+      "kramainggil" : "Panggih",
+      "ngoko" : "Temu"
+    },
+    "-LAxK2QSrM8QyCadesFK" : {
+      "indonesia" : "Bertemu",
+      "kramaalus" : "Kepanggih",
+      "kramainggil" : "Kepanggih",
+      "ngoko" : "Ketemu"
+    },
+    "-LAxK7Xn4nSY2VaVCv7D" : {
+      "indonesia" : "Kenal",
+      "kramaalus" : "Tepang",
+      "kramainggil" : "Tepang",
+      "ngoko" : "Tepung"
+    },
+    "-LAxKCfpCyd1pM83E0c5" : {
+      "indonesia" : "Berkenalan",
+      "kramaalus" : "Tetepangan",
+      "kramainggil" : "Tetepangan",
+      "ngoko" : "Tetepungan"
+    },
+    "-LAxKMUHoklmx66lXD-G" : {
+      "indonesia" : "Terus",
+      "kramaalus" : "Lajeng",
+      "kramainggil" : "Lajeng",
+      "ngoko" : "Terus"
+    },
+    "-LAxKSXyW77Qy9iNpYgs" : {
+      "indonesia" : "Supit",
+      "kramaalus" : "Supit",
+      "kramainggil" : "Supit",
+      "ngoko" : "Tetak"
+    },
+    "-LAxKYD0moxgkw4LoYTn" : {
+      "indonesia" : "Jatuh",
+      "kramaalus" : "Dhawah",
+      "kramainggil" : "Dhawah",
+      "ngoko" : "Tibo"
+    },
+    "-LAxKbxxaKK7WmQbIPCJ" : {
+      "indonesia" : "Berkunjung",
+      "kramaalus" : "Tuwi",
+      "kramainggil" : "Sowan",
+      "ngoko" : "Tilik"
+    },
+    "-LAxKfY5FNo7ddNb06Qq" : {
+      "indonesia" : "Tinggal",
+      "kramaalus" : "Tilar",
+      "kramainggil" : "Tilar",
+      "ngoko" : "Tinggal"
+    },
+    "-LAxKl5JSMLmMsdhhFOX" : {
+      "indonesia" : "Lihat",
+      "kramaalus" : "Tingal",
+      "kramainggil" : "Priksa",
+      "ngoko" : "Tonton"
+    },
+    "-LAxKrncqhe5m9x5Te98" : {
+      "indonesia" : "Pertunjukan",
+      "kramaalus" : "Tetingalan",
+      "kramainggil" : "Tetingalan",
+      "ngoko" : "Tontonan"
+    },
+    "-LAxLOEE9NFg5tH3J1nA" : {
+      "indonesia" : "Terlihat",
+      "kramaalus" : "Ketingal",
+      "kramainggil" : "Ketingal",
+      "ngoko" : "Katon"
+    },
+    "-LAxLUTQGsObL7rDKvV3" : {
+      "indonesia" : "Memberitahukan",
+      "kramaalus" : "Tedah",
+      "kramainggil" : "Pring priksa",
+      "ngoko" : "Tuduh"
+    },
+    "-LAxLZYF00EC8B803zJR" : {
+      "indonesia" : "Membeli",
+      "kramaalus" : "Tumbas",
+      "kramainggil" : "Mundhut",
+      "ngoko" : "Tuku"
+    },
+    "-LAxLd0koEA4GOoRhv83" : {
+      "indonesia" : "Tulis",
+      "kramaalus" : "Serat",
+      "kramainggil" : "Serat",
+      "ngoko" : "Tulis"
+    },
+    "-LAxLge6edmcfs1MbKJy" : {
+      "indonesia" : "Tulisan",
+      "kramaalus" : "Seratan",
+      "kramainggil" : "Seratan",
+      "ngoko" : "Tulisan"
+    },
+    "-LAxLlQpEkixOs29FE8a" : {
+      "indonesia" : "Kutu Rambut",
+      "kramaalus" : "Tumo",
+      "kramainggil" : "Itik",
+      "ngoko" : "Tumo"
+    },
+    "-LAxLreeT3Su9IN7ISk6" : {
+      "indonesia" : "Tombak",
+      "kramaalus" : "Waos",
+      "kramainggil" : "Watangan",
+      "ngoko" : "Tumbak"
+    },
+    "-LAxLyfGBdUcCGTnpQzv" : {
+      "indonesia" : "Rugi",
+      "kramaalus" : "Tuni",
+      "kramainggil" : "Tuni",
+      "ngoko" : "Tuna"
+    },
+    "-LAxMd9La8qgtefxFfrf" : {
+      "indonesia" : "Tunggal",
+      "kramaalus" : "Tunggil",
+      "kramainggil" : "Tunggil",
+      "ngoko" : "Tunggal"
+    },
+    "-LAxMnRs8-Iki-ZqK-FO" : {
+      "indonesia" : "Satu",
+      "kramaalus" : "Setunggal",
+      "kramainggil" : "Setunggal",
+      "ngoko" : "Siji"
+    },
+    "-LAxMsQ4WIzNY2S_M7c_" : {
+      "indonesia" : "Naik",
+      "kramaalus" : "Tumpak",
+      "kramainggil" : "Titih",
+      "ngoko" : "Tunggang"
+    },
+    "-LAxMyAU_e0-miSws7uO" : {
+      "indonesia" : "Kendaraan",
+      "kramaalus" : "Tumpakan",
+      "kramainggil" : "Titihan",
+      "ngoko" : "Tunggangan"
+    },
+    "-LAxN1oSrCq-GmmZ_jA0" : {
+      "indonesia" : "Tunggu",
+      "kramaalus" : "Tengga",
+      "kramainggil" : "Tengga",
+      "ngoko" : "Tunggu"
+    },
+    "-LAxN7mTnQHZ_OCdfPHd" : {
+      "indonesia" : "Tidur",
+      "kramaalus" : "Tilem",
+      "kramainggil" : "Sare",
+      "ngoko" : "Turu"
+    },
+    "-LAxNHj_gB8rb1YYRXkS" : {
+      "indonesia" : "Berbaring-baring",
+      "kramaalus" : "Tileman",
+      "kramainggil" : "Sarean",
+      "ngoko" : "Turon"
+    },
+    "-LAxNMZFsUXNRVGlo5T-" : {
+      "indonesia" : "Turun",
+      "kramaalus" : "Turun",
+      "kramainggil" : "Tedhak",
+      "ngoko" : "Turun"
+    },
+    "-LAxNVEuHA13MVb_Hv2W" : {
+      "indonesia" : "Tumbuk padi",
+      "kramaalus" : "Gentang",
+      "kramainggil" : "Gentang",
+      "ngoko" : "Tutu"
+    },
+    "-LAxNk4j91N_e3w5ckpq" : {
+      "indonesia" : "Menumbuk padi",
+      "kramaalus" : "Nggentang",
+      "kramainggil" : "Nggentang",
+      "ngoko" : "nutu"
+    },
+    "-LAxNpfd6gPRcubrBXKV" : {
+      "indonesia" : "Berkata",
+      "kramaalus" : "Sanjang",
+      "kramainggil" : "Sanjang",
+      "ngoko" : "Tutur"
+    },
+    "-LAxNu31R6vbW9vvn-gb" : {
+      "indonesia" : "Tua",
+      "kramaalus" : "Sepuh",
+      "kramainggil" : "Yuswa",
+      "ngoko" : "Tuwa"
+    },
+    "-LAxO0QdybHEiRUkoxa8" : {
+      "indonesia" : "Bersikap tua",
+      "kramaalus" : "Nyepuhi",
+      "kramainggil" : "Nyepuhi",
+      "ngoko" : "Nuwani"
+    },
+    "-LAxO51NhbAiSy7TVwdP" : {
+      "indonesia" : "Sesepuh",
+      "kramaalus" : "Sesepuh",
+      "kramainggil" : "Sesepuh",
+      "ngoko" : "Tetuwa"
+    },
+    "-LAxOBNaaqjrhiqSrXxq" : {
+      "indonesia" : "Kira-kira",
+      "kramaalus" : "Udakawis",
+      "kramainggil" : "Udakawis",
+      "ngoko" : "Udakara"
+    },
+    "-LAxOEg00I77NiKNavMK" : {
+      "indonesia" : "Hujan",
+      "kramaalus" : "Jawah",
+      "kramainggil" : "Jawah",
+      "ngoko" : "Udan"
+    },
+    "-LAxOM3zUL4qfycPEYRr" : {
+      "indonesia" : "Waktu hujan",
+      "kramaalus" : "Jawah-jawah",
+      "kramainggil" : "Jawah-jawah",
+      "ngoko" : "Udan-udan"
+    },
+    "-LAxOQjrlVBF7a6qScMH" : {
+      "indonesia" : "Kehujanan",
+      "kramaalus" : "Kejawahan",
+      "kramainggil" : "Kejawahan",
+      "ngoko" : "Kodanan"
+    },
+    "-LAxOV_TImqCSYV1kkj7" : {
+      "indonesia" : "Kendor",
+      "kramaalus" : "Udhar",
+      "kramainggil" : "Lukar",
+      "ngoko" : "Udhar"
+    },
+    "-LAxO_kUwsvLN_BPJ7Wa" : {
+      "indonesia" : "Turun",
+      "kramaalus" : "Andhap",
+      "kramainggil" : "Andhap",
+      "ngoko" : "Udhun"
+    },
+    "-LAxOpdpnkr78tLDeeSz" : {
+      "indonesia" : "Turun ",
+      "kramaalus" : "Mandhap",
+      "kramainggil" : "Mandhap",
+      "ngoko" : "Mudhun"
+    },
+    "-LAxOssPqdtZ1-bTUayv" : {
+      "indonesia" : "Juga",
+      "kramaalus" : "Ugi",
+      "kramainggil" : "Ugi",
+      "ngoko" : "Uga"
+    },
+    "-LAxOwtw6v5wiVGoDxFN" : {
+      "indonesia" : "Janji",
+      "kramaalus" : "Ujar",
+      "kramainggil" : "Punagi",
+      "ngoko" : "Ujar"
+    },
+    "-LAxP0qRr7Fr45S2nPN3" : {
+      "indonesia" : "Berjanji untuk",
+      "kramaalus" : "Ngujari",
+      "kramainggil" : "Munageni",
+      "ngoko" : "Ngujari"
+    },
+    "-LAxP4FzAn76KcEH9X7q" : {
+      "indonesia" : "Ular",
+      "kramaalus" : "Sawer",
+      "kramainggil" : "Sawer",
+      "ngoko" : "Ula"
+    },
+    "-LAxP8yuBK0fB98LvZaK" : {
+      "indonesia" : "Raut muka",
+      "kramaalus" : "Ulat",
+      "kramainggil" : "Pasyuran",
+      "ngoko" : "Ulat"
+    },
+    "-LAxPDJuv9WHh83GmXQ9" : {
+      "indonesia" : "Undangan",
+      "kramaalus" : "Ulem",
+      "kramainggil" : "Atur",
+      "ngoko" : "Ulem"
+    },
+    "-LAxPIL8dbKaEKhag1ts" : {
+      "indonesia" : "Mengundang",
+      "kramaalus" : "Ngulemi",
+      "kramainggil" : "Ngaturi",
+      "ngoko" : "Ngulemi"
+    },
+    "-LAxPRTNFAVazMtbYiCg" : {
+      "indonesia" : "Pulang",
+      "kramaalus" : "Mantuk",
+      "kramainggil" : "Kundur",
+      "ngoko" : "Muleh"
+    },
+    "-LAxPX7lPT6qV1K1QksX" : {
+      "indonesia" : "Ingus",
+      "kramaalus" : "Umbel",
+      "kramainggil" : "Gadhing",
+      "ngoko" : "Umbel"
+    },
+    "-LAxP_TupDEW7iu_lHu8" : {
+      "indonesia" : "Umur",
+      "kramaalus" : "Umur",
+      "kramainggil" : "Yuswa",
+      "ngoko" : "Umur"
+    },
+    "-LAxPegI5ptAkq1itA97" : {
+      "indonesia" : "Dewasa",
+      "kramaalus" : "Wis umur",
+      "kramainggil" : "Sampun yuswa",
+      "ngoko" : "Wis umur"
+    },
+    "-LAxPj8SLpm1kZQy6xSJ" : {
+      "indonesia" : "Panggil",
+      "kramaalus" : "Timbal",
+      "kramainggil" : "Atur",
+      "ngoko" : "Undang"
+    },
+    "-LAxPqCeUzrgeSWR8uxe" : {
+      "indonesia" : "Memanggil",
+      "kramaalus" : "Nimbali",
+      "kramainggil" : "Ngaturi",
+      "ngoko" : "Ngundang"
+    },
+    "-LAxPumtHL1Jou7rrEV-" : {
+      "indonesia" : "Tambah",
+      "kramaalus" : "Indhak",
+      "kramainggil" : "Indhak",
+      "ngoko" : "Undhak"
+    },
+    "-LAxQHlFagTClA4DZIO0" : {
+      "indonesia" : "Tambahan",
+      "kramaalus" : "Indhakan",
+      "kramainggil" : "Indhakan",
+      "ngoko" : "Undhakan"
+    },
+    "-LAxQLE2LbmP_aoIJ4YI" : {
+      "indonesia" : "Naik",
+      "kramaalus" : "Minggah",
+      "kramainggil" : "Minggah",
+      "ngoko" : "Munggah"
+    },
+    "-LAxQe5ebiYcM_ijJEoi" : {
+      "indonesia" : "Tanjakan",
+      "kramaalus" : "inggah-inggahan",
+      "kramainggil" : "Inggah-inggahan",
+      "ngoko" : "Unggah-unggahan"
+    },
+    "-LAxQiO1vZ72zMguL0Q2" : {
+      "indonesia" : "Belakang",
+      "kramaalus" : "Pengker",
+      "kramainggil" : "Pengker",
+      "ngoko" : "Ungkur"
+    },
+    "-LAxQm7U5ivKj2cN5Jaw" : {
+      "indonesia" : "Membelakang",
+      "kramaalus" : "Mengker",
+      "kramainggil" : "Mengker",
+      "ngoko" : "mungkur"
+    },
+    "-LAxQrd-EuEPfOyOelms" : {
+      "indonesia" : "Bunyi",
+      "kramaalus" : "Ungel",
+      "kramainggil" : "Ungel",
+      "ngoko" : "Uni"
+    },
+    "-LAxQvEWqB5EB1_wWZ3e" : {
+      "indonesia" : "Bersuara",
+      "kramaalus" : "Mungel",
+      "kramainggil" : "Mungel",
+      "ngoko" : "Muni"
+    },
+    "-LAxR0YTLyPxKYASBBYF" : {
+      "indonesia" : "Ungkapan",
+      "kramaalus" : "Ungel-ungelan",
+      "kramainggil" : "Ungel-ungelan",
+      "ngoko" : "Unen-unen"
+    },
+    "-LAxR55z4Ikz4uREGpln" : {
+      "indonesia" : "Gigi",
+      "kramaalus" : "Waos",
+      "kramainggil" : "Waja",
+      "ngoko" : "Untu"
+    },
+    "-LAxR9Imn6kAxrhh-MCW" : {
+      "indonesia" : "Pelihara",
+      "kramaalus" : "Upakawis",
+      "kramainggil" : "Upakawis",
+      "ngoko" : "Upakara"
+    },
+    "-LAxRQAfOoNQpxLBUVJt" : {
+      "indonesia" : "Memelihara",
+      "kramaalus" : "Nggegasang",
+      "kramainggil" : "Nggegasang",
+      "ngoko" : "Ngurip-ngurip"
+    },
+    "-LAxRW-aZx4CDl6RzIs5" : {
+      "indonesia" : "Penghidupan",
+      "kramaalus" : "Panggesangan",
+      "kramainggil" : "Panggesangan",
+      "ngoko" : "Panguripan"
+    },
+    "-LAxRZB2ypjZoTsArk0n" : {
+      "indonesia" : "Utama",
+      "kramaalus" : "Utami",
+      "kramainggil" : "Utami",
+      "ngoko" : "Utama"
+    },
+    "-LAxRbu2zq1K6qiYLiYL" : {
+      "indonesia" : "Pinjam",
+      "kramaalus" : "Sambut",
+      "kramainggil" : "Pundhut",
+      "ngoko" : "Utang"
+    },
+    "-LAxRfpEdc53GJ-qihm4" : {
+      "indonesia" : "Meminjam",
+      "kramaalus" : "Nyambut",
+      "kramainggil" : "Ngampil",
+      "ngoko" : "Ngutang"
+    },
+    "-LAxRkB1owhZ5OSqa435" : {
+      "indonesia" : "Atau",
+      "kramaalus" : "Utawi",
+      "kramainggil" : "Utawi",
+      "ngoko" : "Utawa"
+    },
+    "-LAxRoPR2TvelRwjnXRz" : {
+      "indonesia" : "Garam",
+      "kramaalus" : "Sarem",
+      "kramainggil" : "Sarem",
+      "ngoko" : "Uyah"
+    },
+    "-LAxRuCoMALavFuLFIje" : {
+      "indonesia" : "Kencing",
+      "kramaalus" : "Toyan",
+      "kramainggil" : "Toyan",
+      "ngoko" : "Uyuh"
+    },
+    "-LAxS-FNjPagxHneiaQk" : {
+      "indonesia" : "Baca",
+      "kramaalus" : "Waos",
+      "kramainggil" : "Waos",
+      "ngoko" : "Waca"
+    },
+    "-LAxSD_tYCKQr3g-gN2K" : {
+      "indonesia" : "Membaca",
+      "kramaalus" : "Maos",
+      "kramainggil" : "Maos",
+      "ngoko" : "Maca"
+    },
+    "-LAxSNMAg82xUMlUQUB-" : {
+      "indonesia" : "Membacakan",
+      "kramaalus" : "Maosaken",
+      "kramainggil" : "Maosaken",
+      "ngoko" : "Macakake"
+    },
+    "-LAxSRij7EZqSZcFCPNM" : {
+      "indonesia" : "Bacaan",
+      "kramaalus" : "Waosan",
+      "kramainggil" : "Waosan",
+      "ngoko" : "Waosan"
+    },
+    "-LAxSWQJesc88WTGSMFY" : {
+      "indonesia" : "Rahasia",
+      "kramaalus" : "Wados",
+      "kramainggil" : "Wados",
+      "ngoko" : "Wadi"
+    },
+    "-LAxSbBF1PqDlq06iDtk" : {
+      "indonesia" : "Perempuan",
+      "kramaalus" : "Estri",
+      "kramainggil" : "Putri",
+      "ngoko" : "Wadon"
+    },
+    "-LAxSey9OqCWsTomShTV" : {
+      "indonesia" : "Bersih",
+      "kramaalus" : "Wahing",
+      "kramainggil" : "Sigra",
+      "ngoko" : "Wahing"
+    },
+    "-LAxSjFAQVg_7W_sdT3c" : {
+      "indonesia" : "Berani",
+      "kramaalus" : "Wantun",
+      "kramainggil" : "Wantun",
+      "ngoko" : "Wani"
+    },
+    "-LAxSpXovRyj3y6vJXvH" : {
+      "indonesia" : "Tertalu berani",
+      "kramaalus" : "Kumawantun",
+      "kramainggil" : "Kumawantun",
+      "ngoko" : "Kumawani"
+    },
+    "-LAxSwmoyupUXhPzE22N" : {
+      "indonesia" : "Nasehat keras",
+      "kramaalus" : "Wantos-wantos",
+      "kramainggil" : "Wantos-wantos",
+      "ngoko" : "Wanti-wanti"
+    },
+    "-LAxT0Rf60jm9pl9R9ft" : {
+      "indonesia" : "Sembuh",
+      "kramaalus" : "Saras",
+      "kramainggil" : "Dhangan",
+      "ngoko" : "Waras"
+    },
+    "-LAxT5HqH6CWo_G572JM" : {
+      "indonesia" : "Kenyang",
+      "kramaalus" : "Tuwuk",
+      "kramainggil" : "Tuwuk",
+      "ngoko" : "Wareg"
+    },
+    "-LAxT9-L-uPrHxLj2WH6" : {
+      "indonesia" : "Warisan",
+      "kramaalus" : "Tilaran",
+      "kramainggil" : "Pusaka",
+      "ngoko" : "Warisan"
+    },
+    "-LAxTDhfmW_4nNmsDUCw" : {
+      "indonesia" : "Warung",
+      "kramaalus" : "Wande",
+      "kramainggil" : "Wande",
+      "ngoko" : "Warung"
+    },
+    "-LAxTJ6gCsZConK0xfan" : {
+      "indonesia" : "Berkedai",
+      "kramaalus" : "Mande",
+      "kramainggil" : "Mande",
+      "ngoko" : "Marung"
+    },
+    "-LAxTOTljlODG86SCOYn" : {
+      "indonesia" : "Waspada",
+      "kramaalus" : "Waspaos",
+      "kramainggil" : "Waspaos",
+      "ngoko" : "Waspada"
+    },
+    "-LAxTWNYSoCEPIXfkKzf" : {
+      "indonesia" : "Antara",
+      "kramaalus" : "Watawis",
+      "kramainggil" : "Watawis",
+      "ngoko" : "Watara"
+    },
+    "-LAxTZ4CHLIE4Zi4dQfn" : {
+      "indonesia" : "Batu",
+      "kramaalus" : "Sela",
+      "kramainggil" : "Sela",
+      "ngoko" : "Watu"
+    },
+    "-LAxTdxMd9MBD9RSe6up" : {
+      "indonesia" : "Batuk",
+      "kramaalus" : "Watuk",
+      "kramainggil" : "Cekoh",
+      "ngoko" : "Watuk"
+    },
+    "-LAxTkwzN3NfyRbBSamL" : {
+      "indonesia" : "Menyebabkan batuk",
+      "kramaalus" : "Matuki",
+      "kramainggil" : "Nyekohi",
+      "ngoko" : "Matuki"
+    },
+    "-LAxTpwqlnDzxRP6VSKu" : {
+      "indonesia" : "Minuman",
+      "kramaalus" : "Benteran",
+      "kramainggil" : "Unjukan",
+      "ngoko" : "Wedang"
+    },
+    "-LAxTuyQ3VHaeIYEme_j" : {
+      "indonesia" : "Cat kain",
+      "kramaalus" : "Celep",
+      "kramainggil" : "Celep",
+      "ngoko" : "Wedel"
+    },
+    "-LAxU-Tu56UIMZ7IPoo6" : {
+      "indonesia" : "Mewarnai kain",
+      "kramaalus" : "Nyelep",
+      "kramainggil" : "Nyelep",
+      "ngoko" : "Medel"
+    },
+    "-LAxU6JpoRZiVc35xMqJ" : {
+      "indonesia" : "Takut",
+      "kramaalus" : "Ajrih",
+      "kramainggil" : "Ajrih",
+      "ngoko" : "Wedi"
+    },
+    "-LAxUBbSXw3-8rWj2uAL" : {
+      "indonesia" : "Hantu",
+      "kramaalus" : "Memedos",
+      "kramainggil" : "Memedos",
+      "ngoko" : "Memedi"
+    },
+    "-LAxUFhynGQj_inLhu40" : {
+      "indonesia" : "Kambing",
+      "kramaalus" : "Menda",
+      "kramainggil" : "Menda",
+      "ngoko" : "Wedhus"
+    },
+    "-LAxUKzND6fMtFnUBa44" : {
+      "indonesia" : "Beri",
+      "kramaalus" : "Suka",
+      "kramainggil" : "Paring",
+      "ngoko" : "Weh"
+    },
+    "-LAxUP6RUflFSGUKUowW" : {
+      "indonesia" : "Memberi",
+      "kramaalus" : "Nyukani",
+      "kramainggil" : "Maringi",
+      "ngoko" : "Menehi"
+    },
+    "-LAxUV4jxpw0qyujQi_z" : {
+      "indonesia" : "Waktu",
+      "kramaalus" : "Wekdal",
+      "kramainggil" : "Wekdal",
+      "ngoko" : "Wektu"
+    },
+    "-LAxU_7rWcid7-ahSDI4" : {
+      "indonesia" : "Malam",
+      "kramaalus" : "Dalu",
+      "kramainggil" : "Dalu",
+      "ngoko" : "Wengi"
+    },
+    "-LAxUfXOr9U3sA0PtUN_" : {
+      "indonesia" : "Warna",
+      "kramaalus" : "Werni",
+      "kramainggil" : "Werni",
+      "ngoko" : "Werna"
+    },
+    "-LAxUjS28JJSK3y-rlvR" : {
+      "indonesia" : "Berita",
+      "kramaalus" : "Wertos",
+      "kramainggil" : "Wertos",
+      "ngoko" : "Werta"
+    },
+    "-LAxUxOkLT2hQWsmUrJR" : {
+      "indonesia" : "Tahu",
+      "kramaalus" : "Sumerep",
+      "kramainggil" : "Priksa",
+      "ngoko" : "Weruh"
+    },
+    "-LAxV1FuV7YBhYqeHHJN" : {
+      "indonesia" : "Pengetahuan",
+      "kramaalus" : "Seserepan",
+      "kramainggil" : "Seserepan",
+      "ngoko" : "Kawruh"
+    },
+    "-LAxV7QaSExxhkeva9Aq" : {
+      "indonesia" : "Mengetahui",
+      "kramaalus" : "Nyemerepi",
+      "kramainggil" : "Ngawuningani",
+      "ngoko" : "Meruhi"
+    },
+    "-LAxVCXzU40BNDD8ow4m" : {
+      "indonesia" : "Besi",
+      "kramaalus" : "Tosan",
+      "kramainggil" : "Tosan",
+      "ngoko" : "Wesi"
+    },
+    "-LAxVH11bASGwNwLZp4T" : {
+      "indonesia" : "Pusaka",
+      "kramaalus" : "Tosan aji",
+      "kramainggil" : "Tosan aji",
+      "ngoko" : "Wesi aji"
+    },
+    "-LAxVL1mOs9F1YhKn9uE" : {
+      "indonesia" : "Perut",
+      "kramaalus" : "Padharan",
+      "kramainggil" : "Padharan",
+      "ngoko" : "Weteng"
+    },
+    "-LAxVPxt8U96WiDcjAuj" : {
+      "indonesia" : "Hamil",
+      "kramaalus" : "Mbobot",
+      "kramainggil" : "Narbini",
+      "ngoko" : "Meteng"
+    },
+    "-LAxVWFcUDbHGYU0-oJD" : {
+      "indonesia" : "Keluar",
+      "kramaalus" : "Medal",
+      "kramainggil" : "Miyos",
+      "ngoko" : "Metu"
+    },
+    "-LAxVbW-m_Cd9ERdULy2" : {
+      "indonesia" : "Hari kelahiran",
+      "kramaalus" : "Wedalan",
+      "kramainggil" : "Wiyosan",
+      "ngoko" : "Weton"
+    },
+    "-LAxVjptb7XHMu0KEwcq" : {
+      "indonesia" : "Bicara",
+      "kramaalus" : "Wicanten",
+      "kramainggil" : "Ngendika",
+      "ngoko" : "Wicara"
+    },
+    "-LAxVoYW6gLKGNR_lPgz" : {
+      "indonesia" : "Hitung",
+      "kramaalus" : "Wical",
+      "kramainggil" : "Wical",
+      "ngoko" : "Wilang"
+    },
+    "-LAxVreI1iFxFaveXilj" : {
+      "indonesia" : "Menghitung",
+      "kramaalus" : "Mical",
+      "kramainggil" : "Mical",
+      "ngoko" : "Milang"
+    },
+    "-LAxW5Qy6St1Wh4fihVw" : {
+      "indonesia" : "Bilangan",
+      "kramaalus" : "Wicalan",
+      "kramainggil" : "Wicalan",
+      "ngoko" : "Wilangan"
+    },
+    "-LAxW8ewTBF3GWMUb7zg" : {
+      "indonesia" : "Sudah",
+      "kramaalus" : "Sampun",
+      "kramainggil" : "Sampun",
+      "ngoko" : "Wis"
+    },
+    "-LAxWCF-mjB8We0geowE" : {
+      "indonesia" : "Orang",
+      "kramaalus" : "Tiyang",
+      "kramainggil" : "Priyantun",
+      "ngoko" : "Wong"
+    },
+    "-LAxWHyOQ75P24wENZNi" : {
+      "indonesia" : "Sarung keris",
+      "kramaalus" : "Sarungan",
+      "kramainggil" : "Sarungan",
+      "ngoko" : "Wrangka"
+    },
+    "-LAxWLlbRUo1_03NiqQG" : {
+      "indonesia" : "Pusar",
+      "kramaalus" : "Wudel",
+      "kramainggil" : "Nabi",
+      "ngoko" : "Wudel"
+    },
+    "-LAxWQ3Qh41ezbtQ1E9_" : {
+      "indonesia" : "Bisul",
+      "kramaalus" : "Wudun",
+      "kramainggil" : "Untar",
+      "ngoko" : "Wudun"
+    },
+    "-LAxWTZor8X4KsEymggx" : {
+      "indonesia" : "Sakit bisur",
+      "kramaalus" : "Wudunen",
+      "kramainggil" : "Untarem",
+      "ngoko" : "Wudunen"
+    },
+    "-LAxWXYtPpqXBfvgUYbI" : {
+      "indonesia" : "Mengajar",
+      "kramaalus" : "Wucal",
+      "kramainggil" : "Wucal",
+      "ngoko" : "Wulang"
+    },
+    "-LAxWcJ9lIaAFDQZy3HK" : {
+      "indonesia" : "Pelajaran",
+      "kramaalus" : "Wucalan",
+      "kramainggil" : "Wucalan",
+      "ngoko" : "Wulangan"
+    },
+    "-LAxWhgXO8BcqQxjzvgN" : {
+      "indonesia" : "Pembelajaran",
+      "kramaalus" : "Pawucalan",
+      "kramainggil" : "Pawucalan",
+      "ngoko" : "Pawulangan"
+    },
+    "-LAxWnWjUy6eZpP1Aq8D" : {
+      "indonesia" : "Buluh",
+      "kramaalus" : "Welah",
+      "kramainggil" : "Welah",
+      "ngoko" : "Wuluh"
+    },
+    "-LAxWsATBcvV2Dbr2SaL" : {
+      "indonesia" : "Batal",
+      "kramaalus" : "Sande",
+      "kramainggil" : "Sande",
+      "ngoko" : "Wurung"
+    },
+    "-LAxWyI1k4Q7mcB36TUL" : {
+      "indonesia" : "Membatalkan",
+      "kramaalus" : "Nyandekaken",
+      "kramainggil" : "Nyandekaken",
+      "ngoko" : "Murungake"
+    },
+    "-LAxX3qLVypJ0hOOtD6m" : {
+      "indonesia" : "Tambah",
+      "kramaalus" : "Wewah",
+      "kramainggil" : "Wewah",
+      "ngoko" : "Wuwuh"
+    },
+    "-LAxX91upV9ic0UWUF1v" : {
+      "indonesia" : "Menambahkan",
+      "kramaalus" : "Mewahi",
+      "kramainggil" : "Mewahi",
+      "ngoko" : "Muwuhi"
+    },
+    "-LAxXCn07Oy2bVBy2eVC" : {
+      "indonesia" : "Tambahan",
+      "kramaalus" : "Wewahan",
+      "kramainggil" : "Wewahan",
+      "ngoko" : "Wuwuhan"
+    },
+    "-LAxXGaXkKVeJ0vf-z-u" : {
+      "indonesia" : "Ya",
+      "kramaalus" : "Inggih",
+      "kramainggil" : "Injih",
+      "ngoko" : "Yo"
+    },
+    "-LAxXMCsYHX9V-fqzJVe" : {
+      "indonesia" : "Yaitu",
+      "kramaalus" : "Inggih punika",
+      "kramainggil" : "Injih pnika",
+      "ngoko" : "Yoiku"
+    },
+    "-LAxXQAqkgF2-WYtk586" : {
+      "indonesia" : "Betu",
+      "kramaalus" : "Yektos",
+      "kramainggil" : "Yektos",
+      "ngoko" : "Yekti"
+    },
+    "-LAxXVZhI8ZkQM-zd4qB" : {
+      "indonesia" : "Sebetulnya",
+      "kramaalus" : "Sayektos",
+      "kramainggil" : "Sayektos",
+      "ngoko" : "Sayekti"
+    }
+  }
+}
