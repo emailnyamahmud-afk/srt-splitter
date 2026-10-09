@@ -132,6 +132,29 @@ def parse_entries(html):
     parsed = []
     skipped_count = 0
 
+    # Pattern khusus untuk entries typo wiki parah:
+    # - "kata (t.s.)) arti"        (kurung tutup dobel)
+    # - "kata (t.a.: arti"         (kurung tutup ilang)
+    # - "[[kata](t.k.)]: arti"     (bracket rusak)
+    # - "kata t.s.): arti"         (kurung buka ilang)
+    # - "kata (keterangan)"        (arti di dalam kurung)
+    # - "kata (keterangan), arti"   (arti di luar kurung)
+    pattern_broken_paren = re.compile(
+        r"^([a-zA-ZĕĕêêèéÉíàáâãäåæçìíîïðñòóôõöøùúûüýþÿ'\-\.\s/]+?)\s*\((t\.[a-z]+\.?)\s*[:\)]]+\s*(.+?)\)?$"
+    )
+    pattern_no_open_paren = re.compile(
+        r"^([a-zA-ZĕĕêêèéÉíàáâãäåæçìíîïðñòóôõöøùúûüýþÿ'\-\.\s/]+?)\s+(t\.[a-z]+\.?)\)\s*:?\s*(.+)$"
+    )
+    pattern_bracket_rusak = re.compile(
+        r"^\[+\*?\*?\[?([a-zA-ZĕĕêêèéÉíàáâãäåæçìíîïðñòóôõöøùúûüýþÿ'\-\.\s/]+?)\]?\s*\(([^)]+)\)\]?:\s*(.+)$"
+    )
+    pattern_paren_arti_only = re.compile(
+        r"^([a-zA-ZĕĕêêèéÉíàáâãäåæçìíîïðñòóôõöøùúûüýþÿ'\-\.\s/]+?)\s*\(([^tK][^)]*)\)\s*,?\s*(.*)$"
+    )
+    pattern_multi_koma = re.compile(
+        r"^([a-zA-ZĕĕêêèéÉíàáâãäåæçìíîïðñòóôõöøùúûüýþÿ'\-\.\s/]+?)\s*:\s*(.+)$"
+    )
+
     # Patterns (urutan trial, paling spesifik dulu):
     # 1. "kata (K) (kelas): arti"  — krama dulu, kelas di belakang
     # 2. "kata (kelas) (K): arti"  — kelas dulu, krama di belakang
@@ -218,8 +241,41 @@ def parse_entries(html):
                                 arti = match.group(2).strip()
                                 is_krama = False
                             else:
-                                skipped_count += 1
-                                continue
+                                # 6. Pattern khusus typo parah:
+                                # - "kata (t.a.: arti" (kurung tutup ilang)
+                                # - "kata (t.s.)) arti" (kurung tutup dobel)
+                                # - "kata t.s.): arti" (kurung buka ilang)
+                                match = pattern_broken_paren.match(sub_clean) or \
+                                        pattern_no_open_paren.match(sub_clean)
+                                if match:
+                                    kata = match.group(1).strip()
+                                    kelas_raw = match.group(2).strip()
+                                    arti = match.group(3).strip().rstrip(")]")
+                                    is_krama = kelas_raw == "K"
+                                else:
+                                    # 7. Pattern bracket rusak: "[[kata](t.k.)]: arti"
+                                    match = pattern_bracket_rusak.match(sub_clean)
+                                    if match:
+                                        kata = match.group(1).strip().strip("[]")
+                                        kelas_raw = match.group(2).strip()
+                                        arti = match.group(3).strip()
+                                        is_krama = kelas_raw == "K"
+                                    else:
+                                        # 8. Pattern arti di kurung: "kata (keterangan)"
+                                        # Mis. "bunga (uang)" → kata=bunga, arti=uang
+                                        match = pattern_paren_arti_only.match(sub_clean)
+                                        if match:
+                                            kata = match.group(1).strip()
+                                            paren = match.group(2).strip()
+                                            extra = match.group(3).strip()
+                                            kelas_raw = ""
+                                            arti = paren
+                                            if extra:
+                                                arti = f"{paren}; {extra}"
+                                            is_krama = False
+                                        else:
+                                            skipped_count += 1
+                                            continue
 
             # Normalize kelas (handle typo wiki)
             kelas = normalize_kelas(kelas_raw) if kelas_raw else ""

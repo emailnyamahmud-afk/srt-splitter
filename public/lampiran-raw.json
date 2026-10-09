@@ -3,13 +3,13 @@
     "version": "1.0",
     "source": "id.wiktionary.org/wiki/Lampiran:Kamus_bahasa_Jawa_–_bahasa_Indonesia",
     "description": "Lampiran Kamus bahasa Jawa – bahasa Indonesia (2724 kata)",
-    "entries": 2715,
+    "entries": 2724,
     "kelas_breakdown": {
       "t.a.": 840,
-      "t.s.": 381,
-      "t.k.": 471,
+      "t.s.": 382,
+      "t.k.": 472,
       "t.kr.": 86,
-      "": 787,
+      "": 794,
       "t.pw.": 8,
       "K": 62,
       "t.pb": 1,
@@ -959,6 +959,13 @@
       "arti": "anakan",
       "kelas": "t.a.",
       "kelas_nama": "tembung aran (kata benda)",
+      "is_krama": false
+    },
+    {
+      "ngoko": "bunga",
+      "arti": "uang",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
       "is_krama": false
     },
     {
@@ -3643,6 +3650,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "besar",
+      "arti": "untuk mata",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
       "ngoko": "blanak",
       "arti": "jenis ikan",
       "kelas": "t.a.",
@@ -4263,6 +4277,13 @@
       "arti": "tempat berbentuk pipa besar atau terbuat dari bambu",
       "kelas": "t.a.",
       "kelas_nama": "tembung aran (kata benda)",
+      "is_krama": false
+    },
+    {
+      "ngoko": "tabung",
+      "arti": "dari seruas bambu",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
       "is_krama": false
     },
     {
@@ -5215,6 +5236,13 @@
       "arti": "tidak sedap/kurang pas (mis. nada, rasa)",
       "kelas": "t.s.",
       "kelas_nama": "tembung sipat (kata sifat)",
+      "is_krama": false
+    },
+    {
+      "ngoko": "hambar",
+      "arti": "rasa makanan; kurang bumbu",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
       "is_krama": false
     },
     {
@@ -13660,6 +13688,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "nurut",
+      "arti": "nurut; penurut",
+      "kelas": "t.s.",
+      "kelas_nama": "tembung sipat (kata sifat)",
+      "is_krama": false
+    },
+    {
       "ngoko": "ngaboti",
       "arti": "memberatkan",
       "kelas": "t.k.",
@@ -14012,6 +14047,13 @@
     {
       "ngoko": "nyandhak",
       "arti": "memegang",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "mengerjakan",
+      "arti": "sesuatu",
       "kelas": "",
       "kelas_nama": "tidak standar",
       "is_krama": false
@@ -15158,6 +15200,13 @@
       "is_krama": false
     },
     {
+      "ngoko": "rembug",
+      "arti": "N; rembag (K): Musyawarah",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
       "ngoko": "remeng-remeng",
       "arti": "samar/remang-remang",
       "kelas": "",
@@ -15349,6 +15398,13 @@
     {
       "ngoko": "ruda peksa",
       "arti": "paksa, perkosa",
+      "kelas": "",
+      "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "rudatin",
+      "arti": "N; rudatos (K): sedih, susah",
       "kelas": "",
       "kelas_nama": "tidak standar",
       "is_krama": false
@@ -16037,6 +16093,13 @@
       "arti": "tebat",
       "kelas": "",
       "kelas_nama": "tidak standar",
+      "is_krama": false
+    },
+    {
+      "ngoko": "tandang",
+      "arti": "bekerja",
+      "kelas": "t.k.",
+      "kelas_nama": "tembung kriya (kata kerja)",
       "is_krama": false
     },
     {
