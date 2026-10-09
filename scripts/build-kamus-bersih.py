@@ -1012,11 +1012,31 @@ def cleanup_misplaced_krama(konseps, angka_words=None):
                 if k and k != ngoko:
                     morfem_krama_only.add(k)
 
+    # Angka yang ngoko==krama (jangan masuk morfem_krama_only)
+    # sanga = ngoko DAN krama (Wiktionary: ngoko=sanga, krama=sanga)
+    angka_ngoko_eq_krama = set()
+    for a in angka_words:
+        ngoko = (a.get("ngoko", "") or "").strip().lower()
+        krama = (a.get("krama", "") or "").strip().lower()
+        if ngoko and krama:
+            ngoko_words_set = {w.strip() for w in ngoko.split(",")}
+            krama_words_set = {w.strip() for w in krama.split(",")}
+            # Words yang muncul di ngoko DAN krama = bukan morfem krama
+            for w in krama_words_set:
+                if w in ngoko_words_set:
+                    angka_ngoko_eq_krama.add(w)
+
     removed = []
     kept = []
     for k in konseps:
         ngoko_first = (k.get("ngoko", "") or "").split(",")[0].strip().lower()
         krama = (k.get("krama", "") or "").strip()
+
+        # Skip: angka yang ngoko==krama (mis. sanga=enem=pitu=wolu)
+        # Itu valid sebagai ngoko, JANGAN hapus
+        if ngoko_first in angka_ngoko_eq_krama:
+            kept.append(k)
+            continue
 
         # Cek: ngoko = morfem krama-only + krama kosong + sudah ada di entry lain
         if (ngoko_first in morfem_krama_only

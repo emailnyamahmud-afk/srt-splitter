@@ -1,253 +1,74 @@
 {
   "metadata": {
-    "version": "1.0",
-    "source": "id.wiktionary.org/wiki/Lampiran:Nama_angka_dalam_bahasa_Jawa",
-    "description": "Nama angka dalam bahasa Jawa (satuan, belasan, puluhan, ratusan, ribuan, jutaan)",
-    "entries": 92,
-    "tables": {
-      "table_0": "Satuan 1-10 (Kuna, Kawi, Krama, Ngoko)",
-      "table_1": "Belasan - Jutaan (Angka, Ngoko, Krama)"
-    }
+    "version": "2.0",
+    "source": "id.wiktionary.org/wiki/Lampiran:Nama_angka_dalam_bahasa_Jawa (FULL scrape, semua section)",
+    "entries": 66
   },
   "words": [
     {
+      "angka": 0,
+      "ngoko": "",
+      "krama": "Nol",
+      "arti": "nol"
+    },
+    {
       "angka": 1,
-      "bahasa": "kuna",
-      "word": "sa",
+      "ngoko": "siji",
+      "krama": "setunggal",
       "arti": "satu"
     },
     {
       "angka": 2,
-      "bahasa": "kuna",
-      "word": "rwa",
+      "ngoko": "loro",
+      "krama": "kalih",
       "arti": "dua"
     },
     {
       "angka": 3,
-      "bahasa": "kuna",
-      "word": "telu",
+      "ngoko": "telu",
+      "krama": "tiga",
       "arti": "tiga"
     },
     {
       "angka": 4,
-      "bahasa": "kuna",
-      "word": "pat",
+      "ngoko": "papat",
+      "krama": "sekawan",
       "arti": "empat"
     },
     {
       "angka": 5,
-      "bahasa": "kuna",
-      "word": "lima",
+      "ngoko": "lima",
+      "krama": "gangsal",
       "arti": "lima"
     },
     {
       "angka": 6,
-      "bahasa": "kuna",
-      "word": "enem",
+      "ngoko": "enem",
+      "krama": "enem",
       "arti": "enam"
     },
     {
       "angka": 7,
-      "bahasa": "kuna",
-      "word": "pitu",
+      "ngoko": "pitu",
+      "krama": "pitu",
       "arti": "tujuh"
     },
     {
       "angka": 8,
-      "bahasa": "kuna",
-      "word": "walu",
+      "ngoko": "wolu",
+      "krama": "wolu",
       "arti": "delapan"
     },
     {
       "angka": 9,
-      "bahasa": "kuna",
-      "word": "sanga",
+      "ngoko": "sanga",
+      "krama": "sanga",
       "arti": "sembilan"
     },
     {
       "angka": 10,
-      "bahasa": "kuna",
-      "word": "sapuluh",
-      "arti": "sepuluh"
-    },
-    {
-      "angka": 1,
-      "bahasa": "kawi",
-      "word": "eka",
-      "arti": "satu"
-    },
-    {
-      "angka": 2,
-      "bahasa": "kawi",
-      "word": "dwi",
-      "arti": "dua"
-    },
-    {
-      "angka": 3,
-      "bahasa": "kawi",
-      "word": "tri",
-      "arti": "tiga"
-    },
-    {
-      "angka": 4,
-      "bahasa": "kawi",
-      "word": "catur",
-      "arti": "empat"
-    },
-    {
-      "angka": 5,
-      "bahasa": "kawi",
-      "word": "panca",
-      "arti": "lima"
-    },
-    {
-      "angka": 6,
-      "bahasa": "kawi",
-      "word": "sad",
-      "arti": "enam"
-    },
-    {
-      "angka": 7,
-      "bahasa": "kawi",
-      "word": "sapta",
-      "arti": "tujuh"
-    },
-    {
-      "angka": 8,
-      "bahasa": "kawi",
-      "word": "asta",
-      "arti": "delapan"
-    },
-    {
-      "angka": 9,
-      "bahasa": "kawi",
-      "word": "nawa",
-      "arti": "sembilan"
-    },
-    {
-      "angka": 10,
-      "bahasa": "kawi",
-      "word": "dasa",
-      "arti": "sepuluh"
-    },
-    {
-      "angka": 1,
-      "bahasa": "krama",
-      "word": "setunggal",
-      "arti": "satu"
-    },
-    {
-      "angka": 2,
-      "bahasa": "krama",
-      "word": "kalih",
-      "arti": "dua"
-    },
-    {
-      "angka": 3,
-      "bahasa": "krama",
-      "word": "tiga",
-      "arti": "tiga"
-    },
-    {
-      "angka": 4,
-      "bahasa": "krama",
-      "word": "sekawan",
-      "arti": "empat"
-    },
-    {
-      "angka": 5,
-      "bahasa": "krama",
-      "word": "gangsal",
-      "arti": "lima"
-    },
-    {
-      "angka": 6,
-      "bahasa": "krama",
-      "word": "enem",
-      "arti": "enam"
-    },
-    {
-      "angka": 7,
-      "bahasa": "krama",
-      "word": "pitu",
-      "arti": "tujuh"
-    },
-    {
-      "angka": 8,
-      "bahasa": "krama",
-      "word": "wolu",
-      "arti": "delapan"
-    },
-    {
-      "angka": 9,
-      "bahasa": "krama",
-      "word": "sanga",
-      "arti": "sembilan"
-    },
-    {
-      "angka": 10,
-      "bahasa": "krama",
-      "word": "sedasa",
-      "arti": "sepuluh"
-    },
-    {
-      "angka": 1,
-      "bahasa": "ngoko",
-      "word": "siji",
-      "arti": "satu"
-    },
-    {
-      "angka": 2,
-      "bahasa": "ngoko",
-      "word": "loro",
-      "arti": "dua"
-    },
-    {
-      "angka": 3,
-      "bahasa": "ngoko",
-      "word": "telu",
-      "arti": "tiga"
-    },
-    {
-      "angka": 4,
-      "bahasa": "ngoko",
-      "word": "papat",
-      "arti": "empat"
-    },
-    {
-      "angka": 5,
-      "bahasa": "ngoko",
-      "word": "lima",
-      "arti": "lima"
-    },
-    {
-      "angka": 6,
-      "bahasa": "ngoko",
-      "word": "enem",
-      "arti": "enam"
-    },
-    {
-      "angka": 7,
-      "bahasa": "ngoko",
-      "word": "pitu",
-      "arti": "tujuh"
-    },
-    {
-      "angka": 8,
-      "bahasa": "ngoko",
-      "word": "wolu",
-      "arti": "delapan"
-    },
-    {
-      "angka": 9,
-      "bahasa": "ngoko",
-      "word": "songo",
-      "arti": "sembilan"
-    },
-    {
-      "angka": 10,
-      "bahasa": "ngoko",
-      "word": "sepuluh",
+      "ngoko": "sepuluh",
+      "krama": "sedasa",
       "arti": "sepuluh"
     },
     {
@@ -271,12 +92,12 @@
     {
       "angka": 14,
       "ngoko": "patbelas",
-      "krama": "sekawan welas",
+      "krama": "kawan welas",
       "arti": "empat belas"
     },
     {
       "angka": 15,
-      "ngoko": "limolas",
+      "ngoko": "limalas",
       "krama": "gangsal welas",
       "arti": "lima belas"
     },
@@ -300,7 +121,7 @@
     },
     {
       "angka": 19,
-      "ngoko": "songolas",
+      "ngoko": "sangalas",
       "krama": "sangalas",
       "arti": "sembilan belas"
     },
@@ -313,7 +134,7 @@
     {
       "angka": 21,
       "ngoko": "selikur",
-      "krama": "selikur/kalih dasa setunggal",
+      "krama": "selikur",
       "arti": "dua puluh satu"
     },
     {
@@ -325,26 +146,44 @@
     {
       "angka": 23,
       "ngoko": "telulikur",
-      "krama": "tigang likur",
+      "krama": "tigalikur",
       "arti": "dua puluh tiga"
     },
     {
       "angka": 24,
       "ngoko": "patlikur",
-      "krama": "sekawan likur",
+      "krama": "kawan likur",
       "arti": "dua puluh empat"
     },
     {
       "angka": 25,
-      "ngoko": "selawé",
+      "ngoko": "sèlawé",
       "krama": "selangkung",
       "arti": "dua puluh lima"
     },
     {
       "angka": 26,
       "ngoko": "nemlikur",
-      "krama": "nemlikur",
+      "krama": "enemlikur",
       "arti": "dua puluh enam"
+    },
+    {
+      "angka": 27,
+      "ngoko": "pitulikur",
+      "krama": "pitulikur",
+      "arti": "dua puluh tujuh"
+    },
+    {
+      "angka": 28,
+      "ngoko": "wolulikur",
+      "krama": "wolulikur",
+      "arti": "dua puluh delapan"
+    },
+    {
+      "angka": 29,
+      "ngoko": "sangalikur",
+      "krama": "sangalikur",
+      "arti": "dua puluh sembilan"
     },
     {
       "angka": 30,
@@ -354,87 +193,63 @@
     },
     {
       "angka": 31,
-      "ngoko": "telung puluh siji",
+      "ngoko": "",
       "krama": "tigang dasa setunggal",
       "arti": "tiga puluh satu"
     },
     {
       "angka": 32,
-      "ngoko": "telung puluh loro",
+      "ngoko": "",
       "krama": "tigang dasa kalih",
       "arti": "tiga puluh dua"
     },
     {
       "angka": 40,
       "ngoko": "patang puluh",
-      "krama": "sekawan dasa",
+      "krama": "kawan dasa",
       "arti": "empat puluh"
     },
     {
-      "angka": 41,
-      "ngoko": "patang puluh siji",
-      "krama": "sekawan dasa setunggal",
-      "arti": "empat puluh satu"
-    },
-    {
-      "angka": 42,
-      "ngoko": "patang puluh loro",
-      "krama": "sekawan dasa kalih",
-      "arti": "empat puluh dua"
-    },
-    {
       "angka": 50,
-      "ngoko": "sèket",
-      "krama": "sèket",
+      "ngoko": "séket",
+      "krama": "seket",
       "arti": "lima puluh"
     },
     {
-      "angka": 51,
-      "ngoko": "sèket siji",
-      "krama": "sèket setunggal",
-      "arti": "lima puluh satu"
-    },
-    {
-      "angka": 52,
-      "ngoko": "sèket loro",
-      "krama": "sèket kalih",
-      "arti": "lima puluh dua"
-    },
-    {
       "angka": 60,
-      "ngoko": "swidak",
-      "krama": "swidak",
+      "ngoko": "sewidak",
+      "krama": "sewidak",
       "arti": "enam puluh"
-    },
-    {
-      "angka": 61,
-      "ngoko": "swidak siji",
-      "krama": "swidak setunggal",
-      "arti": "enam puluh satu"
-    },
-    {
-      "angka": 62,
-      "ngoko": "swidak loro",
-      "krama": "swidak kalih",
-      "arti": "enam puluh dua"
     },
     {
       "angka": 70,
       "ngoko": "pitung puluh",
-      "krama": "pitu dasa",
+      "krama": "pitung dasa",
       "arti": "tujuh puluh"
     },
     {
       "angka": 80,
       "ngoko": "wolung puluh",
-      "krama": "wolu dasa",
+      "krama": "wolung dasa",
       "arti": "delapan puluh"
     },
     {
       "angka": 90,
       "ngoko": "sangang puluh",
-      "krama": "sanga dasa",
+      "krama": "sangang dasa",
       "arti": "sembilan puluh"
+    },
+    {
+      "angka": 98,
+      "ngoko": "",
+      "krama": "sangang dasa wolu",
+      "arti": "sembilan puluh delapan"
+    },
+    {
+      "angka": 99,
+      "ngoko": "sangang puluh sanga",
+      "krama": "sangang dasa sanga",
+      "arti": "sembilan puluh sembilan"
     },
     {
       "angka": 100,
@@ -443,112 +258,124 @@
       "arti": "seratus"
     },
     {
-      "angka": 101,
-      "ngoko": "satus siji",
-      "krama": "setunggal atus setunggal",
-      "arti": "seratus satu"
-    },
-    {
-      "angka": 102,
-      "ngoko": "satus loro",
-      "krama": "setunggal atus kalih",
-      "arti": "seratus dua"
-    },
-    {
-      "angka": 120,
-      "ngoko": "satus rong puluh",
-      "krama": "setunggal atus kalih dasa",
-      "arti": "seratus dua puluh"
-    },
-    {
-      "angka": 121,
-      "ngoko": "satus selikur",
-      "krama": "setunggal atus kalih dasa setunggal",
-      "arti": "seratus dua puluh satu"
-    },
-    {
       "angka": 200,
-      "ngoko": "rong atus",
+      "ngoko": "rongatus",
       "krama": "kalih atus",
-      "arti": "dua ratus"
+      "arti": ""
+    },
+    {
+      "angka": 300,
+      "ngoko": "telungatus",
+      "krama": "tigang atus",
+      "arti": ""
+    },
+    {
+      "angka": 400,
+      "ngoko": "",
+      "krama": "sekawan atus",
+      "arti": ""
     },
     {
       "angka": 500,
-      "ngoko": "limang atus",
+      "ngoko": "limangatus",
       "krama": "gangsal atus",
-      "arti": "lima ratus"
+      "arti": ""
+    },
+    {
+      "angka": 999,
+      "ngoko": "",
+      "krama": "sangang atus sangang dasa sanga",
+      "arti": ""
     },
     {
       "angka": 1000,
-      "ngoko": "sèwu",
-      "krama": "setunggal èwu",
+      "ngoko": "séwu",
+      "krama": "setunggal ewu",
       "arti": "seribu"
     },
     {
-      "angka": 1001,
-      "ngoko": "sèwu siji",
-      "krama": "setunggal èwu setunggal",
-      "arti": "seribu satu"
-    },
-    {
-      "angka": 1002,
-      "ngoko": "sèwu loro",
-      "krama": "setunggal èwu kalih",
-      "arti": "seribu dua"
-    },
-    {
-      "angka": 1500,
-      "ngoko": "sèwu limang atus",
-      "krama": "setunggal èwu gangsal atus",
-      "arti": "seribu lima ratus"
-    },
-    {
-      "angka": 1520,
-      "ngoko": "sèwu limang atus rong puluh",
-      "krama": "setunggal èwu gangsal atus kalih dasa",
-      "arti": "seribu lima ratus dua puluh"
-    },
-    {
-      "angka": 1550,
-      "ngoko": "sèwu limang atus sèket",
-      "krama": "setunggal èwu gangsal atus sèket",
-      "arti": "seribu lima ratus lima puluh"
-    },
-    {
-      "angka": 1551,
-      "ngoko": "sèwu limang atus sèket siji",
-      "krama": "setunggal èwu gangsal atus sèket setunggal",
-      "arti": "seribu lima ratus lima puluh satu"
-    },
-    {
       "angka": 2000,
-      "ngoko": "rong èwu",
-      "krama": "kalih èwu",
-      "arti": "dua ribu"
+      "ngoko": "",
+      "krama": "kalih ewu",
+      "arti": ""
+    },
+    {
+      "angka": 2008,
+      "ngoko": "",
+      "krama": "kalih ewu wolu",
+      "arti": ""
     },
     {
       "angka": 5000,
-      "ngoko": "limang èwu",
-      "krama": "gangsal èwu",
-      "arti": "lima ribu"
+      "ngoko": "limangéwu",
+      "krama": "gangsal ewu",
+      "arti": ""
+    },
+    {
+      "angka": 7500,
+      "ngoko": "",
+      "krama": "pitung ewu gangsal atus",
+      "arti": ""
+    },
+    {
+      "angka": 9999,
+      "ngoko": "",
+      "krama": "sangang ewu sangang atus sangang dasa sanga",
+      "arti": ""
     },
     {
       "angka": 10000,
-      "ngoko": "sepuluh èwu",
-      "krama": "sedasa èwu",
-      "arti": "sepuluh ribu"
+      "ngoko": "",
+      "krama": "sedasa ewu",
+      "arti": ""
+    },
+    {
+      "angka": 12000,
+      "ngoko": "",
+      "krama": "kalih welas ewu",
+      "arti": ""
+    },
+    {
+      "angka": 25000,
+      "ngoko": "",
+      "krama": "selangkung ewu",
+      "arti": ""
+    },
+    {
+      "angka": 50000,
+      "ngoko": "",
+      "krama": "gangsal dasa ewu",
+      "arti": ""
+    },
+    {
+      "angka": 99999,
+      "ngoko": "",
+      "krama": "sangang dasa sanga ewu sangang atus sangang dasa sanga",
+      "arti": ""
     },
     {
       "angka": 100000,
-      "ngoko": "satus èwu",
-      "krama": "setunggal atus èwu",
-      "arti": "seratus ribu"
+      "ngoko": "",
+      "krama": "setunggal atus ewu",
+      "arti": ""
     },
     {
       "angka": 500000,
-      "ngoko": "limang atus èwu",
-      "krama": "gangsal atus èwu",
-      "arti": "lima ratus ribu"
+      "ngoko": "",
+      "krama": "gangsal atus ewu",
+      "arti": ""
+    },
+    {
+      "angka": 875110,
+      "ngoko": "",
+      "krama": "wolung atus pitung dasa gangsal ewu setunggal atus sedasa",
+      "arti": ""
+    },
+    {
+      "angka": 999999,
+      "ngoko": "",
+      "krama": "sangang atus sangang dasa sanga ewu sangang atus sangang dasa sanga",
+      "arti": ""
     },
     {
       "angka": 1000000,
@@ -557,9 +384,21 @@
       "arti": "satu juta"
     },
     {
-      "angka": 1562155,
-      "ngoko": "sayuta limang atus swidak loro èwu satus sèket lima",
-      "krama": "; setunggal yuta gangsal atus swidak kalih èwu setunggal atus sèket gangsal",
+      "angka": 5000000,
+      "ngoko": "",
+      "krama": "gangsal yuta",
+      "arti": ""
+    },
+    {
+      "angka": 7859312,
+      "ngoko": "",
+      "krama": "pitung yuta wolung atus gangsal dasa sanga ewu tigang atus kalih welas",
+      "arti": ""
+    },
+    {
+      "angka": 9999999,
+      "ngoko": "",
+      "krama": "sangang yuta sangang atus sangang dasa sanga ewu sangang atus sangang dasa sanga",
       "arti": ""
     }
   ]
