@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "version": "2.13",
+    "version": "2.14",
     "description": "Kamus Jawa komprehensif — group by konsep, gabung sinonim",
     "sources": [
       "jv.wiktionary.org (44,585 entries, raw preserved)",
@@ -25,7 +25,7 @@
       "4. Target: 2.000 entries dengan 3-field lengkap dalam 1 tahun (50/minggu)",
       "5. Upload yang lengkap ke Supabase (DB = ground of truth)"
     ],
-    "last_fix": "revert 8 entries duplikat sinonim + 7 nama China → NETRAL murni"
+    "last_fix": "restore 'suku' arti='suku' (suku bangsa/etnis, BUKAN kaki) — koreksi user"
   },
   "words": [
     {
@@ -568393,8 +568393,8 @@
       "ngoko": "",
       "krama": "",
       "krama_inggil": "",
-      "arti": "",
-      "keterangan": "sikil.; sandhangan ing aksara Jawa (ꦲꦸ); ½ rupiyah.",
+      "arti": "suku",
+      "keterangan": "sikil.; sandhangan ing aksara Jawa (ꦲꦸ); ½ rupiyah. | Koreksi user 9 Okt: konteks 'suku' = suku bangsa/etnis (mis. Sunda, Bugis), BUKAN kaki. Keterangan lama 'sikil' = kaki, beda konsep.",
       "aksara": "ꦱꦸꦏꦸ",
       "register": "umum",
       "status": "draft",
