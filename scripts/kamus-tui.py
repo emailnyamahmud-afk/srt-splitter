@@ -273,23 +273,17 @@ def edit_entry(data, idx):
     print(f'  └─────────────────────────────────────────────┘')
     print()
     print('  📖 Keterangan (definisi JAWA — JANGAN HAPUS, bantu isi arti):')
-    # Wrap keterangan to 50 chars per line
-    ket_lines = []
+    # Phase 6: pakai textwrap.fill() (sebelumnya 12 baris manual word-wrap)
     if ket:
-        words = ket.split()
-        line = '    '
-        for word in words:
-            if len(line) + len(word) + 1 > 56:
-                ket_lines.append(line)
-                line = '    ' + word
-            else:
-                line += (' ' + word if line.strip() else word)
-        if line.strip():
-            ket_lines.append(line)
-    for kl in ket_lines[:6]:
-        print(kl)
-    if len(ket_lines) > 6:
-        print(f'    ...({len(ket_lines) - 6} baris lagi)')
+        ket_lines = textwrap.wrap(
+            ket, width=52,
+            initial_indent='    ', subsequent_indent='    ',
+            break_long_words=False, break_on_hyphens=False,
+        )
+        for kl in ket_lines[:6]:
+            print(kl)
+        if len(ket_lines) > 6:
+            print(f'    ...({len(ket_lines) - 6} baris lagi)')
     print()
 
     # Edit fields
@@ -1241,28 +1235,34 @@ def main():
     if not data:
         sys.exit(1)
 
-    # Update status semua entries berdasarkan kelengkapan field
-    # Status 'ready' = ngoko + krama + arti semua terisi
-    # Status 'draft' = belum lengkap
-    reset_count = 0
-    for w in data['words']:
-        ngoko = (w.get('ngoko') or '').strip()
-        krama = (w.get('krama') or '').strip()
-        arti = (w.get('arti') or '').strip()
-        old_status = w.get('status', 'draft')
-        new_status = 'ready' if (ngoko and krama and arti) else 'draft'
-        if old_status != new_status:
-            w['status'] = new_status
-            reset_count += 1
-    if reset_count > 0:
-        save_kamus(data)
-        ready_count = sum(1 for w in data['words'] if w.get('status') == 'ready')
-        approved_count = sum(1 for w in data['words'] if w.get('user_approved'))
-        print(f'  ⚠ Update status: {reset_count} entries')
-        print(f'    Status: ready = ngoko+krama+arti lengkap (perlu approval user)')
-        print(f'           approved = user sudah validasi (siap upload Supabase)')
-        print(f'    3-field ready: {ready_count} | Approved: {approved_count} | Siap upload: {approved_count}')
+    # Phase 6: read-only status check (JANGAN auto-save tanpa user action)
+    # Sebelumnya: recompute status + auto-save di startup — bisa hilang perubahan user
+    # kalau ada bug. Sekarang: hanya tampilkan info, biarkan save manual via edit_entry.
+    # save_kamus() tetap recompute status saat user edit (R-12 compliance).
+    ready_count = sum(
+        1 for w in data['words']
+        if (w.get('ngoko') or '').strip()
+        and (w.get('krama') or '').strip()
+        and (w.get('arti') or '').strip()
+    )
+    status_ready = sum(1 for w in data['words'] if w.get('status') == 'ready')
+    approved_count = sum(1 for w in data['words'] if w.get('user_approved'))
+    netral_count = sum(
+        1 for w in data['words']
+        if (w.get('word') or '').strip()
+        and not (w.get('ngoko') or '').strip()
+        and not (w.get('krama') or '').strip()
+        and not (w.get('arti') or '').strip()
+    )
+
+    if ready_count != status_ready:
+        # Ada mismatch (3-field complete tapi status masih draft, atau sebaliknya)
+        # Tampilkan info, JANGAN auto-fix. User bisa edit entry untuk recompute.
+        print(f'  ℹ Info: {ready_count} entries 3-field lengkap, {status_ready} marked ready')
+        print(f'    Kalau status tidak match, edit entry → save → status auto-recompute (R-12)')
         print()
+    print(f'  📊 Total: {len(data["words"]):,} | NETRAL: {netral_count:,} | 3-field ready: {ready_count:,} | Approved: {approved_count}')
+    print()
 
     main_menu(data)
 
