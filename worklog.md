@@ -1252,3 +1252,27 @@ Stage Summary:
 - Pengecualian: duplikat persis + file .bak/tool-results (bukan data)
 - Pending user: bulak (2 senses) + 2 empty entries (kakap, mletre) + aksara Jawa + typo beridiri
   → Sekarang pendekatan: FIX (isi/kosongkan), bukan hapus
+
+---
+Task ID: kamus-R19-parser-tolol
+Agent: main
+Task: User marah: parser AI tolol merusak data, banyak Indonesia word nyangkut sebagai sinonim Jawa. AI tanggung jawab.
+
+Work Log:
+- Aku akui kesalahan parser: build-kamus-bersih.py agresif merge multi-source
+- Sample parah: 'kowe' arti='kamu; anak lutung' (anak lutung = parsing artifact)
+- Sample parah: 'payu, payon, payung, paju' (payung/payon = Indonesia nyangkut)
+- Sample parah: 'kami tuwa' arti='pimpinan desa' (sebenarnya 'sesepuh')
+- Buat scripts/audit-otomatis-suspect-patterns.py (idempotent, TIDAK edit JSON)
+- Pattern detect: 5 kategori, 205 suspect entries dari 45.021
+- Output: public/audit-suspects.json (untuk user reference)
+- Tambah R-19 ke PROJECT_RULES.md: audit script WAJIB re-run setelah build
+- Aksi fix: user validasi 1-1 via TUI, JANGAN auto-fix (R-18 — jangan hapus data)
+- Commit 996a5c6 + push
+
+Stage Summary:
+- R-19 added: parser tolol, user wajib validasi ulang 1-1
+- 205 suspect entries detected (1-62 per pattern)
+- Audit script: idempotent, re-run kapan saja
+- Tidak ada JSON diedit — transparansi penuh
+- User bisa: python3 scripts/audit-otomatis-suspect-patterns.py → lihat suspects → validasi manual via TUI
