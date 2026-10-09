@@ -1,0 +1,6269 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "source": "merged kamus-jawa-full.json + kamus-jawa-new-lemma.json",
+    "description": "Entries dengan ngoko + arti Indonesia, TAPI krama masih kosong",
+    "entries": 782,
+    "with_aksara": 4,
+    "with_keterangan": 782,
+    "note": "User isi krama manual di kamus-tui.py → pindah ke kamus-jawa-bersih.json"
+  },
+  "words": [
+    {
+      "ngoko": "-a",
+      "krama": "",
+      "arti": "sufiks imperatif; sufiks subjunktif",
+      "keterangan": "sufiks imperatif\nsufiks subjunktif",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "-i",
+      "krama": "",
+      "arti": "sufiks pembentuk verba",
+      "keterangan": "sufiks pembentuk verba",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "abene'",
+      "krama": "",
+      "arti": "abane'; biasanya:",
+      "keterangan": "abane'; biasanya:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ablag",
+      "krama": "",
+      "arti": "terbuka lebar",
+      "keterangan": "terbuka lebar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ablang-ublung",
+      "krama": "",
+      "arti": "kosong dan sepi (tentang rumah)",
+      "keterangan": "kosong dan sepi (tentang rumah)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ablu",
+      "krama": "",
+      "arti": "bual dan bohong",
+      "keterangan": "bual dan bohong",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "abluk",
+      "krama": "",
+      "arti": "debu",
+      "keterangan": "debu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "abong",
+      "krama": "",
+      "arti": "keterlaluan",
+      "keterangan": "keterlaluan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "abrang-ubrung",
+      "krama": "",
+      "arti": "berjalan tanpa tujuan (oleh sekelompok orang)",
+      "keterangan": "berjalan tanpa tujuan (oleh sekelompok orang)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "abrat-ebret",
+      "krama": "",
+      "arti": "bunyi mesin rusak",
+      "keterangan": "bunyi mesin rusak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "abrat-ubrut",
+      "krama": "",
+      "arti": "sering kentut",
+      "keterangan": "sering kentut",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "abreg",
+      "krama": "",
+      "arti": "sejumlah, setumpuk, banyak",
+      "keterangan": "sejumlah, setumpuk, banyak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "abrul",
+      "krama": "",
+      "arti": "acak",
+      "keterangan": "acak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "acan",
+      "krama": "",
+      "arti": "tidak sama sekali",
+      "keterangan": "tidak sama sekali",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "acum",
+      "krama": "",
+      "arti": "tersipu-sipu, malu",
+      "keterangan": "tersipu-sipu, malu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "adhag-udhug",
+      "krama": "",
+      "arti": "bunyi sepeda motor",
+      "keterangan": "bunyi sepeda motor",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "adhak",
+      "krama": "",
+      "arti": "terbuka, lapang",
+      "keterangan": "terbuka, lapang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "adhi wadon",
+      "krama": "",
+      "arti": "adik perempuan",
+      "keterangan": "adik perempuan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "adu",
+      "krama": "",
+      "arti": "adu; mengadu, beradu:",
+      "keterangan": "adu; mengadu, beradu:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "adul",
+      "krama": "",
+      "arti": "melapor; mengadukan; menghasut",
+      "keterangan": "melapor; mengadukan\nmenghasut",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "agek",
+      "krama": "",
+      "arti": "baru (pertama kali)",
+      "keterangan": "baru (pertama kali)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "agul",
+      "krama": "",
+      "arti": "bangga",
+      "keterangan": "bangga",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ajad-ujud",
+      "krama": "",
+      "arti": "maju-mundur (tentang kendaraan)",
+      "keterangan": "maju-mundur (tentang kendaraan)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ajog",
+      "krama": "",
+      "arti": "sesal",
+      "keterangan": "sesal",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "akeh",
+      "krama": "",
+      "arti": "akeh; banyak:",
+      "keterangan": "akeh; banyak:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "aket",
+      "krama": "",
+      "arti": "terjalin; terkait",
+      "keterangan": "terjalin\nterkait",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "akih",
+      "krama": "",
+      "arti": "banyak (bentuk superlatif dalam dialek semarangan)",
+      "keterangan": "banyak (bentuk superlatif dalam dialek semarangan)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "aku kabèh",
+      "krama": "",
+      "arti": "kami",
+      "keterangan": "kami",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "aku lan kowé kabèh",
+      "krama": "",
+      "arti": "penyebutan deskriptif dari kami, kita, awaké dhéwé (secara harfiah berarti \"saya dan kalian\")",
+      "keterangan": "penyebutan deskriptif dari kami, kita, awaké dhéwé (secara harfiah berarti \"saya dan kalian\")",
+      "aksara": "ꦲꦏꦸꦭꦤ꧀ꦏꦺꦴꦮꦺꦏꦧꦺꦃ",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "alah",
+      "krama": "",
+      "arti": "alah; tidak ada gunanya:",
+      "keterangan": "alah; tidak ada gunanya:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "alot",
+      "krama": "",
+      "arti": "(''daging'') kenyal tetapi sulit dikunyah, dipotong, dsb; (''proses'') berlangung lamban karena suatu hal sulit dipindahkan atau tetap pada pendirianya",
+      "keterangan": "(''daging'') kenyal tetapi sulit dikunyah, dipotong, dsb\n(''proses'') berlangung lamban karena suatu hal sulit dipindahkan atau tetap pada pendirianya",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ambeg",
+      "krama": "",
+      "arti": "napas; bernapas",
+      "keterangan": "napas; bernapas",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ambegan",
+      "krama": "",
+      "arti": "bernafas",
+      "keterangan": "bernafas",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ambekan",
+      "krama": "",
+      "arti": "bernafas",
+      "keterangan": "bernafas",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ambèr-ambèr",
+      "krama": "",
+      "arti": "melimpah",
+      "keterangan": "melimpah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ambruk",
+      "krama": "",
+      "arti": "rubuh/roboh",
+      "keterangan": "rubuh/roboh",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ampon",
+      "krama": "",
+      "arti": "jangan",
+      "keterangan": "jangan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "andeng-andeng",
+      "krama": "",
+      "arti": "tahi lalat",
+      "keterangan": "tahi lalat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "aneh",
+      "krama": "",
+      "arti": "anèh",
+      "keterangan": "anèh",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "angan",
+      "krama": "",
+      "arti": "angan (pikiran; ingatan, maksud; niat)",
+      "keterangan": "angan (pikiran; ingatan, maksud; niat)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "angel",
+      "krama": "",
+      "arti": "sulit; susah",
+      "keterangan": "sulit; susah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "anggitmu",
+      "krama": "",
+      "arti": "anggit;kira:",
+      "keterangan": "anggit;kira:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "angslé",
+      "krama": "",
+      "arti": "minuman tradisional yang terdiri dari kacang hijau, roti tawar, dan ketan dengan kuah santan",
+      "keterangan": "minuman tradisional yang terdiri dari kacang hijau, roti tawar, dan ketan dengan kuah santan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "antariksa",
+      "krama": "",
+      "arti": "angkasa, langit",
+      "keterangan": "angkasa, langit",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "antawali",
+      "krama": "",
+      "arti": "bratawali; bratawali; putra wali",
+      "keterangan": "bratawali\nbratawali\nputra wali\ndaun gadel",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "anyel",
+      "krama": "",
+      "arti": "jengkel",
+      "keterangan": "jengkel",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "apaa",
+      "krama": "",
+      "arti": "kenapa",
+      "keterangan": "kenapa",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "apikan",
+      "krama": "",
+      "arti": "baik hati",
+      "keterangan": "baik hati",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "apura",
+      "krama": "",
+      "arti": "ampun",
+      "keterangan": "ampun",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "aras-arasen",
+      "krama": "",
+      "arti": "merasa sangat lelah",
+      "keterangan": "merasa sangat lelah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "arboreal",
+      "krama": "",
+      "arti": "hidup di pohon",
+      "keterangan": "hidup di pohon",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "arek",
+      "krama": "",
+      "arti": "anak",
+      "keterangan": "anak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "awak dewe",
+      "krama": "",
+      "arti": "awak dewe;kami:",
+      "keterangan": "awak dewe;kami:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "awaké dhéwé",
+      "krama": "",
+      "arti": "kita <small>(secara harfiah: badan/diri (kita) sendiri)</small>",
+      "keterangan": "kita <small>(secara harfiah: badan/diri (kita) sendiri)</small>",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "awakmu",
+      "krama": "",
+      "arti": "dirimu (secara harfiah: \"badanmu\")",
+      "keterangan": "dirimu (secara harfiah: \"badanmu\")",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "awakmu kabèh",
+      "krama": "",
+      "arti": "kalian",
+      "keterangan": "kalian",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "awet",
+      "krama": "",
+      "arti": "awèt: tahan lama, awet, tidak berubah dalam jangka waktu tertentu",
+      "keterangan": "awèt: tahan lama, awet, tidak berubah dalam jangka waktu tertentu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "babit",
+      "krama": "",
+      "arti": "pukul tanpa arah",
+      "keterangan": "pukul tanpa arah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "babuk",
+      "krama": "",
+      "arti": "cocok, sesuai",
+      "keterangan": "cocok, sesuai",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "badasa",
+      "krama": "",
+      "arti": "bisul",
+      "keterangan": "bisul",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "badhul",
+      "krama": "",
+      "arti": "keladi hutan",
+      "keterangan": "keladi hutan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "badhut",
+      "krama": "",
+      "arti": "badut",
+      "keterangan": "badut",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "badranaya",
+      "krama": "",
+      "arti": "nama lain tokoh wayang semar",
+      "keterangan": "nama lain tokoh wayang Semar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "badut",
+      "krama": "",
+      "arti": "badut, pelawak, komedian; sebuah adegan dalam sebuah drama di mana para badut sedang beraksi; bahan tertawaan",
+      "keterangan": "badut, pelawak, komedian\nsebuah adegan dalam sebuah drama di mana para badut sedang beraksi\nbahan tertawaan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bagol",
+      "krama": "",
+      "arti": "kepala lonjong ke belakang",
+      "keterangan": "kepala lonjong ke belakang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bajigur",
+      "krama": "",
+      "arti": "endapan kopi, ampas kopi",
+      "keterangan": "endapan kopi, ampas kopi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bajor",
+      "krama": "",
+      "arti": "nama ikan laut",
+      "keterangan": "nama ikan laut",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "balek",
+      "krama": "",
+      "arti": "balek; pulang:",
+      "keterangan": "balek; pulang:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "balelo",
+      "krama": "",
+      "arti": "lalai",
+      "keterangan": "lalai",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "baleng",
+      "krama": "",
+      "arti": "nama ikan laut",
+      "keterangan": "nama ikan laut",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "balung",
+      "krama": "",
+      "arti": "tulang",
+      "keterangan": "tulang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "balut",
+      "krama": "",
+      "arti": "balut (tebal seperti bengkak)",
+      "keterangan": "balut (tebal seperti bengkak)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "banah",
+      "krama": "",
+      "arti": "bahan, calon",
+      "keterangan": "bahan, calon",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "banaspati",
+      "krama": "",
+      "arti": "hantu berujud raksasa berambut api",
+      "keterangan": "hantu berujud raksasa berambut api",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bandot",
+      "krama": "",
+      "arti": "banḍot/bandhot",
+      "keterangan": "banḍot/bandhot",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bandung",
+      "krama": "",
+      "arti": "bandung (benda yang dirangkaikan (dua buah); pasang)",
+      "keterangan": "bandung (benda yang dirangkaikan (dua buah); pasang)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bangjo",
+      "krama": "",
+      "arti": "lampu lalu lintas",
+      "keterangan": "lampu lalu lintas",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bangke",
+      "krama": "",
+      "arti": "bangke; bangkai:",
+      "keterangan": "bangke; bangkai:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bangkol",
+      "krama": "",
+      "arti": "kait besar dari kayu atau pangkal bambu",
+      "keterangan": "kait besar dari kayu atau pangkal bambu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bangkong",
+      "krama": "",
+      "arti": "katak darat",
+      "keterangan": "katak darat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "banteng",
+      "krama": "",
+      "arti": "banthèng",
+      "keterangan": "banthèng",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "baor",
+      "krama": "",
+      "arti": "raung",
+      "keterangan": "raung",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bapak",
+      "krama": "",
+      "arti": "bapak",
+      "keterangan": "bapak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bapu",
+      "krama": "",
+      "arti": "erat",
+      "keterangan": "erat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "basur",
+      "krama": "",
+      "arti": "itik manila jantan",
+      "keterangan": "itik manila jantan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bathik",
+      "krama": "",
+      "arti": "batik",
+      "keterangan": "batik",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "batik",
+      "krama": "",
+      "arti": "kain (yang akan) dikerjakan dengan proses batik, yaitu dicelup secara berurutan dengan warna yang berbeda, yang setiap pencelupan didahului dengan pemberian pola lilin pada bagian yang tidak akan menerima warna tersebut",
+      "keterangan": "kain (yang akan) dikerjakan dengan proses batik, yaitu dicelup secara berurutan dengan warna yang berbeda, yang setiap pencelupan didahului dengan pemberian pola lilin pada bagian yang tidak akan menerima warna tersebut",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "batok",
+      "krama": "",
+      "arti": "tempurung",
+      "keterangan": "tempurung",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "batuk",
+      "krama": "",
+      "arti": "watuk",
+      "keterangan": "watuk",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bauwarna",
+      "krama": "",
+      "arti": "ensiklopedia",
+      "keterangan": "ensiklopedia",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bebek",
+      "krama": "",
+      "arti": "bébék",
+      "keterangan": "bébék",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "becek",
+      "krama": "",
+      "arti": "bècèk",
+      "keterangan": "bècèk",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "begal",
+      "krama": "",
+      "arti": "bégal",
+      "keterangan": "bégal",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "beger",
+      "krama": "",
+      "arti": "segar",
+      "keterangan": "segar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "béja",
+      "krama": "",
+      "arti": "beruntung; beja kemayangan = sangat beruntung",
+      "keterangan": "Beruntung\nBeja kemayangan = sangat beruntung",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "belas",
+      "krama": "",
+      "arti": "belas (satuan bilangan dari 11-19)",
+      "keterangan": "belas (satuan bilangan dari 11-19)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "belerek",
+      "krama": "",
+      "arti": "belerek; bercorak:",
+      "keterangan": "belerek; bercorak:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "benges",
+      "krama": "",
+      "arti": "lipstik",
+      "keterangan": "lipstik",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bengkekan",
+      "krama": "",
+      "arti": "pinggang",
+      "keterangan": "pinggang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "berandal",
+      "krama": "",
+      "arti": "branḍal / brandhal: gangster, bajingan, penjahat, perusuh, pemberontak, pembangkang, gerombolan perampok, bandit",
+      "keterangan": "branḍal / brandhal: gangster, bajingan, penjahat, perusuh, pemberontak, pembangkang, gerombolan perampok, bandit",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "berutu",
+      "krama": "",
+      "arti": "pantat ayam",
+      "keterangan": "pantat ayam",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bésan",
+      "krama": "",
+      "arti": "besan: orang tua dari menantu (baik menantu laki-laki maupun perempuan); hubungan keluarga antara dua orang tua yang terjadi karena anak mereka kawin",
+      "keterangan": "besan: orang tua dari menantu (baik menantu laki-laki maupun perempuan)\nhubungan keluarga antara dua orang tua yang terjadi karena anak mereka kawin",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "besek",
+      "krama": "",
+      "arti": "bèsèk: kotak kecil tertutup dari anyaman bambu",
+      "keterangan": "bèsèk: kotak kecil tertutup dari anyaman bambu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "besisik",
+      "krama": "",
+      "arti": "kulit kering",
+      "keterangan": "kulit kering",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "betok",
+      "krama": "",
+      "arti": "bêtok; bêthik",
+      "keterangan": "bêtok; bêthik",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bhuwana",
+      "krama": "",
+      "arti": "bumi, dunia, benua",
+      "keterangan": "bumi, dunia, benua",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bidhang",
+      "krama": "",
+      "arti": "bidang",
+      "keterangan": "bidang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "biduren",
+      "krama": "",
+      "arti": "alergi gatal",
+      "keterangan": "alergi gatal",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "blabas",
+      "krama": "",
+      "arti": "bablas; terus saja:",
+      "keterangan": "bablas; terus saja:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bleduk",
+      "krama": "",
+      "arti": "debu",
+      "keterangan": "debu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "blonceng",
+      "krama": "",
+      "arti": "blonceng; labu:",
+      "keterangan": "blonceng; labu:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bodol",
+      "krama": "",
+      "arti": "rusak",
+      "keterangan": "rusak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bojo",
+      "krama": "",
+      "arti": "jodoh; istri",
+      "keterangan": "jodoh\nistri",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bojoku",
+      "krama": "",
+      "arti": "() suamiku",
+      "keterangan": "() suamiku",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bojoné",
+      "krama": "",
+      "arti": "istrinya",
+      "keterangan": "istrinya",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bolot",
+      "krama": "",
+      "arti": "bolot; daki",
+      "keterangan": "bolot; daki",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bondo",
+      "krama": "",
+      "arti": "harta",
+      "keterangan": "harta",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bongkot",
+      "krama": "",
+      "arti": "bongkot;pangkal:",
+      "keterangan": "bongkot;pangkal:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "botak",
+      "krama": "",
+      "arti": "bothak",
+      "keterangan": "bothak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "brengos",
+      "krama": "",
+      "arti": "kumis",
+      "keterangan": "kumis",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "budek",
+      "krama": "",
+      "arti": "budêk; budêg=",
+      "keterangan": "budêk; budêg=",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "budel",
+      "krama": "",
+      "arti": "warisan",
+      "keterangan": "warisan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "buden",
+      "krama": "",
+      "arti": "singkong",
+      "keterangan": "singkong",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "budin",
+      "krama": "",
+      "arti": "budin; ubi batang:",
+      "keterangan": "budin; ubi batang:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bule",
+      "krama": "",
+      "arti": "bulé",
+      "keterangan": "bulé",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "bulek",
+      "krama": "",
+      "arti": "bulek; bibi:",
+      "keterangan": "bulek; bibi:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "cakrek",
+      "krama": "",
+      "arti": "cakrék; cakar:",
+      "keterangan": "cakrék; cakar:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "cangkeman",
+      "krama": "",
+      "arti": "banyak bicara",
+      "keterangan": "banyak bicara",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "cantengan",
+      "krama": "",
+      "arti": "penyakit di kuku kaki",
+      "keterangan": "penyakit di kuku kaki",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "caplok",
+      "krama": "",
+      "arti": "caplok; rampas:",
+      "keterangan": "caplok; rampas:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "cedeg",
+      "krama": "",
+      "arti": "cedeg; dekat:",
+      "keterangan": "cedeg; dekat:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "cedek",
+      "krama": "",
+      "arti": "dekat",
+      "keterangan": "dekat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "cekat-ceket",
+      "krama": "",
+      "arti": "cepat-cepat",
+      "keterangan": "cepat-cepat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ceklek",
+      "krama": "",
+      "arti": "patah",
+      "keterangan": "patah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "celoteh",
+      "krama": "",
+      "arti": "ocehan",
+      "keterangan": "ocehan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "celuk",
+      "krama": "",
+      "arti": "celuk; panggil:",
+      "keterangan": "celuk; panggil:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "cemekel",
+      "krama": "",
+      "arti": "rajin",
+      "keterangan": "rajin",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "cemeket",
+      "krama": "",
+      "arti": "gemas",
+      "keterangan": "gemas",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "cemplung",
+      "krama": "",
+      "arti": "cemplung;masuk:",
+      "keterangan": "cemplung;masuk:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "cengkre",
+      "krama": "",
+      "arti": "tangan yang usil",
+      "keterangan": "tangan yang usil",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "cepit",
+      "krama": "",
+      "arti": "cepit;jepit:",
+      "keterangan": "cepit;jepit:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "cerak",
+      "krama": "",
+      "arti": "cerak;dekat:",
+      "keterangan": "cerak;dekat:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "cerita cekak",
+      "krama": "",
+      "arti": "cerita pendek",
+      "keterangan": "cerita pendek",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "cethèk",
+      "krama": "",
+      "arti": "dangkal",
+      "keterangan": "dangkal",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ceto",
+      "krama": "",
+      "arti": "paham",
+      "keterangan": "paham",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "coklek",
+      "krama": "",
+      "arti": "patah",
+      "keterangan": "patah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "cokot",
+      "krama": "",
+      "arti": "gigit/menggigit",
+      "keterangan": "gigit/menggigit",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "combrang",
+      "krama": "",
+      "arti": "kecombrang",
+      "keterangan": "kecombrang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "congkak",
+      "krama": "",
+      "arti": "congkak",
+      "keterangan": "congkak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "contoh",
+      "krama": "",
+      "arti": "contoh",
+      "keterangan": "contoh",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "cungkring",
+      "krama": "",
+      "arti": "cungkring; kurus kering:",
+      "keterangan": "cungkring; kurus kering:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dableg",
+      "krama": "",
+      "arti": "dableg; keras kepala:",
+      "keterangan": "dableg; keras kepala:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dahar",
+      "krama": "",
+      "arti": "makan (lema paling halus dalam bahasa jawa)",
+      "keterangan": "makan (lema paling halus dalam Bahasa Jawa)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "daluwarsa",
+      "krama": "",
+      "arti": "terlambat; sudah lewat",
+      "keterangan": "terlambat; sudah lewat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "damba",
+      "krama": "",
+      "arti": "damba (sangat ingin; rindu)",
+      "keterangan": "damba (sangat ingin; rindu)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "deleh aken",
+      "krama": "",
+      "arti": "taruh di",
+      "keterangan": "taruh di",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "delep",
+      "krama": "",
+      "arti": "delep; menyelam:",
+      "keterangan": "delep; menyelam:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "delik",
+      "krama": "",
+      "arti": "delik; sembunyi:",
+      "keterangan": "delik; sembunyi:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "delok",
+      "krama": "",
+      "arti": "lihat",
+      "keterangan": "lihat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "demen",
+      "krama": "",
+      "arti": "dêmên",
+      "keterangan": "dêmên",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "demit",
+      "krama": "",
+      "arti": "demit; setan:",
+      "keterangan": "demit; setan:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dendeng",
+      "krama": "",
+      "arti": "déndéng",
+      "keterangan": "déndéng",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "denger",
+      "krama": "",
+      "arti": "dengar",
+      "keterangan": "dengar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dening",
+      "krama": "",
+      "arti": "oleh",
+      "keterangan": "oleh",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "deriji",
+      "krama": "",
+      "arti": "jari",
+      "keterangan": "jari",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dhadha",
+      "krama": "",
+      "arti": "dada",
+      "keterangan": "dada",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dhahar",
+      "krama": "",
+      "arti": "makan",
+      "keterangan": "makan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dhateng pundi",
+      "krama": "",
+      "arti": "ke mana",
+      "keterangan": "ke mana",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dhengkul",
+      "krama": "",
+      "arti": "lutut",
+      "keterangan": "lutut",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dhèwéké",
+      "krama": "",
+      "arti": "dia (secara harfiah berarti \"dirinya\")",
+      "keterangan": "dia (secara harfiah berarti \"dirinya\")",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dhèwéké kabèh",
+      "krama": "",
+      "arti": "mereka",
+      "keterangan": "mereka",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dhimar",
+      "krama": "",
+      "arti": "lampu",
+      "keterangan": "lampu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "diamput",
+      "krama": "",
+      "arti": "sial",
+      "keterangan": "sial",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dinggo",
+      "krama": "",
+      "arti": "memakai",
+      "keterangan": "memakai",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dino",
+      "krama": "",
+      "arti": "dino;hari:",
+      "keterangan": "dino;hari:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dlosor",
+      "krama": "",
+      "arti": "dlosor; melata:",
+      "keterangan": "dlosor; melata:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dodo",
+      "krama": "",
+      "arti": "dada",
+      "keterangan": "dada",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dolan",
+      "krama": "",
+      "arti": "main, jalan-jalan",
+      "keterangan": "main, jalan-jalan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "domblong",
+      "krama": "",
+      "arti": "domblong; melongo:",
+      "keterangan": "domblong; melongo:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dronjong",
+      "krama": "",
+      "arti": "dronjong; turunan:",
+      "keterangan": "dronjong; turunan:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dudho",
+      "krama": "",
+      "arti": "duda",
+      "keterangan": "duda",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dulang",
+      "krama": "",
+      "arti": "dulang; suap:",
+      "keterangan": "dulang; suap:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dulur",
+      "krama": "",
+      "arti": "saudara",
+      "keterangan": "saudara",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "dunyo",
+      "krama": "",
+      "arti": "dunyo; dunia:",
+      "keterangan": "dunyo; dunia:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "duwe",
+      "krama": "",
+      "arti": "duwe; punya:",
+      "keterangan": "duwe; punya:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "e'ce'",
+      "krama": "",
+      "arti": "e'ce', nge'ce'; menghina:",
+      "keterangan": "e'ce', nge'ce'; menghina:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "e'ce'r",
+      "krama": "",
+      "arti": "écér; mengecer:",
+      "keterangan": "écér; mengecer:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "e'ling",
+      "krama": "",
+      "arti": "e'ling; ingat:",
+      "keterangan": "e'ling; ingat:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ejak",
+      "krama": "",
+      "arti": "ejak, ngejak; mengajak:",
+      "keterangan": "ejak, ngejak; mengajak:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "endhas",
+      "krama": "",
+      "arti": "kepala",
+      "keterangan": "kepala",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "endhem",
+      "krama": "",
+      "arti": "hal yang disembunyikan; perasaan tidak suka yang saling berbalas",
+      "keterangan": "hal yang disembunyikan; perasaan tidak suka yang saling berbalas",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "enggal",
+      "krama": "",
+      "arti": "baru",
+      "keterangan": "baru",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "enggih",
+      "krama": "",
+      "arti": "iya",
+      "keterangan": "iya",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ente'n",
+      "krama": "",
+      "arti": "ente'n; tunggu:",
+      "keterangan": "ente'n; tunggu:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "enten",
+      "krama": "",
+      "arti": "ada",
+      "keterangan": "ada",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "entheng",
+      "krama": "",
+      "arti": "ringan",
+      "keterangan": "ringan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "enti",
+      "krama": "",
+      "arti": "tunggu",
+      "keterangan": "tunggu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "entong",
+      "krama": "",
+      "arti": "habis",
+      "keterangan": "habis",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "entuk",
+      "krama": "",
+      "arti": "mendapat",
+      "keterangan": "mendapat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "eroh",
+      "krama": "",
+      "arti": "eroh; tahu:",
+      "keterangan": "eroh; tahu:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "estu",
+      "krama": "",
+      "arti": "benar",
+      "keterangan": "benar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gaji",
+      "krama": "",
+      "arti": "gaji (upah)",
+      "keterangan": "gaji (upah)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gambluk",
+      "krama": "",
+      "arti": "anak babi",
+      "keterangan": "anak babi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gantheng",
+      "krama": "",
+      "arti": "tampan",
+      "keterangan": "tampan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gantrung",
+      "krama": "",
+      "arti": "capung",
+      "keterangan": "capung",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gaplok",
+      "krama": "",
+      "arti": "gaplok; memukul, menampar:",
+      "keterangan": "gaplok; memukul, menampar:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gasak",
+      "krama": "",
+      "arti": "gasak; menerjang:",
+      "keterangan": "gasak; menerjang:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gasruk",
+      "krama": "",
+      "arti": "gasruk; menyerempet tanah:",
+      "keterangan": "gasruk; menyerempet tanah:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gathel",
+      "krama": "",
+      "arti": "kata umpatan",
+      "keterangan": "kata umpatan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gawe",
+      "krama": "",
+      "arti": "gawe; buat:",
+      "keterangan": "gawe; buat:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gayam",
+      "krama": "",
+      "arti": "sejenis pohon yang buahnya dapat dimakan 〔inocarpus edulis〕",
+      "keterangan": "sejenis pohon yang buahnya dapat dimakan 〔Inocarpus edulis〕",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gedang",
+      "krama": "",
+      "arti": "pisang:",
+      "keterangan": "pisang:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gedhèk",
+      "krama": "",
+      "arti": "dinding dari anyaman bambu, gedek",
+      "keterangan": "Dinding dari anyaman bambu, gedek",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gedong",
+      "krama": "",
+      "arti": "gêdhong; gêdung",
+      "keterangan": "gêdhong\ngêdung",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gêgêr",
+      "krama": "",
+      "arti": "punggung",
+      "keterangan": "punggung",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gelatik",
+      "krama": "",
+      "arti": "gĕlaṭik, glaṭik, galaṭik",
+      "keterangan": "gĕlaṭik, glaṭik, galaṭik",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gelintingan",
+      "krama": "",
+      "arti": "berguling",
+      "keterangan": "berguling",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gelis",
+      "krama": "",
+      "arti": "cepat",
+      "keterangan": "cepat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "geliyeng",
+      "krama": "",
+      "arti": "geliyeng; pusing:",
+      "keterangan": "geliyeng; pusing:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gemis",
+      "krama": "",
+      "arti": "gemi; hemat:",
+      "keterangan": "gemi; hemat:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gendakan",
+      "krama": "",
+      "arti": "kekasih/pacar/pacaran",
+      "keterangan": "kekasih/pacar/pacaran",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gendeng",
+      "krama": "",
+      "arti": "gendeng; gila:",
+      "keterangan": "gendeng; gila:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gendul",
+      "krama": "",
+      "arti": "botol",
+      "keterangan": "botol",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "genting",
+      "krama": "",
+      "arti": "gênthéng; gêndéng",
+      "keterangan": "gênthéng\ngêndéng",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "genya",
+      "krama": "",
+      "arti": "mengapa",
+      "keterangan": "mengapa",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gerontol",
+      "krama": "",
+      "arti": "grontol",
+      "keterangan": "grontol",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "githok",
+      "krama": "",
+      "arti": "tengkuk",
+      "keterangan": "tengkuk",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gleleng",
+      "krama": "",
+      "arti": "banyak gaya, sombong",
+      "keterangan": "banyak gaya, sombong",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gléndhang",
+      "krama": "",
+      "arti": "kosong tanpa muatan, pulang tanpa membawa apa-apa; baring",
+      "keterangan": "kosong tanpa muatan, pulang tanpa membawa apa-apa\nbaring",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "godoh gedang",
+      "krama": "",
+      "arti": "pisang goreng",
+      "keterangan": "pisang goreng",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "godong",
+      "krama": "",
+      "arti": "daun",
+      "keterangan": "daun",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gondok",
+      "krama": "",
+      "arti": "gondok (penyakit bengkak)",
+      "keterangan": "gondok (penyakit bengkak)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gosok",
+      "krama": "",
+      "arti": "gosok",
+      "keterangan": "gosok",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gotong",
+      "krama": "",
+      "arti": "gotong",
+      "keterangan": "gotong",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gubuk",
+      "krama": "",
+      "arti": "gubuk: tempat tinggal sederhana atau sementara, gudang, gubuk, rumah kecil, pondok penjaga, dan sebagainya",
+      "keterangan": "gubuk: tempat tinggal sederhana atau sementara, gudang, gubuk, rumah kecil, pondok penjaga, dan sebagainya",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gugah",
+      "krama": "",
+      "arti": "gugah",
+      "keterangan": "gugah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gumedhe",
+      "krama": "",
+      "arti": "sombong",
+      "keterangan": "sombong",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gundik",
+      "krama": "",
+      "arti": "gundhik",
+      "keterangan": "gundhik",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gurami",
+      "krama": "",
+      "arti": "gramè, gramèh, guramè, guramèh",
+      "keterangan": "gramè, gramèh, guramè, guramèh",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "guru wilangan",
+      "krama": "",
+      "arti": "cacahing wanda saben sak gatra",
+      "keterangan": "cacahing wanda saben sak gatra",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "horeg",
+      "krama": "",
+      "arti": "bergetar",
+      "keterangan": "bergetar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "idam",
+      "krama": "",
+      "arti": "idam",
+      "keterangan": "idam",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ilat",
+      "krama": "",
+      "arti": "lidah",
+      "keterangan": "lidah",
+      "aksara": "ꦲꦶꦭꦠ꧀",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "impen",
+      "krama": "",
+      "arti": "impian, mimpi",
+      "keterangan": "impian, mimpi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "impi",
+      "krama": "",
+      "arti": "mimpi",
+      "keterangan": "mimpi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "inanam",
+      "krama": "",
+      "arti": "menganyam, menenun, melilit; menggubah",
+      "keterangan": "menganyam, menenun, melilit; menggubah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "inangit",
+      "krama": "",
+      "arti": "untuk menjalin, merangkai, membuat menjadi karangan bunga, anyaman, menenun",
+      "keterangan": "untuk menjalin, merangkai, membuat menjadi karangan bunga, anyaman, menenun",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "indah",
+      "krama": "",
+      "arti": "indah (peduli)",
+      "keterangan": "indah (peduli)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ing endi",
+      "krama": "",
+      "arti": "di mana",
+      "keterangan": "di mana",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ing kana",
+      "krama": "",
+      "arti": "di sana",
+      "keterangan": "di sana",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ing kéné",
+      "krama": "",
+      "arti": "di sini",
+      "keterangan": "di sini",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ingsung",
+      "krama": "",
+      "arti": "saya",
+      "keterangan": "saya",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "injing",
+      "krama": "",
+      "arti": "pagi",
+      "keterangan": "pagi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "iri",
+      "krama": "",
+      "arti": "iri",
+      "keterangan": "iri",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "iris",
+      "krama": "",
+      "arti": "iris (penggal kecil)",
+      "keterangan": "iris (penggal kecil)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "irung",
+      "krama": "",
+      "arti": "hidung; hidung",
+      "keterangan": "hidung\nhidung",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "isoh",
+      "krama": "",
+      "arti": "bisa",
+      "keterangan": "bisa",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "iyo",
+      "krama": "",
+      "arti": "ya",
+      "keterangan": "ya",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "iyuran",
+      "krama": "",
+      "arti": "iuran",
+      "keterangan": "iuran",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jalok",
+      "krama": "",
+      "arti": "jalok;minta:",
+      "keterangan": "jalok;minta:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jancuk",
+      "krama": "",
+      "arti": "kata umpatan",
+      "keterangan": "kata umpatan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "janggat",
+      "krama": "",
+      "arti": "mentol",
+      "keterangan": "mentol",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "janggut",
+      "krama": "",
+      "arti": "dagu",
+      "keterangan": "dagu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jarak cina",
+      "krama": "",
+      "arti": "jarak ulung<ref>dalimartha, setiawan (2009). atlas tumbuhan obat indonesia. '''6'''. hal.37. jakarta:puspa swara. isbn 978-979-1480-19-2.</ref>; jarak landi; jarak kosta merah",
+      "keterangan": "jarak ulung<ref>Dalimartha, Setiawan (2009). Atlas Tumbuhan Obat Indonesia. '''6'''. hal.37. Jakarta:Puspa Swara. ISBN 978-979-1480-19-2.</ref>\njarak landi\njarak kosta merah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jarak kosta merah",
+      "krama": "",
+      "arti": "jarak ulung<ref>dalimartha, setiawan (2009). atlas tumbuhan obat indonesia. '''6'''. hal.37. jakarta:puspa swara. isbn 978-979-1480-19-2.</ref>; jarak landi; jarak cina",
+      "keterangan": "jarak ulung<ref>Dalimartha, Setiawan (2009). Atlas Tumbuhan Obat Indonesia. '''6'''. hal.37. Jakarta:Puspa Swara. ISBN 978-979-1480-19-2.</ref>\njarak landi\njarak cina",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jarak landi",
+      "krama": "",
+      "arti": "jarak ulung<ref>dalimartha, setiawan (2009). atlas tumbuhan obat indonesia. '''6'''. hal.37. jakarta:puspa swara. isbn 978-979-1480-19-2.</ref>; jarak cina; jarak kosta merah",
+      "keterangan": "jarak ulung<ref>Dalimartha, Setiawan (2009). Atlas Tumbuhan Obat Indonesia. '''6'''. hal.37. Jakarta:Puspa Swara. ISBN 978-979-1480-19-2.</ref>\njarak cina\njarak kosta merah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jedindhil",
+      "krama": "",
+      "arti": "kedinginan",
+      "keterangan": "kedinginan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jek",
+      "krama": "",
+      "arti": "masih",
+      "keterangan": "masih",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jeleh",
+      "krama": "",
+      "arti": "jijik",
+      "keterangan": "jijik",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jelungup",
+      "krama": "",
+      "arti": "terjerembap",
+      "keterangan": "terjerembap",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jentik",
+      "krama": "",
+      "arti": "kelingking",
+      "keterangan": "kelingking",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jimbeng",
+      "krama": "",
+      "arti": "bak besar, wadah besar berbentuk tabung untuk menampung air",
+      "keterangan": "Bak besar, wadah besar berbentuk tabung untuk menampung air",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jimok",
+      "krama": "",
+      "arti": "ambil",
+      "keterangan": "ambil",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "joh",
+      "krama": "",
+      "arti": "kata umpatan",
+      "keterangan": "kata umpatan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jokok",
+      "krama": "",
+      "arti": "mengambil",
+      "keterangan": "mengambil",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jongkat",
+      "krama": "",
+      "arti": "sisir",
+      "keterangan": "sisir",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "judi",
+      "krama": "",
+      "arti": "judi",
+      "keterangan": "judi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jukok",
+      "krama": "",
+      "arti": "jukok; mengambil:",
+      "keterangan": "jukok; mengambil:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jungkir",
+      "krama": "",
+      "arti": "jungkir",
+      "keterangan": "jungkir",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "juru",
+      "krama": "",
+      "arti": "juru",
+      "keterangan": "juru",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kacapiring",
+      "krama": "",
+      "arti": "kacapiring; peciring; cepiring",
+      "keterangan": "kacapiring\npeciring\ncepiring\nceplokpiring",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kadal",
+      "krama": "",
+      "arti": "kadal",
+      "keterangan": "kadal",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kaget",
+      "krama": "",
+      "arti": "kagèt",
+      "keterangan": "kagèt",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kaji",
+      "krama": "",
+      "arti": "haji",
+      "keterangan": "haji",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kalenan",
+      "krama": "",
+      "arti": "kalenan; siing, selokan:",
+      "keterangan": "kalenan; siing, selokan:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kalyan",
+      "krama": "",
+      "arti": "() kalyan",
+      "keterangan": "() kalyan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kamangka",
+      "krama": "",
+      "arti": "padahal",
+      "keterangan": "padahal",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kambel",
+      "krama": "",
+      "arti": "kambel; kelapa tua:",
+      "keterangan": "kambel; kelapa tua:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kamitetep",
+      "krama": "",
+      "arti": "kutu air",
+      "keterangan": "kutu air",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kamitotolen",
+      "krama": "",
+      "arti": "sangat dingin",
+      "keterangan": "sangat dingin",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kangkong",
+      "krama": "",
+      "arti": "kangkong; kangkung:",
+      "keterangan": "kangkong; kangkung:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kangmas",
+      "krama": "",
+      "arti": "kakak laki-laki",
+      "keterangan": "kakak laki-laki",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kaos porot",
+      "krama": "",
+      "arti": "singlet",
+      "keterangan": "singlet",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kaplok",
+      "krama": "",
+      "arti": "menampar",
+      "keterangan": "menampar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kapok",
+      "krama": "",
+      "arti": "bertobat, rasa sesal",
+      "keterangan": "bertobat, rasa sesal",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kasunyatan",
+      "krama": "",
+      "arti": "kenyataan; fakta",
+      "keterangan": "kenyataan; fakta",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "katah",
+      "krama": "",
+      "arti": "banyak",
+      "keterangan": "banyak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kates",
+      "krama": "",
+      "arti": "pepaya",
+      "keterangan": "pepaya",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kaweleg",
+      "krama": "",
+      "arti": "termanjakan dalam hal pangan; terpenuhi kebutuhan pangannya",
+      "keterangan": "termanjakan dalam hal pangan; terpenuhi kebutuhan pangannya",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kayu manis",
+      "krama": "",
+      "arti": "kayu manis",
+      "keterangan": "kayu manis",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "keblat",
+      "krama": "",
+      "arti": "kiblat",
+      "keterangan": "kiblat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "keceh",
+      "krama": "",
+      "arti": "keceh; bermain genangan air:",
+      "keterangan": "keceh; bermain genangan air:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kecetit",
+      "krama": "",
+      "arti": "kecethit; terkilir:",
+      "keterangan": "kecethit; terkilir:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kejedot",
+      "krama": "",
+      "arti": "dahi benjol",
+      "keterangan": "dahi benjol",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kelambi",
+      "krama": "",
+      "arti": "kelambi; baju:",
+      "keterangan": "kelambi; baju:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kelana",
+      "krama": "",
+      "arti": "kêlana",
+      "keterangan": "kêlana",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kelipun",
+      "krama": "",
+      "arti": "mengapa",
+      "keterangan": "mengapa",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kelong",
+      "krama": "",
+      "arti": "berkurang",
+      "keterangan": "berkurang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kelor",
+      "krama": "",
+      "arti": "kélor: pohon tertentu yang daunnya digunakan dalam obat-obatan, moringa oleifera",
+      "keterangan": "kélor: pohon tertentu yang daunnya digunakan dalam obat-obatan, Moringa oleifera",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kemlinti",
+      "krama": "",
+      "arti": "pecicilan",
+      "keterangan": "pecicilan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kemringet",
+      "krama": "",
+      "arti": "kemringet; berkeringat:",
+      "keterangan": "kemringet; berkeringat:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kemudi",
+      "krama": "",
+      "arti": "kemudi",
+      "keterangan": "kemudi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kemuning",
+      "krama": "",
+      "arti": "kemuning",
+      "keterangan": "kemuning",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kene",
+      "krama": "",
+      "arti": "sini",
+      "keterangan": "sini",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kenek",
+      "krama": "",
+      "arti": "kenek; terkena:",
+      "keterangan": "kenek; terkena:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kénging napa",
+      "krama": "",
+      "arti": "mengapa",
+      "keterangan": "mengapa",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kentang",
+      "krama": "",
+      "arti": "kentang",
+      "keterangan": "kentang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kepenak",
+      "krama": "",
+      "arti": "hidup dengan enak",
+      "keterangan": "hidup dengan enak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kepiye",
+      "krama": "",
+      "arti": "kepiye",
+      "keterangan": "kepiye",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kepriye",
+      "krama": "",
+      "arti": "bagaimana",
+      "keterangan": "bagaimana",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kepundung",
+      "krama": "",
+      "arti": "kepundung & kapundung",
+      "keterangan": "kepundung & kapundung",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "keramas",
+      "krama": "",
+      "arti": "keramas",
+      "keterangan": "keramas",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "keranjang",
+      "krama": "",
+      "arti": "kranjang / keranjang",
+      "keterangan": "kranjang / keranjang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kere",
+      "krama": "",
+      "arti": "miskin",
+      "keterangan": "miskin",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "keres",
+      "krama": "",
+      "arti": "ceri",
+      "keterangan": "ceri",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kerikil",
+      "krama": "",
+      "arti": "kerikil",
+      "keterangan": "kerikil",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "keringet",
+      "krama": "",
+      "arti": "keringat",
+      "keterangan": "keringat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "keripik",
+      "krama": "",
+      "arti": "kĕripik; kripik",
+      "keterangan": "kĕripik; kripik",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kerjo",
+      "krama": "",
+      "arti": "kerjo;kerja:",
+      "keterangan": "kerjo;kerja:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kerungu",
+      "krama": "",
+      "arti": "kerungu;terdengar:",
+      "keterangan": "kerungu;terdengar:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kesah",
+      "krama": "",
+      "arti": "pergi",
+      "keterangan": "pergi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ket",
+      "krama": "",
+      "arti": "kait; jalin; kait",
+      "keterangan": "kait\njalin\nkait\njalin",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ketapang",
+      "krama": "",
+      "arti": "ketapang",
+      "keterangan": "ketapang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "keweden",
+      "krama": "",
+      "arti": "ketakutan",
+      "keterangan": "ketakutan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "keyong",
+      "krama": "",
+      "arti": "kéyong; siput:",
+      "keterangan": "kéyong; siput:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kidal",
+      "krama": "",
+      "arti": "kidhal",
+      "keterangan": "kidhal",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kimcil",
+      "krama": "",
+      "arti": "wanita murahan; singkatan dari kimpet (kelamin) cilik, istilah untuk remaja yang menganut seks bebas atau membuat tarian erotis",
+      "keterangan": "wanita murahan; singkatan dari kimpet (kelamin) cilik, istilah untuk remaja yang menganut seks bebas atau membuat tarian erotis",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kitané",
+      "krama": "",
+      "arti": "kami",
+      "keterangan": "kami",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kite",
+      "krama": "",
+      "arti": "kita",
+      "keterangan": "kita",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "klawu",
+      "krama": "",
+      "arti": "klawu :",
+      "keterangan": "klawu :",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "klekaran",
+      "krama": "",
+      "arti": "klekaran; rebahan, tiduran:",
+      "keterangan": "klekaran; rebahan, tiduran:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "klesod",
+      "krama": "",
+      "arti": "klésod; mengesod:",
+      "keterangan": "klésod; mengesod:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kloso",
+      "krama": "",
+      "arti": "tikar",
+      "keterangan": "tikar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kluwus",
+      "krama": "",
+      "arti": "kusam",
+      "keterangan": "kusam",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kodok",
+      "krama": "",
+      "arti": "kodok",
+      "keterangan": "kodok",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "koen",
+      "krama": "",
+      "arti": "kamu. (wil. surabaya, sidoarjo, gresik, mojokerto, pasuruan)",
+      "keterangan": "kamu. (wil. Surabaya, Sidoarjo, Gresik, Mojokerto, Pasuruan)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kolor",
+      "krama": "",
+      "arti": "kolor",
+      "keterangan": "kolor",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "konco",
+      "krama": "",
+      "arti": "teman",
+      "keterangan": "teman",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "koreng",
+      "krama": "",
+      "arti": "bekas luka",
+      "keterangan": "bekas luka",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kosek",
+      "krama": "",
+      "arti": "sebentar, nanti dulu",
+      "keterangan": "sebentar, nanti dulu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kowe",
+      "krama": "",
+      "arti": "kamu; anak lutung",
+      "keterangan": "kamu\nanak lutung",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kowé kabèh",
+      "krama": "",
+      "arti": "kalian",
+      "keterangan": "kalian",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "krekeb",
+      "krama": "",
+      "arti": "krekeb; tiba-tiba tertutup:",
+      "keterangan": "krekeb; tiba-tiba tertutup:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "krete",
+      "krama": "",
+      "arti": "anak buaya",
+      "keterangan": "anak buaya",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "krewedan",
+      "krama": "",
+      "arti": "krewedan; bagian daging sapi yang melekat dengan tulang:",
+      "keterangan": "krewedan; bagian daging sapi yang melekat dengan tulang:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kubes",
+      "krama": "",
+      "arti": "kubes; kubis:",
+      "keterangan": "kubes; kubis:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kuduné",
+      "krama": "",
+      "arti": "mestinya, harusnya",
+      "keterangan": "mestinya, harusnya",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kuku",
+      "krama": "",
+      "arti": "kuku; bibi; saudara perempuan (kakak atau adik) dari ayah",
+      "keterangan": "kuku\nbibi; saudara perempuan (kakak atau adik) dari ayah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kukur",
+      "krama": "",
+      "arti": "kukur (alat untuk mengukur (menggaruk, memarut, mengorek) kelapa dsb.); garuk",
+      "keterangan": "kukur (alat untuk mengukur (menggaruk, memarut, mengorek) kelapa dsb.)\ngaruk",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kula lan panjenengan sedaya",
+      "krama": "",
+      "arti": "kita",
+      "keterangan": "kita",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kula lan piyambakipun",
+      "krama": "",
+      "arti": "aku dan dia",
+      "keterangan": "aku dan dia",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kulino",
+      "krama": "",
+      "arti": "kulino; kebiasaan:",
+      "keterangan": "kulino; kebiasaan:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kulit wit",
+      "krama": "",
+      "arti": "kulit kayu",
+      "keterangan": "kulit kayu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kumal",
+      "krama": "",
+      "arti": "kumêl",
+      "keterangan": "kumêl",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kumaruk",
+      "krama": "",
+      "arti": "kumaruk; kemaruk, terlalu berlebihan:",
+      "keterangan": "kumaruk; kemaruk, terlalu berlebihan:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kumuh",
+      "krama": "",
+      "arti": "kotor, cemar",
+      "keterangan": "kotor, cemar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kunang-kunang",
+      "krama": "",
+      "arti": "kunang-kunang",
+      "keterangan": "kunang-kunang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kunir",
+      "krama": "",
+      "arti": "kunyit",
+      "keterangan": "kunyit",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kuno",
+      "krama": "",
+      "arti": "kuno (bahasa jawa baku); kuna (bahasa jawa non baku)",
+      "keterangan": "kuno (bahasa Jawa baku)\nkuna (bahasa Jawa non baku)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kuping",
+      "krama": "",
+      "arti": "telinga",
+      "keterangan": "telinga",
+      "aksara": "ꦏꦸꦥꦶꦁ",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kuran",
+      "krama": "",
+      "arti": "al-qur'an",
+      "keterangan": "Al-Qur'an",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kurep",
+      "krama": "",
+      "arti": "kurèp; tertelungkup:",
+      "keterangan": "kurèp; tertelungkup:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "labdajiwa",
+      "krama": "",
+      "arti": "hidup lagi",
+      "keterangan": "hidup lagi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lada",
+      "krama": "",
+      "arti": "lada",
+      "keterangan": "lada",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lakoke",
+      "krama": "",
+      "arti": "melakukan",
+      "keterangan": "melakukan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lakoni",
+      "krama": "",
+      "arti": "kerjakan",
+      "keterangan": "kerjakan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lalap",
+      "krama": "",
+      "arti": "lalap",
+      "keterangan": "lalap",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lamar",
+      "krama": "",
+      "arti": "lamar",
+      "keterangan": "lamar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lambe",
+      "krama": "",
+      "arti": "bibir",
+      "keterangan": "bibir",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lamun",
+      "krama": "",
+      "arti": "kalau, jika",
+      "keterangan": "kalau, jika",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "landak",
+      "krama": "",
+      "arti": "binatang yang kulitnya berduri panjang dan runcing",
+      "keterangan": "binatang yang kulitnya berduri panjang dan runcing",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "langi",
+      "krama": "",
+      "arti": "renang",
+      "keterangan": "renang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "languy",
+      "krama": "",
+      "arti": "renang",
+      "keterangan": "renang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lara wirang",
+      "krama": "",
+      "arti": "malu dengan diri sendiri karena kenyataan yang terjadi tidak sesuai perkataannya:; malu dengan masyarakat karena perilakunya atau keluarganya yang melanggar norma:",
+      "keterangan": "malu dengan diri sendiri karena kenyataan yang terjadi tidak sesuai perkataannya:\nmalu dengan masyarakat karena perilakunya atau keluarganya yang melanggar norma:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "latih",
+      "krama": "",
+      "arti": "latih (bahasa jawanya latih adalah latih. sesuai bahasa jawa kuno)",
+      "keterangan": "latih (bahasa Jawanya latih adalah latih. Sesuai bahasa Jawa Kuno)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lele",
+      "krama": "",
+      "arti": "lélé",
+      "keterangan": "lélé",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lendhut",
+      "krama": "",
+      "arti": "lumpur",
+      "keterangan": "lumpur",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lengan",
+      "krama": "",
+      "arti": "minyak",
+      "keterangan": "minyak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lihat",
+      "krama": "",
+      "arti": "lihat",
+      "keterangan": "lihat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lima las",
+      "krama": "",
+      "arti": "lima belas",
+      "keterangan": "lima belas",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lincah",
+      "krama": "",
+      "arti": "lincah",
+      "keterangan": "lincah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "linggis",
+      "krama": "",
+      "arti": "linggis",
+      "keterangan": "linggis",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lingguh",
+      "krama": "",
+      "arti": "lingguh; duduk:",
+      "keterangan": "lingguh; duduk:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lingso",
+      "krama": "",
+      "arti": "telur kutu rambut",
+      "keterangan": "telur kutu rambut",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lintune",
+      "krama": "",
+      "arti": "lintune",
+      "keterangan": "lintune",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "liyane",
+      "krama": "",
+      "arti": "liyane;lain:",
+      "keterangan": "liyane;lain:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "loloh",
+      "krama": "",
+      "arti": "loloh",
+      "keterangan": "loloh",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lomo",
+      "krama": "",
+      "arti": "dermawan, murah hati, suka memberi",
+      "keterangan": "dermawan, murah hati, suka memberi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lotong",
+      "krama": "",
+      "arti": "kera hitam ekor panjang",
+      "keterangan": "kera hitam ekor panjang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lowo",
+      "krama": "",
+      "arti": "lowo; kelelawar:",
+      "keterangan": "lowo; kelelawar:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lubuk",
+      "krama": "",
+      "arti": "lubuk",
+      "keterangan": "lubuk",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lukis",
+      "krama": "",
+      "arti": "lukis; melukis",
+      "keterangan": "lukis; melukis",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "luman",
+      "krama": "",
+      "arti": "dermawan",
+      "keterangan": "dermawan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lumba-lumba",
+      "krama": "",
+      "arti": "lumba-lumba",
+      "keterangan": "lumba-lumba",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "lus-lusan",
+      "krama": "",
+      "arti": "kain tenun halus khas jawa",
+      "keterangan": "kain tenun halus khas Jawa",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "luweh",
+      "krama": "",
+      "arti": "luweh; masa bodo, terserah:",
+      "keterangan": "luweh; masa bodo, terserah:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "madaran",
+      "krama": "",
+      "arti": "madaran",
+      "keterangan": "madaran",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "magis",
+      "krama": "",
+      "arti": "magis",
+      "keterangan": "magis",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "maka",
+      "krama": "",
+      "arti": "maka & mangka",
+      "keterangan": "maka & mangka",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "makin",
+      "krama": "",
+      "arti": "makin",
+      "keterangan": "makin",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "manggis",
+      "krama": "",
+      "arti": "manggis",
+      "keterangan": "manggis",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mangke",
+      "krama": "",
+      "arti": "nanti",
+      "keterangan": "nanti",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mantul",
+      "krama": "",
+      "arti": "memantul",
+      "keterangan": "memantul",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "manuk eluk",
+      "krama": "",
+      "arti": "burung hantu",
+      "keterangan": "burung hantu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "manunggal",
+      "krama": "",
+      "arti": "membaur sehingga tidak terpisahkan",
+      "keterangan": "membaur sehingga tidak terpisahkan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "marah",
+      "krama": "",
+      "arti": "marah (berang; gusar)",
+      "keterangan": "marah (berang; gusar)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "marai",
+      "krama": "",
+      "arti": "mengajarkan",
+      "keterangan": "mengajarkan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mateni",
+      "krama": "",
+      "arti": "mematikan",
+      "keterangan": "mematikan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "matur nuwun",
+      "krama": "",
+      "arti": "terima kasih; rasa syukur",
+      "keterangan": "terima kasih\nrasa syukur",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mbajeng",
+      "krama": "",
+      "arti": "pertama",
+      "keterangan": "pertama",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mbakar",
+      "krama": "",
+      "arti": "bakar; membakar",
+      "keterangan": "bakar\nmembakar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mbakyu",
+      "krama": "",
+      "arti": "kakak perempuan",
+      "keterangan": "kakak perempuan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mbandhem",
+      "krama": "",
+      "arti": "melempar ke sasaran",
+      "keterangan": "melempar ke sasaran",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mbayar",
+      "krama": "",
+      "arti": "membayar",
+      "keterangan": "membayar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mbèk",
+      "krama": "",
+      "arti": "dengan",
+      "keterangan": "dengan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mbeto",
+      "krama": "",
+      "arti": "membawa",
+      "keterangan": "membawa",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mbilung",
+      "krama": "",
+      "arti": "sebutan yang ditujukan kepada penduduk asli sumatera oleh transmigran jawa",
+      "keterangan": "sebutan yang ditujukan kepada penduduk asli Sumatera oleh transmigran Jawa",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mblenyek",
+      "krama": "",
+      "arti": "sangat lunak/hampir busuk",
+      "keterangan": "sangat lunak/hampir busuk",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mboten",
+      "krama": "",
+      "arti": "tidak",
+      "keterangan": "tidak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mbumbui",
+      "krama": "",
+      "arti": "membumbui",
+      "keterangan": "membumbui",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mejet",
+      "krama": "",
+      "arti": "mejet; menekan:",
+      "keterangan": "mejet; menekan:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mekik mekik",
+      "krama": "",
+      "arti": "berteriak teriak",
+      "keterangan": "berteriak teriak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "melampah",
+      "krama": "",
+      "arti": "jalan",
+      "keterangan": "jalan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "melebet",
+      "krama": "",
+      "arti": "masuk",
+      "keterangan": "masuk",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "melu",
+      "krama": "",
+      "arti": "ikut",
+      "keterangan": "ikut",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "menak",
+      "krama": "",
+      "arti": "orang terhormat; bangsawan; ningrat; priayi",
+      "keterangan": "orang terhormat; bangsawan; ningrat; priayi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mencet",
+      "krama": "",
+      "arti": "mencet; menekan:",
+      "keterangan": "mencet; menekan:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mencla-mencle",
+      "krama": "",
+      "arti": "omongannya tidak bisa dipegang",
+      "keterangan": "omongannya tidak bisa dipegang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mendung",
+      "krama": "",
+      "arti": "mêndhung (mendhung (awan yg mengandung hujan)); mêndhung (dalam keadaan langit yang agak gelap, tidak ada sinar matahari (karena tertutup awan))",
+      "keterangan": "mêndhung (mendhung (awan yg mengandung hujan))\nmêndhung (dalam keadaan langit yang agak gelap, tidak ada sinar matahari (karena tertutup awan))",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "menengan",
+      "krama": "",
+      "arti": "pendiam",
+      "keterangan": "pendiam",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mènggok",
+      "krama": "",
+      "arti": "belok",
+      "keterangan": "belok",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mengkreng",
+      "krama": "",
+      "arti": "cabai",
+      "keterangan": "cabai",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "menthog",
+      "krama": "",
+      "arti": "itik berwarna putih",
+      "keterangan": "itik berwarna putih",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "meram",
+      "krama": "",
+      "arti": "memeram",
+      "keterangan": "memeram",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "meripat",
+      "krama": "",
+      "arti": "meripat; mata:",
+      "keterangan": "meripat; mata:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "méwah",
+      "krama": "",
+      "arti": "mewah",
+      "keterangan": "mewah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "midun",
+      "krama": "",
+      "arti": "turun",
+      "keterangan": "turun",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "minyak sayur",
+      "krama": "",
+      "arti": "minyak goreng",
+      "keterangan": "minyak goreng",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "misuh",
+      "krama": "",
+      "arti": "sumpah serapah, memaki",
+      "keterangan": "sumpah serapah, memaki",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mlaku",
+      "krama": "",
+      "arti": "jalan",
+      "keterangan": "jalan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mlipit",
+      "krama": "",
+      "arti": "rapi",
+      "keterangan": "rapi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mondho",
+      "krama": "",
+      "arti": "tidak terlalu manis",
+      "keterangan": "tidak terlalu manis",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "morotuo",
+      "krama": "",
+      "arti": "besan",
+      "keterangan": "Besan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mrica",
+      "krama": "",
+      "arti": "merica",
+      "keterangan": "merica",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mundu",
+      "krama": "",
+      "arti": "mundu",
+      "keterangan": "mundu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mung abab bae",
+      "krama": "",
+      "arti": "hanya sesumbar, tanpa tindakan",
+      "keterangan": "hanya sesumbar, tanpa tindakan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "muntul",
+      "krama": "",
+      "arti": "muntul; ubi jalar:",
+      "keterangan": "muntul; ubi jalar:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "murubna",
+      "krama": "",
+      "arti": "menyalakan",
+      "keterangan": "menyalakan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "murung",
+      "krama": "",
+      "arti": "murung",
+      "keterangan": "murung",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "musnah",
+      "krama": "",
+      "arti": "musnah",
+      "keterangan": "musnah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mustoko",
+      "krama": "",
+      "arti": "mustoko",
+      "keterangan": "mustoko",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "mutiara",
+      "krama": "",
+      "arti": "mutiara",
+      "keterangan": "mutiara",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "naburaken",
+      "krama": "",
+      "arti": "menaburkan",
+      "keterangan": "menaburkan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nambahaken",
+      "krama": "",
+      "arti": "menambahkan",
+      "keterangan": "menambahkan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nang endi",
+      "krama": "",
+      "arti": "ke mana",
+      "keterangan": "ke mana",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nanti",
+      "krama": "",
+      "arti": "nanti (:tunggu)",
+      "keterangan": "nanti (:tunggu)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "naragina",
+      "krama": "",
+      "arti": "pengguna",
+      "keterangan": "pengguna",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "naralila",
+      "krama": "",
+      "arti": "sukarelawan",
+      "keterangan": "sukarelawan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nda",
+      "krama": "",
+      "arti": "kata panggilan akrab",
+      "keterangan": "kata panggilan akrab",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ndak",
+      "krama": "",
+      "arti": "tidak",
+      "keterangan": "tidak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ndas",
+      "krama": "",
+      "arti": "kepala",
+      "keterangan": "kepala",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ndek endi",
+      "krama": "",
+      "arti": "di mana",
+      "keterangan": "di mana",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ndek kana",
+      "krama": "",
+      "arti": "di sana",
+      "keterangan": "di sana",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ndek kene",
+      "krama": "",
+      "arti": "di sini",
+      "keterangan": "di sini",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ndelik",
+      "krama": "",
+      "arti": "ndelik;bersembunyi:",
+      "keterangan": "ndelik;bersembunyi:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ndelok",
+      "krama": "",
+      "arti": "melihat; melihat",
+      "keterangan": "melihat\nmelihat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ndeprok",
+      "krama": "",
+      "arti": "duduk",
+      "keterangan": "duduk",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ndésa",
+      "krama": "",
+      "arti": "desa",
+      "keterangan": "desa",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ndinginaken",
+      "krama": "",
+      "arti": "mendinginkan",
+      "keterangan": "mendinginkan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ndlosor",
+      "krama": "",
+      "arti": "jatuh kedepan",
+      "keterangan": "jatuh kedepan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ndongak",
+      "krama": "",
+      "arti": "melihat ke atas",
+      "keterangan": "melihat ke atas",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ndrodog",
+      "krama": "",
+      "arti": "ketakutan",
+      "keterangan": "ketakutan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nduwor",
+      "krama": "",
+      "arti": "nduwor; atas:",
+      "keterangan": "nduwor; atas:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nek",
+      "krama": "",
+      "arti": "kalau",
+      "keterangan": "kalau",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nelangsa",
+      "krama": "",
+      "arti": "nêlangsa; sêdih",
+      "keterangan": "nêlangsa\nsêdih",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nendang",
+      "krama": "",
+      "arti": "nendang; menendang:",
+      "keterangan": "nendang; menendang:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "neng endi",
+      "krama": "",
+      "arti": "di mana",
+      "keterangan": "di mana",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "néng kéné",
+      "krama": "",
+      "arti": "di sini",
+      "keterangan": "di sini",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "neng kono",
+      "krama": "",
+      "arti": "di sana",
+      "keterangan": "di sana",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nesu",
+      "krama": "",
+      "arti": "nesu;menangis:",
+      "keterangan": "nesu;menangis:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "netesaken",
+      "krama": "",
+      "arti": "meneteskan",
+      "keterangan": "meneteskan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngadakno",
+      "krama": "",
+      "arti": "mengadukan",
+      "keterangan": "mengadukan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngadon",
+      "krama": "",
+      "arti": "ngadon; mengadon:",
+      "keterangan": "ngadon; mengadon:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngadoni",
+      "krama": "",
+      "arti": "mengadoni",
+      "keterangan": "mengadoni",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngaduk",
+      "krama": "",
+      "arti": "mengaduk",
+      "keterangan": "mengaduk",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngalusaken",
+      "krama": "",
+      "arti": "menghaluskan",
+      "keterangan": "menghaluskan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngambung",
+      "krama": "",
+      "arti": "mencium, membaui",
+      "keterangan": "mencium, membaui",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngamok",
+      "krama": "",
+      "arti": "marah",
+      "keterangan": "marah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngapusi",
+      "krama": "",
+      "arti": "ngapusi: bohong",
+      "keterangan": "ngapusi: bohong",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngaran",
+      "krama": "",
+      "arti": "nama",
+      "keterangan": "nama",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngaret",
+      "krama": "",
+      "arti": "memotong rumput",
+      "keterangan": "memotong rumput",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngefermentasi",
+      "krama": "",
+      "arti": "memfermentasi",
+      "keterangan": "memfermentasi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngeledek",
+      "krama": "",
+      "arti": "mengejek",
+      "keterangan": "mengejek",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngelmu",
+      "krama": "",
+      "arti": "ngelmu; ilmu:",
+      "keterangan": "ngelmu; ilmu:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngelu",
+      "krama": "",
+      "arti": "pusing",
+      "keterangan": "pusing",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngenengake",
+      "krama": "",
+      "arti": "mengenengake",
+      "keterangan": "mengenengake",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngenteni",
+      "krama": "",
+      "arti": "menunggu",
+      "keterangan": "menunggu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngepek",
+      "krama": "",
+      "arti": "ngepek; memetik:",
+      "keterangan": "ngepek; memetik:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngetes",
+      "krama": "",
+      "arti": "mengetes",
+      "keterangan": "mengetes",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngetiraken",
+      "krama": "",
+      "arti": "meniriskan",
+      "keterangan": "meniriskan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngetok",
+      "krama": "",
+      "arti": "mengetok",
+      "keterangan": "mengetok",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngewe",
+      "krama": "",
+      "arti": "bersetubuh",
+      "keterangan": "bersetubuh",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngewel",
+      "krama": "",
+      "arti": "ketakutan",
+      "keterangan": "ketakutan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngganti",
+      "krama": "",
+      "arti": "mengganti",
+      "keterangan": "mengganti",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nggarami",
+      "krama": "",
+      "arti": "menggarami",
+      "keterangan": "menggarami",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nggaringake",
+      "krama": "",
+      "arti": "mengeringkan",
+      "keterangan": "mengeringkan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nggigil",
+      "krama": "",
+      "arti": "menggigil",
+      "keterangan": "menggigil",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nggolek",
+      "krama": "",
+      "arti": "nggolek;mencari:",
+      "keterangan": "nggolek;mencari:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nggoreng",
+      "krama": "",
+      "arti": "menggoreng",
+      "keterangan": "menggoreng",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nggowo",
+      "krama": "",
+      "arti": "bawa",
+      "keterangan": "bawa",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nggreges",
+      "krama": "",
+      "arti": "nggreges;demam:",
+      "keterangan": "nggreges;demam:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nggudhug",
+      "krama": "",
+      "arti": "merebus",
+      "keterangan": "merebus",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nginjen",
+      "krama": "",
+      "arti": "melihat dengan cara sembunyi-sembunyi yang dilakukan dari sebuah lubang atau celah yang kecil",
+      "keterangan": "melihat dengan cara sembunyi-sembunyi yang dilakukan dari sebuah lubang atau celah yang kecil",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngintil",
+      "krama": "",
+      "arti": "mengikuti",
+      "keterangan": "mengikuti",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngiris",
+      "krama": "",
+      "arti": "mengiris",
+      "keterangan": "mengiris",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngiyup",
+      "krama": "",
+      "arti": "berteduh",
+      "keterangan": "berteduh",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nglapisi",
+      "krama": "",
+      "arti": "melapisi",
+      "keterangan": "melapisi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nglesah",
+      "krama": "",
+      "arti": "rendah hati",
+      "keterangan": "rendah hati",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngocok",
+      "krama": "",
+      "arti": "mengocok",
+      "keterangan": "mengocok",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngolesi",
+      "krama": "",
+      "arti": "mengoles",
+      "keterangan": "mengoles",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngombé",
+      "krama": "",
+      "arti": "minum",
+      "keterangan": "minum",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngoncek",
+      "krama": "",
+      "arti": "mengupas",
+      "keterangan": "mengupas",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngoret",
+      "krama": "",
+      "arti": "membersihkan rumput liar",
+      "keterangan": "membersihkan rumput liar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngoseng",
+      "krama": "",
+      "arti": "menumis",
+      "keterangan": "menumis",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngrungokake",
+      "krama": "",
+      "arti": "mendengar",
+      "keterangan": "mendengar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngubeng",
+      "krama": "",
+      "arti": "ngupèng; berkeliling:",
+      "keterangan": "ngupèng; berkeliling:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngudek",
+      "krama": "",
+      "arti": "mengaduk",
+      "keterangan": "mengaduk",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nguleni",
+      "krama": "",
+      "arti": "menguleni",
+      "keterangan": "menguleni",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nguncal",
+      "krama": "",
+      "arti": "melempar",
+      "keterangan": "melempar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngunduh",
+      "krama": "",
+      "arti": "ngunduh; memanen:",
+      "keterangan": "ngunduh; memanen:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ngungkep",
+      "krama": "",
+      "arti": "mengungkep",
+      "keterangan": "mengungkep",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nguntil",
+      "krama": "",
+      "arti": "nguntil; mencopet:",
+      "keterangan": "nguntil; mencopet:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nijpuk",
+      "krama": "",
+      "arti": "mengambil",
+      "keterangan": "Mengambil",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "niki",
+      "krama": "",
+      "arti": "ini",
+      "keterangan": "ini",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "niku",
+      "krama": "",
+      "arti": "itu",
+      "keterangan": "itu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ning pundi",
+      "krama": "",
+      "arti": "kemana",
+      "keterangan": "kemana",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ning rika",
+      "krama": "",
+      "arti": "disana",
+      "keterangan": "disana",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ning riki",
+      "krama": "",
+      "arti": "disini",
+      "keterangan": "disini",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nipisaken",
+      "krama": "",
+      "arti": "nipisin",
+      "keterangan": "nipisin",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "njagi",
+      "krama": "",
+      "arti": "jaga",
+      "keterangan": "jaga",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "njalok",
+      "krama": "",
+      "arti": "meminta",
+      "keterangan": "meminta",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "njerengi",
+      "krama": "",
+      "arti": "menjemur pakaian",
+      "keterangan": "menjemur pakaian",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "njero",
+      "krama": "",
+      "arti": "dalam",
+      "keterangan": "dalam",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "njipuk",
+      "krama": "",
+      "arti": "mengambil",
+      "keterangan": "Mengambil",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyacah",
+      "krama": "",
+      "arti": "mencincang",
+      "keterangan": "mencincang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyamplok",
+      "krama": "",
+      "arti": "mengenai area wajah",
+      "keterangan": "mengenai area wajah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyandung",
+      "krama": "",
+      "arti": "tersandung",
+      "keterangan": "tersandung",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyape",
+      "krama": "",
+      "arti": "menyapih/disapih",
+      "keterangan": "menyapih/disapih",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyapet",
+      "krama": "",
+      "arti": "mencapit",
+      "keterangan": "mencapit",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyatet",
+      "krama": "",
+      "arti": "mencatat; mencatat",
+      "keterangan": "mencatat\nmencatat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyawisaken",
+      "krama": "",
+      "arti": "menyajikan",
+      "keterangan": "menyajikan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyegeraken",
+      "krama": "",
+      "arti": "menyejukkan",
+      "keterangan": "menyejukkan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyelimpeke",
+      "krama": "",
+      "arti": "menyelinapkan",
+      "keterangan": "menyelinapkan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyelok",
+      "krama": "",
+      "arti": "memanggil",
+      "keterangan": "memanggil",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyemprot",
+      "krama": "",
+      "arti": "menyemprot",
+      "keterangan": "menyemprot",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyemprotake",
+      "krama": "",
+      "arti": "menyemprotkan",
+      "keterangan": "menyemprotkan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyendhokaken",
+      "krama": "",
+      "arti": "menyendokkan",
+      "keterangan": "menyendokkan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyengklak",
+      "krama": "",
+      "arti": "menaiki/mengendarai",
+      "keterangan": "menaiki/mengendarai",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyerimpet",
+      "krama": "",
+      "arti": "mengganggu",
+      "keterangan": "mengganggu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyesuaiaken",
+      "krama": "",
+      "arti": "menyesuaikan",
+      "keterangan": "menyesuaikan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyiapaken",
+      "krama": "",
+      "arti": "menyiapkan",
+      "keterangan": "menyiapkan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyicipi",
+      "krama": "",
+      "arti": "mencicipi",
+      "keterangan": "mencicipi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyimpen",
+      "krama": "",
+      "arti": "menyimpan",
+      "keterangan": "menyimpan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyropo",
+      "krama": "",
+      "arti": "jelek",
+      "keterangan": "jelek",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyusruk",
+      "krama": "",
+      "arti": "jatuh tersungkur",
+      "keterangan": "jatuh tersungkur",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyusul",
+      "krama": "",
+      "arti": "menyusul",
+      "keterangan": "menyusul",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "nyusun",
+      "krama": "",
+      "arti": "menyusun",
+      "keterangan": "menyusun",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "obral",
+      "krama": "",
+      "arti": "obral",
+      "keterangan": "obral",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ompong",
+      "krama": "",
+      "arti": "(''ngoko'') ompong; (''krama inggil'') gugut; daut",
+      "keterangan": "(''ngoko'') ompong\n(''krama inggil'') gugut; daut",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ondo",
+      "krama": "",
+      "arti": "tangga",
+      "keterangan": "tangga",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ontal",
+      "krama": "",
+      "arti": "lempar",
+      "keterangan": "lempar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ora owah",
+      "krama": "",
+      "arti": "ora owah",
+      "keterangan": "ora owah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ote-ote",
+      "krama": "",
+      "arti": "bakwan",
+      "keterangan": "bakwan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "othal-athil",
+      "krama": "",
+      "arti": "othal-athil; hampir lepas:",
+      "keterangan": "othal-athil; hampir lepas:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "padan",
+      "krama": "",
+      "arti": "padan (banding; imbangan); cocok; sesuai",
+      "keterangan": "padan (banding; imbangan)\ncocok; sesuai",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "paklik",
+      "krama": "",
+      "arti": "adik laki-laki bapak, paman",
+      "keterangan": "Adik laki-laki bapak, paman",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "palsu",
+      "krama": "",
+      "arti": "palsu",
+      "keterangan": "palsu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pamer",
+      "krama": "",
+      "arti": "pamèr",
+      "keterangan": "pamèr",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pamong",
+      "krama": "",
+      "arti": "pamong",
+      "keterangan": "pamong",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pandai",
+      "krama": "",
+      "arti": "pandai",
+      "keterangan": "pandai",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pangeran",
+      "krama": "",
+      "arti": "pangéran",
+      "keterangan": "pangéran",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pangilon",
+      "krama": "",
+      "arti": "cermin",
+      "keterangan": "cermin",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "panjar",
+      "krama": "",
+      "arti": "panjêr",
+      "keterangan": "panjêr",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "panjenengan sedaya",
+      "krama": "",
+      "arti": "kalian semua",
+      "keterangan": "kalian semua",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "panjenenganipun",
+      "krama": "",
+      "arti": "dia",
+      "keterangan": "dia",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "papas",
+      "krama": "",
+      "arti": "papas (jumpa)",
+      "keterangan": "papas (jumpa)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "paru-paru",
+      "krama": "",
+      "arti": "paru-paru",
+      "keterangan": "paru-paru",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pasti",
+      "krama": "",
+      "arti": "pasti",
+      "keterangan": "pasti",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pat belas",
+      "krama": "",
+      "arti": "empat belas",
+      "keterangan": "empat belas",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pateni",
+      "krama": "",
+      "arti": "bunuh",
+      "keterangan": "bunuh",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "patih",
+      "krama": "",
+      "arti": "patih",
+      "keterangan": "patih",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pean",
+      "krama": "",
+      "arti": "kamu",
+      "keterangan": "kamu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pecat",
+      "krama": "",
+      "arti": "pêcat",
+      "keterangan": "pêcat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pecil",
+      "krama": "",
+      "arti": "anak",
+      "keterangan": "anak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pecoh",
+      "krama": "",
+      "arti": "patuk; tengkar; tukar",
+      "keterangan": "patuk\ntengkar\ntukar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pedang",
+      "krama": "",
+      "arti": "pêdang",
+      "keterangan": "pêdang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pedhang",
+      "krama": "",
+      "arti": "pedang",
+      "keterangan": "pedang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pekan",
+      "krama": "",
+      "arti": "pêkan",
+      "keterangan": "pêkan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pelem",
+      "krama": "",
+      "arti": "mangga",
+      "keterangan": "mangga",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "penawar jambe",
+      "krama": "",
+      "arti": "sikas (''cycas revoluta'')",
+      "keterangan": "sikas (''Cycas revoluta'')",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pendam",
+      "krama": "",
+      "arti": "pêndêm",
+      "keterangan": "pêndêm",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pendidikan",
+      "krama": "",
+      "arti": "pembelajaran; proses belajar ilmu, keterampilan, dan kebiasaan yang diwariskan dari satu generasi ke generasi berikutnya",
+      "keterangan": "pembelajaran\nproses belajar ilmu, keterampilan, dan kebiasaan yang diwariskan dari satu generasi ke generasi berikutnya",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pentil",
+      "krama": "",
+      "arti": "puting susu",
+      "keterangan": "puting susu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "perenjak",
+      "krama": "",
+      "arti": "prenjak",
+      "keterangan": "prenjak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "peres",
+      "krama": "",
+      "arti": "peras",
+      "keterangan": "peras",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pesek",
+      "krama": "",
+      "arti": "pèsèk: pipih, rata, datar (pada hidung)",
+      "keterangan": "pèsèk: pipih, rata, datar (pada hidung)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pigan",
+      "krama": "",
+      "arti": "telur",
+      "keterangan": "telur",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pijat",
+      "krama": "",
+      "arti": "pijêt",
+      "keterangan": "pijêt",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pikun",
+      "krama": "",
+      "arti": "pikun",
+      "keterangan": "pikun",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pindah",
+      "krama": "",
+      "arti": "pindah",
+      "keterangan": "pindah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pintar",
+      "krama": "",
+      "arti": "pandai",
+      "keterangan": "pandai",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pitados",
+      "krama": "",
+      "arti": "percaya",
+      "keterangan": "percaya",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pitulikur",
+      "krama": "",
+      "arti": "dua puluh tujuh",
+      "keterangan": "dua puluh tujuh",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "piyambaké",
+      "krama": "",
+      "arti": "beliau, dia",
+      "keterangan": "beliau, dia",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "playan",
+      "krama": "",
+      "arti": "berlari",
+      "keterangan": "berlari",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "playon",
+      "krama": "",
+      "arti": "playon; lari:",
+      "keterangan": "playon; lari:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pohung",
+      "krama": "",
+      "arti": "singkong",
+      "keterangan": "singkong",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "potlop",
+      "krama": "",
+      "arti": "pensil",
+      "keterangan": "pensil",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "prajurit",
+      "krama": "",
+      "arti": "prajurit",
+      "keterangan": "prajurit",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "prapèn",
+      "krama": "",
+      "arti": "perapian; prapen: tungku api tradisional",
+      "keterangan": "perapian\nprapen: tungku api tradisional",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "preng",
+      "krama": "",
+      "arti": "bambu",
+      "keterangan": "bambu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pripun",
+      "krama": "",
+      "arti": "bagaimana",
+      "keterangan": "bagaimana",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pua kumbu",
+      "krama": "",
+      "arti": "kain tenunan panjang khas jawa",
+      "keterangan": "kain tenunan panjang khas Jawa",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "puhung",
+      "krama": "",
+      "arti": "singkong",
+      "keterangan": "singkong",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pundak",
+      "krama": "",
+      "arti": "pundhak",
+      "keterangan": "pundhak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pundut",
+      "krama": "",
+      "arti": "ambil",
+      "keterangan": "ambil",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pungkas",
+      "krama": "",
+      "arti": "akhir, selesai",
+      "keterangan": "akhir, selesai",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "pupil",
+      "krama": "",
+      "arti": "anak gajah",
+      "keterangan": "anak gajah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "purel",
+      "krama": "",
+      "arti": "ani-ani",
+      "keterangan": "ani-ani",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "putra wali",
+      "krama": "",
+      "arti": "bratawali; antawali; bratawali",
+      "keterangan": "bratawali\nantawali\nbratawali\ndaun gadel\nputrawali",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ragil",
+      "krama": "",
+      "arti": "anak bungsu",
+      "keterangan": "anak bungsu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "rambut",
+      "krama": "",
+      "arti": "rambut",
+      "keterangan": "rambut",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "rampok",
+      "krama": "",
+      "arti": "rampok",
+      "keterangan": "rampok",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "rampung",
+      "krama": "",
+      "arti": "rampung",
+      "keterangan": "rampung",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "randu",
+      "krama": "",
+      "arti": "pohon kapuk",
+      "keterangan": "pohon kapuk",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ranggi",
+      "krama": "",
+      "arti": "ranggi",
+      "keterangan": "ranggi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "rangka",
+      "krama": "",
+      "arti": "rangka",
+      "keterangan": "rangka",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "rangkul",
+      "krama": "",
+      "arti": "rangkul",
+      "keterangan": "rangkul",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "rangu",
+      "krama": "",
+      "arti": "ragu",
+      "keterangan": "ragu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "rantai",
+      "krama": "",
+      "arti": "rantai; rantay",
+      "keterangan": "rantai\nrantay",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "rapi",
+      "krama": "",
+      "arti": "rapi",
+      "keterangan": "rapi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "rindu",
+      "krama": "",
+      "arti": "rindu",
+      "keterangan": "rindu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "rondho",
+      "krama": "",
+      "arti": "janda",
+      "keterangan": "janda",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "rong puluh",
+      "krama": "",
+      "arti": "dua puluh",
+      "keterangan": "dua puluh",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "rudo",
+      "krama": "",
+      "arti": "roda",
+      "keterangan": "roda",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sadhar",
+      "krama": "",
+      "arti": "sadar",
+      "keterangan": "sadar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sagu",
+      "krama": "",
+      "arti": "sagu",
+      "keterangan": "sagu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sahut",
+      "krama": "",
+      "arti": "sahut",
+      "keterangan": "sahut",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "saji",
+      "krama": "",
+      "arti": "saji",
+      "keterangan": "saji",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sak iki",
+      "krama": "",
+      "arti": "sekarang",
+      "keterangan": "sekarang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sakarepe dewe",
+      "krama": "",
+      "arti": "semaunya sendiri",
+      "keterangan": "semaunya sendiri",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "salak",
+      "krama": "",
+      "arti": "salak",
+      "keterangan": "salak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sambil",
+      "krama": "",
+      "arti": "sambil",
+      "keterangan": "sambil",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sambit",
+      "krama": "",
+      "arti": "sambit (menyambit)",
+      "keterangan": "sambit (menyambit)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sambut",
+      "krama": "",
+      "arti": "pinjam, terima",
+      "keterangan": "pinjam, terima",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sandang",
+      "krama": "",
+      "arti": "sandhang 'sesuatu yang dibawa seseorang sejak lahir, sifat; pakaian, busana'",
+      "keterangan": "sandhang 'sesuatu yang dibawa seseorang sejak lahir, sifat; pakaian, busana'",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sangangpuluh",
+      "krama": "",
+      "arti": "sembilan puluh",
+      "keterangan": "sembilan puluh",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sanggah",
+      "krama": "",
+      "arti": "sanggah",
+      "keterangan": "sanggah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sangkur",
+      "krama": "",
+      "arti": "sangkur",
+      "keterangan": "sangkur",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sanjang",
+      "krama": "",
+      "arti": "ngomong",
+      "keterangan": "ngomong",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "saré",
+      "krama": "",
+      "arti": "tidur",
+      "keterangan": "tidur",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sarengat",
+      "krama": "",
+      "arti": "syariat",
+      "keterangan": "syariat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sat-set",
+      "krama": "",
+      "arti": "cepat",
+      "keterangan": "cepat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "satus éwu",
+      "krama": "",
+      "arti": "seratus ribu",
+      "keterangan": "seratus ribu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "saus",
+      "krama": "",
+      "arti": "saus",
+      "keterangan": "saus",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sawetawis",
+      "krama": "",
+      "arti": "beberapa",
+      "keterangan": "beberapa",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sawisé",
+      "krama": "",
+      "arti": "setelah",
+      "keterangan": "setelah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sayuta",
+      "krama": "",
+      "arti": "sejuta",
+      "keterangan": "sejuta",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sebeneré",
+      "krama": "",
+      "arti": "sebenarnya",
+      "keterangan": "sebenarnya",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sebul",
+      "krama": "",
+      "arti": "tiup",
+      "keterangan": "tiup",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sedang",
+      "krama": "",
+      "arti": "sêdang",
+      "keterangan": "sêdang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sedasa",
+      "krama": "",
+      "arti": "sepuluh",
+      "keterangan": "sepuluh",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sederek",
+      "krama": "",
+      "arti": "saudara",
+      "keterangan": "saudara",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sedikit",
+      "krama": "",
+      "arti": "() sathithik",
+      "keterangan": "() sathithik",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sedilit",
+      "krama": "",
+      "arti": "sebentar",
+      "keterangan": "sebentar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sego",
+      "krama": "",
+      "arti": "nasi",
+      "keterangan": "nasi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "seje",
+      "krama": "",
+      "arti": "lain, beda",
+      "keterangan": "lain,beda",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "séjén",
+      "krama": "",
+      "arti": "lain",
+      "keterangan": "lain",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "selawe",
+      "krama": "",
+      "arti": "dua puluh lima, 25",
+      "keterangan": "dua puluh lima, 25",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "semangka",
+      "krama": "",
+      "arti": "semangka",
+      "keterangan": "semangka",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "semlenget",
+      "krama": "",
+      "arti": "hangat",
+      "keterangan": "hangat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "semugih",
+      "krama": "",
+      "arti": "sok kaya",
+      "keterangan": "sok kaya",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sendhok",
+      "krama": "",
+      "arti": "sendok, alat yang digunakan sebagai pengganti tangan dalam mengambil sesuatu (seperti nasi), bentuknya bulat, cekung, dan bertangkai (ada bermacam-macam, misalnya centong, sudip)",
+      "keterangan": "sendok, alat yang digunakan sebagai pengganti tangan dalam mengambil sesuatu (seperti nasi), bentuknya bulat, cekung, dan bertangkai (ada bermacam-macam, misalnya centong, sudip)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "senggol",
+      "krama": "",
+      "arti": "senggol",
+      "keterangan": "senggol",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sepupu",
+      "krama": "",
+      "arti": "paha",
+      "keterangan": "paha",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sepurané",
+      "krama": "",
+      "arti": "ungkapan permohonan maaf",
+      "keterangan": "ungkapan permohonan maaf",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sere",
+      "krama": "",
+      "arti": "serai",
+      "keterangan": "serai",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sereh",
+      "krama": "",
+      "arti": "sereh",
+      "keterangan": "sereh",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sereni",
+      "krama": "",
+      "arti": "marah",
+      "keterangan": "marah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "setunggal",
+      "krama": "",
+      "arti": "satu; sama ...; se ...: <br />''setunggal derajat",
+      "keterangan": "satu\nsama ...; se ...: <br />''setunggal derajat,''| sama derajat; sederajat",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "setya",
+      "krama": "",
+      "arti": "setia",
+      "keterangan": "setia",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "singgèk",
+      "krama": "",
+      "arti": "galah",
+      "keterangan": "galah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "singkap",
+      "krama": "",
+      "arti": "singkap; singkab",
+      "keterangan": "singkap\nsingkab",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sios",
+      "krama": "",
+      "arti": "jadi",
+      "keterangan": "jadi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sira kabèh",
+      "krama": "",
+      "arti": "kalian",
+      "keterangan": "kalian",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "siram",
+      "krama": "",
+      "arti": "mandi",
+      "keterangan": "mandi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sisi",
+      "krama": "",
+      "arti": "sisi",
+      "keterangan": "sisi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sithik",
+      "krama": "",
+      "arti": "sedikit",
+      "keterangan": "sedikit",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sitik",
+      "krama": "",
+      "arti": "sedikit",
+      "keterangan": "sedikit",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sledri",
+      "krama": "",
+      "arti": "seledri",
+      "keterangan": "seledri",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "songket",
+      "krama": "",
+      "arti": "bersulam benang emas }}",
+      "keterangan": "bersulam benang emas }}",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sopan",
+      "krama": "",
+      "arti": "sopan",
+      "keterangan": "sopan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sruput",
+      "krama": "",
+      "arti": "menyeruput",
+      "keterangan": "menyeruput",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sugeng rawuh",
+      "krama": "",
+      "arti": "selamat datang; selamat datang",
+      "keterangan": "selamat datang\nselamat datang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "súi",
+      "krama": "",
+      "arti": "lama",
+      "keterangan": "lama",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sumeh",
+      "krama": "",
+      "arti": "murah senyum kepada setiap orang",
+      "keterangan": "murah senyum kepada setiap orang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sumpal",
+      "krama": "",
+      "arti": "sumpal (sumbat)",
+      "keterangan": "sumpal (sumbat)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sumu'",
+      "krama": "",
+      "arti": "gerah di tubuh",
+      "keterangan": "gerah di tubuh",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "surasowan",
+      "krama": "",
+      "arti": "(harfiah) sura/suro (tidak baku) bisa berarti bulan asyura atau pahlawan, sowan artinya mengunjungi; nama keraton di banten; salah satu corak batik khas banten",
+      "keterangan": "(harfiah) sura/suro (tidak baku) bisa berarti bulan Asyura atau pahlawan, sowan artinya mengunjungi\nnama keraton di Banten\nsalah satu corak batik khas Banten",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "susul",
+      "krama": "",
+      "arti": "susul",
+      "keterangan": "susul",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "suwek",
+      "krama": "",
+      "arti": "suwek; sobek:",
+      "keterangan": "suwek; sobek:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "suwi",
+      "krama": "",
+      "arti": "lama",
+      "keterangan": "lama",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "tangan",
+      "krama": "",
+      "arti": "tangan",
+      "keterangan": "tangan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "tangis",
+      "krama": "",
+      "arti": "menangis",
+      "keterangan": "menangis",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "tape",
+      "krama": "",
+      "arti": "tapai",
+      "keterangan": "tapai",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "tasbeh",
+      "krama": "",
+      "arti": "tasbih",
+      "keterangan": "tasbih",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "telapakan",
+      "krama": "",
+      "arti": "telapak tangan",
+      "keterangan": "telapak tangan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "telo",
+      "krama": "",
+      "arti": "ubi",
+      "keterangan": "ubi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "telunjuk",
+      "krama": "",
+      "arti": "telunjuk",
+      "keterangan": "telunjuk",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "temaram",
+      "krama": "",
+      "arti": "remeng-remeng",
+      "keterangan": "remeng-remeng",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "tembang cilik",
+      "krama": "",
+      "arti": "tembang yang diatur secara baru (dalam sastra jawa baru, dilihat dari jumlah baris, suku kata, dan vokal pada akhir baris)",
+      "keterangan": "tembang yang diatur secara baru (dalam sastra Jawa Baru, dilihat dari jumlah baris, suku kata, dan vokal pada akhir baris)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "tempe",
+      "krama": "",
+      "arti": "tempe",
+      "keterangan": "tempe",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "temu badur",
+      "krama": "",
+      "arti": "temu putri",
+      "keterangan": "temu putri",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "tengeng",
+      "krama": "",
+      "arti": "tegang di leher",
+      "keterangan": "tegang di leher",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "terigu",
+      "krama": "",
+      "arti": "terigu; biji-bijian sebangsa beras (padi); gandum; tepung gandum",
+      "keterangan": "terigu\nbiji-bijian sebangsa beras (padi); gandum\ntepung gandum",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "terong plentus",
+      "krama": "",
+      "arti": "cempokak; takokak",
+      "keterangan": "cempokak; takokak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "teteh",
+      "krama": "",
+      "arti": "sudah jelas ucapannya (tentang anak kecil); bisa; mahir",
+      "keterangan": "sudah jelas ucapannya (tentang anak kecil)\nbisa; mahir",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "tindak pundi",
+      "krama": "",
+      "arti": "ke mana",
+      "keterangan": "ke mana",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "tlatah",
+      "krama": "",
+      "arti": "daerah",
+      "keterangan": "daerah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "tukul",
+      "krama": "",
+      "arti": "tumbuh",
+      "keterangan": "tumbuh",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "tulen",
+      "krama": "",
+      "arti": "tulén",
+      "keterangan": "tulén",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "tulup",
+      "krama": "",
+      "arti": "tulup",
+      "keterangan": "tulup",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "tuma",
+      "krama": "",
+      "arti": "kutu",
+      "keterangan": "kutu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "turi",
+      "krama": "",
+      "arti": "turi",
+      "keterangan": "turi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "uber",
+      "krama": "",
+      "arti": "kejar",
+      "keterangan": "kejar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ubres",
+      "krama": "",
+      "arti": "mendesak",
+      "keterangan": "mendesak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "udan wéwé",
+      "krama": "",
+      "arti": "hujan panas",
+      "keterangan": "hujan panas",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "umbah",
+      "krama": "",
+      "arti": "cuci",
+      "keterangan": "cuci",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "umbel",
+      "krama": "",
+      "arti": "ingus",
+      "keterangan": "ingus",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "umpetan",
+      "krama": "",
+      "arti": "bersembunyi",
+      "keterangan": "bersembunyi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "uwong",
+      "krama": "",
+      "arti": "manusia, orang",
+      "keterangan": "manusia, orang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "uyuh",
+      "krama": "",
+      "arti": "air seni",
+      "keterangan": "air seni",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "vetsin",
+      "krama": "",
+      "arti": "vetsin",
+      "keterangan": "vetsin",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "waca",
+      "krama": "",
+      "arti": "baca",
+      "keterangan": "baca",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "wadah",
+      "krama": "",
+      "arti": "tempat untuk menyimpan sesuatu (tong, lemari, dsb); segala sesuatu yang di dalamnya terdapat atau diletakkan sesuatu",
+      "keterangan": "tempat untuk menyimpan sesuatu (tong, lemari, dsb)\nsegala sesuatu yang di dalamnya terdapat atau diletakkan sesuatu",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "wadas",
+      "krama": "",
+      "arti": "cadas; batu yang keras yang terdiri dari lapisan tanah dan pasir",
+      "keterangan": "cadas; batu yang keras yang terdiri dari lapisan tanah dan pasir",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "waduk",
+      "krama": "",
+      "arti": "lambung (organ pencernaan); tempat penampungan air, bendungan",
+      "keterangan": "lambung (organ pencernaan)\ntempat penampungan air, bendungan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "wastra nusantara",
+      "krama": "",
+      "arti": "kain atau tekstil tradisional asli indonesia yang memiliki makna dan simbol tersendiri yang mengacu pada dimensi, warna, ukuran, dan bahan",
+      "keterangan": "kain atau tekstil tradisional asli Indonesia yang memiliki makna dan simbol tersendiri yang mengacu pada dimensi, warna, ukuran, dan bahan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "wayah napa",
+      "krama": "",
+      "arti": "kapan",
+      "keterangan": "kapan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "wedel",
+      "krama": "",
+      "arti": "pusar",
+      "keterangan": "Pusar",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "wedeni",
+      "krama": "",
+      "arti": "medeni;menakutkan:",
+      "keterangan": "medeni;menakutkan:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "wedus",
+      "krama": "",
+      "arti": "wedus",
+      "keterangan": "wedus",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "welat",
+      "krama": "",
+      "arti": "welat; kulit bambu yang sudah dipisahkan dari batangnya:",
+      "keterangan": "welat; kulit bambu yang sudah dipisahkan dari batangnya:",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "werna",
+      "krama": "",
+      "arti": "warna; jenis",
+      "keterangan": "warna\njenis",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "wesi aji",
+      "krama": "",
+      "arti": "besi aji",
+      "keterangan": "besi aji",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "wètan",
+      "krama": "",
+      "arti": "timur",
+      "keterangan": "timur",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "weteng",
+      "krama": "",
+      "arti": "perut",
+      "keterangan": "perut",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "widak",
+      "krama": "",
+      "arti": "dasar kata yang digunakan untuk menyebut angka 60 hingga 69 (pakai )",
+      "keterangan": "dasar kata yang digunakan untuk menyebut angka 60 hingga 69 (pakai )",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "wolulikur",
+      "krama": "",
+      "arti": "dua puluh delapan",
+      "keterangan": "dua puluh delapan",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "wong jero",
+      "krama": "",
+      "arti": "orang dalam",
+      "keterangan": "orang dalam",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "wonten mriki",
+      "krama": "",
+      "arti": "di sini",
+      "keterangan": "di sini",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "wonten mriku",
+      "krama": "",
+      "arti": "di sana",
+      "keterangan": "di sana",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "wonten pundi",
+      "krama": "",
+      "arti": "di mana",
+      "keterangan": "di mana",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "wudun",
+      "krama": "",
+      "arti": "bisul",
+      "keterangan": "bisul",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ya apa",
+      "krama": "",
+      "arti": "bagaimana",
+      "keterangan": "bagaimana",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "yotro",
+      "krama": "",
+      "arti": "uang",
+      "keterangan": "uang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ꦎꦴꦀ",
+      "krama": "",
+      "arti": "om; aum",
+      "keterangan": "om; aum",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ꦏꦼꦧꦪꦤ꧀",
+      "krama": "",
+      "arti": "}}",
+      "keterangan": "}}",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ꦠꦸꦫꦸ",
+      "krama": "",
+      "arti": "tidur",
+      "keterangan": "tidur",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ꦩꦸꦭꦶꦃ",
+      "krama": "",
+      "arti": "pulang",
+      "keterangan": "pulang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ꦭꦸꦔ",
+      "krama": "",
+      "arti": "pergi",
+      "keterangan": "pergi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "ꦲꦧꦁ",
+      "krama": "",
+      "arti": "merah",
+      "keterangan": "merah",
+      "aksara": "abang",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    }
+  ]
+}

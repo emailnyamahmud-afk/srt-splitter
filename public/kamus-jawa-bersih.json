@@ -1,0 +1,172 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "source": "merged kamus-jawa-full.json + kamus-jawa-new-lemma.json",
+    "description": "Entries dengan 3 field wajib lengkap (ngoko + krama + arti Indonesia)",
+    "entries": 19,
+    "with_aksara": 0,
+    "with_keterangan": 19,
+    "schema": {
+      "ngoko": "sinonim comma-separated",
+      "krama": "sinonim comma-separated",
+      "arti": "sinonim Indonesia comma-separated",
+      "keterangan": "asli dari Wiktionary Jawa, dipertahankan",
+      "aksara": "aksara Jawa (opsional, bonus)",
+      "sumber": "sumber data entry ini"
+    }
+  },
+  "words": [
+    {
+      "ngoko": "bende",
+      "krama": "bêndhé",
+      "arti": "bêndhé (canang)",
+      "keterangan": "bêndhé (canang)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "gereget",
+      "krama": "gêrêgêt",
+      "arti": "gêrêgêt",
+      "keterangan": "gêrêgêt",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jahe",
+      "krama": "jahé",
+      "arti": "jahé",
+      "keterangan": "jahé",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jenggot",
+      "krama": "jénggot",
+      "arti": "jénggot",
+      "keterangan": "jénggot",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jengkang",
+      "krama": "jêngkang",
+      "arti": "jêngkang",
+      "keterangan": "jêngkang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "jungkal",
+      "krama": "jungkêl",
+      "arti": "jungkêl",
+      "keterangan": "jungkêl",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "kerupuk",
+      "krama": "kêrupuk",
+      "arti": "kêrupuk",
+      "keterangan": "kêrupuk",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "naraguna",
+      "krama": "naragina",
+      "arti": "pengguna",
+      "keterangan": "pengguna",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sebarang",
+      "krama": "sêbarang",
+      "arti": "sêbarang",
+      "keterangan": "sêbarang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "seberang",
+      "krama": "sêbêrang",
+      "arti": "sêbêrang",
+      "keterangan": "sêbêrang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sedih",
+      "krama": "sêdih",
+      "arti": "sêdih (sedu; sedan; isak); sêdih",
+      "keterangan": "sêdih (sedu; sedan; isak)\nsêdih",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "seling",
+      "krama": "sêling",
+      "arti": "sêling (menyeling)",
+      "keterangan": "sêling (menyeling)",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "selingkuh",
+      "krama": "sêlingkuh",
+      "arti": "sêlingkuh",
+      "keterangan": "sêlingkuh",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "selisih",
+      "krama": "sêlisih",
+      "arti": "sêlisih",
+      "keterangan": "sêlisih",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sembarang",
+      "krama": "sêmbarang",
+      "arti": "sêmbarang",
+      "keterangan": "sêmbarang",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sempal",
+      "krama": "sêmpal",
+      "arti": "sêmpal",
+      "keterangan": "sêmpal",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sendi",
+      "krama": "sêndi",
+      "arti": "sêndi",
+      "keterangan": "sêndi",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "sepak",
+      "krama": "sépak",
+      "arti": "sépak",
+      "keterangan": "sépak",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    },
+    {
+      "ngoko": "serah",
+      "krama": "sêrah",
+      "arti": "sêrah",
+      "keterangan": "sêrah",
+      "aksara": "",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema"
+    }
+  ]
+}

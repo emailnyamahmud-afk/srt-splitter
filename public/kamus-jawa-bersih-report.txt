@@ -1,0 +1,30 @@
+Build Kamus Bersih Report
+==================================================
+
+Input:
+  kamus-jawa-full.json       :   44585 entries
+  kamus-jawa-new-lemma.json   :     859 entries
+  Total raw                  :   45444 entries
+
+Output:
+  kamus-jawa-bersih.json      :      19 entries (3-field lengkap)
+    dengan aksara             :       0
+    dengan keterangan         :      19
+  kamus-jawa-draft.json       :     782 entries (krama kosong)
+    dengan aksara             :       4
+    dengan keterangan         :     782
+  Skipped (gak punya ngoko/arti):   44643
+
+Schema bersih (sesuai user spec 9 Okt 2026):
+  ngoko      = sinonim comma-separated (e.g. 'aku, nyong, inyong')
+  krama      = sinonim comma-separated (e.g. 'kula, dalem, abdi')
+  arti       = sinonim Indonesia comma-separated (e.g. 'aku, saya, gue, gua')
+  keterangan = asli Wiktionary Jawa, dipertahankan
+  aksara     = aksara Jawa (bonus, opsional)
+  sumber     = sumber data
+
+Workflow:
+  1. Raw (full + lemma) → build-kamus-bersih.py → bersih + draft
+  2. User isi krama di draft via kamus-tui.py → pindah ke bersih
+  3. Bersih → upload ke Supabase (DB = ground of truth)
+  4. Target realistis: 2.000 entries bersih dalam 1 tahun (50/minggu)
