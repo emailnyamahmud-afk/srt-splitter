@@ -100,6 +100,15 @@ Wajib cek sebelum claim done:
       - arti tidak terlalu panjang (>60 char = definisi ensiklopedis, bukan sinonim)
       - keterangan (Jawa asli) dipertahankan, jangan dibuang
       Kalau data kacau = parsing AI tolol dan ngawur. Fix dulu, baru claim ready.
+- [ ] **Upload ke Supabase = USER wajib validasi satu-satu**. AI gak boleh bilang
+      "198 siap upload, langsung upload batch". AI cuma audit sample, USER yang
+      validasi semua entries sebelum upload.
+      Workflow:
+      1. AI: bersihkan data + audit sample → kasih count + sample
+      2. USER: buka kamus-tui.py → browse READY entries → validasi 1-1
+      3. USER: edit yang salah, save
+      4. USER: setelah yakin, upload batch ke Supabase
+      Supabase = ground of truth, hanya entries yang USER approved boleh masuk.
 
 ### R-13 — Git sync wajib tiap session start
 Di awal session (chat pertama, sebelum kerja apapun):
