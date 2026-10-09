@@ -192,8 +192,9 @@ def show_stats(data):
     print(f'    krama filled:                   {with_krama:6d}')
     print(f'    krama_inggil filled:            {with_ki:6d}  (opsional)')
     print(f'    arti (Indonesia) filled:        {with_arti:6d}  ⭐ (user edit manual)')
-    print(f'    3-field lengkap (status=ready): {ready_count:6d}  (perlu approval user)')
-    print(f'    Siap upload (user_approved):    {approved:6d}  🚀 (yang bener di-upload ke Supabase)')
+    print(f'    3-field ready (status=ready):    {ready_count:6d}  (perlu validasi user)')
+    print(f'    ✅ VALID (user_approved):         {approved:6d}  🚀 (siap upload Supabase)')
+    print(f'    📋 DRAFT (ready tapi belum valid): {ready_count - approved:6d}  (perlu user mark valid)')
     print()
     print('  Register breakdown (default umum, user bisa override):')
     for r, c in reg_count.most_common():
@@ -320,8 +321,6 @@ def edit_entry(data, idx):
         del entry['krama_inggil']
     entry['arti'] = new_arti
     entry['register'] = new_register  # update register
-    # Mark user_approved (R-12: user wajib validasi 1-1 sebelum upload Supabase)
-    entry['user_approved'] = True
     # Status auto-detect di save_kamus (ngoko+krama+arti semua terisi → 'ready')
 
     save_kamus(data)
@@ -329,7 +328,33 @@ def edit_entry(data, idx):
     new_status = 'ready' if (new_ngoko and new_krama and new_arti) else 'draft'
     print(f'\n  ✅ Disimpan: ngoko={new_ngoko} → krama={new_krama} → arti={new_arti}')
     print(f'  Register: {new_register}')
-    print(f'  Status: {new_status}' + (' (siap upload)' if new_status == 'ready' else ' (butuh arti dulu)'))
+    print(f'  Status: {new_status}' + (' (3-field lengkap)' if new_status == 'ready' else ' (butuh arti dulu)'))
+
+    # Explicit user action: mark as valid (siap upload Supabase) atau biarkan draft
+    # Per R-12: AI gak boleh auto-approve. User wajib explicit pilih.
+    current_approved = bool(entry.get('user_approved'))
+    if new_status == 'ready':
+        if current_approved:
+            # Sudah valid sebelumnya, tanya: keep valid atau unmark?
+            keep = questionary.confirm('  Sudah ditandai VALID (siap upload). Keep valid?', default=True).ask()
+            entry['user_approved'] = bool(keep)
+            if keep:
+                print('  ✅ Tetap VALID (siap upload Supabase)')
+            else:
+                print('  ○ Unmark: kembali jadi DRAFT (perlu validasi lagi)')
+        else:
+            # Belum valid, tanya: mark as valid?
+            mark = questionary.confirm('  Mark as VALID (siap upload ke Supabase)?', default=False).ask()
+            entry['user_approved'] = bool(mark)
+            if mark:
+                print('  ✅ Ditandai VALID (siap upload Supabase)')
+            else:
+                print('  ○ Tetap DRAFT (perlu validasi lagi nanti)')
+    else:
+        # Status draft (3-field belum lengkap) → tidak bisa valid
+        entry['user_approved'] = False
+        print('  ○ Tidak bisa mark VALID (3-field belum lengkap)')
+    save_kamus(data)  # save lagi untuk persist user_approved
 
     input('\n  Tekan Enter...')
 
@@ -646,13 +671,14 @@ def main_menu(data):
         choices = [
             '📊 Statistik kamus',
             '🔍 Search (cari kata di semua field)',
-            '🚀 Browse SIAP UPLOAD (ngoko+krama+arti lengkap, approved)',
+            '✅ Browse VALID (user-approved, siap upload)',
+            '📋 Browse DRAFT (belum valid, perlu review)',
             '⭐ Browse entries dengan krama mapping (auto-filled, butuh arti)',
             '📝 Browse entries BELUM ada arti (Indonesia)',
             '📂 Browse by source (lemma/mendeley/dasanama/angka)',
             '🔗 Merge 2 entries (search kata)',
             '🔑 Set Supabase .env (URL + anon key)',
-            '☁  Upload ke Supabase (hanya yang USER APPROVED)',
+            '☁  Upload ke Supabase (hanya yang VALID)',
             '❌ Keluar',
         ]
 
@@ -671,11 +697,15 @@ def main_menu(data):
             search_menu(data)
         elif 'Upload ke Supabase' in selected:
             upload_to_supabase()
-        elif 'SIAP UPLOAD' in selected and 'Browse' in selected:
-            # Hanya entries yang status=ready DAN user_approved=True (R-12 compliance)
-            ready_entries = [(i, w) for i, w in enumerate(data['words'])
-                            if w.get('status') == 'ready' and w.get('user_approved')]
-            browse_list(data, ready_entries, f'🚀 Siap Upload ({len(ready_entries)} entri approved)')
+        elif 'Browse VALID' in selected:
+            # Entries yang user_approved=True (explicit user action)
+            valid_entries = [(i, w) for i, w in enumerate(data['words']) if w.get('user_approved')]
+            browse_list(data, valid_entries, f'✅ VALID ({len(valid_entries)} entri siap upload)')
+        elif 'Browse DRAFT' in selected:
+            # Entries yang 3-field ready tapi belum user_approved (perlu validasi)
+            draft_entries = [(i, w) for i, w in enumerate(data['words'])
+                            if w.get('status') == 'ready' and not w.get('user_approved')]
+            browse_list(data, draft_entries, f'📋 DRAFT ({len(draft_entries)} entri perlu validasi)')
         elif 'by source' in selected:
             browse_by_source(data)
         elif 'krama mapping' in selected:
