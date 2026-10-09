@@ -32,7 +32,7 @@
     },
     {
       "ngoko": "lima",
-      "krama": "gangsal, panca",
+      "krama": "gangsal, panca, ponco",
       "arti": "lima",
       "keterangan": "angka 5"
     },
@@ -50,19 +50,19 @@
     },
     {
       "ngoko": "wolu",
-      "krama": "wolu, asta",
+      "krama": "wolu, asta, hastha",
       "arti": "delapan",
       "keterangan": "angka 8"
     },
     {
       "ngoko": "songo, sanga",
-      "krama": "sanga, nawa",
+      "krama": "sanga, nawa, nowo, songo",
       "arti": "sembilan",
       "keterangan": "angka 9"
     },
     {
       "ngoko": "sepuluh",
-      "krama": "sedasa, dasa",
+      "krama": "sedasa, dasa, doso",
       "arti": "sepuluh",
       "keterangan": "angka 10"
     },
@@ -91,7 +91,7 @@
       "keterangan": "angka 14"
     },
     {
-      "ngoko": "limolas",
+      "ngoko": "limolas, limalas",
       "krama": "gangsal welas",
       "arti": "lima belas",
       "keterangan": "angka 15"
