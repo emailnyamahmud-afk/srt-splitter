@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "version": "2.3",
+    "version": "2.4",
     "description": "Kamus Jawa komprehensif — group by konsep, gabung sinonim",
     "sources": [
       "jv.wiktionary.org (44,585 entries, raw preserved)",
@@ -25,7 +25,7 @@
       "4. Target: 2.000 entries dengan 3-field lengkap dalam 1 tahun (50/minggu)",
       "5. Upload yang lengkap ke Supabase (DB = ground of truth)"
     ],
-    "last_fix": "neutralize-kamus-draft.py: entries belum berpasangan → 'word' (netral). Pasca ini: build-kamus-bersih.py DISABLED, kamus-draft.json = rujukan tunggal."
+    "last_fix": "fix-angka-5-native-jawa.py: angka 5/15/25/50 per native Jawa 7 varian"
   },
   "words": [
     {
@@ -279623,8 +279623,8 @@
       "word": "lim"
     },
     {
-      "ngoko": "lima",
-      "krama": "gangsal, ponco, panca",
+      "ngoko": "limo",
+      "krama": "gangsal",
       "krama_inggil": "",
       "arti": "lima",
       "keterangan": "wilangan 5 | lima; dlima. | {{label|jv|krama}} [[lima]] | {{ngoko}} lima | angka 5",
@@ -279670,7 +279670,7 @@
       "entry_id": 19621
     },
     {
-      "ngoko": "limalas, limolas",
+      "ngoko": "limolas",
       "krama": "gangsal welas",
       "krama_inggil": "",
       "arti": "lima belas",
@@ -574860,7 +574860,7 @@
       "word": "sèl"
     },
     {
-      "ngoko": "sèlawé",
+      "ngoko": "sèlawé, selawe",
       "krama": "selangkung",
       "krama_inggil": "",
       "arti": "dua puluh lima",
@@ -575846,7 +575846,7 @@
       "word": "séka"
     },
     {
-      "ngoko": "séket",
+      "ngoko": "séket, seket",
       "krama": "séket",
       "krama_inggil": "",
       "arti": "lima puluh",

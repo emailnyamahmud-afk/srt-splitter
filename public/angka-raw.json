@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "version": "6.1",
+    "version": "6.2",
     "source": "id.wiktionary.org/wiki/Lampiran:Nama_angka_dalam_bahasa_Jawa (FULL scrape semua section) + sinonim Mendeley/Lampiran kamus + kawi",
     "entries": 1009,
-    "last_fix": "fix-angka-ejaan.py: eka→éka, Nol→nol, songo dari ngoko→hapus"
+    "last_fix": "fix-angka-5-native-jawa.py: angka 5/15/25/50 per native Jawa 7 varian"
   },
   "words": [
     {
@@ -37,8 +37,8 @@
       "keterangan": "angka 4"
     },
     {
-      "ngoko": "lima",
-      "krama": "gangsal, ponco, panca",
+      "ngoko": "limo",
+      "krama": "gangsal",
       "arti": "lima",
       "keterangan": "angka 5"
     },
@@ -97,7 +97,7 @@
       "keterangan": "angka 14"
     },
     {
-      "ngoko": "limalas, limolas",
+      "ngoko": "limolas",
       "krama": "gangsal welas",
       "arti": "lima belas",
       "keterangan": "angka 15"
@@ -157,7 +157,7 @@
       "keterangan": "angka 24"
     },
     {
-      "ngoko": "sèlawé",
+      "ngoko": "sèlawé, selawe",
       "krama": "selangkung",
       "arti": "dua puluh lima",
       "keterangan": "angka 25"
@@ -199,7 +199,7 @@
       "keterangan": "angka 40"
     },
     {
-      "ngoko": "séket",
+      "ngoko": "séket, seket",
       "krama": "séket",
       "arti": "lima puluh",
       "keterangan": "angka 50"
