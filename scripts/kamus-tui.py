@@ -623,6 +623,129 @@ def browse_by_kelengkapan(data):
     browse_list(data, matches, title)
 
 
+def bulk_mark_valid_draft(data):
+    """Mark bulk entries sebagai VALID atau DRAFT (tanpa edit field).
+    User search kata → pilih dari list → mark valid/draft.
+    Berguna kalau user sudah review di kamus-viewer.html (warna) lalu
+    mau mark valid 100 entries tanpa harus edit satu-satu.
+    """
+    os.system('clear' if os.name != 'nt' else 'cls')
+    print('╔' + '═' * 60 + '╗')
+    print('║  ⚡ Mark VALID/DRAFT Bulk' + ' ' * 32 + '║')
+    print('╚' + '═' * 60 + '╝')
+    print()
+    print('  Search entries → pilih dari list → mark VALID atau DRAFT.')
+    print('  Hanya entries yang 3-field ready (status=ready) BISA di-mark VALID.')
+    print('  Entries draft (3-field belum lengkap) → otomatis DRAFT, gak bisa VALID.')
+    print()
+
+    query = questionary.text('Cari kata (di ngoko / krama / arti):').ask()
+    if not query or not query.strip():
+        return
+    search_lower = query.lower().strip()
+
+    # Exact match dulu, baru substring
+    exact = []
+    substr = []
+    for i, entry in enumerate(data['words']):
+        ngoko = (entry.get('ngoko') or '').lower()
+        krama = (entry.get('krama') or '').lower()
+        arti = (entry.get('arti') or '').lower()
+        if ngoko == search_lower or krama == search_lower or arti == search_lower:
+            exact.append((i, entry))
+        elif (search_lower in ngoko or search_lower in krama or search_lower in arti):
+            substr.append((i, entry))
+    matches = exact + substr
+
+    if not matches:
+        print(f'\n  Tidak ada hasil untuk "{query}"')
+        input('\n  Tekan Enter...')
+        return
+
+    # Build choices list (max 30 untuk avoid UI clutter)
+    idx_map = {}
+    choices = []
+    for i, (orig_idx, entry) in enumerate(matches[:30]):
+        ngoko = (entry.get('ngoko') or '')[:25]
+        krama = (entry.get('krama') or '')[:20]
+        arti = (entry.get('arti') or '')[:20]
+        ready = (entry.get('ngoko') or '').strip() and (entry.get('krama') or '').strip() and (entry.get('arti') or '').strip()
+        approved = entry.get('user_approved')
+        # Icon: ✅=valid, 📋=ready tapi draft, ❌=draft (3-field belum lengkap)
+        if approved:
+            icon = '✅'
+        elif ready:
+            icon = '📋'
+        else:
+            icon = '❌'
+        label = f'{icon} ngoko={ngoko:25s} krama={krama:20s} arti={arti:20s}'
+        idx_map[label] = orig_idx
+        choices.append(label)
+
+    if len(matches) > 30:
+        print(f'  ⚠ Ditemukan {len(matches)} hasil, cuma tampilkan 30 pertama.')
+        print('  Narrow search kalau perlu.')
+        print()
+    choices.append('↩ Batal')
+
+    sel = questionary.select(
+        f'Pilih entry ({len(matches)} matches):',
+        choices=choices,
+        default=choices[0],
+    ).ask()
+
+    if not sel or 'Batal' in sel:
+        return
+
+    orig_idx = idx_map.get(sel)
+    if orig_idx is None:
+        return
+
+    entry = data['words'][orig_idx]
+    ready = (entry.get('ngoko') or '').strip() and (entry.get('krama') or '').strip() and (entry.get('arti') or '').strip()
+
+    if not ready:
+        print(f'\n  ❌ Entry ini 3-field belum lengkap. Tidak bisa di-mark VALID.')
+        print(f'     ngoko={entry.get("ngoko","")!r}')
+        print(f'     krama={entry.get("krama","")!r}')
+        print(f'     arti={entry.get("arti","")!r}')
+        input('\n  Tekan Enter...')
+        return
+
+    # Tampilkan detail + pilih action
+    print(f'\n  📋 Entry dipilih:')
+    print(f'    ngoko:  {entry.get("ngoko","")!r}')
+    print(f'    krama:  {entry.get("krama","")!r}')
+    print(f'    arti:   {entry.get("arti","")!r}')
+    print(f'    Status sekarang: {"✅ VALID" if entry.get("user_approved") else "📋 DRAFT"}')
+    print()
+
+    action_choices = [
+        '✅ Mark VALID (siap upload ke Supabase)',
+        '📋 Mark DRAFT (un-approve, kembali review)',
+        '↩ Batal',
+    ]
+    action = questionary.select(
+        'Pilih action:',
+        choices=action_choices,
+        default=action_choices[0],
+    ).ask()
+
+    if not action or 'Batal' in action:
+        return
+
+    if 'VALID' in action:
+        entry['user_approved'] = True
+        save_kamus(data)
+        print(f'\n  ✅ Ditandai VALID. Siap upload ke Supabase.')
+    elif 'DRAFT' in action:
+        entry['user_approved'] = False
+        save_kamus(data)
+        print(f'\n  ○ Kembali ke DRAFT. Perlu validasi lagi nanti.')
+
+    input('\n  Tekan Enter...')
+
+
 def edit_env_file():
     """Buka/edit file .env di ~/Dubbing/ untuk set Supabase credentials.
     Kalau belum ada, buat template otomatis.
@@ -750,6 +873,7 @@ def main_menu(data):
             '⭐ Browse entries dengan krama mapping (auto-filled, butuh arti)',
             '📝 Browse entries BELUM ada arti (Indonesia)',
             '🔗 Merge 2 entries (search kata)',
+            '⚡ Mark VALID/DRAFT bulk (search kata, tanpa edit)',
             '🔑 Set Supabase .env (URL + anon key)',
             '☁  Upload ke Supabase (hanya yang VALID)',
             '❌ Keluar',
@@ -787,6 +911,8 @@ def main_menu(data):
             browse_with_krama(data)
         elif 'BELUM ada arti' in selected:
             browse_no_arti(data)
+        elif 'Mark VALID/DRAFT bulk' in selected:
+            bulk_mark_valid_draft(data)
         elif 'Merge 2 entries' in selected:
             # Merge 2 entries — LANGSUNG: search kata 1 → search kata 2 → preview → konfirmasi
             print('\n  ═══ MERGE 2 ENTRIES ═══')
