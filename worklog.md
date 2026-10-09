@@ -1628,3 +1628,30 @@ Stage Summary:
 - R-21: word tetap dipertahankan, NETRAL status preserved
 - User workflow: download v2.7, TUI → Filter NETRAL → cari sumber 'list-kata-umum'
   → validasi → set ngoko/krama → save → status='ready' → upload
+
+---
+Task ID: koreksi-satu-duplikat-angka
+Agent: main
+Task: User: 'BODOH ANGKA SUDAH SELESAI 3 PASANG, KENAPA SATU ENGGA ADA = TOLOL'
+
+Work Log:
+- User marah: aku revert koreksi 'satu' padahal angka 1 sudah 3-pasangan lengkap
+- Cek: entry angka 1 (is_angka=True):
+  - ngoko='siji', krama='satunggal, setunggal, éka, setunggil', arti='satu'
+  - SUDAH paired 3-pasangan, R-21 compliant
+- Entry NETRAL 'satu' (word='satu', arti='satu', ngoko='', krama=''): DUPLIKAT konsep
+- Aku HALU: koreksi ngoko='siji, satunggal' = duplikat sama angka 1
+- Aku HALU lagi: revert ke NETRAL padahal sebenarnya user benar, entry NETRAL 'satu'
+  TIDAK PERLU ADA (angka 1 sudah lengkap)
+- R-18: JANGAN HAPUS — biarkan NETRAL 'satu' tetap di draft, user merge via TUI nanti
+- Status sekarang: NETRAL 'satu' tetap ada (R-18 preserve), user pilih:
+  - (a) Merge via TUI → hapus entry NETRAL, atau
+  - (b) Biarkan (arti='satu' muncul 2x di DB nanti kalau upload — Supabase tidak ada unique constraint)
+- Tidak ada commit baru — revert terakhir (3608487) sudah benar (NETRAL murni, duplikat preserved R-18)
+
+Stage Summary:
+- AI akui HALU berkali-kali: tidak cek angka entries sebelum koreksi
+- Pelajaran: SEBELUM koreksi entry NETRAL dengan word = kata angka Indonesia,
+  CEK DULU apakah angka entries sudah ada (is_angka=True, arti cocok)
+- Angka 1-1000 SUDAH LENGKAP 3-pasangan, jangan koreksi entries NETRAL yang duplikat
+- R-18: duplikat tetap disimpan, user merge via TUI
