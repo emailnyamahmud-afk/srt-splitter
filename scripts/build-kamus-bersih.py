@@ -542,8 +542,49 @@ def clean_arti(arti_raw, ngoko, krama):
     # Tapi "berat (tentang pikiran)" → "berat" (drop context)
 
     # 3. Cek LONG_DEF (>60 char): arti ensiklopedis, pindah ke keterangan
+    moved_to_ket = ""  # akumulasi text yang dipindah ke keterangan
     if len(arti) > 60:
         return "", arti, "long_def"
+
+    # 3b. Cek GRAMMAR/ENSIKLOPEDIS pattern PER SEGMENT (split ;)
+    # Pola: "kata ganti...", "sufiks...", "nama ikan laut", "nama lain tokoh...",
+    # "tembung..." (kata Jawa), "bentuk...", "jenis...", dll.
+    # Kalau ada segment yang match → pindah ke keterangan, segment lain (sinonim pendek) tetap
+    grammar_patterns = [
+        r"^kata ganti",
+        r"^sufiks",
+        r"^imbuh",
+        r"^awalan",
+        r"^partikel",
+        r"^kata penghubung",
+        r"^kata tanya",
+        r"^kata seru",
+        r"^kata bilangan",
+        r"^kata depan",
+        r"^kata sandang",
+        r"^bentuk",
+        r"^tembung",
+        r"^jenis ",
+        r"^nama ",
+        r"^istilah ",
+    ]
+    segments = [s.strip() for s in arti.split(";") if s.strip()]
+    grammar_segments = []
+    sinonim_segments = []
+    for seg in segments:
+        seg_lower = seg.lower()
+        if any(re.match(p, seg_lower) for p in grammar_patterns):
+            grammar_segments.append(seg)
+        else:
+            sinonim_segments.append(seg)
+    if grammar_segments:
+        moved_to_ket = "; ".join(grammar_segments)
+        if sinonim_segments:
+            arti = "; ".join(sinonim_segments)
+            # Lanjut ke step 4-8 untuk clean sinonim_segments
+        else:
+            # Semua segment grammar → kosongkan arti, pindah semua ke keterangan
+            return "", moved_to_ket, "long_def"
 
     # 4. Strip parenthetical (sekarang setelah long_def check, sisanya pendek dengan paren)
     # Mis. "bisa (mampu)" → "bisa", "berat (tentang pikiran, perasaan)" → "berat"
@@ -594,7 +635,7 @@ def clean_arti(arti_raw, ngoko, krama):
     if not arti:
         return "", arti_raw, "empty"
 
-    return arti, "", "clean"
+    return arti, moved_to_ket, "clean"
 
 
 def post_process_konseps(konseps):
@@ -604,6 +645,7 @@ def post_process_konseps(konseps):
         "clean": 0,
         "self_ref_cleared": 0,
         "long_def_moved": 0,
+        "grammar_moved": 0,
         "empty": 0,
         "paren_stripped": 0,
         "colon_stripped": 0,
@@ -637,9 +679,15 @@ def post_process_konseps(konseps):
             k["arti"] = ""
             stats["empty"] += 1
         else:
-            # Clean atau setelah fix
+            # Clean atau setelah fix — sintrim pendek yang valid
             k["arti"] = clean
             stats["clean"] += 1
+            # Kalau ada grammar/ensiklopedis segment yang dipindah → add ke keterangan
+            if moved:
+                existing_ket = k.get("keterangan", "")
+                if moved not in existing_ket:
+                    k["keterangan"] = f"{existing_ket} | {moved}".strip(" |") if existing_ket else moved
+                stats["grammar_moved"] += 1
             # Count berapa perubahan yang dilakukan
             if "(" in original_arti or ")" in original_arti:
                 stats["paren_stripped"] += 1
@@ -653,6 +701,7 @@ def post_process_konseps(konseps):
     print(f"  Clean (siap upload betulan): {stats['clean']}")
     print(f"  Self-ref cleared (arti = ngoko/krama, kosongkan): {stats['self_ref_cleared']}")
     print(f"  Long-def moved ke keterangan: {stats['long_def_moved']}")
+    print(f"  Grammar moved ke keterangan (sinonim tetap di arti): {stats['grammar_moved']}")
     print(f"  Empty (no arti from source): {stats['empty']}")
     print(f"  Paren stripped: {stats['paren_stripped']}")
     print(f"  Colon stripped: {stats['colon_stripped']}")
