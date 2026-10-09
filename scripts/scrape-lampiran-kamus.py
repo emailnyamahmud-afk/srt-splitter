@@ -74,34 +74,34 @@ def parse_entries(html):
     matches = re.findall(r"<li[^>]*>(.*?)</li>", content, re.DOTALL)
 
     valid_kelas = {
-        "t.a.": "kata benda",
-        "t.k.": "kata kerja",
-        "t.s.": "kata sifat",
-        "t.kr.": "kata keadaan",
-        "t.pw.": "kata seru",
-        "t.pr.": "kata depan",
-        "t.py.": "kata sambung",
-        "t.g.": "kata ganti",
-        "t.sd.": "kata sandang",
-        "t.w.": "kata bilangan",
+        "t.a.": "tembung aran (kata benda)",
+        "t.k.": "tembung kriya (kata kerja)",
+        "t.s.": "tembung sipat (kata sifat)",
+        "t.kr.": "tembung katrangan (kata keadaan)",
+        "t.pw.": "tembung panguwuh (kata seru)",
+        "t.pr.": "tembung pangarep (kata depan)",
+        "t.py.": "tembung panyambung (kata sambung)",
+        "t.g.": "tembung ganti (kata ganti)",
+        "t.sd.": "tembung sandhangan (kata sandang)",
+        "t.w.": "tembung wilangan (kata bilangan)",
         "K": "krama",
         "tsb": "tidak standar",
         # Alias typo yang sering muncul di wiki
-        "t.a": "kata benda",  # tanpa titik akhir
-        "t.k": "kata kerja",
-        "t.s": "kata sifat",
-        "t.kr": "kata keadaan",
-        "t.pw": "kata seru",
-        "t.pr": "kata depan",
-        "t.py": "kata sambung",
-        "t.g": "kata ganti",
-        "t.sd": "kata sandang",
-        "t.w": "kata bilangan",
-        "tk.": "kata kerja",  # typo
-        "ta, ts": "kata benda+sifat",  # multi-kelas
-        "ta": "kata benda",
-        "ts": "kata sifat",
-        "t.pb": "kata banding",  # tidak standar tapi ada di wiki
+        "t.a": "tembung aran (kata benda)",
+        "t.k": "tembung kriya (kata kerja)",
+        "t.s": "tembung sipat (kata sifat)",
+        "t.kr": "tembung katrangan (kata keadaan)",
+        "t.pw": "tembung panguwuh (kata seru)",
+        "t.pr": "tembung pangarep (kata depan)",
+        "t.py": "tembung panyambung (kata sambung)",
+        "t.g": "tembung ganti (kata ganti)",
+        "t.sd": "tembung sandhangan (kata sandang)",
+        "t.w": "tembung wilangan (kata bilangan)",
+        "tk.": "tembung kriya (kata kerja)",
+        "ta, ts": "tembung aran+sipat",
+        "ta": "tembung aran (kata benda)",
+        "ts": "tembung sipat (kata sifat)",
+        "t.pb": "tembung pambanding (kata banding)",
     }
 
     # Normalize kelas: hapus typo, fallback ke kelas baku
@@ -250,12 +250,27 @@ def parse_entries(html):
     print(f"✓ Parsed: {len(parsed)} entries")
     print(f"  Krama (K): {sum(1 for p in parsed if p['is_krama'])}")
     print(f"  Skipped: {skipped_count}")
-    return parsed
+
+    # Build legend (11 kelas kata + K)
+    legend = {
+        "t.a.": "tembung aran (kata benda)",
+        "t.k.": "tembung kriya (kata kerja)",
+        "t.s.": "tembung sipat (kata sifat)",
+        "t.kr.": "tembung katrangan (kata keadaan)",
+        "t.pw.": "tembung panguwuh (kata seru)",
+        "t.pr.": "tembung pangarep (kata depan)",
+        "t.py.": "tembung panyambung (kata sambung)",
+        "t.g.": "tembung ganti (kata ganti)",
+        "t.sd.": "tembung sandhangan (kata sandang)",
+        "t.w.": "tembung wilangan (kata bilangan)",
+        "K": "krama",
+    }
+    return parsed, legend
 
 
 def main():
     html = fetch_html()
-    entries = parse_entries(html)
+    entries, legend = parse_entries(html)
 
     # Stats per kelas
     from collections import Counter
@@ -270,7 +285,7 @@ def main():
         is_k = " [K]" if p["is_krama"] else ""
         print(f"  {p['ngoko']:25} ({p['kelas']:8}){is_k} → {p['arti']!r}")
 
-    # Save
+    # Save dengan legend di metadata
     output = {
         "metadata": {
             "version": "1.0",
@@ -278,12 +293,17 @@ def main():
             "description": "Lampiran Kamus bahasa Jawa – bahasa Indonesia (2724 kata)",
             "entries": len(entries),
             "kelas_breakdown": dict(kelas_dist),
+            "kelas_legend": legend,  # 11 kelas kata (tembung aran, kriya, dst.)
         },
         "words": entries,
     }
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
     print(f"\n✓ Save: {OUT} ({len(entries)} entries)")
+    if legend:
+        print(f"✓ Legend kelas kata (11 entries) — disimpan di metadata.kelas_legend:")
+        for k, v in legend.items():
+            print(f"    {k}: {v}")
 
 
 if __name__ == "__main__":
