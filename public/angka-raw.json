@@ -3,7 +3,7 @@
     "version": "5.0",
     "source": "id.wiktionary.org/wiki/Lampiran:Nama_angka_dalam_bahasa_Jawa (scraped, BUKAN AI guess)",
     "description": "Angka Jawa dari Wiktionary — satuan (ngoko+krama+kawi+kuna) + belasan-puluhan-ratusan-ribuan-jutaan",
-    "entries": 62
+    "entries": 65
   },
   "words": [
     {
@@ -377,6 +377,24 @@
       "krama": "",
       "arti": "",
       "keterangan": "angka 1.562.155"
+    },
+    {
+      "ngoko": "pitulikur",
+      "krama": "pitulikur",
+      "arti": "dua puluh tujuh",
+      "keterangan": "angka 27. Pola likur (dari Wiktionary 21-26)"
+    },
+    {
+      "ngoko": "wolulikur",
+      "krama": "wolulikur",
+      "arti": "dua puluh delapan",
+      "keterangan": "angka 28. Pola likur"
+    },
+    {
+      "ngoko": "sangalikur",
+      "krama": "sangalikur",
+      "arti": "dua puluh sembilan",
+      "keterangan": "angka 29. Pola likur"
     }
   ]
 }
