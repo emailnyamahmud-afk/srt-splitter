@@ -732,7 +732,15 @@ def merge_angka_to_konseps(konseps, angka_words):
         angka_krama = (entry.get("krama", "") or "").strip()
         angka_ket = (entry.get("keterangan", "") or "").strip()
 
-        matches = konsep_by_ngoko.get(angka_ngoko, [])
+        # Skip kalau ngoko DAN arti DAN krama semua kosong
+        if not angka_ngoko and not angka_arti and not angka_krama:
+            continue
+
+        # Kalau ngoko kosong, jangan match by ngoko (bikin konsep baru)
+        if angka_ngoko:
+            matches = konsep_by_ngoko.get(angka_ngoko, [])
+        else:
+            matches = []
         if matches:
             konsep_idx = matches[0]
             k = konseps[konsep_idx]
@@ -1360,6 +1368,7 @@ def dedup_konseps_by_ngoko(konseps):
     print(f"\n🧹 Dedup konsep by primary ngoko ({len(konseps):,} entries)...")
 
     # Group by primary ngoko (lowercase)
+    # Entries dengan ngoko kosong: group by arti (supaya angka 33, 34, 35 dst. tidak merge jadi 1)
     groups = defaultdict(list)
     no_ngoko = []
     for k in konseps:
@@ -1367,7 +1376,13 @@ def dedup_konseps_by_ngoko(konseps):
         if n_first:
             groups[n_first].append(k)
         else:
-            no_ngoko.append(k)  # entries tanpa ngoko (orphan krama-only)
+            # Entry tanpa ngoko — group by arti (bukan orphan blind merge)
+            # Setiap arti beda = konsep beda (mis. "tiga puluh tiga" ≠ "empat puluh satu")
+            arti_key = (k.get("arti", "") or "").strip().lower()
+            if arti_key:
+                groups[f"__no_ngoko__{arti_key}"].append(k)
+            else:
+                no_ngoko.append(k)
 
     print(f"  Unique primary ngoko: {len(groups):,}")
     print(f"  Orphan (no ngoko, krama-only): {len(no_ngoko):,}")

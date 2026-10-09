@@ -6,7 +6,7 @@
       "jv.wiktionary.org (44,585 entries, raw preserved)",
       "id.wiktionary.org Kategori:jv:Lema (2,159 entries, raw preserved)"
     ],
-    "total_konsep": 44077,
+    "total_konsep": 44129,
     "schema": {
       "ngoko": "sinonim ngoko comma-separated",
       "krama": "sinonim krama comma-separated",
@@ -21,10 +21,10 @@
       "source_count": "jumlah entries asli yang digabung jadi 1 konsep"
     },
     "stats": {
-      "total_konsep": 44077,
-      "with_krama": 2547,
-      "with_arti": 3605,
-      "with_keterangan": 42642,
+      "total_konsep": 44129,
+      "with_krama": 2540,
+      "with_arti": 3657,
+      "with_keterangan": 42701,
       "with_aksara": 41761,
       "is_lemma": 2120,
       "ready_3_field": 920,
@@ -581160,6 +581160,832 @@
       "ngoko": "",
       "krama": "",
       "krama_inggil": "",
+      "arti": "tiga puluh tiga",
+      "keterangan": "angka 33",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43700
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "tiga puluh empat",
+      "keterangan": "angka 34",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43701
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "tiga puluh lima",
+      "keterangan": "angka 35",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43702
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "tiga puluh enam",
+      "keterangan": "angka 36",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43703
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "tiga puluh tujuh",
+      "keterangan": "angka 37",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43704
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "tiga puluh delapan",
+      "keterangan": "angka 38",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43705
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "tiga puluh sembilan",
+      "keterangan": "angka 39",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43706
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "empat puluh satu",
+      "keterangan": "angka 41",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43707
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "empat puluh dua",
+      "keterangan": "angka 42",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43708
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "empat puluh tiga",
+      "keterangan": "angka 43",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43709
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "empat puluh empat",
+      "keterangan": "angka 44",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43710
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "empat puluh lima",
+      "keterangan": "angka 45",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43711
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "empat puluh enam",
+      "keterangan": "angka 46",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43712
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "empat puluh tujuh",
+      "keterangan": "angka 47",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43713
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "empat puluh delapan",
+      "keterangan": "angka 48",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43714
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "empat puluh sembilan",
+      "keterangan": "angka 49",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43715
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "lima puluh satu",
+      "keterangan": "angka 51",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43716
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "lima puluh dua",
+      "keterangan": "angka 52",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43717
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "lima puluh tiga",
+      "keterangan": "angka 53",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43718
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "lima puluh empat",
+      "keterangan": "angka 54",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43719
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "lima puluh lima",
+      "keterangan": "angka 55",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43720
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "lima puluh enam",
+      "keterangan": "angka 56",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43721
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "lima puluh tujuh",
+      "keterangan": "angka 57",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43722
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "lima puluh delapan",
+      "keterangan": "angka 58",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43723
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "lima puluh sembilan",
+      "keterangan": "angka 59",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43724
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "enam puluh satu",
+      "keterangan": "angka 61",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43725
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "enam puluh dua",
+      "keterangan": "angka 62",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43726
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "enam puluh tiga",
+      "keterangan": "angka 63",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43727
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "enam puluh empat",
+      "keterangan": "angka 64",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43728
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "enam puluh lima",
+      "keterangan": "angka 65",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43729
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "enam puluh enam",
+      "keterangan": "angka 66",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43730
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "enam puluh tujuh",
+      "keterangan": "angka 67",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43731
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "enam puluh delapan",
+      "keterangan": "angka 68",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43732
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "enam puluh sembilan",
+      "keterangan": "angka 69",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43733
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "tujuh puluh satu",
+      "keterangan": "angka 71",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43734
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "tujuh puluh dua",
+      "keterangan": "angka 72",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43735
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "tujuh puluh tiga",
+      "keterangan": "angka 73",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43736
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "tujuh puluh empat",
+      "keterangan": "angka 74",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43737
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "tujuh puluh lima",
+      "keterangan": "angka 75",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43738
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "tujuh puluh enam",
+      "keterangan": "angka 76",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43739
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "tujuh puluh tujuh",
+      "keterangan": "angka 77",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43740
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "tujuh puluh delapan",
+      "keterangan": "angka 78",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43741
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "tujuh puluh sembilan",
+      "keterangan": "angka 79",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43742
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "delapan puluh satu",
+      "keterangan": "angka 81",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43743
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "delapan puluh dua",
+      "keterangan": "angka 82",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43744
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "delapan puluh tiga",
+      "keterangan": "angka 83",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43745
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "delapan puluh empat",
+      "keterangan": "angka 84",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43746
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "delapan puluh lima",
+      "keterangan": "angka 85",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43747
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "delapan puluh enam",
+      "keterangan": "angka 86",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43748
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "delapan puluh tujuh",
+      "keterangan": "angka 87",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43749
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "delapan puluh delapan",
+      "keterangan": "angka 88",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43750
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "delapan puluh sembilan",
+      "keterangan": "angka 89",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43751
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "sembilan puluh satu",
+      "keterangan": "angka 91",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43752
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "sembilan puluh dua",
+      "keterangan": "angka 92",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43753
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "sembilan puluh tiga",
+      "keterangan": "angka 93",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43754
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "sembilan puluh empat",
+      "keterangan": "angka 94",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43755
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "sembilan puluh lima",
+      "keterangan": "angka 95",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43756
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "sembilan puluh enam",
+      "keterangan": "angka 96",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43757
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
+      "arti": "sembilan puluh tujuh",
+      "keterangan": "angka 97",
+      "aksara": "",
+      "register": "umum",
+      "status": "draft",
+      "sumber": "angka-raw.json (new)",
+      "is_angka": true,
+      "source_count": 1,
+      "entry_id": 43758
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "krama_inggil": "",
       "arti": "",
       "keterangan": "kakap (ikan laut)\n{{ki}} kakap (berukuran besar) | kakap (ikan laut); kakap (berukuran besar)",
       "aksara": "",
@@ -581169,7 +581995,7 @@
       "is_lemma": true,
       "lemma_words": "",
       "source_count": 1,
-      "entry_id": 43700
+      "entry_id": 43759
     },
     {
       "ngoko": "",
@@ -581184,7 +582010,7 @@
       "is_lemma": true,
       "lemma_words": "",
       "source_count": 1,
-      "entry_id": 43701
+      "entry_id": 43760
     },
     {
       "ngoko": "",
@@ -581197,7 +582023,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43702
+      "entry_id": 43761
     },
     {
       "ngoko": "",
@@ -581212,7 +582038,7 @@
       "is_lemma": true,
       "lemma_words": "ambruk",
       "source_count": 1,
-      "entry_id": 43703
+      "entry_id": 43762
     },
     {
       "ngoko": "",
@@ -581228,7 +582054,7 @@
       "kelas": "t.k.",
       "kelas_nama": "tembung kriya (kata kerja)",
       "source_count": 1,
-      "entry_id": 43704
+      "entry_id": 43763
     },
     {
       "ngoko": "",
@@ -581243,7 +582069,7 @@
       "is_lemma": true,
       "lemma_words": "ambyar",
       "source_count": 1,
-      "entry_id": 43705
+      "entry_id": 43764
     },
     {
       "ngoko": "",
@@ -581256,7 +582082,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43706
+      "entry_id": 43765
     },
     {
       "ngoko": "",
@@ -581269,7 +582095,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43707
+      "entry_id": 43766
     },
     {
       "ngoko": "",
@@ -581285,7 +582111,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 43708
+      "entry_id": 43767
     },
     {
       "ngoko": "",
@@ -581301,7 +582127,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 43709
+      "entry_id": 43768
     },
     {
       "ngoko": "",
@@ -581317,7 +582143,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 43710
+      "entry_id": 43769
     },
     {
       "ngoko": "",
@@ -581333,7 +582159,7 @@
       "kelas": "t.a.",
       "kelas_nama": "tembung aran (kata benda)",
       "source_count": 1,
-      "entry_id": 43711
+      "entry_id": 43770
     },
     {
       "ngoko": "",
@@ -581349,11 +582175,11 @@
       "kelas": "t.a.",
       "kelas_nama": "tembung aran (kata benda)",
       "source_count": 1,
-      "entry_id": 43712
+      "entry_id": 43771
     },
     {
       "ngoko": "",
-      "krama": "asta",
+      "krama": "asta, beta",
       "krama_inggil": "",
       "arti": "bawa",
       "keterangan": "",
@@ -581361,11 +582187,8 @@
       "register": "umum",
       "status": "draft",
       "sumber": "lampiran-raw.json (new)",
-      "is_lampiran": true,
-      "kelas": "t.k.",
-      "kelas_nama": "tembung kriya (kata kerja)",
-      "source_count": 1,
-      "entry_id": 43713
+      "source_count": 2,
+      "entry_id": 43772
     },
     {
       "ngoko": "",
@@ -581381,7 +582204,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 43714
+      "entry_id": 43773
     },
     {
       "ngoko": "",
@@ -581396,7 +582219,7 @@
       "is_lemma": true,
       "lemma_words": "bandeng",
       "source_count": 1,
-      "entry_id": 43715
+      "entry_id": 43774
     },
     {
       "ngoko": "",
@@ -581411,7 +582234,7 @@
       "is_lemma": true,
       "lemma_words": "banding",
       "source_count": 1,
-      "entry_id": 43716
+      "entry_id": 43775
     },
     {
       "ngoko": "",
@@ -581426,7 +582249,7 @@
       "is_lemma": true,
       "lemma_words": "bandung",
       "source_count": 1,
-      "entry_id": 43717
+      "entry_id": 43776
     },
     {
       "ngoko": "",
@@ -581441,7 +582264,7 @@
       "is_lemma": true,
       "lemma_words": "bantu",
       "source_count": 1,
-      "entry_id": 43718
+      "entry_id": 43777
     },
     {
       "ngoko": "",
@@ -581456,7 +582279,7 @@
       "is_lemma": true,
       "lemma_words": "bende",
       "source_count": 1,
-      "entry_id": 43719
+      "entry_id": 43778
     },
     {
       "ngoko": "",
@@ -581469,23 +582292,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43720
-    },
-    {
-      "ngoko": "",
-      "krama": "beta",
-      "krama_inggil": "",
-      "arti": "bawa",
-      "keterangan": "",
-      "aksara": "",
-      "register": "umum",
-      "status": "draft",
-      "sumber": "lampiran-raw.json (new)",
-      "is_lampiran": true,
-      "kelas": "t.k.",
-      "kelas_nama": "tembung kriya (kata kerja)",
-      "source_count": 1,
-      "entry_id": 43721
+      "entry_id": 43779
     },
     {
       "ngoko": "",
@@ -581500,7 +582307,7 @@
       "is_lemma": true,
       "lemma_words": "bogor",
       "source_count": 1,
-      "entry_id": 43722
+      "entry_id": 43780
     },
     {
       "ngoko": "",
@@ -581515,7 +582322,7 @@
       "is_lemma": true,
       "lemma_words": "bungkil",
       "source_count": 1,
-      "entry_id": 43723
+      "entry_id": 43781
     },
     {
       "ngoko": "",
@@ -581530,7 +582337,7 @@
       "is_lemma": true,
       "lemma_words": "buntek",
       "source_count": 1,
-      "entry_id": 43724
+      "entry_id": 43782
     },
     {
       "ngoko": "",
@@ -581545,7 +582352,7 @@
       "is_lemma": true,
       "lemma_words": "buntu",
       "source_count": 1,
-      "entry_id": 43725
+      "entry_id": 43783
     },
     {
       "ngoko": "",
@@ -581561,7 +582368,7 @@
       "kelas": "t.a.",
       "kelas_nama": "tembung aran (kata benda)",
       "source_count": 1,
-      "entry_id": 43726
+      "entry_id": 43784
     },
     {
       "ngoko": "",
@@ -581577,7 +582384,7 @@
       "kelas": "t.k.",
       "kelas_nama": "tembung kriya (kata kerja)",
       "source_count": 1,
-      "entry_id": 43727
+      "entry_id": 43785
     },
     {
       "ngoko": "",
@@ -581592,7 +582399,7 @@
       "is_lemma": true,
       "lemma_words": "butuh",
       "source_count": 1,
-      "entry_id": 43728
+      "entry_id": 43786
     },
     {
       "ngoko": "",
@@ -581607,7 +582414,7 @@
       "is_lemma": true,
       "lemma_words": "buyar",
       "source_count": 1,
-      "entry_id": 43729
+      "entry_id": 43787
     },
     {
       "ngoko": "",
@@ -581622,7 +582429,7 @@
       "is_lemma": true,
       "lemma_words": "buyut",
       "source_count": 1,
-      "entry_id": 43730
+      "entry_id": 43788
     },
     {
       "ngoko": "",
@@ -581638,7 +582445,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 43731
+      "entry_id": 43789
     },
     {
       "ngoko": "",
@@ -581654,7 +582461,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 43732
+      "entry_id": 43790
     },
     {
       "ngoko": "",
@@ -581669,7 +582476,7 @@
       "is_lemma": true,
       "lemma_words": "cangkok",
       "source_count": 1,
-      "entry_id": 43733
+      "entry_id": 43791
     },
     {
       "ngoko": "",
@@ -581685,7 +582492,7 @@
       "kelas": "t.s.",
       "kelas_nama": "tembung sipat (kata sifat)",
       "source_count": 1,
-      "entry_id": 43734
+      "entry_id": 43792
     },
     {
       "ngoko": "",
@@ -581701,7 +582508,7 @@
       "kelas": "t.s.",
       "kelas_nama": "tembung sipat (kata sifat)",
       "source_count": 1,
-      "entry_id": 43735
+      "entry_id": 43793
     },
     {
       "ngoko": "",
@@ -581716,7 +582523,7 @@
       "is_lemma": true,
       "lemma_words": "cengkok",
       "source_count": 1,
-      "entry_id": 43736
+      "entry_id": 43794
     },
     {
       "ngoko": "",
@@ -581731,7 +582538,7 @@
       "is_lemma": true,
       "lemma_words": "cepak",
       "source_count": 1,
-      "entry_id": 43737
+      "entry_id": 43795
     },
     {
       "ngoko": "",
@@ -581746,7 +582553,7 @@
       "is_lemma": true,
       "lemma_words": "ciyut",
       "source_count": 1,
-      "entry_id": 43738
+      "entry_id": 43796
     },
     {
       "ngoko": "",
@@ -581761,7 +582568,7 @@
       "is_lemma": true,
       "lemma_words": "congkak",
       "source_count": 1,
-      "entry_id": 43739
+      "entry_id": 43797
     },
     {
       "ngoko": "",
@@ -581776,7 +582583,7 @@
       "is_lemma": true,
       "lemma_words": "contoh",
       "source_count": 1,
-      "entry_id": 43740
+      "entry_id": 43798
     },
     {
       "ngoko": "",
@@ -581791,7 +582598,7 @@
       "is_lemma": true,
       "lemma_words": "damba",
       "source_count": 1,
-      "entry_id": 43741
+      "entry_id": 43799
     },
     {
       "ngoko": "",
@@ -581806,7 +582613,7 @@
       "is_lemma": true,
       "lemma_words": "dangu",
       "source_count": 1,
-      "entry_id": 43742
+      "entry_id": 43800
     },
     {
       "ngoko": "",
@@ -581824,7 +582631,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "is_lampiran": true,
-      "entry_id": 43743
+      "entry_id": 43801
     },
     {
       "ngoko": "",
@@ -581839,7 +582646,7 @@
       "is_lemma": true,
       "lemma_words": "dhateng pundi",
       "source_count": 1,
-      "entry_id": 43744
+      "entry_id": 43802
     },
     {
       "ngoko": "",
@@ -581855,7 +582662,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 43745
+      "entry_id": 43803
     },
     {
       "ngoko": "",
@@ -581868,7 +582675,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43746
+      "entry_id": 43804
     },
     {
       "ngoko": "",
@@ -581881,7 +582688,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43747
+      "entry_id": 43805
     },
     {
       "ngoko": "",
@@ -581894,7 +582701,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43748
+      "entry_id": 43806
     },
     {
       "ngoko": "",
@@ -581907,7 +582714,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43749
+      "entry_id": 43807
     },
     {
       "ngoko": "",
@@ -581920,7 +582727,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43750
+      "entry_id": 43808
     },
     {
       "ngoko": "",
@@ -581933,7 +582740,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43751
+      "entry_id": 43809
     },
     {
       "ngoko": "",
@@ -581946,7 +582753,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43752
+      "entry_id": 43810
     },
     {
       "ngoko": "",
@@ -581959,7 +582766,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43753
+      "entry_id": 43811
     },
     {
       "ngoko": "",
@@ -581972,7 +582779,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43754
+      "entry_id": 43812
     },
     {
       "ngoko": "",
@@ -581988,7 +582795,7 @@
       "kelas": "t.s.",
       "kelas_nama": "tembung sipat (kata sifat)",
       "source_count": 1,
-      "entry_id": 43755
+      "entry_id": 43813
     },
     {
       "ngoko": "",
@@ -582001,7 +582808,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43756
+      "entry_id": 43814
     },
     {
       "ngoko": "",
@@ -582017,7 +582824,7 @@
       "kelas": "t.w.",
       "kelas_nama": "tembung wilangan (kata bilangan)",
       "source_count": 1,
-      "entry_id": 43757
+      "entry_id": 43815
     },
     {
       "ngoko": "",
@@ -582032,7 +582839,7 @@
       "is_lemma": true,
       "lemma_words": "enggih",
       "source_count": 1,
-      "entry_id": 43758
+      "entry_id": 43816
     },
     {
       "ngoko": "",
@@ -582045,7 +582852,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43759
+      "entry_id": 43817
     },
     {
       "ngoko": "",
@@ -582060,7 +582867,7 @@
       "is_lemma": true,
       "lemma_words": "gaji",
       "source_count": 1,
-      "entry_id": 43760
+      "entry_id": 43818
     },
     {
       "ngoko": "",
@@ -582078,7 +582885,7 @@
       "kelas": "t.a.",
       "kelas_nama": "tembung aran (kata benda)",
       "is_lampiran": true,
-      "entry_id": 43761
+      "entry_id": 43819
     },
     {
       "ngoko": "",
@@ -582093,7 +582900,7 @@
       "is_lemma": true,
       "lemma_words": "gelung",
       "source_count": 1,
-      "entry_id": 43762
+      "entry_id": 43820
     },
     {
       "ngoko": "",
@@ -582108,7 +582915,7 @@
       "is_lemma": true,
       "lemma_words": "gelut",
       "source_count": 1,
-      "entry_id": 43763
+      "entry_id": 43821
     },
     {
       "ngoko": "",
@@ -582123,7 +582930,7 @@
       "is_lemma": true,
       "lemma_words": "gendam",
       "source_count": 1,
-      "entry_id": 43764
+      "entry_id": 43822
     },
     {
       "ngoko": "",
@@ -582138,7 +582945,7 @@
       "is_lemma": true,
       "lemma_words": "genjot",
       "source_count": 1,
-      "entry_id": 43765
+      "entry_id": 43823
     },
     {
       "ngoko": "",
@@ -582156,7 +582963,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "is_lampiran": true,
-      "entry_id": 43766
+      "entry_id": 43824
     },
     {
       "ngoko": "",
@@ -582171,7 +582978,7 @@
       "is_lemma": true,
       "lemma_words": "gereget",
       "source_count": 1,
-      "entry_id": 43767
+      "entry_id": 43825
     },
     {
       "ngoko": "",
@@ -582186,7 +582993,7 @@
       "is_lemma": true,
       "lemma_words": "gigil",
       "source_count": 1,
-      "entry_id": 43768
+      "entry_id": 43826
     },
     {
       "ngoko": "",
@@ -582201,7 +583008,7 @@
       "is_lemma": true,
       "lemma_words": "gilir",
       "source_count": 1,
-      "entry_id": 43769
+      "entry_id": 43827
     },
     {
       "ngoko": "",
@@ -582217,7 +583024,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 43770
+      "entry_id": 43828
     },
     {
       "ngoko": "",
@@ -582232,7 +583039,7 @@
       "is_lemma": true,
       "lemma_words": "gotong",
       "source_count": 1,
-      "entry_id": 43771
+      "entry_id": 43829
     },
     {
       "ngoko": "",
@@ -582247,7 +583054,7 @@
       "is_lemma": true,
       "lemma_words": "gubuk",
       "source_count": 1,
-      "entry_id": 43772
+      "entry_id": 43830
     },
     {
       "ngoko": "",
@@ -582262,7 +583069,7 @@
       "is_lemma": true,
       "lemma_words": "gugah",
       "source_count": 1,
-      "entry_id": 43773
+      "entry_id": 43831
     },
     {
       "ngoko": "",
@@ -582277,7 +583084,7 @@
       "is_lemma": true,
       "lemma_words": "gulung",
       "source_count": 1,
-      "entry_id": 43774
+      "entry_id": 43832
     },
     {
       "ngoko": "",
@@ -582292,7 +583099,7 @@
       "is_lemma": true,
       "lemma_words": "gung",
       "source_count": 1,
-      "entry_id": 43775
+      "entry_id": 43833
     },
     {
       "ngoko": "",
@@ -582307,7 +583114,7 @@
       "is_lemma": true,
       "lemma_words": "guruh",
       "source_count": 1,
-      "entry_id": 43776
+      "entry_id": 43834
     },
     {
       "ngoko": "",
@@ -582322,7 +583129,7 @@
       "is_lemma": true,
       "lemma_words": "gusti",
       "source_count": 1,
-      "entry_id": 43777
+      "entry_id": 43835
     },
     {
       "ngoko": "",
@@ -582338,7 +583145,7 @@
       "kelas": "t.a.",
       "kelas_nama": "tembung aran (kata benda)",
       "source_count": 1,
-      "entry_id": 43778
+      "entry_id": 43836
     },
     {
       "ngoko": "",
@@ -582354,11 +583161,11 @@
       "kelas": "t.a.",
       "kelas_nama": "tembung aran (kata benda)",
       "source_count": 1,
-      "entry_id": 43779
+      "entry_id": 43837
     },
     {
       "ngoko": "",
-      "krama": "hangasto",
+      "krama": "hangasto, ngasta",
       "krama_inggil": "",
       "arti": "membawa",
       "keterangan": "",
@@ -582366,11 +583173,8 @@
       "register": "umum",
       "status": "draft",
       "sumber": "lampiran-raw.json (new)",
-      "is_lampiran": true,
-      "kelas": "t.k.",
-      "kelas_nama": "tembung kriya (kata kerja)",
-      "source_count": 1,
-      "entry_id": 43780
+      "source_count": 2,
+      "entry_id": 43838
     },
     {
       "ngoko": "",
@@ -582386,7 +583190,7 @@
       "kelas": "t.a.",
       "kelas_nama": "tembung aran (kata benda)",
       "source_count": 1,
-      "entry_id": 43781
+      "entry_id": 43839
     },
     {
       "ngoko": "",
@@ -582402,7 +583206,7 @@
       "kelas": "t.a.",
       "kelas_nama": "tembung aran (kata benda)",
       "source_count": 1,
-      "entry_id": 43782
+      "entry_id": 43840
     },
     {
       "ngoko": "",
@@ -582418,7 +583222,7 @@
       "kelas": "t.w.",
       "kelas_nama": "tembung wilangan (kata bilangan)",
       "source_count": 1,
-      "entry_id": 43783
+      "entry_id": 43841
     },
     {
       "ngoko": "",
@@ -582434,7 +583238,7 @@
       "kelas": "t.a.",
       "kelas_nama": "tembung aran (kata benda)",
       "source_count": 1,
-      "entry_id": 43784
+      "entry_id": 43842
     },
     {
       "ngoko": "",
@@ -582449,7 +583253,7 @@
       "is_lemma": true,
       "lemma_words": "iga",
       "source_count": 1,
-      "entry_id": 43785
+      "entry_id": 43843
     },
     {
       "ngoko": "",
@@ -582462,7 +583266,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43786
+      "entry_id": 43844
     },
     {
       "ngoko": "",
@@ -582477,7 +583281,7 @@
       "is_lemma": true,
       "lemma_words": "imbuh",
       "source_count": 1,
-      "entry_id": 43787
+      "entry_id": 43845
     },
     {
       "ngoko": "",
@@ -582492,7 +583296,7 @@
       "is_lemma": true,
       "lemma_words": "indah",
       "source_count": 1,
-      "entry_id": 43788
+      "entry_id": 43846
     },
     {
       "ngoko": "",
@@ -582507,7 +583311,7 @@
       "is_lemma": true,
       "lemma_words": "iri",
       "source_count": 1,
-      "entry_id": 43789
+      "entry_id": 43847
     },
     {
       "ngoko": "",
@@ -582522,7 +583326,7 @@
       "is_lemma": true,
       "lemma_words": "iris",
       "source_count": 1,
-      "entry_id": 43790
+      "entry_id": 43848
     },
     {
       "ngoko": "",
@@ -582537,7 +583341,7 @@
       "is_lemma": true,
       "lemma_words": "irit",
       "source_count": 1,
-      "entry_id": 43791
+      "entry_id": 43849
     },
     {
       "ngoko": "",
@@ -582552,7 +583356,7 @@
       "is_lemma": true,
       "lemma_words": "isi",
       "source_count": 1,
-      "entry_id": 43792
+      "entry_id": 43850
     },
     {
       "ngoko": "",
@@ -582567,7 +583371,7 @@
       "is_lemma": true,
       "lemma_words": "isis",
       "source_count": 1,
-      "entry_id": 43793
+      "entry_id": 43851
     },
     {
       "ngoko": "",
@@ -582582,7 +583386,7 @@
       "is_lemma": true,
       "lemma_words": "jaga",
       "source_count": 1,
-      "entry_id": 43794
+      "entry_id": 43852
     },
     {
       "ngoko": "",
@@ -582597,7 +583401,7 @@
       "is_lemma": true,
       "lemma_words": "jagal",
       "source_count": 1,
-      "entry_id": 43795
+      "entry_id": 43853
     },
     {
       "ngoko": "",
@@ -582612,7 +583416,7 @@
       "is_lemma": true,
       "lemma_words": "jagat",
       "source_count": 1,
-      "entry_id": 43796
+      "entry_id": 43854
     },
     {
       "ngoko": "",
@@ -582627,7 +583431,7 @@
       "is_lemma": true,
       "lemma_words": "jagung",
       "source_count": 1,
-      "entry_id": 43797
+      "entry_id": 43855
     },
     {
       "ngoko": "",
@@ -582642,7 +583446,7 @@
       "is_lemma": true,
       "lemma_words": "jahe",
       "source_count": 1,
-      "entry_id": 43798
+      "entry_id": 43856
     },
     {
       "ngoko": "",
@@ -582657,7 +583461,7 @@
       "is_lemma": true,
       "lemma_words": "jajah",
       "source_count": 1,
-      "entry_id": 43799
+      "entry_id": 43857
     },
     {
       "ngoko": "",
@@ -582672,7 +583476,7 @@
       "is_lemma": true,
       "lemma_words": "jajal",
       "source_count": 1,
-      "entry_id": 43800
+      "entry_id": 43858
     },
     {
       "ngoko": "",
@@ -582687,7 +583491,7 @@
       "is_lemma": true,
       "lemma_words": "jajar",
       "source_count": 1,
-      "entry_id": 43801
+      "entry_id": 43859
     },
     {
       "ngoko": "",
@@ -582702,7 +583506,7 @@
       "is_lemma": true,
       "lemma_words": "jalak",
       "source_count": 1,
-      "entry_id": 43802
+      "entry_id": 43860
     },
     {
       "ngoko": "",
@@ -582717,7 +583521,7 @@
       "is_lemma": true,
       "lemma_words": "jamah",
       "source_count": 1,
-      "entry_id": 43803
+      "entry_id": 43861
     },
     {
       "ngoko": "",
@@ -582732,7 +583536,7 @@
       "is_lemma": true,
       "lemma_words": "jamur",
       "source_count": 1,
-      "entry_id": 43804
+      "entry_id": 43862
     },
     {
       "ngoko": "",
@@ -582747,7 +583551,7 @@
       "is_lemma": true,
       "lemma_words": "jembut",
       "source_count": 1,
-      "entry_id": 43805
+      "entry_id": 43863
     },
     {
       "ngoko": "",
@@ -582762,7 +583566,7 @@
       "is_lemma": true,
       "lemma_words": "jenggot",
       "source_count": 1,
-      "entry_id": 43806
+      "entry_id": 43864
     },
     {
       "ngoko": "",
@@ -582777,7 +583581,7 @@
       "is_lemma": true,
       "lemma_words": "jengkang",
       "source_count": 1,
-      "entry_id": 43807
+      "entry_id": 43865
     },
     {
       "ngoko": "",
@@ -582793,7 +583597,7 @@
       "kelas": "t.k.",
       "kelas_nama": "tembung kriya (kata kerja)",
       "source_count": 1,
-      "entry_id": 43808
+      "entry_id": 43866
     },
     {
       "ngoko": "",
@@ -582808,7 +583612,7 @@
       "is_lemma": true,
       "lemma_words": "jingga",
       "source_count": 1,
-      "entry_id": 43809
+      "entry_id": 43867
     },
     {
       "ngoko": "",
@@ -582823,7 +583627,7 @@
       "is_lemma": true,
       "lemma_words": "jiwa",
       "source_count": 1,
-      "entry_id": 43810
+      "entry_id": 43868
     },
     {
       "ngoko": "",
@@ -582838,7 +583642,7 @@
       "is_lemma": true,
       "lemma_words": "judi",
       "source_count": 1,
-      "entry_id": 43811
+      "entry_id": 43869
     },
     {
       "ngoko": "",
@@ -582853,7 +583657,7 @@
       "is_lemma": true,
       "lemma_words": "jungkal",
       "source_count": 1,
-      "entry_id": 43812
+      "entry_id": 43870
     },
     {
       "ngoko": "",
@@ -582868,7 +583672,7 @@
       "is_lemma": true,
       "lemma_words": "jungkir",
       "source_count": 1,
-      "entry_id": 43813
+      "entry_id": 43871
     },
     {
       "ngoko": "",
@@ -582883,7 +583687,7 @@
       "is_lemma": true,
       "lemma_words": "jurang",
       "source_count": 1,
-      "entry_id": 43814
+      "entry_id": 43872
     },
     {
       "ngoko": "",
@@ -582898,7 +583702,7 @@
       "is_lemma": true,
       "lemma_words": "juru",
       "source_count": 1,
-      "entry_id": 43815
+      "entry_id": 43873
     },
     {
       "ngoko": "",
@@ -582911,7 +583715,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43816
+      "entry_id": 43874
     },
     {
       "ngoko": "",
@@ -582924,7 +583728,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43817
+      "entry_id": 43875
     },
     {
       "ngoko": "",
@@ -582937,7 +583741,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43818
+      "entry_id": 43876
     },
     {
       "ngoko": "",
@@ -582950,7 +583754,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43819
+      "entry_id": 43877
     },
     {
       "ngoko": "",
@@ -582965,7 +583769,7 @@
       "is_lemma": true,
       "lemma_words": "kakung",
       "source_count": 1,
-      "entry_id": 43820
+      "entry_id": 43878
     },
     {
       "ngoko": "",
@@ -582979,7 +583783,7 @@
       "sumber": "angka-raw.json (new)",
       "is_angka": true,
       "source_count": 1,
-      "entry_id": 43821
+      "entry_id": 43879
     },
     {
       "ngoko": "",
@@ -582993,7 +583797,7 @@
       "sumber": "angka-raw.json (new)",
       "is_angka": true,
       "source_count": 1,
-      "entry_id": 43822
+      "entry_id": 43880
     },
     {
       "ngoko": "",
@@ -583008,7 +583812,7 @@
       "is_lemma": true,
       "lemma_words": "kandel",
       "source_count": 1,
-      "entry_id": 43823
+      "entry_id": 43881
     },
     {
       "ngoko": "",
@@ -583021,7 +583825,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43824
+      "entry_id": 43882
     },
     {
       "ngoko": "",
@@ -583034,7 +583838,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43825
+      "entry_id": 43883
     },
     {
       "ngoko": "",
@@ -583047,7 +583851,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43826
+      "entry_id": 43884
     },
     {
       "ngoko": "",
@@ -583060,7 +583864,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43827
+      "entry_id": 43885
     },
     {
       "ngoko": "",
@@ -583073,7 +583877,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43828
+      "entry_id": 43886
     },
     {
       "ngoko": "",
@@ -583086,7 +583890,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43829
+      "entry_id": 43887
     },
     {
       "ngoko": "",
@@ -583099,7 +583903,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43830
+      "entry_id": 43888
     },
     {
       "ngoko": "",
@@ -583112,7 +583916,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43831
+      "entry_id": 43889
     },
     {
       "ngoko": "",
@@ -583125,7 +583929,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43832
+      "entry_id": 43890
     },
     {
       "ngoko": "",
@@ -583138,7 +583942,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43833
+      "entry_id": 43891
     },
     {
       "ngoko": "",
@@ -583151,7 +583955,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43834
+      "entry_id": 43892
     },
     {
       "ngoko": "",
@@ -583166,7 +583970,7 @@
       "is_lemma": true,
       "lemma_words": "kerupuk",
       "source_count": 1,
-      "entry_id": 43835
+      "entry_id": 43893
     },
     {
       "ngoko": "",
@@ -583179,7 +583983,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43836
+      "entry_id": 43894
     },
     {
       "ngoko": "",
@@ -583192,7 +583996,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43837
+      "entry_id": 43895
     },
     {
       "ngoko": "",
@@ -583205,7 +584009,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43838
+      "entry_id": 43896
     },
     {
       "ngoko": "",
@@ -583218,7 +584022,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43839
+      "entry_id": 43897
     },
     {
       "ngoko": "",
@@ -583231,7 +584035,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43840
+      "entry_id": 43898
     },
     {
       "ngoko": "",
@@ -583244,7 +584048,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43841
+      "entry_id": 43899
     },
     {
       "ngoko": "",
@@ -583259,7 +584063,7 @@
       "is_lemma": true,
       "lemma_words": "kula lan panjenengan sedaya",
       "source_count": 1,
-      "entry_id": 43842
+      "entry_id": 43900
     },
     {
       "ngoko": "",
@@ -583272,7 +584076,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43843
+      "entry_id": 43901
     },
     {
       "ngoko": "",
@@ -583285,7 +584089,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43844
+      "entry_id": 43902
     },
     {
       "ngoko": "",
@@ -583300,7 +584104,7 @@
       "is_lemma": true,
       "lemma_words": "lalap",
       "source_count": 1,
-      "entry_id": 43845
+      "entry_id": 43903
     },
     {
       "ngoko": "",
@@ -583315,7 +584119,7 @@
       "is_lemma": true,
       "lemma_words": "langka",
       "source_count": 1,
-      "entry_id": 43846
+      "entry_id": 43904
     },
     {
       "ngoko": "",
@@ -583330,7 +584134,7 @@
       "is_lemma": true,
       "lemma_words": "layar",
       "source_count": 1,
-      "entry_id": 43847
+      "entry_id": 43905
     },
     {
       "ngoko": "",
@@ -583345,7 +584149,7 @@
       "is_lemma": true,
       "lemma_words": "layat",
       "source_count": 1,
-      "entry_id": 43848
+      "entry_id": 43906
     },
     {
       "ngoko": "",
@@ -583360,7 +584164,7 @@
       "is_lemma": true,
       "lemma_words": "layur",
       "source_count": 1,
-      "entry_id": 43849
+      "entry_id": 43907
     },
     {
       "ngoko": "",
@@ -583375,7 +584179,7 @@
       "is_lemma": true,
       "lemma_words": "lega",
       "source_count": 1,
-      "entry_id": 43850
+      "entry_id": 43908
     },
     {
       "ngoko": "",
@@ -583390,7 +584194,7 @@
       "is_lemma": true,
       "lemma_words": "lembur",
       "source_count": 1,
-      "entry_id": 43851
+      "entry_id": 43909
     },
     {
       "ngoko": "",
@@ -583403,7 +584207,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43852
+      "entry_id": 43910
     },
     {
       "ngoko": "",
@@ -583416,7 +584220,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43853
+      "entry_id": 43911
     },
     {
       "ngoko": "",
@@ -583429,23 +584233,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43854
-    },
-    {
-      "ngoko": "",
-      "krama": "mbok",
-      "krama_inggil": "",
-      "arti": "ibu",
-      "keterangan": "",
-      "aksara": "",
-      "register": "umum",
-      "status": "draft",
-      "sumber": "lampiran-raw.json (new)",
-      "is_lampiran": true,
-      "kelas": "t.a.",
-      "kelas_nama": "tembung aran (kata benda)",
-      "source_count": 1,
-      "entry_id": 43855
+      "entry_id": 43912
     },
     {
       "ngoko": "",
@@ -583458,7 +584246,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43856
+      "entry_id": 43913
     },
     {
       "ngoko": "",
@@ -583471,7 +584259,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43857
+      "entry_id": 43914
     },
     {
       "ngoko": "",
@@ -583484,7 +584272,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43858
+      "entry_id": 43915
     },
     {
       "ngoko": "",
@@ -583497,7 +584285,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43859
+      "entry_id": 43916
     },
     {
       "ngoko": "",
@@ -583510,7 +584298,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43860
+      "entry_id": 43917
     },
     {
       "ngoko": "",
@@ -583523,7 +584311,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43861
+      "entry_id": 43918
     },
     {
       "ngoko": "",
@@ -583536,7 +584324,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43862
+      "entry_id": 43919
     },
     {
       "ngoko": "",
@@ -583549,7 +584337,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43863
+      "entry_id": 43920
     },
     {
       "ngoko": "",
@@ -583562,7 +584350,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43864
+      "entry_id": 43921
     },
     {
       "ngoko": "",
@@ -583575,7 +584363,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43865
+      "entry_id": 43922
     },
     {
       "ngoko": "",
@@ -583588,7 +584376,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43866
+      "entry_id": 43923
     },
     {
       "ngoko": "",
@@ -583601,7 +584389,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43867
+      "entry_id": 43924
     },
     {
       "ngoko": "",
@@ -583614,7 +584402,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43868
+      "entry_id": 43925
     },
     {
       "ngoko": "",
@@ -583627,7 +584415,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43869
+      "entry_id": 43926
     },
     {
       "ngoko": "",
@@ -583640,7 +584428,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43870
+      "entry_id": 43927
     },
     {
       "ngoko": "",
@@ -583653,7 +584441,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43871
+      "entry_id": 43928
     },
     {
       "ngoko": "",
@@ -583669,7 +584457,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "is_lampiran": true,
-      "entry_id": 43872
+      "entry_id": 43929
     },
     {
       "ngoko": "",
@@ -583682,7 +584470,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43873
+      "entry_id": 43930
     },
     {
       "ngoko": "",
@@ -583698,7 +584486,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 43874
+      "entry_id": 43931
     },
     {
       "ngoko": "",
@@ -583711,7 +584499,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43875
+      "entry_id": 43932
     },
     {
       "ngoko": "",
@@ -583724,7 +584512,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43876
+      "entry_id": 43933
     },
     {
       "ngoko": "",
@@ -583737,7 +584525,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43877
+      "entry_id": 43934
     },
     {
       "ngoko": "",
@@ -583750,7 +584538,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43878
+      "entry_id": 43935
     },
     {
       "ngoko": "",
@@ -583763,7 +584551,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43879
+      "entry_id": 43936
     },
     {
       "ngoko": "",
@@ -583776,7 +584564,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43880
+      "entry_id": 43937
     },
     {
       "ngoko": "",
@@ -583789,7 +584577,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43881
+      "entry_id": 43938
     },
     {
       "ngoko": "",
@@ -583805,7 +584593,7 @@
       "kelas": "t.s.",
       "kelas_nama": "tembung sipat (kata sifat)",
       "source_count": 1,
-      "entry_id": 43882
+      "entry_id": 43939
     },
     {
       "ngoko": "",
@@ -583821,7 +584609,7 @@
       "kelas": "t.s.",
       "kelas_nama": "tembung sipat (kata sifat)",
       "source_count": 1,
-      "entry_id": 43883
+      "entry_id": 43940
     },
     {
       "ngoko": "",
@@ -583834,7 +584622,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43884
+      "entry_id": 43941
     },
     {
       "ngoko": "",
@@ -583850,7 +584638,7 @@
       "kelas": "t.s.",
       "kelas_nama": "tembung sipat (kata sifat)",
       "source_count": 1,
-      "entry_id": 43885
+      "entry_id": 43942
     },
     {
       "ngoko": "",
@@ -583865,7 +584653,7 @@
       "is_lemma": true,
       "lemma_words": "naragina",
       "source_count": 1,
-      "entry_id": 43886
+      "entry_id": 43943
     },
     {
       "ngoko": "",
@@ -583878,7 +584666,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43887
+      "entry_id": 43944
     },
     {
       "ngoko": "",
@@ -583894,7 +584682,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 43888
+      "entry_id": 43945
     },
     {
       "ngoko": "",
@@ -583907,7 +584695,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43889
+      "entry_id": 43946
     },
     {
       "ngoko": "",
@@ -583923,7 +584711,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 43890
+      "entry_id": 43947
     },
     {
       "ngoko": "",
@@ -583939,7 +584727,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 43891
+      "entry_id": 43948
     },
     {
       "ngoko": "",
@@ -583952,23 +584740,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43892
-    },
-    {
-      "ngoko": "",
-      "krama": "nendro",
-      "krama_inggil": "",
-      "arti": "tidur",
-      "keterangan": "",
-      "aksara": "",
-      "register": "umum",
-      "status": "draft",
-      "sumber": "lampiran-raw.json (new)",
-      "is_lampiran": true,
-      "kelas": "t.s.",
-      "kelas_nama": "tembung sipat (kata sifat)",
-      "source_count": 1,
-      "entry_id": 43893
+      "entry_id": 43949
     },
     {
       "ngoko": "",
@@ -583981,7 +584753,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43894
+      "entry_id": 43950
     },
     {
       "ngoko": "",
@@ -583997,7 +584769,7 @@
       "kelas": "t.a.",
       "kelas_nama": "tembung aran (kata benda)",
       "source_count": 1,
-      "entry_id": 43895
+      "entry_id": 43951
     },
     {
       "ngoko": "",
@@ -584010,7 +584782,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43896
+      "entry_id": 43952
     },
     {
       "ngoko": "",
@@ -584023,7 +584795,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43897
+      "entry_id": 43953
     },
     {
       "ngoko": "",
@@ -584039,7 +584811,7 @@
       "kelas": "t.kr.",
       "kelas_nama": "tembung katrangan (kata keadaan)",
       "source_count": 1,
-      "entry_id": 43898
+      "entry_id": 43954
     },
     {
       "ngoko": "",
@@ -584052,7 +584824,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43899
+      "entry_id": 43955
     },
     {
       "ngoko": "",
@@ -584068,23 +584840,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 43900
-    },
-    {
-      "ngoko": "",
-      "krama": "ngasta",
-      "krama_inggil": "",
-      "arti": "membawa",
-      "keterangan": "",
-      "aksara": "",
-      "register": "umum",
-      "status": "draft",
-      "sumber": "lampiran-raw.json (new)",
-      "is_lampiran": true,
-      "kelas": "t.k.",
-      "kelas_nama": "tembung kriya (kata kerja)",
-      "source_count": 1,
-      "entry_id": 43901
+      "entry_id": 43956
     },
     {
       "ngoko": "",
@@ -584097,7 +584853,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43902
+      "entry_id": 43957
     },
     {
       "ngoko": "",
@@ -584110,7 +584866,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43903
+      "entry_id": 43958
     },
     {
       "ngoko": "",
@@ -584123,7 +584879,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43904
+      "entry_id": 43959
     },
     {
       "ngoko": "",
@@ -584136,7 +584892,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43905
+      "entry_id": 43960
     },
     {
       "ngoko": "",
@@ -584149,7 +584905,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43906
+      "entry_id": 43961
     },
     {
       "ngoko": "",
@@ -584162,7 +584918,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43907
+      "entry_id": 43962
     },
     {
       "ngoko": "",
@@ -584175,7 +584931,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43908
+      "entry_id": 43963
     },
     {
       "ngoko": "",
@@ -584188,7 +584944,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43909
+      "entry_id": 43964
     },
     {
       "ngoko": "",
@@ -584201,7 +584957,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43910
+      "entry_id": 43965
     },
     {
       "ngoko": "",
@@ -584214,7 +584970,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43911
+      "entry_id": 43966
     },
     {
       "ngoko": "",
@@ -584227,7 +584983,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43912
+      "entry_id": 43967
     },
     {
       "ngoko": "",
@@ -584240,7 +584996,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43913
+      "entry_id": 43968
     },
     {
       "ngoko": "",
@@ -584253,7 +585009,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43914
+      "entry_id": 43969
     },
     {
       "ngoko": "",
@@ -584266,7 +585022,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43915
+      "entry_id": 43970
     },
     {
       "ngoko": "",
@@ -584279,7 +585035,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43916
+      "entry_id": 43971
     },
     {
       "ngoko": "",
@@ -584292,7 +585048,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43917
+      "entry_id": 43972
     },
     {
       "ngoko": "",
@@ -584305,7 +585061,7 @@
       "status": "draft",
       "source_count": 2,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43918
+      "entry_id": 43973
     },
     {
       "ngoko": "",
@@ -584318,7 +585074,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43919
+      "entry_id": 43974
     },
     {
       "ngoko": "",
@@ -584333,7 +585089,7 @@
       "is_lemma": true,
       "lemma_words": "niki",
       "source_count": 1,
-      "entry_id": 43920
+      "entry_id": 43975
     },
     {
       "ngoko": "",
@@ -584348,7 +585104,7 @@
       "is_lemma": true,
       "lemma_words": "niku",
       "source_count": 1,
-      "entry_id": 43921
+      "entry_id": 43976
     },
     {
       "ngoko": "",
@@ -584361,7 +585117,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43922
+      "entry_id": 43977
     },
     {
       "ngoko": "",
@@ -584377,7 +585133,7 @@
       "kelas": "t.s.",
       "kelas_nama": "tembung sipat (kata sifat)",
       "source_count": 1,
-      "entry_id": 43923
+      "entry_id": 43978
     },
     {
       "ngoko": "",
@@ -584391,7 +585147,7 @@
       "sumber": "angka-raw.json (new)",
       "is_angka": true,
       "source_count": 1,
-      "entry_id": 43924
+      "entry_id": 43979
     },
     {
       "ngoko": "",
@@ -584407,7 +585163,7 @@
       "kelas": "t.s.",
       "kelas_nama": "tembung sipat (kata sifat)",
       "source_count": 1,
-      "entry_id": 43925
+      "entry_id": 43980
     },
     {
       "ngoko": "",
@@ -584423,11 +585179,11 @@
       "kelas": "t.s.",
       "kelas_nama": "tembung sipat (kata sifat)",
       "source_count": 1,
-      "entry_id": 43926
+      "entry_id": 43981
     },
     {
       "ngoko": "",
-      "krama": "nowo",
+      "krama": "nowo, songo",
       "krama_inggil": "",
       "arti": "sembilan",
       "keterangan": "",
@@ -584435,11 +585191,8 @@
       "register": "umum",
       "status": "draft",
       "sumber": "lampiran-raw.json (new)",
-      "is_lampiran": true,
-      "kelas": "t.s.",
-      "kelas_nama": "tembung sipat (kata sifat)",
-      "source_count": 1,
-      "entry_id": 43927
+      "source_count": 2,
+      "entry_id": 43982
     },
     {
       "ngoko": "",
@@ -584452,7 +585205,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43928
+      "entry_id": 43983
     },
     {
       "ngoko": "",
@@ -584465,7 +585218,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43929
+      "entry_id": 43984
     },
     {
       "ngoko": "",
@@ -584478,7 +585231,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43930
+      "entry_id": 43985
     },
     {
       "ngoko": "",
@@ -584491,7 +585244,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43931
+      "entry_id": 43986
     },
     {
       "ngoko": "",
@@ -584504,7 +585257,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43932
+      "entry_id": 43987
     },
     {
       "ngoko": "",
@@ -584517,7 +585270,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43933
+      "entry_id": 43988
     },
     {
       "ngoko": "",
@@ -584530,7 +585283,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43934
+      "entry_id": 43989
     },
     {
       "ngoko": "",
@@ -584543,7 +585296,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43935
+      "entry_id": 43990
     },
     {
       "ngoko": "",
@@ -584559,7 +585312,7 @@
       "kelas": "t.k.",
       "kelas_nama": "tembung kriya (kata kerja)",
       "source_count": 1,
-      "entry_id": 43936
+      "entry_id": 43991
     },
     {
       "ngoko": "",
@@ -584572,7 +585325,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43937
+      "entry_id": 43992
     },
     {
       "ngoko": "",
@@ -584585,7 +585338,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43938
+      "entry_id": 43993
     },
     {
       "ngoko": "",
@@ -584598,7 +585351,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43939
+      "entry_id": 43994
     },
     {
       "ngoko": "",
@@ -584611,7 +585364,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43940
+      "entry_id": 43995
     },
     {
       "ngoko": "",
@@ -584624,7 +585377,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43941
+      "entry_id": 43996
     },
     {
       "ngoko": "",
@@ -584637,7 +585390,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43942
+      "entry_id": 43997
     },
     {
       "ngoko": "",
@@ -584650,7 +585403,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43943
+      "entry_id": 43998
     },
     {
       "ngoko": "",
@@ -584663,7 +585416,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43944
+      "entry_id": 43999
     },
     {
       "ngoko": "",
@@ -584676,7 +585429,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43945
+      "entry_id": 44000
     },
     {
       "ngoko": "",
@@ -584689,7 +585442,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43946
+      "entry_id": 44001
     },
     {
       "ngoko": "",
@@ -584702,7 +585455,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43947
+      "entry_id": 44002
     },
     {
       "ngoko": "",
@@ -584717,7 +585470,7 @@
       "is_lemma": true,
       "lemma_words": "pang",
       "source_count": 1,
-      "entry_id": 43948
+      "entry_id": 44003
     },
     {
       "ngoko": "",
@@ -584732,7 +585485,7 @@
       "is_lemma": true,
       "lemma_words": "pangan",
       "source_count": 1,
-      "entry_id": 43949
+      "entry_id": 44004
     },
     {
       "ngoko": "",
@@ -584745,7 +585498,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43950
+      "entry_id": 44005
     },
     {
       "ngoko": "",
@@ -584758,7 +585511,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43951
+      "entry_id": 44006
     },
     {
       "ngoko": "",
@@ -584773,7 +585526,7 @@
       "is_lemma": true,
       "lemma_words": "panjenengan sedaya",
       "source_count": 1,
-      "entry_id": 43952
+      "entry_id": 44007
     },
     {
       "ngoko": "",
@@ -584786,7 +585539,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43953
+      "entry_id": 44008
     },
     {
       "ngoko": "",
@@ -584799,7 +585552,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43954
+      "entry_id": 44009
     },
     {
       "ngoko": "",
@@ -584812,7 +585565,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43955
+      "entry_id": 44010
     },
     {
       "ngoko": "",
@@ -584825,7 +585578,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43956
+      "entry_id": 44011
     },
     {
       "ngoko": "",
@@ -584838,7 +585591,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43957
+      "entry_id": 44012
     },
     {
       "ngoko": "",
@@ -584851,7 +585604,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43958
+      "entry_id": 44013
     },
     {
       "ngoko": "",
@@ -584864,7 +585617,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43959
+      "entry_id": 44014
     },
     {
       "ngoko": "",
@@ -584877,7 +585630,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43960
+      "entry_id": 44015
     },
     {
       "ngoko": "",
@@ -584890,7 +585643,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43961
+      "entry_id": 44016
     },
     {
       "ngoko": "",
@@ -584903,7 +585656,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43962
+      "entry_id": 44017
     },
     {
       "ngoko": "",
@@ -584916,7 +585669,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43963
+      "entry_id": 44018
     },
     {
       "ngoko": "",
@@ -584929,7 +585682,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43964
+      "entry_id": 44019
     },
     {
       "ngoko": "",
@@ -584945,7 +585698,7 @@
       "kelas": "t.k.",
       "kelas_nama": "tembung kriya (kata kerja)",
       "source_count": 1,
-      "entry_id": 43965
+      "entry_id": 44020
     },
     {
       "ngoko": "",
@@ -584958,7 +585711,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43966
+      "entry_id": 44021
     },
     {
       "ngoko": "",
@@ -584972,7 +585725,7 @@
       "sumber": "angka-raw.json (new)",
       "is_angka": true,
       "source_count": 1,
-      "entry_id": 43967
+      "entry_id": 44022
     },
     {
       "ngoko": "",
@@ -584988,7 +585741,7 @@
       "kelas": "",
       "kelas_nama": "tidak standar",
       "source_count": 1,
-      "entry_id": 43968
+      "entry_id": 44023
     },
     {
       "ngoko": "",
@@ -585003,7 +585756,7 @@
       "is_lemma": true,
       "lemma_words": "pripun",
       "source_count": 1,
-      "entry_id": 43969
+      "entry_id": 44024
     },
     {
       "ngoko": "",
@@ -585018,7 +585771,7 @@
       "is_lemma": true,
       "lemma_words": "rama",
       "source_count": 1,
-      "entry_id": 43970
+      "entry_id": 44025
     },
     {
       "ngoko": "",
@@ -585033,7 +585786,7 @@
       "is_lemma": true,
       "lemma_words": "rambut",
       "source_count": 1,
-      "entry_id": 43971
+      "entry_id": 44026
     },
     {
       "ngoko": "",
@@ -585048,7 +585801,7 @@
       "is_lemma": true,
       "lemma_words": "ranggi",
       "source_count": 1,
-      "entry_id": 43972
+      "entry_id": 44027
     },
     {
       "ngoko": "",
@@ -585063,7 +585816,7 @@
       "is_lemma": true,
       "lemma_words": "rangka",
       "source_count": 1,
-      "entry_id": 43973
+      "entry_id": 44028
     },
     {
       "ngoko": "",
@@ -585075,27 +585828,8 @@
       "register": "umum",
       "status": "draft",
       "sumber": "lampiran-raw.json (new)",
-      "is_lampiran": true,
-      "kelas": "K",
-      "kelas_nama": "krama",
-      "source_count": 1,
-      "entry_id": 43974
-    },
-    {
-      "ngoko": "",
-      "krama": "raos",
-      "krama_inggil": "",
-      "arti": "rasa",
-      "keterangan": "",
-      "aksara": "",
-      "register": "umum",
-      "status": "draft",
-      "sumber": "lampiran-raw.json (new)",
-      "is_lampiran": true,
-      "kelas": "K",
-      "kelas_nama": "krama",
-      "source_count": 1,
-      "entry_id": 43975
+      "source_count": 2,
+      "entry_id": 44029
     },
     {
       "ngoko": "",
@@ -585110,7 +585844,7 @@
       "is_lemma": true,
       "lemma_words": "rapuh",
       "source_count": 1,
-      "entry_id": 43976
+      "entry_id": 44030
     },
     {
       "ngoko": "",
@@ -585126,7 +585860,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 43977
+      "entry_id": 44031
     },
     {
       "ngoko": "",
@@ -585141,7 +585875,7 @@
       "is_lemma": true,
       "lemma_words": "rika",
       "source_count": 1,
-      "entry_id": 43978
+      "entry_id": 44032
     },
     {
       "ngoko": "",
@@ -585159,7 +585893,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "is_lampiran": true,
-      "entry_id": 43979
+      "entry_id": 44033
     },
     {
       "ngoko": "",
@@ -585174,7 +585908,7 @@
       "is_lemma": true,
       "lemma_words": "rindu",
       "source_count": 1,
-      "entry_id": 43980
+      "entry_id": 44034
     },
     {
       "ngoko": "",
@@ -585189,7 +585923,7 @@
       "is_lemma": true,
       "lemma_words": "rujak",
       "source_count": 1,
-      "entry_id": 43981
+      "entry_id": 44035
     },
     {
       "ngoko": "",
@@ -585204,7 +585938,7 @@
       "is_lemma": true,
       "lemma_words": "sabet",
       "source_count": 1,
-      "entry_id": 43982
+      "entry_id": 44036
     },
     {
       "ngoko": "",
@@ -585219,7 +585953,7 @@
       "is_lemma": true,
       "lemma_words": "sahut",
       "source_count": 1,
-      "entry_id": 43983
+      "entry_id": 44037
     },
     {
       "ngoko": "",
@@ -585234,7 +585968,7 @@
       "is_lemma": true,
       "lemma_words": "saji",
       "source_count": 1,
-      "entry_id": 43984
+      "entry_id": 44038
     },
     {
       "ngoko": "",
@@ -585249,7 +585983,7 @@
       "is_lemma": true,
       "lemma_words": "salak",
       "source_count": 1,
-      "entry_id": 43985
+      "entry_id": 44039
     },
     {
       "ngoko": "",
@@ -585264,7 +585998,7 @@
       "is_lemma": true,
       "lemma_words": "samar",
       "source_count": 1,
-      "entry_id": 43986
+      "entry_id": 44040
     },
     {
       "ngoko": "",
@@ -585279,7 +586013,7 @@
       "is_lemma": true,
       "lemma_words": "sambang",
       "source_count": 1,
-      "entry_id": 43987
+      "entry_id": 44041
     },
     {
       "ngoko": "",
@@ -585294,7 +586028,7 @@
       "is_lemma": true,
       "lemma_words": "sambat",
       "source_count": 1,
-      "entry_id": 43988
+      "entry_id": 44042
     },
     {
       "ngoko": "",
@@ -585309,7 +586043,7 @@
       "is_lemma": true,
       "lemma_words": "sambil",
       "source_count": 1,
-      "entry_id": 43989
+      "entry_id": 44043
     },
     {
       "ngoko": "",
@@ -585324,7 +586058,7 @@
       "is_lemma": true,
       "lemma_words": "sambit",
       "source_count": 1,
-      "entry_id": 43990
+      "entry_id": 44044
     },
     {
       "ngoko": "",
@@ -585339,7 +586073,7 @@
       "is_lemma": true,
       "lemma_words": "sambung",
       "source_count": 1,
-      "entry_id": 43991
+      "entry_id": 44045
     },
     {
       "ngoko": "",
@@ -585352,7 +586086,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43992
+      "entry_id": 44046
     },
     {
       "ngoko": "",
@@ -585365,7 +586099,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 43993
+      "entry_id": 44047
     },
     {
       "ngoko": "",
@@ -585380,7 +586114,7 @@
       "is_lemma": true,
       "lemma_words": "sampir",
       "source_count": 1,
-      "entry_id": 43994
+      "entry_id": 44048
     },
     {
       "ngoko": "",
@@ -585394,7 +586128,7 @@
       "sumber": "angka-raw.json (new)",
       "is_angka": true,
       "source_count": 1,
-      "entry_id": 43995
+      "entry_id": 44049
     },
     {
       "ngoko": "",
@@ -585408,7 +586142,7 @@
       "sumber": "angka-raw.json (new)",
       "is_angka": true,
       "source_count": 1,
-      "entry_id": 43996
+      "entry_id": 44050
     },
     {
       "ngoko": "",
@@ -585422,7 +586156,7 @@
       "sumber": "angka-raw.json (new)",
       "is_angka": true,
       "source_count": 1,
-      "entry_id": 43997
+      "entry_id": 44051
     },
     {
       "ngoko": "",
@@ -585437,7 +586171,7 @@
       "is_lemma": true,
       "lemma_words": "sanggah",
       "source_count": 1,
-      "entry_id": 43998
+      "entry_id": 44052
     },
     {
       "ngoko": "",
@@ -585452,7 +586186,7 @@
       "is_lemma": true,
       "lemma_words": "sanggup",
       "source_count": 1,
-      "entry_id": 43999
+      "entry_id": 44053
     },
     {
       "ngoko": "",
@@ -585467,7 +586201,7 @@
       "is_lemma": true,
       "lemma_words": "sangkur",
       "source_count": 1,
-      "entry_id": 44000
+      "entry_id": 44054
     },
     {
       "ngoko": "",
@@ -585482,7 +586216,7 @@
       "is_lemma": true,
       "lemma_words": "sapi",
       "source_count": 1,
-      "entry_id": 44001
+      "entry_id": 44055
     },
     {
       "ngoko": "",
@@ -585497,7 +586231,7 @@
       "is_lemma": true,
       "lemma_words": "sapih",
       "source_count": 1,
-      "entry_id": 44002
+      "entry_id": 44056
     },
     {
       "ngoko": "",
@@ -585512,7 +586246,7 @@
       "is_lemma": true,
       "lemma_words": "saring",
       "source_count": 1,
-      "entry_id": 44003
+      "entry_id": 44057
     },
     {
       "ngoko": "",
@@ -585528,23 +586262,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 44004
-    },
-    {
-      "ngoko": "",
-      "krama": "saré",
-      "krama_inggil": "",
-      "arti": "tidur",
-      "keterangan": "",
-      "aksara": "",
-      "register": "umum",
-      "status": "draft",
-      "sumber": "lampiran-raw.json (new)",
-      "is_lampiran": true,
-      "kelas": "K",
-      "kelas_nama": "krama",
-      "source_count": 1,
-      "entry_id": 44005
+      "entry_id": 44058
     },
     {
       "ngoko": "",
@@ -585559,7 +586277,7 @@
       "is_lemma": true,
       "lemma_words": "sawetawis",
       "source_count": 1,
-      "entry_id": 44006
+      "entry_id": 44059
     },
     {
       "ngoko": "",
@@ -585574,7 +586292,7 @@
       "is_lemma": true,
       "lemma_words": "sebarang",
       "source_count": 1,
-      "entry_id": 44007
+      "entry_id": 44060
     },
     {
       "ngoko": "",
@@ -585589,7 +586307,7 @@
       "is_lemma": true,
       "lemma_words": "seberang",
       "source_count": 1,
-      "entry_id": 44008
+      "entry_id": 44061
     },
     {
       "ngoko": "",
@@ -585603,7 +586321,7 @@
       "sumber": "angka-raw.json (new)",
       "is_angka": true,
       "source_count": 1,
-      "entry_id": 44009
+      "entry_id": 44062
     },
     {
       "ngoko": "",
@@ -585618,7 +586336,7 @@
       "is_lemma": true,
       "lemma_words": "sedih",
       "source_count": 1,
-      "entry_id": 44010
+      "entry_id": 44063
     },
     {
       "ngoko": "",
@@ -585632,7 +586350,7 @@
       "sumber": "angka-raw.json (new)",
       "is_angka": true,
       "source_count": 1,
-      "entry_id": 44011
+      "entry_id": 44064
     },
     {
       "ngoko": "",
@@ -585647,7 +586365,7 @@
       "is_lemma": true,
       "lemma_words": "selang",
       "source_count": 1,
-      "entry_id": 44012
+      "entry_id": 44065
     },
     {
       "ngoko": "",
@@ -585662,7 +586380,7 @@
       "is_lemma": true,
       "lemma_words": "seling",
       "source_count": 1,
-      "entry_id": 44013
+      "entry_id": 44066
     },
     {
       "ngoko": "",
@@ -585677,7 +586395,7 @@
       "is_lemma": true,
       "lemma_words": "selingkuh",
       "source_count": 1,
-      "entry_id": 44014
+      "entry_id": 44067
     },
     {
       "ngoko": "",
@@ -585692,7 +586410,7 @@
       "is_lemma": true,
       "lemma_words": "selisih",
       "source_count": 1,
-      "entry_id": 44015
+      "entry_id": 44068
     },
     {
       "ngoko": "",
@@ -585707,7 +586425,7 @@
       "is_lemma": true,
       "lemma_words": "semat",
       "source_count": 1,
-      "entry_id": 44016
+      "entry_id": 44069
     },
     {
       "ngoko": "",
@@ -585722,7 +586440,7 @@
       "is_lemma": true,
       "lemma_words": "sembarang",
       "source_count": 1,
-      "entry_id": 44017
+      "entry_id": 44070
     },
     {
       "ngoko": "",
@@ -585737,7 +586455,7 @@
       "is_lemma": true,
       "lemma_words": "sempal",
       "source_count": 1,
-      "entry_id": 44018
+      "entry_id": 44071
     },
     {
       "ngoko": "",
@@ -585752,7 +586470,7 @@
       "is_lemma": true,
       "lemma_words": "semu",
       "source_count": 1,
-      "entry_id": 44019
+      "entry_id": 44072
     },
     {
       "ngoko": "",
@@ -585767,7 +586485,7 @@
       "is_lemma": true,
       "lemma_words": "sendi",
       "source_count": 1,
-      "entry_id": 44020
+      "entry_id": 44073
     },
     {
       "ngoko": "",
@@ -585782,7 +586500,7 @@
       "is_lemma": true,
       "lemma_words": "sengit",
       "source_count": 1,
-      "entry_id": 44021
+      "entry_id": 44074
     },
     {
       "ngoko": "",
@@ -585797,7 +586515,7 @@
       "is_lemma": true,
       "lemma_words": "sepak",
       "source_count": 1,
-      "entry_id": 44022
+      "entry_id": 44075
     },
     {
       "ngoko": "",
@@ -585812,7 +586530,7 @@
       "is_lemma": true,
       "lemma_words": "sepit",
       "source_count": 1,
-      "entry_id": 44023
+      "entry_id": 44076
     },
     {
       "ngoko": "",
@@ -585827,7 +586545,7 @@
       "is_lemma": true,
       "lemma_words": "serah",
       "source_count": 1,
-      "entry_id": 44024
+      "entry_id": 44077
     },
     {
       "ngoko": "",
@@ -585842,7 +586560,7 @@
       "is_lemma": true,
       "lemma_words": "serang",
       "source_count": 1,
-      "entry_id": 44025
+      "entry_id": 44078
     },
     {
       "ngoko": "",
@@ -585857,7 +586575,7 @@
       "is_lemma": true,
       "lemma_words": "seret",
       "source_count": 1,
-      "entry_id": 44026
+      "entry_id": 44079
     },
     {
       "ngoko": "",
@@ -585872,7 +586590,7 @@
       "is_lemma": true,
       "lemma_words": "sering",
       "source_count": 1,
-      "entry_id": 44027
+      "entry_id": 44080
     },
     {
       "ngoko": "",
@@ -585887,7 +586605,7 @@
       "is_lemma": true,
       "lemma_words": "serok",
       "source_count": 1,
-      "entry_id": 44028
+      "entry_id": 44081
     },
     {
       "ngoko": "",
@@ -585902,22 +586620,22 @@
       "is_lemma": true,
       "lemma_words": "setunggal",
       "source_count": 1,
-      "entry_id": 44029
+      "entry_id": 44082
     },
     {
       "ngoko": "",
-      "krama": "sibu",
+      "krama": "sibu, mbok",
       "krama_inggil": "",
       "arti": "ibu",
       "keterangan": "{{label|jv|krama}} ibu",
       "aksara": "",
       "register": "umum",
       "status": "draft",
-      "sumber": "id.wiktionary.org Kategori:jv:Lema (new)",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema (new) + lampiran-raw.json (new)",
+      "source_count": 2,
       "is_lemma": true,
       "lemma_words": "sibu",
-      "source_count": 1,
-      "entry_id": 44030
+      "entry_id": 44083
     },
     {
       "ngoko": "",
@@ -585932,7 +586650,7 @@
       "is_lemma": true,
       "lemma_words": "sikut",
       "source_count": 1,
-      "entry_id": 44031
+      "entry_id": 44084
     },
     {
       "ngoko": "",
@@ -585947,7 +586665,7 @@
       "is_lemma": true,
       "lemma_words": "silir",
       "source_count": 1,
-      "entry_id": 44032
+      "entry_id": 44085
     },
     {
       "ngoko": "",
@@ -585962,7 +586680,7 @@
       "is_lemma": true,
       "lemma_words": "sinden",
       "source_count": 1,
-      "entry_id": 44033
+      "entry_id": 44086
     },
     {
       "ngoko": "",
@@ -585977,7 +586695,7 @@
       "is_lemma": true,
       "lemma_words": "singkir",
       "source_count": 1,
-      "entry_id": 44034
+      "entry_id": 44087
     },
     {
       "ngoko": "",
@@ -585993,7 +586711,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 44035
+      "entry_id": 44088
     },
     {
       "ngoko": "",
@@ -586009,7 +586727,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 44036
+      "entry_id": 44089
     },
     {
       "ngoko": "",
@@ -586024,7 +586742,7 @@
       "sumber": "jv.wiktionary.org (group by krama)",
       "is_lemma": true,
       "lemma_words": "sirah",
-      "entry_id": 44037
+      "entry_id": 44090
     },
     {
       "ngoko": "",
@@ -586039,7 +586757,7 @@
       "is_lemma": true,
       "lemma_words": "siram",
       "source_count": 1,
-      "entry_id": 44038
+      "entry_id": 44091
     },
     {
       "ngoko": "",
@@ -586054,7 +586772,7 @@
       "is_lemma": true,
       "lemma_words": "sirep",
       "source_count": 1,
-      "entry_id": 44039
+      "entry_id": 44092
     },
     {
       "ngoko": "",
@@ -586069,7 +586787,7 @@
       "is_lemma": true,
       "lemma_words": "sirik",
       "source_count": 1,
-      "entry_id": 44040
+      "entry_id": 44093
     },
     {
       "ngoko": "",
@@ -586084,7 +586802,7 @@
       "is_lemma": true,
       "lemma_words": "sisip",
       "source_count": 1,
-      "entry_id": 44041
+      "entry_id": 44094
     },
     {
       "ngoko": "",
@@ -586099,23 +586817,7 @@
       "is_lemma": true,
       "lemma_words": "sisir",
       "source_count": 1,
-      "entry_id": 44042
-    },
-    {
-      "ngoko": "",
-      "krama": "songo",
-      "krama_inggil": "",
-      "arti": "sembilan",
-      "keterangan": "",
-      "aksara": "",
-      "register": "umum",
-      "status": "draft",
-      "sumber": "lampiran-raw.json (new)",
-      "is_lampiran": true,
-      "kelas": "",
-      "kelas_nama": "tidak standar",
-      "source_count": 1,
-      "entry_id": 44043
+      "entry_id": 44095
     },
     {
       "ngoko": "",
@@ -586130,7 +586832,7 @@
       "is_lemma": true,
       "lemma_words": "sreg",
       "source_count": 1,
-      "entry_id": 44044
+      "entry_id": 44096
     },
     {
       "ngoko": "",
@@ -586146,7 +586848,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 44045
+      "entry_id": 44097
     },
     {
       "ngoko": "",
@@ -586161,7 +586863,7 @@
       "is_lemma": true,
       "lemma_words": "suguh",
       "source_count": 1,
-      "entry_id": 44046
+      "entry_id": 44098
     },
     {
       "ngoko": "",
@@ -586176,7 +586878,7 @@
       "is_lemma": true,
       "lemma_words": "suku",
       "source_count": 1,
-      "entry_id": 44047
+      "entry_id": 44099
     },
     {
       "ngoko": "",
@@ -586191,7 +586893,7 @@
       "is_lemma": true,
       "lemma_words": "sumpah",
       "source_count": 1,
-      "entry_id": 44048
+      "entry_id": 44100
     },
     {
       "ngoko": "",
@@ -586206,7 +586908,7 @@
       "is_lemma": true,
       "lemma_words": "sumpal",
       "source_count": 1,
-      "entry_id": 44049
+      "entry_id": 44101
     },
     {
       "ngoko": "",
@@ -586221,7 +586923,7 @@
       "is_lemma": true,
       "lemma_words": "sumpek",
       "source_count": 1,
-      "entry_id": 44050
+      "entry_id": 44102
     },
     {
       "ngoko": "",
@@ -586236,7 +586938,7 @@
       "is_lemma": true,
       "lemma_words": "sumur",
       "source_count": 1,
-      "entry_id": 44051
+      "entry_id": 44103
     },
     {
       "ngoko": "",
@@ -586251,7 +586953,7 @@
       "is_lemma": true,
       "lemma_words": "sungkan",
       "source_count": 1,
-      "entry_id": 44052
+      "entry_id": 44104
     },
     {
       "ngoko": "",
@@ -586266,7 +586968,7 @@
       "is_lemma": true,
       "lemma_words": "sungkem",
       "source_count": 1,
-      "entry_id": 44053
+      "entry_id": 44105
     },
     {
       "ngoko": "",
@@ -586281,7 +586983,7 @@
       "is_lemma": true,
       "lemma_words": "sungut",
       "source_count": 1,
-      "entry_id": 44054
+      "entry_id": 44106
     },
     {
       "ngoko": "",
@@ -586297,7 +586999,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 44055
+      "entry_id": 44107
     },
     {
       "ngoko": "",
@@ -586313,7 +587015,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 44056
+      "entry_id": 44108
     },
     {
       "ngoko": "",
@@ -586326,7 +587028,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 44057
+      "entry_id": 44109
     },
     {
       "ngoko": "",
@@ -586341,7 +587043,7 @@
       "is_lemma": true,
       "lemma_words": "tapuk",
       "source_count": 1,
-      "entry_id": 44058
+      "entry_id": 44110
     },
     {
       "ngoko": "",
@@ -586355,7 +587057,7 @@
       "sumber": "angka-raw.json (new)",
       "is_angka": true,
       "source_count": 1,
-      "entry_id": 44059
+      "entry_id": 44111
     },
     {
       "ngoko": "",
@@ -586369,7 +587071,7 @@
       "sumber": "angka-raw.json (new)",
       "is_angka": true,
       "source_count": 1,
-      "entry_id": 44060
+      "entry_id": 44112
     },
     {
       "ngoko": "",
@@ -586384,22 +587086,22 @@
       "is_lemma": true,
       "lemma_words": "tilas",
       "source_count": 1,
-      "entry_id": 44061
+      "entry_id": 44113
     },
     {
       "ngoko": "",
-      "krama": "tilem",
+      "krama": "tilem, nendro, saré",
       "krama_inggil": "",
       "arti": "tidur",
       "keterangan": "{{label|jv|krama}} [[tidur]]",
       "aksara": "",
       "register": "umum",
       "status": "draft",
-      "sumber": "id.wiktionary.org Kategori:jv:Lema (new)",
+      "sumber": "id.wiktionary.org Kategori:jv:Lema (new) + lampiran-raw.json (new)",
+      "source_count": 3,
       "is_lemma": true,
       "lemma_words": "tilem",
-      "source_count": 1,
-      "entry_id": 44062
+      "entry_id": 44114
     },
     {
       "ngoko": "",
@@ -586414,7 +587116,7 @@
       "is_lemma": true,
       "lemma_words": "timbal",
       "source_count": 1,
-      "entry_id": 44063
+      "entry_id": 44115
     },
     {
       "ngoko": "",
@@ -586429,7 +587131,7 @@
       "is_lemma": true,
       "lemma_words": "titah",
       "source_count": 1,
-      "entry_id": 44064
+      "entry_id": 44116
     },
     {
       "ngoko": "",
@@ -586444,7 +587146,7 @@
       "is_lemma": true,
       "lemma_words": "tosan",
       "source_count": 1,
-      "entry_id": 44065
+      "entry_id": 44117
     },
     {
       "ngoko": "",
@@ -586460,7 +587162,7 @@
       "kelas": "K",
       "kelas_nama": "krama",
       "source_count": 1,
-      "entry_id": 44066
+      "entry_id": 44118
     },
     {
       "ngoko": "",
@@ -586475,7 +587177,7 @@
       "is_lemma": true,
       "lemma_words": "tuman",
       "source_count": 1,
-      "entry_id": 44067
+      "entry_id": 44119
     },
     {
       "ngoko": "",
@@ -586490,7 +587192,7 @@
       "is_lemma": true,
       "lemma_words": "turi",
       "source_count": 1,
-      "entry_id": 44068
+      "entry_id": 44120
     },
     {
       "ngoko": "",
@@ -586505,7 +587207,7 @@
       "is_lemma": true,
       "lemma_words": "tutuk",
       "source_count": 1,
-      "entry_id": 44069
+      "entry_id": 44121
     },
     {
       "ngoko": "",
@@ -586518,7 +587220,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 44070
+      "entry_id": 44122
     },
     {
       "ngoko": "",
@@ -586534,7 +587236,7 @@
       "kelas": "t.py.",
       "kelas_nama": "tembung panyambung (kata sambung)",
       "source_count": 1,
-      "entry_id": 44071
+      "entry_id": 44123
     },
     {
       "ngoko": "",
@@ -586550,7 +587252,7 @@
       "kelas": "t.k.",
       "kelas_nama": "tembung kriya (kata kerja)",
       "source_count": 1,
-      "entry_id": 44072
+      "entry_id": 44124
     },
     {
       "ngoko": "",
@@ -586568,7 +587270,7 @@
       "kelas": "t.a.",
       "kelas_nama": "tembung aran (kata benda)",
       "is_lampiran": true,
-      "entry_id": 44073
+      "entry_id": 44125
     },
     {
       "ngoko": "",
@@ -586583,7 +587285,7 @@
       "is_lemma": true,
       "lemma_words": "wayah napa",
       "source_count": 1,
-      "entry_id": 44074
+      "entry_id": 44126
     },
     {
       "ngoko": "",
@@ -586596,7 +587298,7 @@
       "status": "draft",
       "source_count": 1,
       "sumber": "jv.wiktionary.org (group by krama)",
-      "entry_id": 44075
+      "entry_id": 44127
     },
     {
       "ngoko": "",
@@ -586612,7 +587314,7 @@
       "kelas": "t.a.",
       "kelas_nama": "tembung aran (kata benda)",
       "source_count": 1,
-      "entry_id": 44076
+      "entry_id": 44128
     },
     {
       "ngoko": "",
@@ -586627,7 +587329,7 @@
       "is_lemma": true,
       "lemma_words": "èstri",
       "source_count": 1,
-      "entry_id": 44077
+      "entry_id": 44129
     }
   ]
 }
