@@ -948,6 +948,93 @@ def merge_lampiran_to_konseps(konseps, lampiran_words, angka_words=None):
 
 
 # ============================================================
+# Cleanup: hapus entries yang ngoko-nya sebenarnya krama
+# (cross-ref dengan angka-raw krama words)
+# ============================================================
+def cleanup_misplaced_krama(konseps, angka_words=None):
+    """Hapus entries yang ngoko-nya sebenarnya KRAMA word (bukan ngoko).
+
+    Cross-ref dengan angka-raw: kalau ngoko = morfem krama (dasa, sedasa, éka, dst.)
+    DAN sudah ada di krama field entry lain → hapus entry ini (duplikat).
+
+    Penyebab: full.json dan lemma taruh krama word di field ngoko (label salah).
+    """
+    if not angka_words:
+        return konseps
+
+    # Build set of krama words dari angka-raw
+    krama_words = set()
+    for a in angka_words:
+        krama = (a.get("krama", "") or "").strip().lower()
+        if krama:
+            for k in krama.split(","):
+                k = k.strip()
+                if k:
+                    krama_words.add(k)
+
+    # Build index: krama words yang sudah ada di entries dengan ngoko valid
+    # (entries yang punya ngoko tidak kosong DAN krama tidak kosong)
+    valid_krama_in_entries = set()
+    for k in konseps:
+        ngoko = (k.get("ngoko", "") or "").strip()
+        krama = (k.get("krama", "") or "").strip()
+        if ngoko and krama:
+            for w in krama.split(","):
+                w = w.strip().lower()
+                if w:
+                    valid_krama_in_entries.add(w)
+
+    print(f"\n🧹 Cleanup misplaced krama (cross-ref angka-raw)...")
+    print(f"  angka-raw krama words: {len(krama_words)}")
+    print(f"  krama words di entries valid: {len(valid_krama_in_entries)}")
+
+    # Hapus entries yang:
+    # 1. ngoko first word = krama word (dari angka-raw)
+    # 2. krama field kosong (atau ngoko first == krama first)
+    # 3. word sudah ada di krama field entry lain (duplikat)
+    # 4. JANGAN hapus kalau ngoko == krama di angka-raw (mis. enem=enem, pitu=pitu)
+    #    Itu angka yang ngoko==krama, valid sebagai ngoko
+    # Build set: krama words yang ngoko-nya BEDA dari krama-nya (morfem krama asli)
+    morfem_krama_only = set()
+    for a in angka_words:
+        ngoko = (a.get("ngoko", "") or "").strip().lower()
+        krama = (a.get("krama", "") or "").strip().lower()
+        if krama and not ngoko:
+            # Morfem krama-only (ngoko kosong) — dasa, welas, doso, dst.
+            for k in krama.split(","):
+                k = k.strip()
+                if k:
+                    morfem_krama_only.add(k)
+        elif krama and ngoko:
+            # Angka dengan ngoko != krama — krama words yang BUKAN ngoko
+            for k in krama.split(","):
+                k = k.strip()
+                if k and k != ngoko:
+                    morfem_krama_only.add(k)
+
+    removed = []
+    kept = []
+    for k in konseps:
+        ngoko_first = (k.get("ngoko", "") or "").split(",")[0].strip().lower()
+        krama = (k.get("krama", "") or "").strip()
+
+        # Cek: ngoko = morfem krama-only + krama kosong + sudah ada di entry lain
+        if (ngoko_first in morfem_krama_only
+            and (not krama or ngoko_first == krama.split(",")[0].strip().lower())
+            and ngoko_first in valid_krama_in_entries):
+            removed.append(k)
+        else:
+            kept.append(k)
+
+    print(f"  Removed (misplaced krama, duplikat): {len(removed)}")
+    for r in removed:
+        n = (r.get("ngoko", "") or "").split(",")[0].strip()
+        print(f"    HAPUS ngoko={n!r} arti={r.get('arti','')!r}")
+    print(f"  Total setelah cleanup: {len(kept):,}")
+    return kept
+
+
+# ============================================================
 # Post-processing arti (fix parsing artifacts)
 # ============================================================
 def clean_arti(arti_raw, ngoko, krama, is_angka=False):
@@ -1419,6 +1506,10 @@ def main():
 
     # Dedup konsep by primary ngoko (merge entries dengan ngoko sama)
     konseps = dedup_konseps_by_ngoko(konseps)
+
+    # Cross-ref cleanup: hapus entries yang ngoko-nya sebenarnya krama
+    # (morfem bilangan dari full.json/lemma yang label-nya salah)
+    konseps = cleanup_misplaced_krama(konseps, angka_words)
 
     # Sort alfabetis
     print(f"\n🔤 Sort {len(konseps):,} konsep alfabetis by ngoko pertama...")
