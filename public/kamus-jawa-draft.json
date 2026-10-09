@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "version": "2.7",
+    "version": "2.8",
     "description": "Kamus Jawa komprehensif — group by konsep, gabung sinonim",
     "sources": [
       "jv.wiktionary.org (44,585 entries, raw preserved)",
@@ -25,7 +25,7 @@
       "4. Target: 2.000 entries dengan 3-field lengkap dalam 1 tahun (50/minggu)",
       "5. Upload yang lengkap ke Supabase (DB = ground of truth)"
     ],
-    "last_fix": "tambah-kata-umum-srt-id.py: 29 entries NETRAL + 18 new entries (AI insert, user validasi)"
+    "last_fix": "koreksi user native Jawa: yang=sing, kamu=kowé, kami=awaké dhéwé, kita=aku lan kowé kabèh"
   },
   "words": [
     {
@@ -210288,11 +210288,11 @@
       "word": "kamenyangan"
     },
     {
-      "ngoko": "",
+      "ngoko": "awaké dhéwé",
       "krama": "",
       "krama_inggil": "",
       "arti": "kami",
-      "keterangan": "aku kabèh. | {{ngoko}} kami",
+      "keterangan": "aku kabèh. | {{ngoko}} kami | Koreksi user 9 Okt: 'kami' tidak dikenal di Jawa, pakai 'awaké dhéwé' (lit. diri kami sendiri).",
       "aksara": "ꦏꦩꦶ",
       "register": "umum",
       "status": "draft",
@@ -211056,11 +211056,11 @@
       "word": "kamsin"
     },
     {
-      "ngoko": "",
+      "ngoko": "kowé",
       "krama": "",
       "krama_inggil": "",
       "arti": "kamu",
-      "keterangan": "kowé kabèh.",
+      "keterangan": "kowé kabèh. | Koreksi user 9 Okt: 'kamu' = 'kowé' (singular). Keterangan lama 'kowé kabèh' = kalian (plural), BUKAN kamu. AI HALU.",
       "aksara": "ꦏꦩꦸ",
       "register": "umum",
       "status": "draft",
@@ -244676,11 +244676,11 @@
       "word": "kit"
     },
     {
-      "ngoko": "",
-      "krama": "",
+      "ngoko": "aku lan kowé kabèh",
+      "krama": "kula dalasan panjenengan sedaya",
       "krama_inggil": "",
       "arti": "kita",
-      "keterangan": "aku lan kowé kabèh; aku, -ku. | {{ngoko}} kita",
+      "keterangan": "aku lan kowé kabèh; aku, -ku. | {{ngoko}} kita | Koreksi user 9 Okt: 'kita' tidak dikenal di Jawa. Ngoko: 'aku lan kowé kabèh' (aku dan kamu semua). Krama: 'kula dalasan panjenengan sedaya'.",
       "aksara": "ꦏꦶꦠ",
       "register": "umum",
       "status": "draft",
@@ -628871,11 +628871,11 @@
       "word": "yan"
     },
     {
-      "ngoko": "",
+      "ngoko": "sing",
       "krama": "",
       "krama_inggil": "",
       "arti": "yang",
-      "keterangan": "hyang",
+      "keterangan": "hyang | Koreksi user 9 Okt: 'yang' (Indonesia) = 'sing' (Jawa). Keterangan lama 'hyang' = konteks salah (hyang = dewa, BUKAN konjungsi yang).",
       "aksara": "ꦪꦁ",
       "register": "umum",
       "status": "draft",
