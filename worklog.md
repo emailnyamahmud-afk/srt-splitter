@@ -1276,3 +1276,37 @@ Stage Summary:
 - Audit script: idempotent, re-run kapan saja
 - Tidak ada JSON diedit — transparansi penuh
 - User bisa: python3 scripts/audit-otomatis-suspect-patterns.py → lihat suspects → validasi manual via TUI
+
+---
+Task ID: kamus-R20-R21-neutralize
+Agent: main
+Task: User: bersihkan kamus draft yg belum berpasangan jadi 'word' (netral). Data jujur > data rusak.
+
+Work Log:
+- Backup kamus-jawa-draft.json.bak.before-neutralize
+- Buat scripts/neutralize-kamus-draft.py (idempotent)
+- Eksekusi: 39.216 entries pindah ke field 'word' (38.977 ngoko-only + 239 krama-only)
+- Verifikasi: 5.678 paired tetap, 125 krama+arti tetap, 2 empty tetap
+- Sample ISI: angka 1-1000 = 3-pasangan terdefinisi (contoh benar)
+- Git mv scripts/build-kamus-bersih.py → build-kamus-bersih.py.DISABLED
+- Tulis build-kamus-bersih.py.DISABLED.README.md (JANGAN RUN, alasan, alternatif)
+- Tambah R-20 ke PROJECT_RULES.md: kamus-draft.json = rujukan tunggal, raw = arsip
+- Tambah R-21 ke PROJECT_RULES.md: field 'word' = netral, belum terdefinisi register
+- Patch kamus-tui.py:
+  - Display field 'word' di edit_entry
+  - Indicator [NETRAL — belum terdefinisi]
+  - Saat user isi 2 dari 3 field, word otomatis kosong saat save
+  - Statistik: baris 'NETRAL (word-only)' di komposisi kelengkapan
+- Patch audit-otomatis-suspect-patterns.py: skip NETRAL entries (audit hanya untuk paired)
+- Re-run audit: 205 → 124 suspect entries (yang paired saja)
+- Hapus backup file (data utuh, R-18 compliance)
+- Commit d79f22f + push
+
+Stage Summary:
+- Draft v2.2 → v2.3 (pasca neutralize)
+- 39.216 entries: dari ngoko-only → word (netral)
+- Build script DISABLED, raw = arsip, draft = rujukan tunggal
+- TUI support field 'word', user bisa validasi manual
+- Angka 1-1000 = contoh 3-pasangan terdefinisi (AI belajar dari sini)
+- User tetap validasi manual semua entries via TUI (R-12)
+- Pending user: download kamus-jawa-draft.json + kamus-tui.py → mulai validasi
