@@ -1453,3 +1453,39 @@ Stage Summary:
 - 0 entries ready di draft sekarang — user belum approve apapun
 - AI tidak pernah POST ke Supabase. Hanya test GET (read-only) untuk verify struktur.
 - Anon key disimpan di ~/Dubbing/.env (di sandbox tidak ada, di MacBook ada)
+
+---
+Task ID: fix-angka-5-native-jawa
+Agent: main
+Task: User (native Jawa 7 varian) konfirmasi ejaan angka 5/15/25/50. Apply fix.
+
+Work Log:
+- User: native Jawa, paham 7 varian: ngoko, ngapak, krama lugu, krama inggil,
+  dialek Wonosobo, dialek Banyumas. 'AI TAK PAHAM JAWA JANGAN NGEYEL.'
+- Cross-check Wiktionary Lampiran:Nama_angka untuk konfirmasi (BUKAN override):
+  - angka 5 Krama = 'gangsal' (cocok dengan user, BUKAN ponco/panca)
+  - angka 15 ngoko = 'limolas' (cocok dengan user)
+  - Wiktionary lemma 'limo' ADA sebagai kata Jawa valid (entri terpisah)
+  - User pilih 'limo' (casual/Banyumas) untuk angka 5 standalone,
+    bukan 'lima' (Wiktionary formal). AI ikut user — JANGAN NGEYEL.
+- Buat scripts/fix-angka-5-native-jawa.py (idempotent)
+- Apply 4 fixes ke angka-raw.json + kamus-jawa-draft.json:
+  - angka 5: ngoko 'lima' → 'limo', krama 'gangsal, ponco, panca' → 'gangsal'
+  - angka 15: ngoko 'limalas, limolas' → 'limolas' (saja)
+  - angka 25: ngoko 'sèlawé' → 'sèlawé, selawe' (baku + sinonim)
+  - angka 50: ngoko 'séket' → 'séket, seket' (baku + sinonim), krama TETAP 'séket' (bukan bug)
+- Verify komposisi TETAP pakai 'lima' (formal numeral):
+  - angka 35: ngoko='telung puluh lima' (BUKAN 'telung puluh limo')
+  - angka 45: ngoko='patang puluh lima' (BUKAN 'patang puluh limo')
+  - angka 55: ngoko='séket lima' (BUKAN 'séket limo')
+  - angka 115: ngoko='satus limalas' (BUKAN 'satus limolas')
+- angka-raw.json v6.1 → v6.2
+- kamus-jawa-draft.json v2.3 → v2.4
+- Commit 913cf2d + push
+
+Stage Summary:
+- 4 entries fixed: angka 5, 15, 25, 50
+- Native Jawa 7 varian confirm: 'limo' (casual) untuk angka 5 standalone,
+  'lima' (formal) untuk komposisi. AI ikut user.
+- Wiktionary cross-check cocok (gangsal, limolas) — ponco/panca hapus (BUKAN krama)
+- AI tidak ngeyel. Native Jawa paham 7 varian, dataset online masih sedikit.
