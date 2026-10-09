@@ -226,6 +226,34 @@ JANGAN:
 - Pisahkan kramainggil dari krama saat upload — akan hilang sinonim.
 - Audit laporkan "krama_inggil: 0 entries" sebagai masalah — itu BY DESIGN, bukan bug.
 
+### R-18 — JANGAN HAPUS entry kamus (kosong/aksara/keterangan-only TETAP DISIMPAN)
+
+Filosofi kamus (per user 9 Okt 2026): **data ada, cuma tinggal lengkap atau tidak, lalu valid atau tidak**.
+
+JANGAN HAPUS entry meski:
+- ngoko + krama + arti semua kosong (cuma keterangan tersisa)
+- ngoko = aksara Jawa (ꦏꦼꦧꦪꦤ꧀, dst.) — TETAP SIMPAN, aksara Jawa itu valid
+- arti = parsing artifact (`}}`, `<sup>...</sup>`) — FIX arti-nya (kosongkan atau isi manual), jangan hapus entry-nya
+- Hanya keterangan yang berisi (entry kosong parsing bug) — TETAP SIMPAN, nanti user/AI lengkapi
+
+Alasan:
+1. Kamus ini akan jadi "deterministik" terjemahan Indonesia → ngoko → krama paling lengkap, melebihi Wiktionary/Wikipedia kamus. Kamus umum di luar sana ngoko+krama tercampur tidak terstruktur. Kamus kita = terstruktur per field (ngoko, krama, arti).
+2. Dari 44.000+ entries, dalam 1-6 bulan ke depan, mungkin cuma 10.000 yang masuk Supabase (lengkap + terverifikasi). Sisanya tetap di draft sebagai "benih" — bisa di-enrich entah kapan.
+3. Hapus entry = hilang jejak data. Sebaliknya: TANDAI status='draft', biarkan di file, nanti di-enrich atau diisi manual lewat TUI.
+
+Aksi yang BENAR saat ketemu entry bermasalah:
+- Arti > 30 chars → pindah definisi ke keterangan, pendekkan arti (R-12)
+- Arti parsing artifact (`}}`, `<sup>`) → kosongkan arti, keterangan tetap
+- Empty entries (no ngoko/krama/arti) → isi ngoko/arti dari keterangan kalau bisa (parsing fix), kalau tidak → biarkan dengan status='draft'
+- Aksara Jawa entry → TETAP SIMPAN, arti yang artifact dikosongkan, keterangan tetap
+- 2 senses dalam 1 entry → jangan split otomatis, biarkan user decide via TUI (split manual atau biarkan)
+
+Yang BOLEH dihapus (pengecualian):
+- Entry DUPLIKAT persis (semua field identik) — deduplikasi pure, bukan data hilang
+- Artifact yang BUKAN data (mis. file `.bak`, output terminal `tool-results/bash_*.txt`)
+
+Build script cleanup_misplaced_krama + fix_angka_ngoko + post-process: tetap jalan, tapi SKIP entries kosong — jangan hapus.
+
 ---
 
 ## Catatan untuk AI
