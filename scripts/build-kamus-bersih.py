@@ -63,6 +63,7 @@ from collections import defaultdict
 RAW_FULL = Path("/home/z/my-project/public/kamus-jawa-full.json")
 RAW_LEMMA = Path("/home/z/my-project/download/kamus-jawa-lemma-raw.json")
 RAW_MENDELEY = Path("/home/z/my-project/public/kamus-jawa-mendeley-raw.json")
+RAW_DASANAMA = Path("/home/z/my-project/public/dasanama-raw.csv")
 
 OUT_DRAFT = Path("/home/z/my-project/public/kamus-jawa-draft.json")
 OUT_REPORT = Path("/home/z/my-project/public/kamus-jawa-draft-report.txt")
@@ -514,6 +515,141 @@ def merge_mendeley_to_konseps(konseps, mendeley_words):
 
 
 # ============================================================
+# Load Dasanama CSV (sinonim Jawa, 431 entries, user upload)
+# Format: nomer;tembung;dasanama1;dasanama2;...
+# Schema mapping (sesuai user spec Opsi 1, 9 Okt 2026):
+#   tembung → ngoko utama (target lookup)
+#   dasanama → gabung ke field ngoko (user sort manual mana ngoko vs krama)
+#   catat juga di keterangan (audit trail)
+# ============================================================
+def load_dasanama_csv(path):
+    """Load dasanama.csv, return list of {tembung, sinonim}."""
+    if not path.exists():
+        print(f"⚠ Dasanama file tidak ditemukan: {path}")
+        return []
+    with open(path, "r", encoding="utf-8") as f:
+        lines = f.read().splitlines()
+
+    parsed = []
+    for line in lines[1:]:  # skip header
+        clean = line.replace('"', '')
+        parts = [p.strip() for p in clean.split(';') if p.strip()]
+        if len(parts) < 2:
+            continue
+        nomer = parts[0]
+        tembung = parts[1]
+        sinonim = parts[2:]  # sisanya = sinonim
+        # Strip suffixes artifact (mis. "robaya." → "robaya", "wirayang.[1]" → "wirayang")
+        cleaned_sinonim = []
+        for s in sinonim:
+            # Hapus titik di akhir
+            s = s.rstrip('.')
+            # Hapus [n] citation (mis. "[1]")
+            import re as _re
+            s = _re.sub(r'\[\d+\]', '', s).strip()
+            if s:
+                cleaned_sinonim.append(s)
+        parsed.append({'nomer': nomer, 'tembung': tembung, 'sinonim': cleaned_sinonim})
+    return parsed
+
+
+def merge_dasanama_to_konseps(konseps, dasanama_entries):
+    """Merge dasanama sinonim ke konsep existing (kalau match by tembung).
+
+    Strategi (Opsi 1 — sesuai user spec):
+      - Match by tembung (lowercase) ke primary ngoko konsep
+      - Match → gabung sinonim dasanama ke field ngoko (user sort manual nanti)
+        + Catat di keterangan juga (audit trail: "Dasanama: ...")
+      - No match → bikin konsep baru dengan ngoko = tembung + sinonim gabung
+
+    Catatan: dasanama = campuran register (ngoko + krama + kawi + krama_inggil).
+    User wajib sort manual di kamus-tui.py mana yang masuk ngoko vs krama.
+    Asumsi: draft = kerja user, DB = yang bersih. Jadi di draft wajar ada campuran.
+    """
+    print(f"\n🔗 Merge {len(dasanama_entries):,} Dasanama entries ke konsep...")
+
+    # Index konsep by primary ngoko (first word lowercase)
+    konsep_by_ngoko = defaultdict(list)
+    for i, k in enumerate(konseps):
+        ngoko_first = (k.get("ngoko", "") or "").split(",")[0].strip().lower()
+        if ngoko_first:
+            konsep_by_ngoko[ngoko_first].append(i)
+
+    matched = 0
+    enriched_ngoko = 0
+    new_from_dasanama = 0
+    for entry in dasanama_entries:
+        tembung = entry["tembung"].strip().lower()
+        sinonim = entry["sinonim"]
+        if not tembung or not sinonim:
+            continue
+
+        matches = konsep_by_ngoko.get(tembung, [])
+        if matches:
+            konsep_idx = matches[0]
+            k = konseps[konsep_idx]
+
+            # Gabung sinonim dasanama ke field ngoko (dedup word-level)
+            existing_ngoko = k.get("ngoko", "") or ""
+            existing_words = [w.strip().lower() for w in existing_ngoko.split(",") if w.strip()]
+            new_words = [w.strip().lower() for w in sinonim if w.strip()]
+            combined = []
+            for w in existing_words + new_words:
+                if w not in combined:
+                    combined.append(w)
+            new_ngoko = ", ".join(combined)
+            if new_ngoko != existing_ngoko:
+                k["ngoko"] = new_ngoko
+                enriched_ngoko += 1
+
+            # Catat dasanama di keterangan (audit trail, dipertahankan)
+            dasanama_str = ", ".join(sinonim)
+            existing_ket = k.get("keterangan", "")
+            dasanama_tag = f"Dasanama: {dasanama_str}"
+            if dasanama_tag not in existing_ket:
+                k["keterangan"] = f"{existing_ket} | {dasanama_tag}".strip(" |") if existing_ket else dasanama_tag
+
+            # Tag is_dasanama + bump source_count
+            k["is_dasanama"] = True
+            k["dasanama_count"] = len(sinonim)
+            k["source_count"] = k.get("source_count", 1) + 1
+            # Update sumber
+            sumber = k.get("sumber", "")
+            if "dasanama" not in sumber.lower():
+                k["sumber"] = (sumber + " + dasanama" if sumber else "dasanama").strip(" +")
+
+            matched += 1
+        else:
+            # Bikin konsep baru dari dasanama
+            # ngoko = tembung + semua sinonim (user sort manual nanti)
+            combined_ngoko = [tembung]
+            for s in sinonim:
+                s_lower = s.strip().lower()
+                if s_lower and s_lower not in combined_ngoko:
+                    combined_ngoko.append(s_lower)
+            new_konsep = {
+                "ngoko": ", ".join(combined_ngoko),
+                "krama": "",  # user sort manual mana krama
+                "krama_inggil": "",
+                "arti": "",  # dasanama gak punya arti Indonesia
+                "keterangan": f"Dasanama: {', '.join(sinonim)}",
+                "aksara": "",
+                "register": "umum",
+                "sumber": "dasanama-raw.csv (new)",
+                "is_dasanama": True,
+                "dasanama_count": len(sinonim),
+                "source_count": 1,
+            }
+            konseps.append(new_konsep)
+            new_from_dasanama += 1
+
+    print(f"  Match & enrich konsep existing: {matched:,}")
+    print(f"    + enrich ngoko (tambah sinonim dasanama): {enriched_ngoko:,}")
+    print(f"  New konsep dari Dasanama (no match): {new_from_dasanama:,}")
+    return konseps
+
+
+# ============================================================
 # Post-processing arti (fix parsing artifacts)
 # ============================================================
 def clean_arti(arti_raw, ngoko, krama):
@@ -782,6 +918,12 @@ def main():
     print(f"  mendeley.json: {len(mendeley_words):,} entries (data.mendeley.com/datasets/y3hstv4bfn)")
     if mendeley_words:
         konseps = merge_mendeley_to_konseps(konseps, mendeley_words)
+
+    # Merge Dasanama CSV (sinonim Jawa, 431 entries, user sort manual)
+    dasanama_entries = load_dasanama_csv(RAW_DASANAMA)
+    print(f"  dasanama.csv: {len(dasanama_entries):,} entries (sinonim Jawa)")
+    if dasanama_entries:
+        konseps = merge_dasanama_to_konseps(konseps, dasanama_entries)
 
     # Post-process arti (clean artifact, move long_def ke keterangan)
     konseps = post_process_konseps(konseps)
