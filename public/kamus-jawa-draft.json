@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "version": "2.4",
+    "version": "2.6",
     "description": "Kamus Jawa komprehensif — group by konsep, gabung sinonim",
     "sources": [
       "jv.wiktionary.org (44,585 entries, raw preserved)",
@@ -25,7 +25,7 @@
       "4. Target: 2.000 entries dengan 3-field lengkap dalam 1 tahun (50/minggu)",
       "5. Upload yang lengkap ke Supabase (DB = ground of truth)"
     ],
-    "last_fix": "fix-angka-5-native-jawa.py: angka 5/15/25/50 per native Jawa 7 varian"
+    "last_fix": "koreksi: panca+ponco TETAP (sinonim Sanskrit), limo ngoko (ejaan fonetis)"
   },
   "words": [
     {
@@ -279624,7 +279624,7 @@
     },
     {
       "ngoko": "limo",
-      "krama": "gangsal",
+      "krama": "gangsal, panca, ponco",
       "krama_inggil": "",
       "arti": "lima",
       "keterangan": "wilangan 5 | lima; dlima. | {{label|jv|krama}} [[lima]] | {{ngoko}} lima | angka 5",

@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "version": "6.2",
+    "version": "6.3",
     "source": "id.wiktionary.org/wiki/Lampiran:Nama_angka_dalam_bahasa_Jawa (FULL scrape semua section) + sinonim Mendeley/Lampiran kamus + kawi",
     "entries": 1009,
-    "last_fix": "fix-angka-5-native-jawa.py: angka 5/15/25/50 per native Jawa 7 varian"
+    "last_fix": "fix-angka-5-koreksi.py: panca+ponco TETAP (sinonim Sanskrit), limo ngoko (ejaan fonetis)"
   },
   "words": [
     {
@@ -38,7 +38,7 @@
     },
     {
       "ngoko": "limo",
-      "krama": "gangsal",
+      "krama": "gangsal, panca, ponco",
       "arti": "lima",
       "keterangan": "angka 5"
     },
