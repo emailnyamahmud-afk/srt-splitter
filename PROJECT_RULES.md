@@ -356,6 +356,53 @@ JANGAN:
 - Isi `ngoko` kosong dengan tebakan AI (parser tolol, R-19)
 - Hapus entry `word` (R-18 — TETAP SIMPAN, user validasi manual nanti)
 
+### R-22 — GIGO: AI tidak merujuk source raw untuk audit/fix kamus-draft
+
+User 9 Okt 2026: "GERBANGE IN GERBANGE OUT. SAMPAH YG MASUK = SAMPAH YG KELUAR. INI PRINSIP FISIKA DAN MATEMATIKA MESIN. KECUALI AI DILATIH PAKE RATUSAN RIBU DATASET JAWA, SELAMA INI OTAK AI TENTANG JAWA = DILATIH PAKE DATA SAMPAH-SAMPAH INTERNET = HASILNYA TOLOL."
+
+**Prinsip GIGO (Garbage In Garbage Out)**:
+- Otak AI tentang Jawa = dilatih dari dataset internet = sampah parsing tolol
+- Raw files (kamus-jawa-full.json, lampiran-raw.json, dasanama-raw.csv, angka-raw.json, kamus-jawa-mendeley-raw.json, lampiran-angka-raw.json, kamus-jawa-new-lemma.json) = HASIL PARSING AI TOLOL dari internet sampah
+- AI TIDAK boleh merujuk raw files untuk AUDIT atau FIX kamus-draft.json
+- AI TIDAK boleh cross-check kamus-draft dengan raw untuk "validasi"
+- AI TIDAK boleh ambil sinonim/arti dari raw untuk enrich kamus-draft
+- AI TIDAK boleh re-generate raw (semua scraper/build script DISABLED)
+
+**Yang AI BOLEH lakukan** (bantu workflow, BUKAN audit data):
+- Statistik kamus-draft.json (count NETRAL, ready, paired, dll.)
+- Scan pattern di kamus-draft (entries dengan pattern X)
+- Compare kamus-draft vs DB Supabase (apa sudah masuk, apa belum) — READ-ONLY DB
+- Tunjukin isi entries dari kamus-draft kalau user minta
+- Maintenance script TUI + upload-supabase.py (bug fix, bukan data fix)
+- Kasih curl command untuk user download file
+
+**Yang AI DILARANG**:
+- Upload ke Supabase (R-12: user explicit 'y' saja)
+- Audit data draft dengan compare ke raw (R-22: raw = sampah)
+- Fix data draft dengan mengambil dari raw (R-22: GIGO)
+- Asumsi sinonim dari keterangan (keterangan = parsing tolol juga)
+- Rekomendasi ejaan dari Wiktionary (Wiktionary = source raw)
+- Ngeyel dengan "pengetahuan akar kata" AI (otak AI = sampah internet)
+
+**Status raw files di repo**:
+- Tetap di `public/` sebagai ARSIP (R-16 jangan hapus)
+- TIDAK boleh di-load oleh script aktif (TUI/upload/fix)
+- Scraper/generator DISABLED: `parse-wiktionary-jv.py.DISABLED`, `scrape-*.py.DISABLED`, `add-entry-id.py.DISABLED`
+- Build script DISABLED: `build-kamus-bersih.py.DISABLED` (R-20)
+
+**Fix script compliance** (R-22):
+- Fix script hanya apply ke `kamus-jawa-draft.json` (R-20: rujukan tunggal)
+- Fix script TIDAK boleh apply ke `angka-raw.json` atau raw lain
+- Kalau ada fix script yang masih load raw → hapus reference raw, hanya apply ke draft
+
+**Perlahan database Supabase jadi ground of truth**:
+- User upload entries approved via TUI (status='ready')
+- Setelah 100, 1000, 10.000 entries di DB, AI bisa:
+  - Compare draft vs DB (mana yang belum masuk)
+  - Statistik dari DB (top 100 kata di SRT yang belum di DB)
+  - Frequency analyzer pakai DB, bukan draft lokal
+- AI tidak pernah upload — user selalu putuskan
+
 ---
 
 ## Catatan untuk AI

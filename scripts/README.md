@@ -27,19 +27,21 @@ Lihat [`tutor-mode-on-workflow.md`](tutor-mode-on-workflow.md) + [`tutor-demucs-
 | **`upload-supabase.py`** ⭐ | Upload entries approved ke Supabase (Phase 5, file terpisah) | ✅ Utama |
 | `audit-otomatis-suspect-patterns.py` | R-19 audit suspect entries (124 paired suspect) | ✅ Audit |
 | `neutralize-kamus-draft.py` | R-21 netralisasi entries belum berpasangan → field 'word' | ✅ Utility |
-| `fix-angka-ejaan.py` | R-16 fix ejaan angka (eka→éka, Nol→nol, songo dari ngoko→hapus) | ✅ Utility |
-| `fix-dhingkluk.py` | R-12 fix arti dhingkluk (long form → keterangan) | ✅ Utility |
-| `fix-draft-angka-ejaan.py` | Propagasi fix ejaan angka ke kamus-jawa-draft.json | ✅ Utility |
-| `add-entry-id.py` | Tambah entry_id ke semua entries (urut alfabetis) | ✅ Utility |
+| `fix-angka-5-native-jawa.py` | R-22 fix angka 5/15/25/50 per native Jawa 7 varian (HANYA apply ke draft) | ✅ Utility |
 
-### Scrapers (raw data collectors)
+### DISABLED (R-20 + R-22: raw = sampah, jangan run)
 
-| Script | Untuk Apa | Status |
+| Script | Status | Catatan |
 |---|---|---|
-| `parse-wiktionary-jv.py` | Parser v5: Wiktionary XML → kamus JSON (register + krama_inggil) | ✅ Utility |
-| `scrape-wiktionary-jv-lemma.py` | Scrape id.wiktionary.org Kategori:jv:Lema → kamus-jawa-new-lemma.json | ✅ Scraper |
-| `scrape-lampiran-kamus.py` | Scrape Lampiran Kamus Jawa-Indonesia (id.wiktionary.org) | ✅ Scraper |
-| `scrape-lampiran-angka.py` | Scrape Lampiran:Nama_angka_dalam_bahasa_Jawa (Wiktionary) | ✅ Scraper |
+| `build-kamus-bersih.py.DISABLED` | ⚠️ DISABLED | R-20: parser tolol merusak data |
+| `parse-wiktionary-jv.py.DISABLED` | ⚠️ DISABLED | R-22: generator kamus-jawa-full.json (raw sampah) |
+| `scrape-wiktionary-jv-lemma.py.DISABLED` | ⚠️ DISABLED | R-22: generator raw sampah |
+| `scrape-lampiran-kamus.py.DISABLED` | ⚠️ DISABLED | R-22: generator raw sampah |
+| `scrape-lampiran-angka.py.DISABLED` | ⚠️ DISABLED | R-22: generator raw sampah |
+| `add-entry-id.py.DISABLED` | ⚠️ DISABLED | R-22: modifikasi kamus-jawa-full.json (legacy) |
+| `fix-angka-ejaan.py.DISABLED` | ⚠️ DISABLED | R-22: apply ke angka-raw (raw = sampah) |
+| `fix-draft-angka-ejaan.py.DISABLED` | ⚠️ DISABLED | R-22: apply ke angka-raw (raw = sampah) |
+| `fix-dhingkluk.py.DISABLED` | ⚠️ DISABLED | R-22: one-off fix, sudah di-apply, tidak perlu run lagi |
 
 ### SQL Migrations (Supabase)
 

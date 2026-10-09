@@ -29,7 +29,7 @@ Setelah checklist selesai, AI siap kerja. Tidak perlu ulang di chat berikutnya d
 
 ## Baca dulu (wajib, tiap session)
 
-1. **`PROJECT_RULES.md`** — 21 rules project-specific. Baca full sebelum kerja apapun.
+1. **`PROJECT_RULES.md`** — **22 rules** project-specific. Baca full sebelum kerja apapun.
    - R-01 sampai R-15: workflow, docs, marker, kode
    - R-16: ejaan Jawa (é/è/ê, schwa polos)
    - R-17: skema field (krama_inggil masuk krama)
@@ -37,6 +37,7 @@ Setelah checklist selesai, AI siap kerja. Tidak perlu ulang di chat berikutnya d
    - R-19: parser AI tolol, audit suspect otomatis
    - R-20: kamus-draft.json = rujukan tunggal, raw = arsip
    - R-21: field 'word' = netral, belum terdefinisi
+   - R-22: GIGO — AI tidak merujuk raw untuk audit/fix, bantu workflow saja
 2. **`README.md`** (root) — workflow 4 fase, 2 mode dubbing, status pipeline.
 3. **`scripts/README.md`** — detail per Python script.
 4. **`worklog.md`** — baca entry terakhir (Task ID + Stage Summary).
@@ -97,6 +98,9 @@ Build script: DISABLED (R-20) — parser tolol merusak data
 7. **JANGAN HAPUS entry kamus (R-18).** Data ada, lengkap atau tidak, valid atau tidak.
 8. **JANGAN rebuild dari raw (R-20).** kamus-draft.json = rujukan tunggal, raw = arsip.
 9. **JANGAN auto-fix data (R-18).** Bikin audit script + user validasi 1-1 via TUI.
+10. **JANGAN merujuk raw untuk audit/fix (R-22).** GIGO — raw = sampah parsing tolol AI.
+11. **JANGAN upload ke DB tanpa konfirmasi user (R-12).** Hanya user 'y' eksplisit.
+12. **JANGAN ngeyel dengan pengetahuan Jawa AI.** Otak AI = dilatih sampah internet.
 
 ## Yang sedang nunggu
 
