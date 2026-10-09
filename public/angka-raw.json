@@ -2,7 +2,7 @@
   "metadata": {
     "version": "6.0",
     "source": "id.wiktionary.org/wiki/Lampiran:Nama_angka_dalam_bahasa_Jawa (FULL scrape semua section) + sinonim Mendeley/Lampiran kamus + kawi",
-    "entries": 511
+    "entries": 1009
   },
   "words": [
     {
@@ -264,13 +264,13 @@
       "keterangan": "angka 500"
     },
     {
-      "ngoko": "",
+      "ngoko": "sangangatus sangang puluh sanga",
       "krama": "sangang atus sangang dasa sanga",
-      "arti": "",
+      "arti": "sembilan ratus sembilan puluh sembilan",
       "keterangan": "angka 999"
     },
     {
-      "ngoko": "séwu",
+      "ngoko": "sèwu",
       "krama": "setunggal ewu",
       "arti": "seribu",
       "keterangan": "angka 1000"
@@ -3070,6 +3070,2994 @@
       "krama": "sekawan atus sangang dasa sanga",
       "arti": "empat ratus sembilan puluh sembilan",
       "keterangan": "angka 499"
+    },
+    {
+      "ngoko": "enematus",
+      "krama": "enem atus",
+      "arti": "enam ratus",
+      "keterangan": "angka 600"
+    },
+    {
+      "ngoko": "pitungatus",
+      "krama": "pitung atus",
+      "arti": "tujuh ratus",
+      "keterangan": "angka 700"
+    },
+    {
+      "ngoko": "wolungatus",
+      "krama": "wolung atus",
+      "arti": "delapan ratus",
+      "keterangan": "angka 800"
+    },
+    {
+      "ngoko": "sangangatus",
+      "krama": "sangang atus",
+      "arti": "sembilan ratus",
+      "keterangan": "angka 900"
+    },
+    {
+      "ngoko": "limangatus siji",
+      "krama": "gangsal atus setunggal",
+      "arti": "lima ratus satu",
+      "keterangan": "angka 501"
+    },
+    {
+      "ngoko": "limangatus loro",
+      "krama": "gangsal atus kalih",
+      "arti": "lima ratus dua",
+      "keterangan": "angka 502"
+    },
+    {
+      "ngoko": "limangatus telu",
+      "krama": "gangsal atus tiga",
+      "arti": "lima ratus tiga",
+      "keterangan": "angka 503"
+    },
+    {
+      "ngoko": "limangatus papat",
+      "krama": "gangsal atus sekawan",
+      "arti": "lima ratus empat",
+      "keterangan": "angka 504"
+    },
+    {
+      "ngoko": "limangatus lima",
+      "krama": "gangsal atus gangsal",
+      "arti": "lima ratus lima",
+      "keterangan": "angka 505"
+    },
+    {
+      "ngoko": "limangatus enem",
+      "krama": "gangsal atus enem",
+      "arti": "lima ratus enam",
+      "keterangan": "angka 506"
+    },
+    {
+      "ngoko": "limangatus pitu",
+      "krama": "gangsal atus pitu",
+      "arti": "lima ratus tujuh",
+      "keterangan": "angka 507"
+    },
+    {
+      "ngoko": "limangatus wolu",
+      "krama": "gangsal atus wolu",
+      "arti": "lima ratus delapan",
+      "keterangan": "angka 508"
+    },
+    {
+      "ngoko": "limangatus sanga",
+      "krama": "gangsal atus sanga",
+      "arti": "lima ratus sembilan",
+      "keterangan": "angka 509"
+    },
+    {
+      "ngoko": "limangatus sepuluh",
+      "krama": "gangsal atus sedasa",
+      "arti": "lima ratus sepuluh",
+      "keterangan": "angka 510"
+    },
+    {
+      "ngoko": "limangatus sewelas",
+      "krama": "gangsal atus sewelas",
+      "arti": "lima ratus sebelas",
+      "keterangan": "angka 511"
+    },
+    {
+      "ngoko": "limangatus rolas",
+      "krama": "gangsal atus kalih welas",
+      "arti": "lima ratus dua belas",
+      "keterangan": "angka 512"
+    },
+    {
+      "ngoko": "limangatus telulas",
+      "krama": "gangsal atus tiga welas",
+      "arti": "lima ratus tiga belas",
+      "keterangan": "angka 513"
+    },
+    {
+      "ngoko": "limangatus patbelas",
+      "krama": "gangsal atus kawan welas",
+      "arti": "lima ratus empat belas",
+      "keterangan": "angka 514"
+    },
+    {
+      "ngoko": "limangatus limalas",
+      "krama": "gangsal atus gangsal welas",
+      "arti": "lima ratus lima belas",
+      "keterangan": "angka 515"
+    },
+    {
+      "ngoko": "limangatus nembelas",
+      "krama": "gangsal atus enem welas",
+      "arti": "lima ratus enam belas",
+      "keterangan": "angka 516"
+    },
+    {
+      "ngoko": "limangatus pitulas",
+      "krama": "gangsal atus pitulas",
+      "arti": "lima ratus tujuh belas",
+      "keterangan": "angka 517"
+    },
+    {
+      "ngoko": "limangatus wolulas",
+      "krama": "gangsal atus wolulas",
+      "arti": "lima ratus delapan belas",
+      "keterangan": "angka 518"
+    },
+    {
+      "ngoko": "limangatus sangalas",
+      "krama": "gangsal atus sangalas",
+      "arti": "lima ratus sembilan belas",
+      "keterangan": "angka 519"
+    },
+    {
+      "ngoko": "limangatus rong puluh",
+      "krama": "gangsal atus kalih dasa",
+      "arti": "lima ratus dua puluh",
+      "keterangan": "angka 520"
+    },
+    {
+      "ngoko": "limangatus rong puluh siji",
+      "krama": "gangsal atus kalih dasa setunggal",
+      "arti": "lima ratus dua puluh satu",
+      "keterangan": "angka 521"
+    },
+    {
+      "ngoko": "limangatus rong puluh loro",
+      "krama": "gangsal atus kalih dasa kalih",
+      "arti": "lima ratus dua puluh dua",
+      "keterangan": "angka 522"
+    },
+    {
+      "ngoko": "limangatus rong puluh telu",
+      "krama": "gangsal atus kalih dasa tiga",
+      "arti": "lima ratus dua puluh tiga",
+      "keterangan": "angka 523"
+    },
+    {
+      "ngoko": "limangatus rong puluh papat",
+      "krama": "gangsal atus kalih dasa sekawan",
+      "arti": "lima ratus dua puluh empat",
+      "keterangan": "angka 524"
+    },
+    {
+      "ngoko": "limangatus rong puluh lima",
+      "krama": "gangsal atus kalih dasa gangsal",
+      "arti": "lima ratus dua puluh lima",
+      "keterangan": "angka 525"
+    },
+    {
+      "ngoko": "limangatus rong puluh enem",
+      "krama": "gangsal atus kalih dasa enem",
+      "arti": "lima ratus dua puluh enam",
+      "keterangan": "angka 526"
+    },
+    {
+      "ngoko": "limangatus rong puluh pitu",
+      "krama": "gangsal atus kalih dasa pitu",
+      "arti": "lima ratus dua puluh tujuh",
+      "keterangan": "angka 527"
+    },
+    {
+      "ngoko": "limangatus rong puluh wolu",
+      "krama": "gangsal atus kalih dasa wolu",
+      "arti": "lima ratus dua puluh delapan",
+      "keterangan": "angka 528"
+    },
+    {
+      "ngoko": "limangatus rong puluh sanga",
+      "krama": "gangsal atus kalih dasa sanga",
+      "arti": "lima ratus dua puluh sembilan",
+      "keterangan": "angka 529"
+    },
+    {
+      "ngoko": "limangatus telung puluh",
+      "krama": "gangsal atus tigang dasa",
+      "arti": "lima ratus tiga puluh",
+      "keterangan": "angka 530"
+    },
+    {
+      "ngoko": "limangatus telung puluh siji",
+      "krama": "gangsal atus tigang dasa setunggal",
+      "arti": "lima ratus tiga puluh satu",
+      "keterangan": "angka 531"
+    },
+    {
+      "ngoko": "limangatus telung puluh loro",
+      "krama": "gangsal atus tigang dasa kalih",
+      "arti": "lima ratus tiga puluh dua",
+      "keterangan": "angka 532"
+    },
+    {
+      "ngoko": "limangatus telung puluh telu",
+      "krama": "gangsal atus tigang dasa tiga",
+      "arti": "lima ratus tiga puluh tiga",
+      "keterangan": "angka 533"
+    },
+    {
+      "ngoko": "limangatus telung puluh papat",
+      "krama": "gangsal atus tigang dasa sekawan",
+      "arti": "lima ratus tiga puluh empat",
+      "keterangan": "angka 534"
+    },
+    {
+      "ngoko": "limangatus telung puluh lima",
+      "krama": "gangsal atus tigang dasa gangsal",
+      "arti": "lima ratus tiga puluh lima",
+      "keterangan": "angka 535"
+    },
+    {
+      "ngoko": "limangatus telung puluh enem",
+      "krama": "gangsal atus tigang dasa enem",
+      "arti": "lima ratus tiga puluh enam",
+      "keterangan": "angka 536"
+    },
+    {
+      "ngoko": "limangatus telung puluh pitu",
+      "krama": "gangsal atus tigang dasa pitu",
+      "arti": "lima ratus tiga puluh tujuh",
+      "keterangan": "angka 537"
+    },
+    {
+      "ngoko": "limangatus telung puluh wolu",
+      "krama": "gangsal atus tigang dasa wolu",
+      "arti": "lima ratus tiga puluh delapan",
+      "keterangan": "angka 538"
+    },
+    {
+      "ngoko": "limangatus telung puluh sanga",
+      "krama": "gangsal atus tigang dasa sanga",
+      "arti": "lima ratus tiga puluh sembilan",
+      "keterangan": "angka 539"
+    },
+    {
+      "ngoko": "limangatus patang puluh",
+      "krama": "gangsal atus kawan dasa",
+      "arti": "lima ratus empat puluh",
+      "keterangan": "angka 540"
+    },
+    {
+      "ngoko": "limangatus patang puluh siji",
+      "krama": "gangsal atus kawan dasa setunggal",
+      "arti": "lima ratus empat puluh satu",
+      "keterangan": "angka 541"
+    },
+    {
+      "ngoko": "limangatus patang puluh loro",
+      "krama": "gangsal atus kawan dasa kalih",
+      "arti": "lima ratus empat puluh dua",
+      "keterangan": "angka 542"
+    },
+    {
+      "ngoko": "limangatus patang puluh telu",
+      "krama": "gangsal atus kawan dasa tiga",
+      "arti": "lima ratus empat puluh tiga",
+      "keterangan": "angka 543"
+    },
+    {
+      "ngoko": "limangatus patang puluh papat",
+      "krama": "gangsal atus kawan dasa sekawan",
+      "arti": "lima ratus empat puluh empat",
+      "keterangan": "angka 544"
+    },
+    {
+      "ngoko": "limangatus patang puluh lima",
+      "krama": "gangsal atus kawan dasa gangsal",
+      "arti": "lima ratus empat puluh lima",
+      "keterangan": "angka 545"
+    },
+    {
+      "ngoko": "limangatus patang puluh enem",
+      "krama": "gangsal atus kawan dasa enem",
+      "arti": "lima ratus empat puluh enam",
+      "keterangan": "angka 546"
+    },
+    {
+      "ngoko": "limangatus patang puluh pitu",
+      "krama": "gangsal atus kawan dasa pitu",
+      "arti": "lima ratus empat puluh tujuh",
+      "keterangan": "angka 547"
+    },
+    {
+      "ngoko": "limangatus patang puluh wolu",
+      "krama": "gangsal atus kawan dasa wolu",
+      "arti": "lima ratus empat puluh delapan",
+      "keterangan": "angka 548"
+    },
+    {
+      "ngoko": "limangatus patang puluh sanga",
+      "krama": "gangsal atus kawan dasa sanga",
+      "arti": "lima ratus empat puluh sembilan",
+      "keterangan": "angka 549"
+    },
+    {
+      "ngoko": "limangatus séket",
+      "krama": "gangsal atus seket",
+      "arti": "lima ratus lima puluh",
+      "keterangan": "angka 550"
+    },
+    {
+      "ngoko": "limangatus séket siji",
+      "krama": "gangsal atus seket setunggal",
+      "arti": "lima ratus lima puluh satu",
+      "keterangan": "angka 551"
+    },
+    {
+      "ngoko": "limangatus séket loro",
+      "krama": "gangsal atus seket kalih",
+      "arti": "lima ratus lima puluh dua",
+      "keterangan": "angka 552"
+    },
+    {
+      "ngoko": "limangatus séket telu",
+      "krama": "gangsal atus seket tiga",
+      "arti": "lima ratus lima puluh tiga",
+      "keterangan": "angka 553"
+    },
+    {
+      "ngoko": "limangatus séket papat",
+      "krama": "gangsal atus seket sekawan",
+      "arti": "lima ratus lima puluh empat",
+      "keterangan": "angka 554"
+    },
+    {
+      "ngoko": "limangatus séket lima",
+      "krama": "gangsal atus seket gangsal",
+      "arti": "lima ratus lima puluh lima",
+      "keterangan": "angka 555"
+    },
+    {
+      "ngoko": "limangatus séket enem",
+      "krama": "gangsal atus seket enem",
+      "arti": "lima ratus lima puluh enam",
+      "keterangan": "angka 556"
+    },
+    {
+      "ngoko": "limangatus séket pitu",
+      "krama": "gangsal atus seket pitu",
+      "arti": "lima ratus lima puluh tujuh",
+      "keterangan": "angka 557"
+    },
+    {
+      "ngoko": "limangatus séket wolu",
+      "krama": "gangsal atus seket wolu",
+      "arti": "lima ratus lima puluh delapan",
+      "keterangan": "angka 558"
+    },
+    {
+      "ngoko": "limangatus séket sanga",
+      "krama": "gangsal atus seket sanga",
+      "arti": "lima ratus lima puluh sembilan",
+      "keterangan": "angka 559"
+    },
+    {
+      "ngoko": "limangatus sewidak",
+      "krama": "gangsal atus sewidak",
+      "arti": "lima ratus enam puluh",
+      "keterangan": "angka 560"
+    },
+    {
+      "ngoko": "limangatus sewidak siji",
+      "krama": "gangsal atus sewidak setunggal",
+      "arti": "lima ratus enam puluh satu",
+      "keterangan": "angka 561"
+    },
+    {
+      "ngoko": "limangatus sewidak loro",
+      "krama": "gangsal atus sewidak kalih",
+      "arti": "lima ratus enam puluh dua",
+      "keterangan": "angka 562"
+    },
+    {
+      "ngoko": "limangatus sewidak telu",
+      "krama": "gangsal atus sewidak tiga",
+      "arti": "lima ratus enam puluh tiga",
+      "keterangan": "angka 563"
+    },
+    {
+      "ngoko": "limangatus sewidak papat",
+      "krama": "gangsal atus sewidak sekawan",
+      "arti": "lima ratus enam puluh empat",
+      "keterangan": "angka 564"
+    },
+    {
+      "ngoko": "limangatus sewidak lima",
+      "krama": "gangsal atus sewidak gangsal",
+      "arti": "lima ratus enam puluh lima",
+      "keterangan": "angka 565"
+    },
+    {
+      "ngoko": "limangatus sewidak enem",
+      "krama": "gangsal atus sewidak enem",
+      "arti": "lima ratus enam puluh enam",
+      "keterangan": "angka 566"
+    },
+    {
+      "ngoko": "limangatus sewidak pitu",
+      "krama": "gangsal atus sewidak pitu",
+      "arti": "lima ratus enam puluh tujuh",
+      "keterangan": "angka 567"
+    },
+    {
+      "ngoko": "limangatus sewidak wolu",
+      "krama": "gangsal atus sewidak wolu",
+      "arti": "lima ratus enam puluh delapan",
+      "keterangan": "angka 568"
+    },
+    {
+      "ngoko": "limangatus sewidak sanga",
+      "krama": "gangsal atus sewidak sanga",
+      "arti": "lima ratus enam puluh sembilan",
+      "keterangan": "angka 569"
+    },
+    {
+      "ngoko": "limangatus pitung puluh",
+      "krama": "gangsal atus pitung dasa",
+      "arti": "lima ratus tujuh puluh",
+      "keterangan": "angka 570"
+    },
+    {
+      "ngoko": "limangatus pitung puluh siji",
+      "krama": "gangsal atus pitung dasa setunggal",
+      "arti": "lima ratus tujuh puluh satu",
+      "keterangan": "angka 571"
+    },
+    {
+      "ngoko": "limangatus pitung puluh loro",
+      "krama": "gangsal atus pitung dasa kalih",
+      "arti": "lima ratus tujuh puluh dua",
+      "keterangan": "angka 572"
+    },
+    {
+      "ngoko": "limangatus pitung puluh telu",
+      "krama": "gangsal atus pitung dasa tiga",
+      "arti": "lima ratus tujuh puluh tiga",
+      "keterangan": "angka 573"
+    },
+    {
+      "ngoko": "limangatus pitung puluh papat",
+      "krama": "gangsal atus pitung dasa sekawan",
+      "arti": "lima ratus tujuh puluh empat",
+      "keterangan": "angka 574"
+    },
+    {
+      "ngoko": "limangatus pitung puluh lima",
+      "krama": "gangsal atus pitung dasa gangsal",
+      "arti": "lima ratus tujuh puluh lima",
+      "keterangan": "angka 575"
+    },
+    {
+      "ngoko": "limangatus pitung puluh enem",
+      "krama": "gangsal atus pitung dasa enem",
+      "arti": "lima ratus tujuh puluh enam",
+      "keterangan": "angka 576"
+    },
+    {
+      "ngoko": "limangatus pitung puluh pitu",
+      "krama": "gangsal atus pitung dasa pitu",
+      "arti": "lima ratus tujuh puluh tujuh",
+      "keterangan": "angka 577"
+    },
+    {
+      "ngoko": "limangatus pitung puluh wolu",
+      "krama": "gangsal atus pitung dasa wolu",
+      "arti": "lima ratus tujuh puluh delapan",
+      "keterangan": "angka 578"
+    },
+    {
+      "ngoko": "limangatus pitung puluh sanga",
+      "krama": "gangsal atus pitung dasa sanga",
+      "arti": "lima ratus tujuh puluh sembilan",
+      "keterangan": "angka 579"
+    },
+    {
+      "ngoko": "limangatus wolung puluh",
+      "krama": "gangsal atus wolung dasa",
+      "arti": "lima ratus delapan puluh",
+      "keterangan": "angka 580"
+    },
+    {
+      "ngoko": "limangatus wolung puluh siji",
+      "krama": "gangsal atus wolung dasa setunggal",
+      "arti": "lima ratus delapan puluh satu",
+      "keterangan": "angka 581"
+    },
+    {
+      "ngoko": "limangatus wolung puluh loro",
+      "krama": "gangsal atus wolung dasa kalih",
+      "arti": "lima ratus delapan puluh dua",
+      "keterangan": "angka 582"
+    },
+    {
+      "ngoko": "limangatus wolung puluh telu",
+      "krama": "gangsal atus wolung dasa tiga",
+      "arti": "lima ratus delapan puluh tiga",
+      "keterangan": "angka 583"
+    },
+    {
+      "ngoko": "limangatus wolung puluh papat",
+      "krama": "gangsal atus wolung dasa sekawan",
+      "arti": "lima ratus delapan puluh empat",
+      "keterangan": "angka 584"
+    },
+    {
+      "ngoko": "limangatus wolung puluh lima",
+      "krama": "gangsal atus wolung dasa gangsal",
+      "arti": "lima ratus delapan puluh lima",
+      "keterangan": "angka 585"
+    },
+    {
+      "ngoko": "limangatus wolung puluh enem",
+      "krama": "gangsal atus wolung dasa enem",
+      "arti": "lima ratus delapan puluh enam",
+      "keterangan": "angka 586"
+    },
+    {
+      "ngoko": "limangatus wolung puluh pitu",
+      "krama": "gangsal atus wolung dasa pitu",
+      "arti": "lima ratus delapan puluh tujuh",
+      "keterangan": "angka 587"
+    },
+    {
+      "ngoko": "limangatus wolung puluh wolu",
+      "krama": "gangsal atus wolung dasa wolu",
+      "arti": "lima ratus delapan puluh delapan",
+      "keterangan": "angka 588"
+    },
+    {
+      "ngoko": "limangatus wolung puluh sanga",
+      "krama": "gangsal atus wolung dasa sanga",
+      "arti": "lima ratus delapan puluh sembilan",
+      "keterangan": "angka 589"
+    },
+    {
+      "ngoko": "limangatus sangang puluh",
+      "krama": "gangsal atus sangang dasa",
+      "arti": "lima ratus sembilan puluh",
+      "keterangan": "angka 590"
+    },
+    {
+      "ngoko": "limangatus sangang puluh siji",
+      "krama": "gangsal atus sangang dasa setunggal",
+      "arti": "lima ratus sembilan puluh satu",
+      "keterangan": "angka 591"
+    },
+    {
+      "ngoko": "limangatus sangang puluh loro",
+      "krama": "gangsal atus sangang dasa kalih",
+      "arti": "lima ratus sembilan puluh dua",
+      "keterangan": "angka 592"
+    },
+    {
+      "ngoko": "limangatus sangang puluh telu",
+      "krama": "gangsal atus sangang dasa tiga",
+      "arti": "lima ratus sembilan puluh tiga",
+      "keterangan": "angka 593"
+    },
+    {
+      "ngoko": "limangatus sangang puluh papat",
+      "krama": "gangsal atus sangang dasa sekawan",
+      "arti": "lima ratus sembilan puluh empat",
+      "keterangan": "angka 594"
+    },
+    {
+      "ngoko": "limangatus sangang puluh lima",
+      "krama": "gangsal atus sangang dasa gangsal",
+      "arti": "lima ratus sembilan puluh lima",
+      "keterangan": "angka 595"
+    },
+    {
+      "ngoko": "limangatus sangang puluh enem",
+      "krama": "gangsal atus sangang dasa enem",
+      "arti": "lima ratus sembilan puluh enam",
+      "keterangan": "angka 596"
+    },
+    {
+      "ngoko": "limangatus sangang puluh pitu",
+      "krama": "gangsal atus sangang dasa pitu",
+      "arti": "lima ratus sembilan puluh tujuh",
+      "keterangan": "angka 597"
+    },
+    {
+      "ngoko": "limangatus sangang puluh wolu",
+      "krama": "gangsal atus sangang dasa wolu",
+      "arti": "lima ratus sembilan puluh delapan",
+      "keterangan": "angka 598"
+    },
+    {
+      "ngoko": "limangatus sangang puluh sanga",
+      "krama": "gangsal atus sangang dasa sanga",
+      "arti": "lima ratus sembilan puluh sembilan",
+      "keterangan": "angka 599"
+    },
+    {
+      "ngoko": "enematus siji",
+      "krama": "enem atus setunggal",
+      "arti": "enam ratus satu",
+      "keterangan": "angka 601"
+    },
+    {
+      "ngoko": "enematus loro",
+      "krama": "enem atus kalih",
+      "arti": "enam ratus dua",
+      "keterangan": "angka 602"
+    },
+    {
+      "ngoko": "enematus telu",
+      "krama": "enem atus tiga",
+      "arti": "enam ratus tiga",
+      "keterangan": "angka 603"
+    },
+    {
+      "ngoko": "enematus papat",
+      "krama": "enem atus sekawan",
+      "arti": "enam ratus empat",
+      "keterangan": "angka 604"
+    },
+    {
+      "ngoko": "enematus lima",
+      "krama": "enem atus gangsal",
+      "arti": "enam ratus lima",
+      "keterangan": "angka 605"
+    },
+    {
+      "ngoko": "enematus enem",
+      "krama": "enem atus enem",
+      "arti": "enam ratus enam",
+      "keterangan": "angka 606"
+    },
+    {
+      "ngoko": "enematus pitu",
+      "krama": "enem atus pitu",
+      "arti": "enam ratus tujuh",
+      "keterangan": "angka 607"
+    },
+    {
+      "ngoko": "enematus wolu",
+      "krama": "enem atus wolu",
+      "arti": "enam ratus delapan",
+      "keterangan": "angka 608"
+    },
+    {
+      "ngoko": "enematus sanga",
+      "krama": "enem atus sanga",
+      "arti": "enam ratus sembilan",
+      "keterangan": "angka 609"
+    },
+    {
+      "ngoko": "enematus sepuluh",
+      "krama": "enem atus sedasa",
+      "arti": "enam ratus sepuluh",
+      "keterangan": "angka 610"
+    },
+    {
+      "ngoko": "enematus sewelas",
+      "krama": "enem atus sewelas",
+      "arti": "enam ratus sebelas",
+      "keterangan": "angka 611"
+    },
+    {
+      "ngoko": "enematus rolas",
+      "krama": "enem atus kalih welas",
+      "arti": "enam ratus dua belas",
+      "keterangan": "angka 612"
+    },
+    {
+      "ngoko": "enematus telulas",
+      "krama": "enem atus tiga welas",
+      "arti": "enam ratus tiga belas",
+      "keterangan": "angka 613"
+    },
+    {
+      "ngoko": "enematus patbelas",
+      "krama": "enem atus kawan welas",
+      "arti": "enam ratus empat belas",
+      "keterangan": "angka 614"
+    },
+    {
+      "ngoko": "enematus limalas",
+      "krama": "enem atus gangsal welas",
+      "arti": "enam ratus lima belas",
+      "keterangan": "angka 615"
+    },
+    {
+      "ngoko": "enematus nembelas",
+      "krama": "enem atus enem welas",
+      "arti": "enam ratus enam belas",
+      "keterangan": "angka 616"
+    },
+    {
+      "ngoko": "enematus pitulas",
+      "krama": "enem atus pitulas",
+      "arti": "enam ratus tujuh belas",
+      "keterangan": "angka 617"
+    },
+    {
+      "ngoko": "enematus wolulas",
+      "krama": "enem atus wolulas",
+      "arti": "enam ratus delapan belas",
+      "keterangan": "angka 618"
+    },
+    {
+      "ngoko": "enematus sangalas",
+      "krama": "enem atus sangalas",
+      "arti": "enam ratus sembilan belas",
+      "keterangan": "angka 619"
+    },
+    {
+      "ngoko": "enematus rong puluh",
+      "krama": "enem atus kalih dasa",
+      "arti": "enam ratus dua puluh",
+      "keterangan": "angka 620"
+    },
+    {
+      "ngoko": "enematus rong puluh siji",
+      "krama": "enem atus kalih dasa setunggal",
+      "arti": "enam ratus dua puluh satu",
+      "keterangan": "angka 621"
+    },
+    {
+      "ngoko": "enematus rong puluh loro",
+      "krama": "enem atus kalih dasa kalih",
+      "arti": "enam ratus dua puluh dua",
+      "keterangan": "angka 622"
+    },
+    {
+      "ngoko": "enematus rong puluh telu",
+      "krama": "enem atus kalih dasa tiga",
+      "arti": "enam ratus dua puluh tiga",
+      "keterangan": "angka 623"
+    },
+    {
+      "ngoko": "enematus rong puluh papat",
+      "krama": "enem atus kalih dasa sekawan",
+      "arti": "enam ratus dua puluh empat",
+      "keterangan": "angka 624"
+    },
+    {
+      "ngoko": "enematus rong puluh lima",
+      "krama": "enem atus kalih dasa gangsal",
+      "arti": "enam ratus dua puluh lima",
+      "keterangan": "angka 625"
+    },
+    {
+      "ngoko": "enematus rong puluh enem",
+      "krama": "enem atus kalih dasa enem",
+      "arti": "enam ratus dua puluh enam",
+      "keterangan": "angka 626"
+    },
+    {
+      "ngoko": "enematus rong puluh pitu",
+      "krama": "enem atus kalih dasa pitu",
+      "arti": "enam ratus dua puluh tujuh",
+      "keterangan": "angka 627"
+    },
+    {
+      "ngoko": "enematus rong puluh wolu",
+      "krama": "enem atus kalih dasa wolu",
+      "arti": "enam ratus dua puluh delapan",
+      "keterangan": "angka 628"
+    },
+    {
+      "ngoko": "enematus rong puluh sanga",
+      "krama": "enem atus kalih dasa sanga",
+      "arti": "enam ratus dua puluh sembilan",
+      "keterangan": "angka 629"
+    },
+    {
+      "ngoko": "enematus telung puluh",
+      "krama": "enem atus tigang dasa",
+      "arti": "enam ratus tiga puluh",
+      "keterangan": "angka 630"
+    },
+    {
+      "ngoko": "enematus telung puluh siji",
+      "krama": "enem atus tigang dasa setunggal",
+      "arti": "enam ratus tiga puluh satu",
+      "keterangan": "angka 631"
+    },
+    {
+      "ngoko": "enematus telung puluh loro",
+      "krama": "enem atus tigang dasa kalih",
+      "arti": "enam ratus tiga puluh dua",
+      "keterangan": "angka 632"
+    },
+    {
+      "ngoko": "enematus telung puluh telu",
+      "krama": "enem atus tigang dasa tiga",
+      "arti": "enam ratus tiga puluh tiga",
+      "keterangan": "angka 633"
+    },
+    {
+      "ngoko": "enematus telung puluh papat",
+      "krama": "enem atus tigang dasa sekawan",
+      "arti": "enam ratus tiga puluh empat",
+      "keterangan": "angka 634"
+    },
+    {
+      "ngoko": "enematus telung puluh lima",
+      "krama": "enem atus tigang dasa gangsal",
+      "arti": "enam ratus tiga puluh lima",
+      "keterangan": "angka 635"
+    },
+    {
+      "ngoko": "enematus telung puluh enem",
+      "krama": "enem atus tigang dasa enem",
+      "arti": "enam ratus tiga puluh enam",
+      "keterangan": "angka 636"
+    },
+    {
+      "ngoko": "enematus telung puluh pitu",
+      "krama": "enem atus tigang dasa pitu",
+      "arti": "enam ratus tiga puluh tujuh",
+      "keterangan": "angka 637"
+    },
+    {
+      "ngoko": "enematus telung puluh wolu",
+      "krama": "enem atus tigang dasa wolu",
+      "arti": "enam ratus tiga puluh delapan",
+      "keterangan": "angka 638"
+    },
+    {
+      "ngoko": "enematus telung puluh sanga",
+      "krama": "enem atus tigang dasa sanga",
+      "arti": "enam ratus tiga puluh sembilan",
+      "keterangan": "angka 639"
+    },
+    {
+      "ngoko": "enematus patang puluh",
+      "krama": "enem atus kawan dasa",
+      "arti": "enam ratus empat puluh",
+      "keterangan": "angka 640"
+    },
+    {
+      "ngoko": "enematus patang puluh siji",
+      "krama": "enem atus kawan dasa setunggal",
+      "arti": "enam ratus empat puluh satu",
+      "keterangan": "angka 641"
+    },
+    {
+      "ngoko": "enematus patang puluh loro",
+      "krama": "enem atus kawan dasa kalih",
+      "arti": "enam ratus empat puluh dua",
+      "keterangan": "angka 642"
+    },
+    {
+      "ngoko": "enematus patang puluh telu",
+      "krama": "enem atus kawan dasa tiga",
+      "arti": "enam ratus empat puluh tiga",
+      "keterangan": "angka 643"
+    },
+    {
+      "ngoko": "enematus patang puluh papat",
+      "krama": "enem atus kawan dasa sekawan",
+      "arti": "enam ratus empat puluh empat",
+      "keterangan": "angka 644"
+    },
+    {
+      "ngoko": "enematus patang puluh lima",
+      "krama": "enem atus kawan dasa gangsal",
+      "arti": "enam ratus empat puluh lima",
+      "keterangan": "angka 645"
+    },
+    {
+      "ngoko": "enematus patang puluh enem",
+      "krama": "enem atus kawan dasa enem",
+      "arti": "enam ratus empat puluh enam",
+      "keterangan": "angka 646"
+    },
+    {
+      "ngoko": "enematus patang puluh pitu",
+      "krama": "enem atus kawan dasa pitu",
+      "arti": "enam ratus empat puluh tujuh",
+      "keterangan": "angka 647"
+    },
+    {
+      "ngoko": "enematus patang puluh wolu",
+      "krama": "enem atus kawan dasa wolu",
+      "arti": "enam ratus empat puluh delapan",
+      "keterangan": "angka 648"
+    },
+    {
+      "ngoko": "enematus patang puluh sanga",
+      "krama": "enem atus kawan dasa sanga",
+      "arti": "enam ratus empat puluh sembilan",
+      "keterangan": "angka 649"
+    },
+    {
+      "ngoko": "enematus séket",
+      "krama": "enem atus seket",
+      "arti": "enam ratus lima puluh",
+      "keterangan": "angka 650"
+    },
+    {
+      "ngoko": "enematus séket siji",
+      "krama": "enem atus seket setunggal",
+      "arti": "enam ratus lima puluh satu",
+      "keterangan": "angka 651"
+    },
+    {
+      "ngoko": "enematus séket loro",
+      "krama": "enem atus seket kalih",
+      "arti": "enam ratus lima puluh dua",
+      "keterangan": "angka 652"
+    },
+    {
+      "ngoko": "enematus séket telu",
+      "krama": "enem atus seket tiga",
+      "arti": "enam ratus lima puluh tiga",
+      "keterangan": "angka 653"
+    },
+    {
+      "ngoko": "enematus séket papat",
+      "krama": "enem atus seket sekawan",
+      "arti": "enam ratus lima puluh empat",
+      "keterangan": "angka 654"
+    },
+    {
+      "ngoko": "enematus séket lima",
+      "krama": "enem atus seket gangsal",
+      "arti": "enam ratus lima puluh lima",
+      "keterangan": "angka 655"
+    },
+    {
+      "ngoko": "enematus séket enem",
+      "krama": "enem atus seket enem",
+      "arti": "enam ratus lima puluh enam",
+      "keterangan": "angka 656"
+    },
+    {
+      "ngoko": "enematus séket pitu",
+      "krama": "enem atus seket pitu",
+      "arti": "enam ratus lima puluh tujuh",
+      "keterangan": "angka 657"
+    },
+    {
+      "ngoko": "enematus séket wolu",
+      "krama": "enem atus seket wolu",
+      "arti": "enam ratus lima puluh delapan",
+      "keterangan": "angka 658"
+    },
+    {
+      "ngoko": "enematus séket sanga",
+      "krama": "enem atus seket sanga",
+      "arti": "enam ratus lima puluh sembilan",
+      "keterangan": "angka 659"
+    },
+    {
+      "ngoko": "enematus sewidak",
+      "krama": "enem atus sewidak",
+      "arti": "enam ratus enam puluh",
+      "keterangan": "angka 660"
+    },
+    {
+      "ngoko": "enematus sewidak siji",
+      "krama": "enem atus sewidak setunggal",
+      "arti": "enam ratus enam puluh satu",
+      "keterangan": "angka 661"
+    },
+    {
+      "ngoko": "enematus sewidak loro",
+      "krama": "enem atus sewidak kalih",
+      "arti": "enam ratus enam puluh dua",
+      "keterangan": "angka 662"
+    },
+    {
+      "ngoko": "enematus sewidak telu",
+      "krama": "enem atus sewidak tiga",
+      "arti": "enam ratus enam puluh tiga",
+      "keterangan": "angka 663"
+    },
+    {
+      "ngoko": "enematus sewidak papat",
+      "krama": "enem atus sewidak sekawan",
+      "arti": "enam ratus enam puluh empat",
+      "keterangan": "angka 664"
+    },
+    {
+      "ngoko": "enematus sewidak lima",
+      "krama": "enem atus sewidak gangsal",
+      "arti": "enam ratus enam puluh lima",
+      "keterangan": "angka 665"
+    },
+    {
+      "ngoko": "enematus sewidak enem",
+      "krama": "enem atus sewidak enem",
+      "arti": "enam ratus enam puluh enam",
+      "keterangan": "angka 666"
+    },
+    {
+      "ngoko": "enematus sewidak pitu",
+      "krama": "enem atus sewidak pitu",
+      "arti": "enam ratus enam puluh tujuh",
+      "keterangan": "angka 667"
+    },
+    {
+      "ngoko": "enematus sewidak wolu",
+      "krama": "enem atus sewidak wolu",
+      "arti": "enam ratus enam puluh delapan",
+      "keterangan": "angka 668"
+    },
+    {
+      "ngoko": "enematus sewidak sanga",
+      "krama": "enem atus sewidak sanga",
+      "arti": "enam ratus enam puluh sembilan",
+      "keterangan": "angka 669"
+    },
+    {
+      "ngoko": "enematus pitung puluh",
+      "krama": "enem atus pitung dasa",
+      "arti": "enam ratus tujuh puluh",
+      "keterangan": "angka 670"
+    },
+    {
+      "ngoko": "enematus pitung puluh siji",
+      "krama": "enem atus pitung dasa setunggal",
+      "arti": "enam ratus tujuh puluh satu",
+      "keterangan": "angka 671"
+    },
+    {
+      "ngoko": "enematus pitung puluh loro",
+      "krama": "enem atus pitung dasa kalih",
+      "arti": "enam ratus tujuh puluh dua",
+      "keterangan": "angka 672"
+    },
+    {
+      "ngoko": "enematus pitung puluh telu",
+      "krama": "enem atus pitung dasa tiga",
+      "arti": "enam ratus tujuh puluh tiga",
+      "keterangan": "angka 673"
+    },
+    {
+      "ngoko": "enematus pitung puluh papat",
+      "krama": "enem atus pitung dasa sekawan",
+      "arti": "enam ratus tujuh puluh empat",
+      "keterangan": "angka 674"
+    },
+    {
+      "ngoko": "enematus pitung puluh lima",
+      "krama": "enem atus pitung dasa gangsal",
+      "arti": "enam ratus tujuh puluh lima",
+      "keterangan": "angka 675"
+    },
+    {
+      "ngoko": "enematus pitung puluh enem",
+      "krama": "enem atus pitung dasa enem",
+      "arti": "enam ratus tujuh puluh enam",
+      "keterangan": "angka 676"
+    },
+    {
+      "ngoko": "enematus pitung puluh pitu",
+      "krama": "enem atus pitung dasa pitu",
+      "arti": "enam ratus tujuh puluh tujuh",
+      "keterangan": "angka 677"
+    },
+    {
+      "ngoko": "enematus pitung puluh wolu",
+      "krama": "enem atus pitung dasa wolu",
+      "arti": "enam ratus tujuh puluh delapan",
+      "keterangan": "angka 678"
+    },
+    {
+      "ngoko": "enematus pitung puluh sanga",
+      "krama": "enem atus pitung dasa sanga",
+      "arti": "enam ratus tujuh puluh sembilan",
+      "keterangan": "angka 679"
+    },
+    {
+      "ngoko": "enematus wolung puluh",
+      "krama": "enem atus wolung dasa",
+      "arti": "enam ratus delapan puluh",
+      "keterangan": "angka 680"
+    },
+    {
+      "ngoko": "enematus wolung puluh siji",
+      "krama": "enem atus wolung dasa setunggal",
+      "arti": "enam ratus delapan puluh satu",
+      "keterangan": "angka 681"
+    },
+    {
+      "ngoko": "enematus wolung puluh loro",
+      "krama": "enem atus wolung dasa kalih",
+      "arti": "enam ratus delapan puluh dua",
+      "keterangan": "angka 682"
+    },
+    {
+      "ngoko": "enematus wolung puluh telu",
+      "krama": "enem atus wolung dasa tiga",
+      "arti": "enam ratus delapan puluh tiga",
+      "keterangan": "angka 683"
+    },
+    {
+      "ngoko": "enematus wolung puluh papat",
+      "krama": "enem atus wolung dasa sekawan",
+      "arti": "enam ratus delapan puluh empat",
+      "keterangan": "angka 684"
+    },
+    {
+      "ngoko": "enematus wolung puluh lima",
+      "krama": "enem atus wolung dasa gangsal",
+      "arti": "enam ratus delapan puluh lima",
+      "keterangan": "angka 685"
+    },
+    {
+      "ngoko": "enematus wolung puluh enem",
+      "krama": "enem atus wolung dasa enem",
+      "arti": "enam ratus delapan puluh enam",
+      "keterangan": "angka 686"
+    },
+    {
+      "ngoko": "enematus wolung puluh pitu",
+      "krama": "enem atus wolung dasa pitu",
+      "arti": "enam ratus delapan puluh tujuh",
+      "keterangan": "angka 687"
+    },
+    {
+      "ngoko": "enematus wolung puluh wolu",
+      "krama": "enem atus wolung dasa wolu",
+      "arti": "enam ratus delapan puluh delapan",
+      "keterangan": "angka 688"
+    },
+    {
+      "ngoko": "enematus wolung puluh sanga",
+      "krama": "enem atus wolung dasa sanga",
+      "arti": "enam ratus delapan puluh sembilan",
+      "keterangan": "angka 689"
+    },
+    {
+      "ngoko": "enematus sangang puluh",
+      "krama": "enem atus sangang dasa",
+      "arti": "enam ratus sembilan puluh",
+      "keterangan": "angka 690"
+    },
+    {
+      "ngoko": "enematus sangang puluh siji",
+      "krama": "enem atus sangang dasa setunggal",
+      "arti": "enam ratus sembilan puluh satu",
+      "keterangan": "angka 691"
+    },
+    {
+      "ngoko": "enematus sangang puluh loro",
+      "krama": "enem atus sangang dasa kalih",
+      "arti": "enam ratus sembilan puluh dua",
+      "keterangan": "angka 692"
+    },
+    {
+      "ngoko": "enematus sangang puluh telu",
+      "krama": "enem atus sangang dasa tiga",
+      "arti": "enam ratus sembilan puluh tiga",
+      "keterangan": "angka 693"
+    },
+    {
+      "ngoko": "enematus sangang puluh papat",
+      "krama": "enem atus sangang dasa sekawan",
+      "arti": "enam ratus sembilan puluh empat",
+      "keterangan": "angka 694"
+    },
+    {
+      "ngoko": "enematus sangang puluh lima",
+      "krama": "enem atus sangang dasa gangsal",
+      "arti": "enam ratus sembilan puluh lima",
+      "keterangan": "angka 695"
+    },
+    {
+      "ngoko": "enematus sangang puluh enem",
+      "krama": "enem atus sangang dasa enem",
+      "arti": "enam ratus sembilan puluh enam",
+      "keterangan": "angka 696"
+    },
+    {
+      "ngoko": "enematus sangang puluh pitu",
+      "krama": "enem atus sangang dasa pitu",
+      "arti": "enam ratus sembilan puluh tujuh",
+      "keterangan": "angka 697"
+    },
+    {
+      "ngoko": "enematus sangang puluh wolu",
+      "krama": "enem atus sangang dasa wolu",
+      "arti": "enam ratus sembilan puluh delapan",
+      "keterangan": "angka 698"
+    },
+    {
+      "ngoko": "enematus sangang puluh sanga",
+      "krama": "enem atus sangang dasa sanga",
+      "arti": "enam ratus sembilan puluh sembilan",
+      "keterangan": "angka 699"
+    },
+    {
+      "ngoko": "pitungatus siji",
+      "krama": "pitung atus setunggal",
+      "arti": "tujuh ratus satu",
+      "keterangan": "angka 701"
+    },
+    {
+      "ngoko": "pitungatus loro",
+      "krama": "pitung atus kalih",
+      "arti": "tujuh ratus dua",
+      "keterangan": "angka 702"
+    },
+    {
+      "ngoko": "pitungatus telu",
+      "krama": "pitung atus tiga",
+      "arti": "tujuh ratus tiga",
+      "keterangan": "angka 703"
+    },
+    {
+      "ngoko": "pitungatus papat",
+      "krama": "pitung atus sekawan",
+      "arti": "tujuh ratus empat",
+      "keterangan": "angka 704"
+    },
+    {
+      "ngoko": "pitungatus lima",
+      "krama": "pitung atus gangsal",
+      "arti": "tujuh ratus lima",
+      "keterangan": "angka 705"
+    },
+    {
+      "ngoko": "pitungatus enem",
+      "krama": "pitung atus enem",
+      "arti": "tujuh ratus enam",
+      "keterangan": "angka 706"
+    },
+    {
+      "ngoko": "pitungatus pitu",
+      "krama": "pitung atus pitu",
+      "arti": "tujuh ratus tujuh",
+      "keterangan": "angka 707"
+    },
+    {
+      "ngoko": "pitungatus wolu",
+      "krama": "pitung atus wolu",
+      "arti": "tujuh ratus delapan",
+      "keterangan": "angka 708"
+    },
+    {
+      "ngoko": "pitungatus sanga",
+      "krama": "pitung atus sanga",
+      "arti": "tujuh ratus sembilan",
+      "keterangan": "angka 709"
+    },
+    {
+      "ngoko": "pitungatus sepuluh",
+      "krama": "pitung atus sedasa",
+      "arti": "tujuh ratus sepuluh",
+      "keterangan": "angka 710"
+    },
+    {
+      "ngoko": "pitungatus sewelas",
+      "krama": "pitung atus sewelas",
+      "arti": "tujuh ratus sebelas",
+      "keterangan": "angka 711"
+    },
+    {
+      "ngoko": "pitungatus rolas",
+      "krama": "pitung atus kalih welas",
+      "arti": "tujuh ratus dua belas",
+      "keterangan": "angka 712"
+    },
+    {
+      "ngoko": "pitungatus telulas",
+      "krama": "pitung atus tiga welas",
+      "arti": "tujuh ratus tiga belas",
+      "keterangan": "angka 713"
+    },
+    {
+      "ngoko": "pitungatus patbelas",
+      "krama": "pitung atus kawan welas",
+      "arti": "tujuh ratus empat belas",
+      "keterangan": "angka 714"
+    },
+    {
+      "ngoko": "pitungatus limalas",
+      "krama": "pitung atus gangsal welas",
+      "arti": "tujuh ratus lima belas",
+      "keterangan": "angka 715"
+    },
+    {
+      "ngoko": "pitungatus nembelas",
+      "krama": "pitung atus enem welas",
+      "arti": "tujuh ratus enam belas",
+      "keterangan": "angka 716"
+    },
+    {
+      "ngoko": "pitungatus pitulas",
+      "krama": "pitung atus pitulas",
+      "arti": "tujuh ratus tujuh belas",
+      "keterangan": "angka 717"
+    },
+    {
+      "ngoko": "pitungatus wolulas",
+      "krama": "pitung atus wolulas",
+      "arti": "tujuh ratus delapan belas",
+      "keterangan": "angka 718"
+    },
+    {
+      "ngoko": "pitungatus sangalas",
+      "krama": "pitung atus sangalas",
+      "arti": "tujuh ratus sembilan belas",
+      "keterangan": "angka 719"
+    },
+    {
+      "ngoko": "pitungatus rong puluh",
+      "krama": "pitung atus kalih dasa",
+      "arti": "tujuh ratus dua puluh",
+      "keterangan": "angka 720"
+    },
+    {
+      "ngoko": "pitungatus rong puluh siji",
+      "krama": "pitung atus kalih dasa setunggal",
+      "arti": "tujuh ratus dua puluh satu",
+      "keterangan": "angka 721"
+    },
+    {
+      "ngoko": "pitungatus rong puluh loro",
+      "krama": "pitung atus kalih dasa kalih",
+      "arti": "tujuh ratus dua puluh dua",
+      "keterangan": "angka 722"
+    },
+    {
+      "ngoko": "pitungatus rong puluh telu",
+      "krama": "pitung atus kalih dasa tiga",
+      "arti": "tujuh ratus dua puluh tiga",
+      "keterangan": "angka 723"
+    },
+    {
+      "ngoko": "pitungatus rong puluh papat",
+      "krama": "pitung atus kalih dasa sekawan",
+      "arti": "tujuh ratus dua puluh empat",
+      "keterangan": "angka 724"
+    },
+    {
+      "ngoko": "pitungatus rong puluh lima",
+      "krama": "pitung atus kalih dasa gangsal",
+      "arti": "tujuh ratus dua puluh lima",
+      "keterangan": "angka 725"
+    },
+    {
+      "ngoko": "pitungatus rong puluh enem",
+      "krama": "pitung atus kalih dasa enem",
+      "arti": "tujuh ratus dua puluh enam",
+      "keterangan": "angka 726"
+    },
+    {
+      "ngoko": "pitungatus rong puluh pitu",
+      "krama": "pitung atus kalih dasa pitu",
+      "arti": "tujuh ratus dua puluh tujuh",
+      "keterangan": "angka 727"
+    },
+    {
+      "ngoko": "pitungatus rong puluh wolu",
+      "krama": "pitung atus kalih dasa wolu",
+      "arti": "tujuh ratus dua puluh delapan",
+      "keterangan": "angka 728"
+    },
+    {
+      "ngoko": "pitungatus rong puluh sanga",
+      "krama": "pitung atus kalih dasa sanga",
+      "arti": "tujuh ratus dua puluh sembilan",
+      "keterangan": "angka 729"
+    },
+    {
+      "ngoko": "pitungatus telung puluh",
+      "krama": "pitung atus tigang dasa",
+      "arti": "tujuh ratus tiga puluh",
+      "keterangan": "angka 730"
+    },
+    {
+      "ngoko": "pitungatus telung puluh siji",
+      "krama": "pitung atus tigang dasa setunggal",
+      "arti": "tujuh ratus tiga puluh satu",
+      "keterangan": "angka 731"
+    },
+    {
+      "ngoko": "pitungatus telung puluh loro",
+      "krama": "pitung atus tigang dasa kalih",
+      "arti": "tujuh ratus tiga puluh dua",
+      "keterangan": "angka 732"
+    },
+    {
+      "ngoko": "pitungatus telung puluh telu",
+      "krama": "pitung atus tigang dasa tiga",
+      "arti": "tujuh ratus tiga puluh tiga",
+      "keterangan": "angka 733"
+    },
+    {
+      "ngoko": "pitungatus telung puluh papat",
+      "krama": "pitung atus tigang dasa sekawan",
+      "arti": "tujuh ratus tiga puluh empat",
+      "keterangan": "angka 734"
+    },
+    {
+      "ngoko": "pitungatus telung puluh lima",
+      "krama": "pitung atus tigang dasa gangsal",
+      "arti": "tujuh ratus tiga puluh lima",
+      "keterangan": "angka 735"
+    },
+    {
+      "ngoko": "pitungatus telung puluh enem",
+      "krama": "pitung atus tigang dasa enem",
+      "arti": "tujuh ratus tiga puluh enam",
+      "keterangan": "angka 736"
+    },
+    {
+      "ngoko": "pitungatus telung puluh pitu",
+      "krama": "pitung atus tigang dasa pitu",
+      "arti": "tujuh ratus tiga puluh tujuh",
+      "keterangan": "angka 737"
+    },
+    {
+      "ngoko": "pitungatus telung puluh wolu",
+      "krama": "pitung atus tigang dasa wolu",
+      "arti": "tujuh ratus tiga puluh delapan",
+      "keterangan": "angka 738"
+    },
+    {
+      "ngoko": "pitungatus telung puluh sanga",
+      "krama": "pitung atus tigang dasa sanga",
+      "arti": "tujuh ratus tiga puluh sembilan",
+      "keterangan": "angka 739"
+    },
+    {
+      "ngoko": "pitungatus patang puluh",
+      "krama": "pitung atus kawan dasa",
+      "arti": "tujuh ratus empat puluh",
+      "keterangan": "angka 740"
+    },
+    {
+      "ngoko": "pitungatus patang puluh siji",
+      "krama": "pitung atus kawan dasa setunggal",
+      "arti": "tujuh ratus empat puluh satu",
+      "keterangan": "angka 741"
+    },
+    {
+      "ngoko": "pitungatus patang puluh loro",
+      "krama": "pitung atus kawan dasa kalih",
+      "arti": "tujuh ratus empat puluh dua",
+      "keterangan": "angka 742"
+    },
+    {
+      "ngoko": "pitungatus patang puluh telu",
+      "krama": "pitung atus kawan dasa tiga",
+      "arti": "tujuh ratus empat puluh tiga",
+      "keterangan": "angka 743"
+    },
+    {
+      "ngoko": "pitungatus patang puluh papat",
+      "krama": "pitung atus kawan dasa sekawan",
+      "arti": "tujuh ratus empat puluh empat",
+      "keterangan": "angka 744"
+    },
+    {
+      "ngoko": "pitungatus patang puluh lima",
+      "krama": "pitung atus kawan dasa gangsal",
+      "arti": "tujuh ratus empat puluh lima",
+      "keterangan": "angka 745"
+    },
+    {
+      "ngoko": "pitungatus patang puluh enem",
+      "krama": "pitung atus kawan dasa enem",
+      "arti": "tujuh ratus empat puluh enam",
+      "keterangan": "angka 746"
+    },
+    {
+      "ngoko": "pitungatus patang puluh pitu",
+      "krama": "pitung atus kawan dasa pitu",
+      "arti": "tujuh ratus empat puluh tujuh",
+      "keterangan": "angka 747"
+    },
+    {
+      "ngoko": "pitungatus patang puluh wolu",
+      "krama": "pitung atus kawan dasa wolu",
+      "arti": "tujuh ratus empat puluh delapan",
+      "keterangan": "angka 748"
+    },
+    {
+      "ngoko": "pitungatus patang puluh sanga",
+      "krama": "pitung atus kawan dasa sanga",
+      "arti": "tujuh ratus empat puluh sembilan",
+      "keterangan": "angka 749"
+    },
+    {
+      "ngoko": "pitungatus séket",
+      "krama": "pitung atus seket",
+      "arti": "tujuh ratus lima puluh",
+      "keterangan": "angka 750"
+    },
+    {
+      "ngoko": "pitungatus séket siji",
+      "krama": "pitung atus seket setunggal",
+      "arti": "tujuh ratus lima puluh satu",
+      "keterangan": "angka 751"
+    },
+    {
+      "ngoko": "pitungatus séket loro",
+      "krama": "pitung atus seket kalih",
+      "arti": "tujuh ratus lima puluh dua",
+      "keterangan": "angka 752"
+    },
+    {
+      "ngoko": "pitungatus séket telu",
+      "krama": "pitung atus seket tiga",
+      "arti": "tujuh ratus lima puluh tiga",
+      "keterangan": "angka 753"
+    },
+    {
+      "ngoko": "pitungatus séket papat",
+      "krama": "pitung atus seket sekawan",
+      "arti": "tujuh ratus lima puluh empat",
+      "keterangan": "angka 754"
+    },
+    {
+      "ngoko": "pitungatus séket lima",
+      "krama": "pitung atus seket gangsal",
+      "arti": "tujuh ratus lima puluh lima",
+      "keterangan": "angka 755"
+    },
+    {
+      "ngoko": "pitungatus séket enem",
+      "krama": "pitung atus seket enem",
+      "arti": "tujuh ratus lima puluh enam",
+      "keterangan": "angka 756"
+    },
+    {
+      "ngoko": "pitungatus séket pitu",
+      "krama": "pitung atus seket pitu",
+      "arti": "tujuh ratus lima puluh tujuh",
+      "keterangan": "angka 757"
+    },
+    {
+      "ngoko": "pitungatus séket wolu",
+      "krama": "pitung atus seket wolu",
+      "arti": "tujuh ratus lima puluh delapan",
+      "keterangan": "angka 758"
+    },
+    {
+      "ngoko": "pitungatus séket sanga",
+      "krama": "pitung atus seket sanga",
+      "arti": "tujuh ratus lima puluh sembilan",
+      "keterangan": "angka 759"
+    },
+    {
+      "ngoko": "pitungatus sewidak",
+      "krama": "pitung atus sewidak",
+      "arti": "tujuh ratus enam puluh",
+      "keterangan": "angka 760"
+    },
+    {
+      "ngoko": "pitungatus sewidak siji",
+      "krama": "pitung atus sewidak setunggal",
+      "arti": "tujuh ratus enam puluh satu",
+      "keterangan": "angka 761"
+    },
+    {
+      "ngoko": "pitungatus sewidak loro",
+      "krama": "pitung atus sewidak kalih",
+      "arti": "tujuh ratus enam puluh dua",
+      "keterangan": "angka 762"
+    },
+    {
+      "ngoko": "pitungatus sewidak telu",
+      "krama": "pitung atus sewidak tiga",
+      "arti": "tujuh ratus enam puluh tiga",
+      "keterangan": "angka 763"
+    },
+    {
+      "ngoko": "pitungatus sewidak papat",
+      "krama": "pitung atus sewidak sekawan",
+      "arti": "tujuh ratus enam puluh empat",
+      "keterangan": "angka 764"
+    },
+    {
+      "ngoko": "pitungatus sewidak lima",
+      "krama": "pitung atus sewidak gangsal",
+      "arti": "tujuh ratus enam puluh lima",
+      "keterangan": "angka 765"
+    },
+    {
+      "ngoko": "pitungatus sewidak enem",
+      "krama": "pitung atus sewidak enem",
+      "arti": "tujuh ratus enam puluh enam",
+      "keterangan": "angka 766"
+    },
+    {
+      "ngoko": "pitungatus sewidak pitu",
+      "krama": "pitung atus sewidak pitu",
+      "arti": "tujuh ratus enam puluh tujuh",
+      "keterangan": "angka 767"
+    },
+    {
+      "ngoko": "pitungatus sewidak wolu",
+      "krama": "pitung atus sewidak wolu",
+      "arti": "tujuh ratus enam puluh delapan",
+      "keterangan": "angka 768"
+    },
+    {
+      "ngoko": "pitungatus sewidak sanga",
+      "krama": "pitung atus sewidak sanga",
+      "arti": "tujuh ratus enam puluh sembilan",
+      "keterangan": "angka 769"
+    },
+    {
+      "ngoko": "pitungatus pitung puluh",
+      "krama": "pitung atus pitung dasa",
+      "arti": "tujuh ratus tujuh puluh",
+      "keterangan": "angka 770"
+    },
+    {
+      "ngoko": "pitungatus pitung puluh siji",
+      "krama": "pitung atus pitung dasa setunggal",
+      "arti": "tujuh ratus tujuh puluh satu",
+      "keterangan": "angka 771"
+    },
+    {
+      "ngoko": "pitungatus pitung puluh loro",
+      "krama": "pitung atus pitung dasa kalih",
+      "arti": "tujuh ratus tujuh puluh dua",
+      "keterangan": "angka 772"
+    },
+    {
+      "ngoko": "pitungatus pitung puluh telu",
+      "krama": "pitung atus pitung dasa tiga",
+      "arti": "tujuh ratus tujuh puluh tiga",
+      "keterangan": "angka 773"
+    },
+    {
+      "ngoko": "pitungatus pitung puluh papat",
+      "krama": "pitung atus pitung dasa sekawan",
+      "arti": "tujuh ratus tujuh puluh empat",
+      "keterangan": "angka 774"
+    },
+    {
+      "ngoko": "pitungatus pitung puluh lima",
+      "krama": "pitung atus pitung dasa gangsal",
+      "arti": "tujuh ratus tujuh puluh lima",
+      "keterangan": "angka 775"
+    },
+    {
+      "ngoko": "pitungatus pitung puluh enem",
+      "krama": "pitung atus pitung dasa enem",
+      "arti": "tujuh ratus tujuh puluh enam",
+      "keterangan": "angka 776"
+    },
+    {
+      "ngoko": "pitungatus pitung puluh pitu",
+      "krama": "pitung atus pitung dasa pitu",
+      "arti": "tujuh ratus tujuh puluh tujuh",
+      "keterangan": "angka 777"
+    },
+    {
+      "ngoko": "pitungatus pitung puluh wolu",
+      "krama": "pitung atus pitung dasa wolu",
+      "arti": "tujuh ratus tujuh puluh delapan",
+      "keterangan": "angka 778"
+    },
+    {
+      "ngoko": "pitungatus pitung puluh sanga",
+      "krama": "pitung atus pitung dasa sanga",
+      "arti": "tujuh ratus tujuh puluh sembilan",
+      "keterangan": "angka 779"
+    },
+    {
+      "ngoko": "pitungatus wolung puluh",
+      "krama": "pitung atus wolung dasa",
+      "arti": "tujuh ratus delapan puluh",
+      "keterangan": "angka 780"
+    },
+    {
+      "ngoko": "pitungatus wolung puluh siji",
+      "krama": "pitung atus wolung dasa setunggal",
+      "arti": "tujuh ratus delapan puluh satu",
+      "keterangan": "angka 781"
+    },
+    {
+      "ngoko": "pitungatus wolung puluh loro",
+      "krama": "pitung atus wolung dasa kalih",
+      "arti": "tujuh ratus delapan puluh dua",
+      "keterangan": "angka 782"
+    },
+    {
+      "ngoko": "pitungatus wolung puluh telu",
+      "krama": "pitung atus wolung dasa tiga",
+      "arti": "tujuh ratus delapan puluh tiga",
+      "keterangan": "angka 783"
+    },
+    {
+      "ngoko": "pitungatus wolung puluh papat",
+      "krama": "pitung atus wolung dasa sekawan",
+      "arti": "tujuh ratus delapan puluh empat",
+      "keterangan": "angka 784"
+    },
+    {
+      "ngoko": "pitungatus wolung puluh lima",
+      "krama": "pitung atus wolung dasa gangsal",
+      "arti": "tujuh ratus delapan puluh lima",
+      "keterangan": "angka 785"
+    },
+    {
+      "ngoko": "pitungatus wolung puluh enem",
+      "krama": "pitung atus wolung dasa enem",
+      "arti": "tujuh ratus delapan puluh enam",
+      "keterangan": "angka 786"
+    },
+    {
+      "ngoko": "pitungatus wolung puluh pitu",
+      "krama": "pitung atus wolung dasa pitu",
+      "arti": "tujuh ratus delapan puluh tujuh",
+      "keterangan": "angka 787"
+    },
+    {
+      "ngoko": "pitungatus wolung puluh wolu",
+      "krama": "pitung atus wolung dasa wolu",
+      "arti": "tujuh ratus delapan puluh delapan",
+      "keterangan": "angka 788"
+    },
+    {
+      "ngoko": "pitungatus wolung puluh sanga",
+      "krama": "pitung atus wolung dasa sanga",
+      "arti": "tujuh ratus delapan puluh sembilan",
+      "keterangan": "angka 789"
+    },
+    {
+      "ngoko": "pitungatus sangang puluh",
+      "krama": "pitung atus sangang dasa",
+      "arti": "tujuh ratus sembilan puluh",
+      "keterangan": "angka 790"
+    },
+    {
+      "ngoko": "pitungatus sangang puluh siji",
+      "krama": "pitung atus sangang dasa setunggal",
+      "arti": "tujuh ratus sembilan puluh satu",
+      "keterangan": "angka 791"
+    },
+    {
+      "ngoko": "pitungatus sangang puluh loro",
+      "krama": "pitung atus sangang dasa kalih",
+      "arti": "tujuh ratus sembilan puluh dua",
+      "keterangan": "angka 792"
+    },
+    {
+      "ngoko": "pitungatus sangang puluh telu",
+      "krama": "pitung atus sangang dasa tiga",
+      "arti": "tujuh ratus sembilan puluh tiga",
+      "keterangan": "angka 793"
+    },
+    {
+      "ngoko": "pitungatus sangang puluh papat",
+      "krama": "pitung atus sangang dasa sekawan",
+      "arti": "tujuh ratus sembilan puluh empat",
+      "keterangan": "angka 794"
+    },
+    {
+      "ngoko": "pitungatus sangang puluh lima",
+      "krama": "pitung atus sangang dasa gangsal",
+      "arti": "tujuh ratus sembilan puluh lima",
+      "keterangan": "angka 795"
+    },
+    {
+      "ngoko": "pitungatus sangang puluh enem",
+      "krama": "pitung atus sangang dasa enem",
+      "arti": "tujuh ratus sembilan puluh enam",
+      "keterangan": "angka 796"
+    },
+    {
+      "ngoko": "pitungatus sangang puluh pitu",
+      "krama": "pitung atus sangang dasa pitu",
+      "arti": "tujuh ratus sembilan puluh tujuh",
+      "keterangan": "angka 797"
+    },
+    {
+      "ngoko": "pitungatus sangang puluh wolu",
+      "krama": "pitung atus sangang dasa wolu",
+      "arti": "tujuh ratus sembilan puluh delapan",
+      "keterangan": "angka 798"
+    },
+    {
+      "ngoko": "pitungatus sangang puluh sanga",
+      "krama": "pitung atus sangang dasa sanga",
+      "arti": "tujuh ratus sembilan puluh sembilan",
+      "keterangan": "angka 799"
+    },
+    {
+      "ngoko": "wolungatus siji",
+      "krama": "wolung atus setunggal",
+      "arti": "delapan ratus satu",
+      "keterangan": "angka 801"
+    },
+    {
+      "ngoko": "wolungatus loro",
+      "krama": "wolung atus kalih",
+      "arti": "delapan ratus dua",
+      "keterangan": "angka 802"
+    },
+    {
+      "ngoko": "wolungatus telu",
+      "krama": "wolung atus tiga",
+      "arti": "delapan ratus tiga",
+      "keterangan": "angka 803"
+    },
+    {
+      "ngoko": "wolungatus papat",
+      "krama": "wolung atus sekawan",
+      "arti": "delapan ratus empat",
+      "keterangan": "angka 804"
+    },
+    {
+      "ngoko": "wolungatus lima",
+      "krama": "wolung atus gangsal",
+      "arti": "delapan ratus lima",
+      "keterangan": "angka 805"
+    },
+    {
+      "ngoko": "wolungatus enem",
+      "krama": "wolung atus enem",
+      "arti": "delapan ratus enam",
+      "keterangan": "angka 806"
+    },
+    {
+      "ngoko": "wolungatus pitu",
+      "krama": "wolung atus pitu",
+      "arti": "delapan ratus tujuh",
+      "keterangan": "angka 807"
+    },
+    {
+      "ngoko": "wolungatus wolu",
+      "krama": "wolung atus wolu",
+      "arti": "delapan ratus delapan",
+      "keterangan": "angka 808"
+    },
+    {
+      "ngoko": "wolungatus sanga",
+      "krama": "wolung atus sanga",
+      "arti": "delapan ratus sembilan",
+      "keterangan": "angka 809"
+    },
+    {
+      "ngoko": "wolungatus sepuluh",
+      "krama": "wolung atus sedasa",
+      "arti": "delapan ratus sepuluh",
+      "keterangan": "angka 810"
+    },
+    {
+      "ngoko": "wolungatus sewelas",
+      "krama": "wolung atus sewelas",
+      "arti": "delapan ratus sebelas",
+      "keterangan": "angka 811"
+    },
+    {
+      "ngoko": "wolungatus rolas",
+      "krama": "wolung atus kalih welas",
+      "arti": "delapan ratus dua belas",
+      "keterangan": "angka 812"
+    },
+    {
+      "ngoko": "wolungatus telulas",
+      "krama": "wolung atus tiga welas",
+      "arti": "delapan ratus tiga belas",
+      "keterangan": "angka 813"
+    },
+    {
+      "ngoko": "wolungatus patbelas",
+      "krama": "wolung atus kawan welas",
+      "arti": "delapan ratus empat belas",
+      "keterangan": "angka 814"
+    },
+    {
+      "ngoko": "wolungatus limalas",
+      "krama": "wolung atus gangsal welas",
+      "arti": "delapan ratus lima belas",
+      "keterangan": "angka 815"
+    },
+    {
+      "ngoko": "wolungatus nembelas",
+      "krama": "wolung atus enem welas",
+      "arti": "delapan ratus enam belas",
+      "keterangan": "angka 816"
+    },
+    {
+      "ngoko": "wolungatus pitulas",
+      "krama": "wolung atus pitulas",
+      "arti": "delapan ratus tujuh belas",
+      "keterangan": "angka 817"
+    },
+    {
+      "ngoko": "wolungatus wolulas",
+      "krama": "wolung atus wolulas",
+      "arti": "delapan ratus delapan belas",
+      "keterangan": "angka 818"
+    },
+    {
+      "ngoko": "wolungatus sangalas",
+      "krama": "wolung atus sangalas",
+      "arti": "delapan ratus sembilan belas",
+      "keterangan": "angka 819"
+    },
+    {
+      "ngoko": "wolungatus rong puluh",
+      "krama": "wolung atus kalih dasa",
+      "arti": "delapan ratus dua puluh",
+      "keterangan": "angka 820"
+    },
+    {
+      "ngoko": "wolungatus rong puluh siji",
+      "krama": "wolung atus kalih dasa setunggal",
+      "arti": "delapan ratus dua puluh satu",
+      "keterangan": "angka 821"
+    },
+    {
+      "ngoko": "wolungatus rong puluh loro",
+      "krama": "wolung atus kalih dasa kalih",
+      "arti": "delapan ratus dua puluh dua",
+      "keterangan": "angka 822"
+    },
+    {
+      "ngoko": "wolungatus rong puluh telu",
+      "krama": "wolung atus kalih dasa tiga",
+      "arti": "delapan ratus dua puluh tiga",
+      "keterangan": "angka 823"
+    },
+    {
+      "ngoko": "wolungatus rong puluh papat",
+      "krama": "wolung atus kalih dasa sekawan",
+      "arti": "delapan ratus dua puluh empat",
+      "keterangan": "angka 824"
+    },
+    {
+      "ngoko": "wolungatus rong puluh lima",
+      "krama": "wolung atus kalih dasa gangsal",
+      "arti": "delapan ratus dua puluh lima",
+      "keterangan": "angka 825"
+    },
+    {
+      "ngoko": "wolungatus rong puluh enem",
+      "krama": "wolung atus kalih dasa enem",
+      "arti": "delapan ratus dua puluh enam",
+      "keterangan": "angka 826"
+    },
+    {
+      "ngoko": "wolungatus rong puluh pitu",
+      "krama": "wolung atus kalih dasa pitu",
+      "arti": "delapan ratus dua puluh tujuh",
+      "keterangan": "angka 827"
+    },
+    {
+      "ngoko": "wolungatus rong puluh wolu",
+      "krama": "wolung atus kalih dasa wolu",
+      "arti": "delapan ratus dua puluh delapan",
+      "keterangan": "angka 828"
+    },
+    {
+      "ngoko": "wolungatus rong puluh sanga",
+      "krama": "wolung atus kalih dasa sanga",
+      "arti": "delapan ratus dua puluh sembilan",
+      "keterangan": "angka 829"
+    },
+    {
+      "ngoko": "wolungatus telung puluh",
+      "krama": "wolung atus tigang dasa",
+      "arti": "delapan ratus tiga puluh",
+      "keterangan": "angka 830"
+    },
+    {
+      "ngoko": "wolungatus telung puluh siji",
+      "krama": "wolung atus tigang dasa setunggal",
+      "arti": "delapan ratus tiga puluh satu",
+      "keterangan": "angka 831"
+    },
+    {
+      "ngoko": "wolungatus telung puluh loro",
+      "krama": "wolung atus tigang dasa kalih",
+      "arti": "delapan ratus tiga puluh dua",
+      "keterangan": "angka 832"
+    },
+    {
+      "ngoko": "wolungatus telung puluh telu",
+      "krama": "wolung atus tigang dasa tiga",
+      "arti": "delapan ratus tiga puluh tiga",
+      "keterangan": "angka 833"
+    },
+    {
+      "ngoko": "wolungatus telung puluh papat",
+      "krama": "wolung atus tigang dasa sekawan",
+      "arti": "delapan ratus tiga puluh empat",
+      "keterangan": "angka 834"
+    },
+    {
+      "ngoko": "wolungatus telung puluh lima",
+      "krama": "wolung atus tigang dasa gangsal",
+      "arti": "delapan ratus tiga puluh lima",
+      "keterangan": "angka 835"
+    },
+    {
+      "ngoko": "wolungatus telung puluh enem",
+      "krama": "wolung atus tigang dasa enem",
+      "arti": "delapan ratus tiga puluh enam",
+      "keterangan": "angka 836"
+    },
+    {
+      "ngoko": "wolungatus telung puluh pitu",
+      "krama": "wolung atus tigang dasa pitu",
+      "arti": "delapan ratus tiga puluh tujuh",
+      "keterangan": "angka 837"
+    },
+    {
+      "ngoko": "wolungatus telung puluh wolu",
+      "krama": "wolung atus tigang dasa wolu",
+      "arti": "delapan ratus tiga puluh delapan",
+      "keterangan": "angka 838"
+    },
+    {
+      "ngoko": "wolungatus telung puluh sanga",
+      "krama": "wolung atus tigang dasa sanga",
+      "arti": "delapan ratus tiga puluh sembilan",
+      "keterangan": "angka 839"
+    },
+    {
+      "ngoko": "wolungatus patang puluh",
+      "krama": "wolung atus kawan dasa",
+      "arti": "delapan ratus empat puluh",
+      "keterangan": "angka 840"
+    },
+    {
+      "ngoko": "wolungatus patang puluh siji",
+      "krama": "wolung atus kawan dasa setunggal",
+      "arti": "delapan ratus empat puluh satu",
+      "keterangan": "angka 841"
+    },
+    {
+      "ngoko": "wolungatus patang puluh loro",
+      "krama": "wolung atus kawan dasa kalih",
+      "arti": "delapan ratus empat puluh dua",
+      "keterangan": "angka 842"
+    },
+    {
+      "ngoko": "wolungatus patang puluh telu",
+      "krama": "wolung atus kawan dasa tiga",
+      "arti": "delapan ratus empat puluh tiga",
+      "keterangan": "angka 843"
+    },
+    {
+      "ngoko": "wolungatus patang puluh papat",
+      "krama": "wolung atus kawan dasa sekawan",
+      "arti": "delapan ratus empat puluh empat",
+      "keterangan": "angka 844"
+    },
+    {
+      "ngoko": "wolungatus patang puluh lima",
+      "krama": "wolung atus kawan dasa gangsal",
+      "arti": "delapan ratus empat puluh lima",
+      "keterangan": "angka 845"
+    },
+    {
+      "ngoko": "wolungatus patang puluh enem",
+      "krama": "wolung atus kawan dasa enem",
+      "arti": "delapan ratus empat puluh enam",
+      "keterangan": "angka 846"
+    },
+    {
+      "ngoko": "wolungatus patang puluh pitu",
+      "krama": "wolung atus kawan dasa pitu",
+      "arti": "delapan ratus empat puluh tujuh",
+      "keterangan": "angka 847"
+    },
+    {
+      "ngoko": "wolungatus patang puluh wolu",
+      "krama": "wolung atus kawan dasa wolu",
+      "arti": "delapan ratus empat puluh delapan",
+      "keterangan": "angka 848"
+    },
+    {
+      "ngoko": "wolungatus patang puluh sanga",
+      "krama": "wolung atus kawan dasa sanga",
+      "arti": "delapan ratus empat puluh sembilan",
+      "keterangan": "angka 849"
+    },
+    {
+      "ngoko": "wolungatus séket",
+      "krama": "wolung atus seket",
+      "arti": "delapan ratus lima puluh",
+      "keterangan": "angka 850"
+    },
+    {
+      "ngoko": "wolungatus séket siji",
+      "krama": "wolung atus seket setunggal",
+      "arti": "delapan ratus lima puluh satu",
+      "keterangan": "angka 851"
+    },
+    {
+      "ngoko": "wolungatus séket loro",
+      "krama": "wolung atus seket kalih",
+      "arti": "delapan ratus lima puluh dua",
+      "keterangan": "angka 852"
+    },
+    {
+      "ngoko": "wolungatus séket telu",
+      "krama": "wolung atus seket tiga",
+      "arti": "delapan ratus lima puluh tiga",
+      "keterangan": "angka 853"
+    },
+    {
+      "ngoko": "wolungatus séket papat",
+      "krama": "wolung atus seket sekawan",
+      "arti": "delapan ratus lima puluh empat",
+      "keterangan": "angka 854"
+    },
+    {
+      "ngoko": "wolungatus séket lima",
+      "krama": "wolung atus seket gangsal",
+      "arti": "delapan ratus lima puluh lima",
+      "keterangan": "angka 855"
+    },
+    {
+      "ngoko": "wolungatus séket enem",
+      "krama": "wolung atus seket enem",
+      "arti": "delapan ratus lima puluh enam",
+      "keterangan": "angka 856"
+    },
+    {
+      "ngoko": "wolungatus séket pitu",
+      "krama": "wolung atus seket pitu",
+      "arti": "delapan ratus lima puluh tujuh",
+      "keterangan": "angka 857"
+    },
+    {
+      "ngoko": "wolungatus séket wolu",
+      "krama": "wolung atus seket wolu",
+      "arti": "delapan ratus lima puluh delapan",
+      "keterangan": "angka 858"
+    },
+    {
+      "ngoko": "wolungatus séket sanga",
+      "krama": "wolung atus seket sanga",
+      "arti": "delapan ratus lima puluh sembilan",
+      "keterangan": "angka 859"
+    },
+    {
+      "ngoko": "wolungatus sewidak",
+      "krama": "wolung atus sewidak",
+      "arti": "delapan ratus enam puluh",
+      "keterangan": "angka 860"
+    },
+    {
+      "ngoko": "wolungatus sewidak siji",
+      "krama": "wolung atus sewidak setunggal",
+      "arti": "delapan ratus enam puluh satu",
+      "keterangan": "angka 861"
+    },
+    {
+      "ngoko": "wolungatus sewidak loro",
+      "krama": "wolung atus sewidak kalih",
+      "arti": "delapan ratus enam puluh dua",
+      "keterangan": "angka 862"
+    },
+    {
+      "ngoko": "wolungatus sewidak telu",
+      "krama": "wolung atus sewidak tiga",
+      "arti": "delapan ratus enam puluh tiga",
+      "keterangan": "angka 863"
+    },
+    {
+      "ngoko": "wolungatus sewidak papat",
+      "krama": "wolung atus sewidak sekawan",
+      "arti": "delapan ratus enam puluh empat",
+      "keterangan": "angka 864"
+    },
+    {
+      "ngoko": "wolungatus sewidak lima",
+      "krama": "wolung atus sewidak gangsal",
+      "arti": "delapan ratus enam puluh lima",
+      "keterangan": "angka 865"
+    },
+    {
+      "ngoko": "wolungatus sewidak enem",
+      "krama": "wolung atus sewidak enem",
+      "arti": "delapan ratus enam puluh enam",
+      "keterangan": "angka 866"
+    },
+    {
+      "ngoko": "wolungatus sewidak pitu",
+      "krama": "wolung atus sewidak pitu",
+      "arti": "delapan ratus enam puluh tujuh",
+      "keterangan": "angka 867"
+    },
+    {
+      "ngoko": "wolungatus sewidak wolu",
+      "krama": "wolung atus sewidak wolu",
+      "arti": "delapan ratus enam puluh delapan",
+      "keterangan": "angka 868"
+    },
+    {
+      "ngoko": "wolungatus sewidak sanga",
+      "krama": "wolung atus sewidak sanga",
+      "arti": "delapan ratus enam puluh sembilan",
+      "keterangan": "angka 869"
+    },
+    {
+      "ngoko": "wolungatus pitung puluh",
+      "krama": "wolung atus pitung dasa",
+      "arti": "delapan ratus tujuh puluh",
+      "keterangan": "angka 870"
+    },
+    {
+      "ngoko": "wolungatus pitung puluh siji",
+      "krama": "wolung atus pitung dasa setunggal",
+      "arti": "delapan ratus tujuh puluh satu",
+      "keterangan": "angka 871"
+    },
+    {
+      "ngoko": "wolungatus pitung puluh loro",
+      "krama": "wolung atus pitung dasa kalih",
+      "arti": "delapan ratus tujuh puluh dua",
+      "keterangan": "angka 872"
+    },
+    {
+      "ngoko": "wolungatus pitung puluh telu",
+      "krama": "wolung atus pitung dasa tiga",
+      "arti": "delapan ratus tujuh puluh tiga",
+      "keterangan": "angka 873"
+    },
+    {
+      "ngoko": "wolungatus pitung puluh papat",
+      "krama": "wolung atus pitung dasa sekawan",
+      "arti": "delapan ratus tujuh puluh empat",
+      "keterangan": "angka 874"
+    },
+    {
+      "ngoko": "wolungatus pitung puluh lima",
+      "krama": "wolung atus pitung dasa gangsal",
+      "arti": "delapan ratus tujuh puluh lima",
+      "keterangan": "angka 875"
+    },
+    {
+      "ngoko": "wolungatus pitung puluh enem",
+      "krama": "wolung atus pitung dasa enem",
+      "arti": "delapan ratus tujuh puluh enam",
+      "keterangan": "angka 876"
+    },
+    {
+      "ngoko": "wolungatus pitung puluh pitu",
+      "krama": "wolung atus pitung dasa pitu",
+      "arti": "delapan ratus tujuh puluh tujuh",
+      "keterangan": "angka 877"
+    },
+    {
+      "ngoko": "wolungatus pitung puluh wolu",
+      "krama": "wolung atus pitung dasa wolu",
+      "arti": "delapan ratus tujuh puluh delapan",
+      "keterangan": "angka 878"
+    },
+    {
+      "ngoko": "wolungatus pitung puluh sanga",
+      "krama": "wolung atus pitung dasa sanga",
+      "arti": "delapan ratus tujuh puluh sembilan",
+      "keterangan": "angka 879"
+    },
+    {
+      "ngoko": "wolungatus wolung puluh",
+      "krama": "wolung atus wolung dasa",
+      "arti": "delapan ratus delapan puluh",
+      "keterangan": "angka 880"
+    },
+    {
+      "ngoko": "wolungatus wolung puluh siji",
+      "krama": "wolung atus wolung dasa setunggal",
+      "arti": "delapan ratus delapan puluh satu",
+      "keterangan": "angka 881"
+    },
+    {
+      "ngoko": "wolungatus wolung puluh loro",
+      "krama": "wolung atus wolung dasa kalih",
+      "arti": "delapan ratus delapan puluh dua",
+      "keterangan": "angka 882"
+    },
+    {
+      "ngoko": "wolungatus wolung puluh telu",
+      "krama": "wolung atus wolung dasa tiga",
+      "arti": "delapan ratus delapan puluh tiga",
+      "keterangan": "angka 883"
+    },
+    {
+      "ngoko": "wolungatus wolung puluh papat",
+      "krama": "wolung atus wolung dasa sekawan",
+      "arti": "delapan ratus delapan puluh empat",
+      "keterangan": "angka 884"
+    },
+    {
+      "ngoko": "wolungatus wolung puluh lima",
+      "krama": "wolung atus wolung dasa gangsal",
+      "arti": "delapan ratus delapan puluh lima",
+      "keterangan": "angka 885"
+    },
+    {
+      "ngoko": "wolungatus wolung puluh enem",
+      "krama": "wolung atus wolung dasa enem",
+      "arti": "delapan ratus delapan puluh enam",
+      "keterangan": "angka 886"
+    },
+    {
+      "ngoko": "wolungatus wolung puluh pitu",
+      "krama": "wolung atus wolung dasa pitu",
+      "arti": "delapan ratus delapan puluh tujuh",
+      "keterangan": "angka 887"
+    },
+    {
+      "ngoko": "wolungatus wolung puluh wolu",
+      "krama": "wolung atus wolung dasa wolu",
+      "arti": "delapan ratus delapan puluh delapan",
+      "keterangan": "angka 888"
+    },
+    {
+      "ngoko": "wolungatus wolung puluh sanga",
+      "krama": "wolung atus wolung dasa sanga",
+      "arti": "delapan ratus delapan puluh sembilan",
+      "keterangan": "angka 889"
+    },
+    {
+      "ngoko": "wolungatus sangang puluh",
+      "krama": "wolung atus sangang dasa",
+      "arti": "delapan ratus sembilan puluh",
+      "keterangan": "angka 890"
+    },
+    {
+      "ngoko": "wolungatus sangang puluh siji",
+      "krama": "wolung atus sangang dasa setunggal",
+      "arti": "delapan ratus sembilan puluh satu",
+      "keterangan": "angka 891"
+    },
+    {
+      "ngoko": "wolungatus sangang puluh loro",
+      "krama": "wolung atus sangang dasa kalih",
+      "arti": "delapan ratus sembilan puluh dua",
+      "keterangan": "angka 892"
+    },
+    {
+      "ngoko": "wolungatus sangang puluh telu",
+      "krama": "wolung atus sangang dasa tiga",
+      "arti": "delapan ratus sembilan puluh tiga",
+      "keterangan": "angka 893"
+    },
+    {
+      "ngoko": "wolungatus sangang puluh papat",
+      "krama": "wolung atus sangang dasa sekawan",
+      "arti": "delapan ratus sembilan puluh empat",
+      "keterangan": "angka 894"
+    },
+    {
+      "ngoko": "wolungatus sangang puluh lima",
+      "krama": "wolung atus sangang dasa gangsal",
+      "arti": "delapan ratus sembilan puluh lima",
+      "keterangan": "angka 895"
+    },
+    {
+      "ngoko": "wolungatus sangang puluh enem",
+      "krama": "wolung atus sangang dasa enem",
+      "arti": "delapan ratus sembilan puluh enam",
+      "keterangan": "angka 896"
+    },
+    {
+      "ngoko": "wolungatus sangang puluh pitu",
+      "krama": "wolung atus sangang dasa pitu",
+      "arti": "delapan ratus sembilan puluh tujuh",
+      "keterangan": "angka 897"
+    },
+    {
+      "ngoko": "wolungatus sangang puluh wolu",
+      "krama": "wolung atus sangang dasa wolu",
+      "arti": "delapan ratus sembilan puluh delapan",
+      "keterangan": "angka 898"
+    },
+    {
+      "ngoko": "wolungatus sangang puluh sanga",
+      "krama": "wolung atus sangang dasa sanga",
+      "arti": "delapan ratus sembilan puluh sembilan",
+      "keterangan": "angka 899"
+    },
+    {
+      "ngoko": "sangangatus siji",
+      "krama": "sangang atus setunggal",
+      "arti": "sembilan ratus satu",
+      "keterangan": "angka 901"
+    },
+    {
+      "ngoko": "sangangatus loro",
+      "krama": "sangang atus kalih",
+      "arti": "sembilan ratus dua",
+      "keterangan": "angka 902"
+    },
+    {
+      "ngoko": "sangangatus telu",
+      "krama": "sangang atus tiga",
+      "arti": "sembilan ratus tiga",
+      "keterangan": "angka 903"
+    },
+    {
+      "ngoko": "sangangatus papat",
+      "krama": "sangang atus sekawan",
+      "arti": "sembilan ratus empat",
+      "keterangan": "angka 904"
+    },
+    {
+      "ngoko": "sangangatus lima",
+      "krama": "sangang atus gangsal",
+      "arti": "sembilan ratus lima",
+      "keterangan": "angka 905"
+    },
+    {
+      "ngoko": "sangangatus enem",
+      "krama": "sangang atus enem",
+      "arti": "sembilan ratus enam",
+      "keterangan": "angka 906"
+    },
+    {
+      "ngoko": "sangangatus pitu",
+      "krama": "sangang atus pitu",
+      "arti": "sembilan ratus tujuh",
+      "keterangan": "angka 907"
+    },
+    {
+      "ngoko": "sangangatus wolu",
+      "krama": "sangang atus wolu",
+      "arti": "sembilan ratus delapan",
+      "keterangan": "angka 908"
+    },
+    {
+      "ngoko": "sangangatus sanga",
+      "krama": "sangang atus sanga",
+      "arti": "sembilan ratus sembilan",
+      "keterangan": "angka 909"
+    },
+    {
+      "ngoko": "sangangatus sepuluh",
+      "krama": "sangang atus sedasa",
+      "arti": "sembilan ratus sepuluh",
+      "keterangan": "angka 910"
+    },
+    {
+      "ngoko": "sangangatus sewelas",
+      "krama": "sangang atus sewelas",
+      "arti": "sembilan ratus sebelas",
+      "keterangan": "angka 911"
+    },
+    {
+      "ngoko": "sangangatus rolas",
+      "krama": "sangang atus kalih welas",
+      "arti": "sembilan ratus dua belas",
+      "keterangan": "angka 912"
+    },
+    {
+      "ngoko": "sangangatus telulas",
+      "krama": "sangang atus tiga welas",
+      "arti": "sembilan ratus tiga belas",
+      "keterangan": "angka 913"
+    },
+    {
+      "ngoko": "sangangatus patbelas",
+      "krama": "sangang atus kawan welas",
+      "arti": "sembilan ratus empat belas",
+      "keterangan": "angka 914"
+    },
+    {
+      "ngoko": "sangangatus limalas",
+      "krama": "sangang atus gangsal welas",
+      "arti": "sembilan ratus lima belas",
+      "keterangan": "angka 915"
+    },
+    {
+      "ngoko": "sangangatus nembelas",
+      "krama": "sangang atus enem welas",
+      "arti": "sembilan ratus enam belas",
+      "keterangan": "angka 916"
+    },
+    {
+      "ngoko": "sangangatus pitulas",
+      "krama": "sangang atus pitulas",
+      "arti": "sembilan ratus tujuh belas",
+      "keterangan": "angka 917"
+    },
+    {
+      "ngoko": "sangangatus wolulas",
+      "krama": "sangang atus wolulas",
+      "arti": "sembilan ratus delapan belas",
+      "keterangan": "angka 918"
+    },
+    {
+      "ngoko": "sangangatus sangalas",
+      "krama": "sangang atus sangalas",
+      "arti": "sembilan ratus sembilan belas",
+      "keterangan": "angka 919"
+    },
+    {
+      "ngoko": "sangangatus rong puluh",
+      "krama": "sangang atus kalih dasa",
+      "arti": "sembilan ratus dua puluh",
+      "keterangan": "angka 920"
+    },
+    {
+      "ngoko": "sangangatus rong puluh siji",
+      "krama": "sangang atus kalih dasa setunggal",
+      "arti": "sembilan ratus dua puluh satu",
+      "keterangan": "angka 921"
+    },
+    {
+      "ngoko": "sangangatus rong puluh loro",
+      "krama": "sangang atus kalih dasa kalih",
+      "arti": "sembilan ratus dua puluh dua",
+      "keterangan": "angka 922"
+    },
+    {
+      "ngoko": "sangangatus rong puluh telu",
+      "krama": "sangang atus kalih dasa tiga",
+      "arti": "sembilan ratus dua puluh tiga",
+      "keterangan": "angka 923"
+    },
+    {
+      "ngoko": "sangangatus rong puluh papat",
+      "krama": "sangang atus kalih dasa sekawan",
+      "arti": "sembilan ratus dua puluh empat",
+      "keterangan": "angka 924"
+    },
+    {
+      "ngoko": "sangangatus rong puluh lima",
+      "krama": "sangang atus kalih dasa gangsal",
+      "arti": "sembilan ratus dua puluh lima",
+      "keterangan": "angka 925"
+    },
+    {
+      "ngoko": "sangangatus rong puluh enem",
+      "krama": "sangang atus kalih dasa enem",
+      "arti": "sembilan ratus dua puluh enam",
+      "keterangan": "angka 926"
+    },
+    {
+      "ngoko": "sangangatus rong puluh pitu",
+      "krama": "sangang atus kalih dasa pitu",
+      "arti": "sembilan ratus dua puluh tujuh",
+      "keterangan": "angka 927"
+    },
+    {
+      "ngoko": "sangangatus rong puluh wolu",
+      "krama": "sangang atus kalih dasa wolu",
+      "arti": "sembilan ratus dua puluh delapan",
+      "keterangan": "angka 928"
+    },
+    {
+      "ngoko": "sangangatus rong puluh sanga",
+      "krama": "sangang atus kalih dasa sanga",
+      "arti": "sembilan ratus dua puluh sembilan",
+      "keterangan": "angka 929"
+    },
+    {
+      "ngoko": "sangangatus telung puluh",
+      "krama": "sangang atus tigang dasa",
+      "arti": "sembilan ratus tiga puluh",
+      "keterangan": "angka 930"
+    },
+    {
+      "ngoko": "sangangatus telung puluh siji",
+      "krama": "sangang atus tigang dasa setunggal",
+      "arti": "sembilan ratus tiga puluh satu",
+      "keterangan": "angka 931"
+    },
+    {
+      "ngoko": "sangangatus telung puluh loro",
+      "krama": "sangang atus tigang dasa kalih",
+      "arti": "sembilan ratus tiga puluh dua",
+      "keterangan": "angka 932"
+    },
+    {
+      "ngoko": "sangangatus telung puluh telu",
+      "krama": "sangang atus tigang dasa tiga",
+      "arti": "sembilan ratus tiga puluh tiga",
+      "keterangan": "angka 933"
+    },
+    {
+      "ngoko": "sangangatus telung puluh papat",
+      "krama": "sangang atus tigang dasa sekawan",
+      "arti": "sembilan ratus tiga puluh empat",
+      "keterangan": "angka 934"
+    },
+    {
+      "ngoko": "sangangatus telung puluh lima",
+      "krama": "sangang atus tigang dasa gangsal",
+      "arti": "sembilan ratus tiga puluh lima",
+      "keterangan": "angka 935"
+    },
+    {
+      "ngoko": "sangangatus telung puluh enem",
+      "krama": "sangang atus tigang dasa enem",
+      "arti": "sembilan ratus tiga puluh enam",
+      "keterangan": "angka 936"
+    },
+    {
+      "ngoko": "sangangatus telung puluh pitu",
+      "krama": "sangang atus tigang dasa pitu",
+      "arti": "sembilan ratus tiga puluh tujuh",
+      "keterangan": "angka 937"
+    },
+    {
+      "ngoko": "sangangatus telung puluh wolu",
+      "krama": "sangang atus tigang dasa wolu",
+      "arti": "sembilan ratus tiga puluh delapan",
+      "keterangan": "angka 938"
+    },
+    {
+      "ngoko": "sangangatus telung puluh sanga",
+      "krama": "sangang atus tigang dasa sanga",
+      "arti": "sembilan ratus tiga puluh sembilan",
+      "keterangan": "angka 939"
+    },
+    {
+      "ngoko": "sangangatus patang puluh",
+      "krama": "sangang atus kawan dasa",
+      "arti": "sembilan ratus empat puluh",
+      "keterangan": "angka 940"
+    },
+    {
+      "ngoko": "sangangatus patang puluh siji",
+      "krama": "sangang atus kawan dasa setunggal",
+      "arti": "sembilan ratus empat puluh satu",
+      "keterangan": "angka 941"
+    },
+    {
+      "ngoko": "sangangatus patang puluh loro",
+      "krama": "sangang atus kawan dasa kalih",
+      "arti": "sembilan ratus empat puluh dua",
+      "keterangan": "angka 942"
+    },
+    {
+      "ngoko": "sangangatus patang puluh telu",
+      "krama": "sangang atus kawan dasa tiga",
+      "arti": "sembilan ratus empat puluh tiga",
+      "keterangan": "angka 943"
+    },
+    {
+      "ngoko": "sangangatus patang puluh papat",
+      "krama": "sangang atus kawan dasa sekawan",
+      "arti": "sembilan ratus empat puluh empat",
+      "keterangan": "angka 944"
+    },
+    {
+      "ngoko": "sangangatus patang puluh lima",
+      "krama": "sangang atus kawan dasa gangsal",
+      "arti": "sembilan ratus empat puluh lima",
+      "keterangan": "angka 945"
+    },
+    {
+      "ngoko": "sangangatus patang puluh enem",
+      "krama": "sangang atus kawan dasa enem",
+      "arti": "sembilan ratus empat puluh enam",
+      "keterangan": "angka 946"
+    },
+    {
+      "ngoko": "sangangatus patang puluh pitu",
+      "krama": "sangang atus kawan dasa pitu",
+      "arti": "sembilan ratus empat puluh tujuh",
+      "keterangan": "angka 947"
+    },
+    {
+      "ngoko": "sangangatus patang puluh wolu",
+      "krama": "sangang atus kawan dasa wolu",
+      "arti": "sembilan ratus empat puluh delapan",
+      "keterangan": "angka 948"
+    },
+    {
+      "ngoko": "sangangatus patang puluh sanga",
+      "krama": "sangang atus kawan dasa sanga",
+      "arti": "sembilan ratus empat puluh sembilan",
+      "keterangan": "angka 949"
+    },
+    {
+      "ngoko": "sangangatus séket",
+      "krama": "sangang atus seket",
+      "arti": "sembilan ratus lima puluh",
+      "keterangan": "angka 950"
+    },
+    {
+      "ngoko": "sangangatus séket siji",
+      "krama": "sangang atus seket setunggal",
+      "arti": "sembilan ratus lima puluh satu",
+      "keterangan": "angka 951"
+    },
+    {
+      "ngoko": "sangangatus séket loro",
+      "krama": "sangang atus seket kalih",
+      "arti": "sembilan ratus lima puluh dua",
+      "keterangan": "angka 952"
+    },
+    {
+      "ngoko": "sangangatus séket telu",
+      "krama": "sangang atus seket tiga",
+      "arti": "sembilan ratus lima puluh tiga",
+      "keterangan": "angka 953"
+    },
+    {
+      "ngoko": "sangangatus séket papat",
+      "krama": "sangang atus seket sekawan",
+      "arti": "sembilan ratus lima puluh empat",
+      "keterangan": "angka 954"
+    },
+    {
+      "ngoko": "sangangatus séket lima",
+      "krama": "sangang atus seket gangsal",
+      "arti": "sembilan ratus lima puluh lima",
+      "keterangan": "angka 955"
+    },
+    {
+      "ngoko": "sangangatus séket enem",
+      "krama": "sangang atus seket enem",
+      "arti": "sembilan ratus lima puluh enam",
+      "keterangan": "angka 956"
+    },
+    {
+      "ngoko": "sangangatus séket pitu",
+      "krama": "sangang atus seket pitu",
+      "arti": "sembilan ratus lima puluh tujuh",
+      "keterangan": "angka 957"
+    },
+    {
+      "ngoko": "sangangatus séket wolu",
+      "krama": "sangang atus seket wolu",
+      "arti": "sembilan ratus lima puluh delapan",
+      "keterangan": "angka 958"
+    },
+    {
+      "ngoko": "sangangatus séket sanga",
+      "krama": "sangang atus seket sanga",
+      "arti": "sembilan ratus lima puluh sembilan",
+      "keterangan": "angka 959"
+    },
+    {
+      "ngoko": "sangangatus sewidak",
+      "krama": "sangang atus sewidak",
+      "arti": "sembilan ratus enam puluh",
+      "keterangan": "angka 960"
+    },
+    {
+      "ngoko": "sangangatus sewidak siji",
+      "krama": "sangang atus sewidak setunggal",
+      "arti": "sembilan ratus enam puluh satu",
+      "keterangan": "angka 961"
+    },
+    {
+      "ngoko": "sangangatus sewidak loro",
+      "krama": "sangang atus sewidak kalih",
+      "arti": "sembilan ratus enam puluh dua",
+      "keterangan": "angka 962"
+    },
+    {
+      "ngoko": "sangangatus sewidak telu",
+      "krama": "sangang atus sewidak tiga",
+      "arti": "sembilan ratus enam puluh tiga",
+      "keterangan": "angka 963"
+    },
+    {
+      "ngoko": "sangangatus sewidak papat",
+      "krama": "sangang atus sewidak sekawan",
+      "arti": "sembilan ratus enam puluh empat",
+      "keterangan": "angka 964"
+    },
+    {
+      "ngoko": "sangangatus sewidak lima",
+      "krama": "sangang atus sewidak gangsal",
+      "arti": "sembilan ratus enam puluh lima",
+      "keterangan": "angka 965"
+    },
+    {
+      "ngoko": "sangangatus sewidak enem",
+      "krama": "sangang atus sewidak enem",
+      "arti": "sembilan ratus enam puluh enam",
+      "keterangan": "angka 966"
+    },
+    {
+      "ngoko": "sangangatus sewidak pitu",
+      "krama": "sangang atus sewidak pitu",
+      "arti": "sembilan ratus enam puluh tujuh",
+      "keterangan": "angka 967"
+    },
+    {
+      "ngoko": "sangangatus sewidak wolu",
+      "krama": "sangang atus sewidak wolu",
+      "arti": "sembilan ratus enam puluh delapan",
+      "keterangan": "angka 968"
+    },
+    {
+      "ngoko": "sangangatus sewidak sanga",
+      "krama": "sangang atus sewidak sanga",
+      "arti": "sembilan ratus enam puluh sembilan",
+      "keterangan": "angka 969"
+    },
+    {
+      "ngoko": "sangangatus pitung puluh",
+      "krama": "sangang atus pitung dasa",
+      "arti": "sembilan ratus tujuh puluh",
+      "keterangan": "angka 970"
+    },
+    {
+      "ngoko": "sangangatus pitung puluh siji",
+      "krama": "sangang atus pitung dasa setunggal",
+      "arti": "sembilan ratus tujuh puluh satu",
+      "keterangan": "angka 971"
+    },
+    {
+      "ngoko": "sangangatus pitung puluh loro",
+      "krama": "sangang atus pitung dasa kalih",
+      "arti": "sembilan ratus tujuh puluh dua",
+      "keterangan": "angka 972"
+    },
+    {
+      "ngoko": "sangangatus pitung puluh telu",
+      "krama": "sangang atus pitung dasa tiga",
+      "arti": "sembilan ratus tujuh puluh tiga",
+      "keterangan": "angka 973"
+    },
+    {
+      "ngoko": "sangangatus pitung puluh papat",
+      "krama": "sangang atus pitung dasa sekawan",
+      "arti": "sembilan ratus tujuh puluh empat",
+      "keterangan": "angka 974"
+    },
+    {
+      "ngoko": "sangangatus pitung puluh lima",
+      "krama": "sangang atus pitung dasa gangsal",
+      "arti": "sembilan ratus tujuh puluh lima",
+      "keterangan": "angka 975"
+    },
+    {
+      "ngoko": "sangangatus pitung puluh enem",
+      "krama": "sangang atus pitung dasa enem",
+      "arti": "sembilan ratus tujuh puluh enam",
+      "keterangan": "angka 976"
+    },
+    {
+      "ngoko": "sangangatus pitung puluh pitu",
+      "krama": "sangang atus pitung dasa pitu",
+      "arti": "sembilan ratus tujuh puluh tujuh",
+      "keterangan": "angka 977"
+    },
+    {
+      "ngoko": "sangangatus pitung puluh wolu",
+      "krama": "sangang atus pitung dasa wolu",
+      "arti": "sembilan ratus tujuh puluh delapan",
+      "keterangan": "angka 978"
+    },
+    {
+      "ngoko": "sangangatus pitung puluh sanga",
+      "krama": "sangang atus pitung dasa sanga",
+      "arti": "sembilan ratus tujuh puluh sembilan",
+      "keterangan": "angka 979"
+    },
+    {
+      "ngoko": "sangangatus wolung puluh",
+      "krama": "sangang atus wolung dasa",
+      "arti": "sembilan ratus delapan puluh",
+      "keterangan": "angka 980"
+    },
+    {
+      "ngoko": "sangangatus wolung puluh siji",
+      "krama": "sangang atus wolung dasa setunggal",
+      "arti": "sembilan ratus delapan puluh satu",
+      "keterangan": "angka 981"
+    },
+    {
+      "ngoko": "sangangatus wolung puluh loro",
+      "krama": "sangang atus wolung dasa kalih",
+      "arti": "sembilan ratus delapan puluh dua",
+      "keterangan": "angka 982"
+    },
+    {
+      "ngoko": "sangangatus wolung puluh telu",
+      "krama": "sangang atus wolung dasa tiga",
+      "arti": "sembilan ratus delapan puluh tiga",
+      "keterangan": "angka 983"
+    },
+    {
+      "ngoko": "sangangatus wolung puluh papat",
+      "krama": "sangang atus wolung dasa sekawan",
+      "arti": "sembilan ratus delapan puluh empat",
+      "keterangan": "angka 984"
+    },
+    {
+      "ngoko": "sangangatus wolung puluh lima",
+      "krama": "sangang atus wolung dasa gangsal",
+      "arti": "sembilan ratus delapan puluh lima",
+      "keterangan": "angka 985"
+    },
+    {
+      "ngoko": "sangangatus wolung puluh enem",
+      "krama": "sangang atus wolung dasa enem",
+      "arti": "sembilan ratus delapan puluh enam",
+      "keterangan": "angka 986"
+    },
+    {
+      "ngoko": "sangangatus wolung puluh pitu",
+      "krama": "sangang atus wolung dasa pitu",
+      "arti": "sembilan ratus delapan puluh tujuh",
+      "keterangan": "angka 987"
+    },
+    {
+      "ngoko": "sangangatus wolung puluh wolu",
+      "krama": "sangang atus wolung dasa wolu",
+      "arti": "sembilan ratus delapan puluh delapan",
+      "keterangan": "angka 988"
+    },
+    {
+      "ngoko": "sangangatus wolung puluh sanga",
+      "krama": "sangang atus wolung dasa sanga",
+      "arti": "sembilan ratus delapan puluh sembilan",
+      "keterangan": "angka 989"
+    },
+    {
+      "ngoko": "sangangatus sangang puluh",
+      "krama": "sangang atus sangang dasa",
+      "arti": "sembilan ratus sembilan puluh",
+      "keterangan": "angka 990"
+    },
+    {
+      "ngoko": "sangangatus sangang puluh siji",
+      "krama": "sangang atus sangang dasa setunggal",
+      "arti": "sembilan ratus sembilan puluh satu",
+      "keterangan": "angka 991"
+    },
+    {
+      "ngoko": "sangangatus sangang puluh loro",
+      "krama": "sangang atus sangang dasa kalih",
+      "arti": "sembilan ratus sembilan puluh dua",
+      "keterangan": "angka 992"
+    },
+    {
+      "ngoko": "sangangatus sangang puluh telu",
+      "krama": "sangang atus sangang dasa tiga",
+      "arti": "sembilan ratus sembilan puluh tiga",
+      "keterangan": "angka 993"
+    },
+    {
+      "ngoko": "sangangatus sangang puluh papat",
+      "krama": "sangang atus sangang dasa sekawan",
+      "arti": "sembilan ratus sembilan puluh empat",
+      "keterangan": "angka 994"
+    },
+    {
+      "ngoko": "sangangatus sangang puluh lima",
+      "krama": "sangang atus sangang dasa gangsal",
+      "arti": "sembilan ratus sembilan puluh lima",
+      "keterangan": "angka 995"
+    },
+    {
+      "ngoko": "sangangatus sangang puluh enem",
+      "krama": "sangang atus sangang dasa enem",
+      "arti": "sembilan ratus sembilan puluh enam",
+      "keterangan": "angka 996"
+    },
+    {
+      "ngoko": "sangangatus sangang puluh pitu",
+      "krama": "sangang atus sangang dasa pitu",
+      "arti": "sembilan ratus sembilan puluh tujuh",
+      "keterangan": "angka 997"
+    },
+    {
+      "ngoko": "sangangatus sangang puluh wolu",
+      "krama": "sangang atus sangang dasa wolu",
+      "arti": "sembilan ratus sembilan puluh delapan",
+      "keterangan": "angka 998"
     }
   ]
 }
