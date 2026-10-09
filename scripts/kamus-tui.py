@@ -566,6 +566,63 @@ def browse_by_source(data):
     browse_list(data, matches, title)
 
 
+def browse_by_kelengkapan(data):
+    """Browse entries berdasarkan komposisi kelengkapan field.
+    User bisa pilih kerja bertahap:
+      1. ngoko saja (perlu krama + arti)
+      2. ngoko + krama (perlu arti)
+      3. ngoko + arti (no krama) (perlu krama)
+      4. ngoko + krama + arti (3-field ready, perlu validasi)
+      5. no ngoko (orphan krama-only)
+    """
+    kel_choices = [
+        '1. ngoko saja (perlu krama + arti)',
+        '2. ngoko + krama (perlu arti)',
+        '3. ngoko + arti (no krama, perlu krama)',
+        '4. ngoko + krama + arti (3-field ready, perlu validasi)',
+        '5. no ngoko (orphan krama-only)',
+        '↩ Kembali',
+    ]
+    kel_selected = questionary.select(
+        'Pilih kelengkapan:',
+        choices=kel_choices,
+        default=kel_choices[0],
+    ).ask()
+    if not kel_selected or 'Kembali' in kel_selected:
+        return
+    if kel_selected.startswith('1.'):
+        matches = [(i, w) for i, w in enumerate(data['words'])
+                   if (w.get('ngoko') or '').strip()
+                   and not (w.get('krama') or '').strip()
+                   and not (w.get('arti') or '').strip()]
+        title = f'📋 Kelengkapan: ngoko saja ({len(matches)} entri, perlu krama+arti)'
+    elif kel_selected.startswith('2.'):
+        matches = [(i, w) for i, w in enumerate(data['words'])
+                   if (w.get('ngoko') or '').strip()
+                   and (w.get('krama') or '').strip()
+                   and not (w.get('arti') or '').strip()]
+        title = f'📋 Kelengkapan: ngoko+krama ({len(matches)} entri, perlu arti)'
+    elif kel_selected.startswith('3.'):
+        matches = [(i, w) for i, w in enumerate(data['words'])
+                   if (w.get('ngoko') or '').strip()
+                   and not (w.get('krama') or '').strip()
+                   and (w.get('arti') or '').strip()]
+        title = f'📋 Kelengkapan: ngoko+arti ({len(matches)} entri, perlu krama)'
+    elif kel_selected.startswith('4.'):
+        matches = [(i, w) for i, w in enumerate(data['words'])
+                   if (w.get('ngoko') or '').strip()
+                   and (w.get('krama') or '').strip()
+                   and (w.get('arti') or '').strip()]
+        title = f'📋 Kelengkapan: 3-field ready ({len(matches)} entri, perlu validasi)'
+    elif kel_selected.startswith('5.'):
+        matches = [(i, w) for i, w in enumerate(data['words'])
+                   if not (w.get('ngoko') or '').strip()]
+        title = f'📋 Kelengkapan: no ngoko orphan ({len(matches)} entri)'
+    else:
+        return
+    browse_list(data, matches, title)
+
+
 def edit_env_file():
     """Buka/edit file .env di ~/Dubbing/ untuk set Supabase credentials.
     Kalau belum ada, buat template otomatis.
@@ -688,9 +745,10 @@ def main_menu(data):
             '🔍 Search (cari kata di semua field)',
             '✅ Browse VALID (user-approved, siap upload)',
             '📋 Browse DRAFT (belum valid, perlu review)',
+            '📊 Browse by kelengkapan (ngoko / ngoko+krama / 3-field)',
+            '📂 Browse by source (lemma/mendeley/dasanama/angka)',
             '⭐ Browse entries dengan krama mapping (auto-filled, butuh arti)',
             '📝 Browse entries BELUM ada arti (Indonesia)',
-            '📂 Browse by source (lemma/mendeley/dasanama/angka)',
             '🔗 Merge 2 entries (search kata)',
             '🔑 Set Supabase .env (URL + anon key)',
             '☁  Upload ke Supabase (hanya yang VALID)',
@@ -721,6 +779,8 @@ def main_menu(data):
             draft_entries = [(i, w) for i, w in enumerate(data['words'])
                             if w.get('status') == 'ready' and not w.get('user_approved')]
             browse_list(data, draft_entries, f'📋 DRAFT ({len(draft_entries)} entri perlu validasi)')
+        elif 'by kelengkapan' in selected:
+            browse_by_kelengkapan(data)
         elif 'by source' in selected:
             browse_by_source(data)
         elif 'krama mapping' in selected:
