@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Kamus Jawa Viewer</title>
+<style>
+  body { font-family: -apple-system, sans-serif; margin: 20px; background: #1e1e1e; color: #d4d4d4; }
+  h1 { color: #fff; font-size: 20px; }
+  .toolbar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
+  .toolbar input, .toolbar select, .toolbar button {
+    padding: 6px 10px; background: #2d2d2d; color: #d4d4d4; border: 1px solid #444;
+    border-radius: 4px; font-size: 13px;
+  }
+  .toolbar button { cursor: pointer; }
+  .toolbar button:hover { background: #3d3d3d; }
+  #drop-zone {
+    border: 2px dashed #555; padding: 40px; text-align: center; margin: 20px 0;
+    border-radius: 8px; cursor: pointer; color: #888;
+  }
+  #drop-zone.dragover { border-color: #4CAF50; background: #2a3a2a; color: #4CAF50; }
+  .stats { background: #252526; padding: 10px; border-radius: 4px; margin: 10px 0; font-size: 13px; }
+  .entry {
+    background: #252526; padding: 12px; margin: 8px 0; border-radius: 4px;
+    border-left: 3px solid #444;
+  }
+  .entry.approved { border-left-color: #4CAF50; }
+  .entry.ready { border-left-color: #FFA500; }
+  .field { margin: 4px 0; font-size: 13px; }
+  .field-label { display: inline-block; width: 110px; color: #888; font-weight: bold; }
+  .field-ngoko { color: #FFD700; }       /* kuning emas */
+  .field-krama { color: #4CAF50; }       /* hijau */
+  .field-krama-inggil { color: #2196F3; } /* biru */
+  .field-arti { color: #FF9800; }        /* oranye */
+  .field-aksara { color: #E91E63; }      /* pink */
+  .field-keterangan { color: #9E9E9E; font-style: italic; }
+  .field-sumber { color: #888; font-size: 11px; }
+  .field-source { color: #BC7FCC; }      /* ungu */
+  .tags { margin-top: 6px; }
+  .tag {
+    display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 11px;
+    margin-right: 4px;
+  }
+  .tag-lemma { background: #4A148C; color: #fff; }
+  .tag-mendeley { background: #1565C0; color: #fff; }
+  .tag-dasanama { background: #BF360C; color: #fff; }
+  .tag-angka { background: #1B5E20; color: #fff; }
+  .tag-approved { background: #4CAF50; color: #fff; }
+  .pagination { margin: 15px 0; display: flex; gap: 5px; align-items: center; }
+  .pagination button { padding: 4px 10px; }
+  .empty { text-align: center; padding: 40px; color: #888; }
+</style>
+</head>
+<body>
+<h1>📖 Kamus Jawa Viewer (drag-drop JSON)</h1>
+
+<div id="drop-zone">
+  📂 Drag-drop <code>kamus-jawa-draft.json</code> ke sini, atau click untuk pilih file
+  <input type="file" id="file-input" accept=".json" style="display:none">
+</div>
+
+<div id="toolbar" style="display:none">
+  <div class="stats" id="stats"></div>
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="🔍 Cari kata (ngoko/krama/arti)...">
+    <select id="filter-source">
+      <option value="">📂 Semua source</option>
+      <option value="is_lemma">Lemma (Wiktionary ID)</option>
+      <option value="is_mendeley">Mendeley (curated)</option>
+      <option value="is_dasanama">Dasanama (sinonim)</option>
+      <option value="is_angka">Angka</option>
+      <option value="user_approved">User approved</option>
+      <option value="ready">Siap upload (3-field)</option>
+    </select>
+    <button onclick="prevPage()">◀ Prev</button>
+    <span id="page-info">0/0</span>
+    <button onclick="nextPage()">Next ▶</button>
+    <span style="color:#888;font-size:12px">50 per halaman</span>
+  </div>
+  <div id="entries"></div>
+</div>
+
+<script>
+let allEntries = [];
+let filtered = [];
+let currentPage = 0;
+const pageSize = 50;
+
+document.getElementById('drop-zone').addEventListener('click', () => {
+  document.getElementById('file-input').click();
+});
+document.getElementById('file-input').addEventListener('change', e => {
+  if (e.target.files[0]) loadFile(e.target.files[0]);
+});
+document.getElementById('drop-zone').addEventListener('dragover', e => {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.add('dragover');
+});
+document.getElementById('drop-zone').addEventListener('dragleave', () => {
+  document.getElementById('drop-zone').classList.remove('dragover');
+});
+document.getElementById('drop-zone').addEventListener('drop', e => {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('dragover');
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+
+document.getElementById('search').addEventListener('input', applyFilter);
+document.getElementById('filter-source').addEventListener('change', applyFilter);
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = JSON.parse(e.target.result);
+    allEntries = data.words || data;
+    document.getElementById('drop-zone').style.display = 'none';
+    document.getElementById('toolbar').style.display = 'block';
+    showStats();
+    applyFilter();
+  };
+  reader.readAsText(file);
+}
+
+function showStats() {
+  const total = allEntries.length;
+  const ready = allEntries.filter(w => w.ngoko?.trim() && w.krama?.trim() && w.arti?.trim()).length;
+  const approved = allEntries.filter(w => w.user_approved).length;
+  const isLemma = allEntries.filter(w => w.is_lemma).length;
+  const isMendeley = allEntries.filter(w => w.is_mendeley).length;
+  const isDasanama = allEntries.filter(w => w.is_dasanama).length;
+  const isAngka = allEntries.filter(w => w.is_angka).length;
+  document.getElementById('stats').innerHTML = `
+    📊 Total: <b>${total}</b> | 🚀 Ready (3-field): <b>${ready}</b> | ✅ Approved: <b>${approved}</b><br>
+    📂 Source: lemma=<b>${isLemma}</b>, mendeley=<b>${isMendeley}</b>, dasanama=<b>${isDasanama}</b>, angka=<b>${isAngka}</b>
+  `;
+}
+
+function applyFilter() {
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  const filter = document.getElementById('filter-source').value;
+  filtered = allEntries.filter((w, i) => {
+    if (q) {
+      const ngoko = (w.ngoko || '').toLowerCase();
+      const krama = (w.krama || '').toLowerCase();
+      const arti = (w.arti || '').toLowerCase();
+      if (!ngoko.includes(q) && !krama.includes(q) && !arti.includes(q)) return false;
+    }
+    if (filter === 'is_lemma' && !w.is_lemma) return false;
+    if (filter === 'is_mendeley' && !w.is_mendeley) return false;
+    if (filter === 'is_dasanama' && !w.is_dasanama) return false;
+    if (filter === 'is_angka' && !w.is_angka) return false;
+    if (filter === 'user_approved' && !w.user_approved) return false;
+    if (filter === 'ready' && !(w.ngoko?.trim() && w.krama?.trim() && w.arti?.trim())) return false;
+    return true;
+  });
+  currentPage = 0;
+  render();
+}
+
+function render() {
+  const start = currentPage * pageSize;
+  const end = Math.min(start + pageSize, filtered.length);
+  const page = filtered.slice(start, end);
+  const totalPages = Math.ceil(filtered.length / pageSize);
+
+  document.getElementById('page-info').textContent = `${currentPage + 1}/${totalPages || 1} (${filtered.length})`;
+
+  if (page.length === 0) {
+    document.getElementById('entries').innerHTML = '<div class="empty">Tidak ada hasil</div>';
+    return;
+  }
+
+  const html = page.map(w => {
+    const ready = w.ngoko?.trim() && w.krama?.trim() && w.arti?.trim();
+    const approved = w.user_approved;
+    const cls = approved ? 'approved' : (ready ? 'ready' : '');
+    const tags = [];
+    if (w.is_lemma) tags.push('<span class="tag tag-lemma">lemma</span>');
+    if (w.is_mendeley) tags.push('<span class="tag tag-mendeley">mendeley</span>');
+    if (w.is_dasanama) tags.push(`<span class="tag tag-dasanama">dasanama(${w.dasanama_count || 0})</span>`);
+    if (w.is_angka) tags.push('<span class="tag tag-angka">angka</span>');
+    if (approved) tags.push('<span class="tag tag-approved">✓ approved</span>');
+
+    return `
+      <div class="entry ${cls}">
+        <div class="field"><span class="field-label">entry_id:</span>#${w.entry_id || '-'}</div>
+        <div class="field"><span class="field-label">ngoko:</span><span class="field-ngoko">${w.ngoko || ''}</span></div>
+        <div class="field"><span class="field-label">krama:</span><span class="field-krama">${w.krama || ''}</span></div>
+        <div class="field"><span class="field-label">krama_inggil:</span><span class="field-krama-inggil">${w.krama_inggil || ''}</span></div>
+        <div class="field"><span class="field-label">arti (ID):</span><span class="field-arti">${w.arti || ''}</span></div>
+        <div class="field"><span class="field-label">aksara:</span><span class="field-aksara">${w.aksara || ''}</span></div>
+        <div class="field"><span class="field-label">keterangan:</span><span class="field-keterangan">${(w.keterangan || '').substring(0, 200)}${(w.keterangan || '').length > 200 ? '...' : ''}</span></div>
+        <div class="field"><span class="field-label">sumber:</span><span class="field-sumber">${w.sumber || ''}</span></div>
+        <div class="field"><span class="field-label">source:</span><span class="field-source">[${w.source_count || 1}x]</span></div>
+        ${tags.length ? `<div class="tags">${tags.join('')}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+  document.getElementById('entries').innerHTML = html;
+}
+
+function prevPage() { if (currentPage > 0) { currentPage--; render(); window.scrollTo(0, 0); } }
+function nextPage() {
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  if (currentPage < totalPages - 1) { currentPage++; render(); window.scrollTo(0, 0); }
+}
+</script>
+</body>
+</html>
