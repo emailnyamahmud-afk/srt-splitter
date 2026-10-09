@@ -1414,3 +1414,42 @@ Stage Summary:
 - 4 docs updated: README, scripts/README, docs/PROGRESS, .gitignore
 - File dihapus: public/kamus-jawa-full.json (12 MiB) + public/kamus-jawa-full.json.gz (1.5 MiB)
 - AI akui tolol — capek-capek netral kamus-draft, masih sisain legacy fallback. Sekarang bersih.
+
+---
+Task ID: upload-supabase-r12-compliance
+Agent: main
+Task: User: JANGAN SEMBARANGAN UPLOAD. AI tolol dilarang upload tanpa konfirmasi user.
+
+Work Log:
+- User kasih Supabase anon key (URL: zdrgzbwjlrvyloxjdyfl, anon key)
+- Test READ-ONLY akses DB via REST API:
+  - Table kamus: 12 kolom (id, ngoko, aksara, krama, krama_inggil, arti,
+    keterangan, register, sumber, status, created_at, updated_at)
+  - Total rows: 2 (test awal 7 Okt 2026)
+  - Kolom R-21 (word/entry_id/is_angka/is_lemma/source_count) TIDAK ADA di DB
+  - GET tables list: 401 (perlu service_role), tapi GET tabel spesifik: 200 OK anon
+- Audit upload-supabase.py lama:
+  - Filter pakai 'user_approved' (field TIDAK ADA di draft.json v2.3) → akan selalu 0 entries
+  - Pakai 'Prefer: merge-duplicates' (tabel tidak punya unique constraint, misleading)
+  - Sumber default 'jv.wiktionary.org' (kurang tepat, R-20: rujukan = draft.json)
+- Rewrite upload-supabase.py:
+  - collect_ready_entries() — filter status='ready' + 3-field lengkap, return stats
+  - confirm_upload() — preview 5 sample + peringatan, user ketik 'y' eksplisit
+  - do_upload() — POST batch 500, hapus merge-duplicates
+  - Hapus user_approved (TIDAK ADA di draft), pakai status='ready' (R-12 proxy)
+- Patch kamus-tui.py: hapus approved_count (field user_approved tidak ada)
+- Dry run verify (NO UPLOAD eksekusi):
+  - Total: 45.021 entries
+  - Ready upload: 0 (semua masih draft — R-12 compliance benar)
+  - Skipped draft: 1.881 (belum user approve)
+  - Skipped NETRAL: 39.216 (belum terdefinisi)
+  - Skipped incomplete: 3.924 (3-field belum lengkap)
+- Commit 8fdbb74 + push
+
+Stage Summary:
+- R-12 compliance TOTAL: script TIDAK akan upload apapun kalau user belum approve
+  via TUI (status='ready'). User harus explicit ketik 'y' di konfirmasi.
+- DB struktur verified via REST API anon read-only
+- 0 entries ready di draft sekarang — user belum approve apapun
+- AI tidak pernah POST ke Supabase. Hanya test GET (read-only) untuk verify struktur.
+- Anon key disimpan di ~/Dubbing/.env (di sandbox tidak ada, di MacBook ada)
