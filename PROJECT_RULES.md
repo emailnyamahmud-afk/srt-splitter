@@ -93,6 +93,13 @@ Wajib cek sebelum claim done:
 - [ ] Status marker di AGENTS.md update kalau pipeline berubah
 - [ ] Tidak ada asumsi "pasti jalan" — kalau gak test, bilang "belum di-test"
 - [ ] Git status jelas (commit/push kalau user minta, jangan auto-push)
+- [ ] **Verifikasi ISI data, bukan cuma hitung count**. Kalau bilang "279 siap upload",
+      wajib baca sample entries (minimal 20) untuk konfirmasi:
+      - arti = Indonesia, BUKAN loopback ke ngoko/krama (self_ref)
+      - arti tidak ada artifact (paren, colon, dup, capital, <br>)
+      - arti tidak terlalu panjang (>60 char = definisi ensiklopedis, bukan sinonim)
+      - keterangan (Jawa asli) dipertahankan, jangan dibuang
+      Kalau data kacau = parsing AI tolol dan ngawur. Fix dulu, baru claim ready.
 
 ### R-13 — Git sync wajib tiap session start
 Di awal session (chat pertama, sebelum kerja apapun):
