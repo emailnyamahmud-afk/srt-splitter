@@ -110,6 +110,14 @@ Wajib cek sebelum claim done:
       - Imbuhan (-a, -ake) gak punya arti Indonesia → biarkan kosong, jangan
         paksa isi.
       - Sinonim dari dasanama campur register → biarkan di ngoko, user sort manual.
+- [ ] **JANGAN anggap ejaan Jawa modern sebagai typo**. Ejaan baku Jawa modern
+      pakai diakritik khusus:
+      - `ĕ` (e-breve, U+0115) = e pepet (mis. 'mĕlèk' = 'terjaga')
+      - `ê` (e-circumflex, U+00EA) = e taling
+      - `è` (e-grave) = e dialek tertentu
+      - `é` (e-acute) = e taling sering dipakai
+      Jangan bilang "typo/aneh" cuma karena diakritik non-ASCII. Itu ejaan
+      baku, bukan kesalahan. AI gak paham ejaan Jawa, jangan halu klaim typo.
 - [ ] **Upload ke Supabase = USER wajib validasi satu-satu**. AI gak boleh bilang
       "198 siap upload, langsung upload batch". AI cuma audit sample, USER yang
       validasi semua entries sebelum upload.
