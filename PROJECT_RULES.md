@@ -118,6 +118,14 @@ Wajib cek sebelum claim done:
       - `é` (e-acute) = e taling sering dipakai
       Jangan bilang "typo/aneh" cuma karena diakritik non-ASCII. Itu ejaan
       baku, bukan kesalahan. AI gak paham ejaan Jawa, jangan halu klaim typo.
+- [ ] **JANGAN halu: beda kata sinonim Indonesia = beda arti**.
+      'bakti' dan 'hormat' adalah SINONIM (arti sama, kata beda).
+      'bakti' ≈ 'hormat' ≈ 'kesetiaan' ≈ 'pengabdian' — semua valid sebagai arti.
+      Kalau draft bilang `bekti → hormat` dan Lampiran bilang `bekti → bakti`,
+      KEDUANYA BENAR. Jangan klaim draft salah hanya karena beda kata.
+      AI gak paham konteks semantik Indonesia, jangan halu klaim "arti salah"
+      hanya dari perbandingan string parsing. User yang putuskan mana sinonim
+      yang mau dipakai saat upload Supabase.
 - [ ] **Upload ke Supabase = USER wajib validasi satu-satu**. AI gak boleh bilang
       "198 siap upload, langsung upload batch". AI cuma audit sample, USER yang
       validasi semua entries sebelum upload.
