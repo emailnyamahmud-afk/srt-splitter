@@ -368,7 +368,150 @@ def merge_lemma_to_konseps(konseps, lemma_words):
 
 
 # ============================================================
-# Stats + sample
+# Post-processing arti (fix parsing artifacts)
+# ============================================================
+def clean_arti(arti_raw, ngoko, krama):
+    """Clean arti Indonesia dari artifact parser Wiktionary.
+
+    Returns: (clean_arti, moved_to_keterangan, status)
+      - clean_arti: sinonim pendek yang valid, atau '' kalau gak valid
+      - moved_to_keterangan: text yang dipindah ke keterangan (kalau arti panjang)
+      - status: 'clean' | 'self_ref' | 'long_def' | 'empty'
+    """
+    if not arti_raw or not arti_raw.strip():
+        return "", "", "empty"
+
+    arti = arti_raw.strip()
+
+    # 1. Strip <br> dan newline → ; (multiple definitions)
+    arti = re.sub(r"<br\s*/?>", ";", arti, flags=re.IGNORECASE)
+    arti = arti.replace("\n", ";").replace("\r", ";")
+
+    # 2. Strip "():", "(): " patterns (artifact template Wiktionary)
+    # Mis. "() besar" → "besar", "(mampu)" → drop, "bisa (mampu)" → "bisa"
+    # Hapus "()" dan "()" saja (artinya kosong, artifact)
+    arti = re.sub(r"\(\s*\)", "", arti)
+    # Untuk "word (keterangan)" — pertahankan word, drop paren jika word ada
+    # Mis. "bisa (mampu)" → "bisa" (karena "bisa" = ngoko, parentheses = context)
+    # Tapi "berat (tentang pikiran)" → "berat" (drop context)
+
+    # 3. Cek LONG_DEF (>60 char): arti ensiklopedis, pindah ke keterangan
+    if len(arti) > 60:
+        return "", arti, "long_def"
+
+    # 4. Strip parenthetical (sekarang setelah long_def check, sisanya pendek dengan paren)
+    # Mis. "bisa (mampu)" → "bisa", "berat (tentang pikiran, perasaan)" → "berat"
+    arti_no_paren = re.sub(r"\s*\([^)]*\)", "", arti).strip(" ,;:.")
+    if arti_no_paren:
+        arti = arti_no_paren
+
+    # 5. Strip colon artifact: "dadi; jadi:" → "jadi"
+    # Pattern: text:other_text → ambil last segment (yang valid Indonesia)
+    if ":" in arti:
+        parts = [p.strip(" ,;.") for p in arti.split(":") if p.strip(" ,;.")]
+        if parts:
+            arti = parts[-1]
+
+    # 6. Split by ; atau , → dedup (case-insensitive)
+    parts = [p.strip(" ,;.").lower() for p in re.split(r"[;,\n]", arti) if p.strip(" ,;.\n")]
+    seen = []
+    for p in parts:
+        if p and p not in seen:
+            seen.append(p)
+    arti = "; ".join(seen) if seen else ""
+
+    # 7. SELF_REF: kalau arti = ngoko atau krama (loopback), kosongkan
+    ngoko_first = ngoko.split(",")[0].strip().lower()
+    krama_first = krama.split(",")[0].strip().lower() if krama else ""
+    if arti:
+        arti_words = [w.strip() for w in arti.split(";")]
+        # Kalau semua arti_words == ngoko atau krama → self_ref
+        if all(w == ngoko_first or w == krama_first for w in arti_words):
+            return "", arti_raw, "self_ref"
+        # Kalau ada arti_word yang self_ref → drop yang self_ref, sisanya tetap
+        non_self = [w for w in arti_words if w != ngoko_first and w != krama_first]
+        if non_self and len(non_self) < len(arti_words):
+            arti = "; ".join(non_self)
+
+    # 8. Capitalization: lowercase kecuali proper noun
+    # Proper noun: kata pertama capitalize dan tidak ada di dict common words
+    # Untuk simplisitas: lowercase semua (user bisa fix di kamus-tui.py kalau proper noun)
+    # Tapi pertahankan "Belanda", "Indonesia" dll yang jelas proper noun
+    proper_nouns = {"belanda", "indonesia", "jawa", "sunda", "bali", "ramadan"}
+    if arti and arti.split()[0].lower() not in proper_nouns and len(arti.split()) <= 2:
+        # Jangan lowercase kalau single word capitalized (kemungkinan proper noun)
+        if arti[0].isupper() and arti[1:].islower() and " " not in arti:
+            pass  # biarkan proper noun
+        else:
+            arti = arti[0].lower() + arti[1:] if arti else arti
+
+    if not arti:
+        return "", arti_raw, "empty"
+
+    return arti, "", "clean"
+
+
+def post_process_konseps(konseps):
+    """Apply clean_arti ke semua konsep + pindah long_def ke keterangan."""
+    print(f"\n🧹 Post-process arti ({len(konseps):,} konsep)...")
+    stats = {
+        "clean": 0,
+        "self_ref_cleared": 0,
+        "long_def_moved": 0,
+        "empty": 0,
+        "paren_stripped": 0,
+        "colon_stripped": 0,
+        "dup_deduped": 0,
+    }
+
+    for k in konseps:
+        arti_raw = k.get("arti", "")
+        ngoko = k.get("ngoko", "")
+        krama = k.get("krama", "")
+        if not arti_raw:
+            stats["empty"] += 1
+            continue
+
+        original_arti = arti_raw
+        clean, moved, status = clean_arti(arti_raw, ngoko, krama)
+
+        if status == "long_def":
+            # Pindah arti panjang ke keterangan (gabung dengan existing keterangan)
+            existing_ket = k.get("keterangan", "")
+            if moved and moved not in existing_ket:
+                k["keterangan"] = f"{existing_ket} | {moved}".strip(" |") if existing_ket else moved
+            k["arti"] = ""  # kosongkan, user isi manual nanti
+            stats["long_def_moved"] += 1
+        elif status == "self_ref":
+            # Self-ref = arti cuma ulang ngoko/krama, BUKAN Indonesia
+            # Kosongkan, user isi manual
+            k["arti"] = ""
+            stats["self_ref_cleared"] += 1
+        elif status == "empty":
+            k["arti"] = ""
+            stats["empty"] += 1
+        else:
+            # Clean atau setelah fix
+            k["arti"] = clean
+            stats["clean"] += 1
+            # Count berapa perubahan yang dilakukan
+            if "(" in original_arti or ")" in original_arti:
+                stats["paren_stripped"] += 1
+            if ":" in original_arti:
+                stats["colon_stripped"] += 1
+            # Cek dup
+            parts = [p.strip().lower() for p in re.split(r"[;,]", original_arti) if p.strip()]
+            if len(parts) > len(set(parts)):
+                stats["dup_deduped"] += 1
+
+    print(f"  Clean (siap upload betulan): {stats['clean']}")
+    print(f"  Self-ref cleared (arti = ngoko/krama, kosongkan): {stats['self_ref_cleared']}")
+    print(f"  Long-def moved ke keterangan: {stats['long_def_moved']}")
+    print(f"  Empty (no arti from source): {stats['empty']}")
+    print(f"  Paren stripped: {stats['paren_stripped']}")
+    print(f"  Colon stripped: {stats['colon_stripped']}")
+    print(f"  Dup deduped: {stats['dup_deduped']}")
+    return konseps
 # ============================================================
 def compute_stats(konseps):
     stats = {
@@ -438,6 +581,9 @@ def main():
 
     # Merge lemma
     konseps = merge_lemma_to_konseps(konseps, lemma_words)
+
+    # Post-process arti (clean artifact, move long_def ke keterangan)
+    konseps = post_process_konseps(konseps)
 
     # Sort alfabetis
     print(f"\n🔤 Sort {len(konseps):,} konsep alfabetis by ngoko pertama...")
