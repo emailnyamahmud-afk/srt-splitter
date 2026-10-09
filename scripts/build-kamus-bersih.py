@@ -65,6 +65,7 @@ RAW_LEMMA = Path("/home/z/my-project/download/kamus-jawa-lemma-raw.json")
 RAW_MENDELEY = Path("/home/z/my-project/public/kamus-jawa-mendeley-raw.json")
 RAW_DASANAMA = Path("/home/z/my-project/public/dasanama-raw.csv")
 RAW_ANGKA = Path("/home/z/my-project/public/angka-raw.json")
+RAW_LAMPIRAN = Path("/home/z/my-project/public/lampiran-raw.json")
 
 OUT_DRAFT = Path("/home/z/my-project/public/kamus-jawa-draft.json")
 OUT_REPORT = Path("/home/z/my-project/public/kamus-jawa-draft-report.txt")
@@ -298,39 +299,64 @@ def sort_konseps(konseps):
 # ============================================================
 def merge_lemma_to_konseps(konseps, lemma_words):
     """Untuk setiap lemma entry:
-      - Cari konsep di full yang punya ngoko sama → tambah arti Indonesia dari lemma
-      - Kalau gak match → bikin konsep baru
+      - Cek keterangan untuk tag {{krama}} atau {{label|jv|krama}}
+        Kalau ada → word ini KRAMA, match by krama index (BUKAN ngoko)
+      - Kalau gak ada tag krama → match by ngoko index (seperti biasa)
+      - Match → enrich arti (gabung sinonim, bukan override)
+      - No match → bikin konsep baru
     """
     print(f"\n🔗 Merge {len(lemma_words):,} lemma entries ke konsep...")
 
-    # Index konsep by primary ngoko (first word lowercase)
+    # Build indices: by primary ngoko AND by primary krama
     konsep_by_ngoko = defaultdict(list)
+    konsep_by_krama = defaultdict(list)
     for i, k in enumerate(konseps):
         ngoko_first = (k.get("ngoko", "") or "").split(",")[0].strip().lower()
         if ngoko_first:
             konsep_by_ngoko[ngoko_first].append(i)
+        krama_first = (k.get("krama", "") or "").split(",")[0].strip().lower()
+        if krama_first:
+            konsep_by_krama[krama_first].append(i)
 
     matched = 0
+    matched_by_krama = 0
     new_from_lemma = 0
     for lemma in lemma_words:
-        lemma_ngoko = (lemma.get("ngoko", "") or "").strip().lower()
+        lemma_word = (lemma.get("ngoko", "") or "").strip().lower()
         lemma_arti = (lemma.get("arti", "") or "").strip()
         lemma_krama = (lemma.get("krama", "") or "").strip()
         lemma_aksara = (lemma.get("aksara", "") or "").strip()
         lemma_ket = (lemma.get("keterangan", "") or "").strip()
 
-        # Cari konsep yang match (by first ngoko)
-        matches = konsep_by_ngoko.get(lemma_ngoko, [])
+        # Cek apakah word ini sebenarnya KRAMA (bukan ngoko)
+        # Lemma parser taruh krama word di field "ngoko" tapi keterangan ada tag {{krama}}
+        is_actually_krama = False
+        if lemma_ket:
+            ket_lower = lemma_ket.lower()
+            if "{{krama}}" in ket_lower or "{{label|jv|krama}}" in ket_lower:
+                is_actually_krama = True
+
+        # Match logic:
+        # - is_actually_krama=True → match by krama index (word is KRAMA)
+        # - is_actually_krama=False → match by ngoko index (word is NGOKO)
+        if is_actually_krama:
+            matches = konsep_by_krama.get(lemma_word, [])
+            matched_by_krama += 1
+        else:
+            matches = konsep_by_ngoko.get(lemma_word, [])
+
         if matches:
             konsep_idx = matches[0]
             k = konseps[konsep_idx]
 
-            # Tambah arti dari lemma (Indonesia) — prioritas lemma
+            # Enrich arti: gabung sinonim (bukan override)
             if lemma_arti and not k.get("arti"):
                 k["arti"] = lemma_arti
+            elif lemma_arti and k.get("arti") and lemma_arti.lower() not in k["arti"].lower():
+                k["arti"] = f"{k['arti']}; {lemma_arti}"
 
-            # Tambah krama dari lemma (kalau konsep belum punya)
-            if lemma_krama and not k.get("krama"):
+            # Tambah krama dari lemma (kalau konsep belum punya dan word ini bukan krama)
+            if lemma_krama and not k.get("krama") and not is_actually_krama:
                 k["krama"] = normalize_sinonim(lemma_krama)
 
             # Tambah aksara dari lemma (gabung)
@@ -341,27 +367,34 @@ def merge_lemma_to_konseps(konseps, lemma_words):
             if lemma_ket:
                 k["keterangan"] = merge_keterangan_field(k.get("keterangan", ""), lemma_ket)
 
-            # Register tetap "umum" (jangan pakai lemma register — halusinasi/kesalahan parsing)
             # Tag is_lemma
             k["is_lemma"] = True
-            k["lemma_words"] = lemma_ngoko
+            k["lemma_words"] = lemma_word
             k["source_count"] = k.get("source_count", 1) + 1
 
             matched += 1
         else:
             # Bikin konsep baru dari lemma
+            # Kalau is_actually_krama=True → word masuk ke field krama (bukan ngoko)
+            if is_actually_krama:
+                new_ngoko = ""
+                new_krama = normalize_sinonim(lemma.get("ngoko", ""))
+            else:
+                new_ngoko = normalize_sinonim(lemma.get("ngoko", ""))
+                new_krama = normalize_sinonim(lemma.get("krama", ""))
+
             new_konsep = {
-                "ngoko": normalize_sinonim(lemma.get("ngoko", "")),
-                "krama": normalize_sinonim(lemma.get("krama", "")),
+                "ngoko": new_ngoko,
+                "krama": new_krama,
                 "krama_inggil": "",
                 "arti": lemma_arti,
                 "keterangan": lemma_ket,
                 "aksara": lemma_aksara,
-                "register": "umum",  # SEMUA umum (jangan parse — halusinasi)
+                "register": "umum",
                 "status": "draft",
                 "sumber": "id.wiktionary.org Kategori:jv:Lema (new)",
                 "is_lemma": True,
-                "lemma_words": lemma_ngoko,
+                "lemma_words": lemma_word,
                 "source_count": 1,
             }
             konseps.append(new_konsep)
@@ -762,6 +795,135 @@ def merge_angka_to_konseps(konseps, angka_words):
     print(f"    + enrich arti (override kosong/artifact): {enriched_arti}")
     print(f"    + fix krama (gabung sinonim): {fixed_krama}")
     print(f"  New konsep dari Angka (no match): {new_from_angka}")
+    return konseps
+
+
+# ============================================================
+# Load Lampiran Kamus Jawa-Indonesia (2724 entries, curated)
+# Cross-reference: cek is_krama flag untuk tentukan ngoko vs krama
+# JANGAN trust field label "ngoko" dari Lampiran — cek is_krama
+# ============================================================
+def load_lampiran_json(path):
+    """Load lampiran-raw.json, return list of entries."""
+    if not path.exists():
+        print(f"⚠ Lampiran file tidak ditemukan: {path}")
+        return []
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return data.get("words", data if isinstance(data, list) else [])
+
+
+def merge_lampiran_to_konseps(konseps, lampiran_words):
+    """Merge Lampiran entries ke konsep existing.
+
+    Cross-reference logic (BUKAN trust field label):
+      - is_krama=True  → word ini KRAMA, match by krama index
+      - is_krama=False → word ini NGOKO, match by ngoko index
+
+    Enrich arti: gabung sinonim (bukan override, bukan pick one).
+    Tambah field kelas (bonus metadata dari Lampiran).
+    Arti panjang (>30 char) → pindah ke keterangan (post-process handle).
+
+    No match:
+      - is_krama=True  → new concept: krama=word, ngoko="", arti=arti
+        (user isi ngoko manual — mis. "ajeng" krama dari "arep")
+      - is_krama=False → new concept: ngoko=word, arti=arti
+    """
+    print(f"\n🔗 Merge {len(lampiran_words):,} Lampiran entries ke konsep...")
+
+    # Build indices: by primary ngoko AND by primary krama
+    konsep_by_ngoko = defaultdict(list)
+    konsep_by_krama = defaultdict(list)
+    for i, k in enumerate(konseps):
+        ngoko_first = (k.get("ngoko", "") or "").split(",")[0].strip().lower()
+        if ngoko_first:
+            konsep_by_ngoko[ngoko_first].append(i)
+        krama_first = (k.get("krama", "") or "").split(",")[0].strip().lower()
+        if krama_first:
+            konsep_by_krama[krama_first].append(i)
+
+    matched = 0
+    matched_by_krama = 0
+    new_from_lampiran = 0
+    for entry in lampiran_words:
+        word = (entry.get("ngoko", "") or "").strip().lower()
+        arti = (entry.get("arti", "") or "").strip()
+        kelas = (entry.get("kelas", "") or "").strip()
+        kelas_nama = (entry.get("kelas_nama", "") or "").strip()
+        is_krama = bool(entry.get("is_krama"))
+
+        if not word or not arti:
+            continue
+
+        # Match logic:
+        # - is_krama=True  → match by krama index (word is KRAMA)
+        # - is_krama=False → match by ngoko index (word is NGOKO)
+        if is_krama:
+            matches = konsep_by_krama.get(word, [])
+            matched_by_krama += 1
+        else:
+            matches = konsep_by_ngoko.get(word, [])
+
+        if matches:
+            konsep_idx = matches[0]
+            k = konseps[konsep_idx]
+
+            # Enrich arti: gabung sinonim (bukan override)
+            if arti and not k.get("arti"):
+                k["arti"] = arti
+            elif arti and k.get("arti") and arti.lower() not in k["arti"].lower():
+                k["arti"] = f"{k['arti']}; {arti}"
+
+            # Tambah kelas (bonus metadata)
+            if kelas:
+                existing_kelas = k.get("kelas", "")
+                if not existing_kelas:
+                    k["kelas"] = kelas
+                    k["kelas_nama"] = kelas_nama
+                elif kelas not in existing_kelas:
+                    k["kelas"] = f"{existing_kelas}, {kelas}"
+                    k["kelas_nama"] = f"{k.get('kelas_nama', '')}, {kelas_nama}"
+
+            # Tag is_lampiran
+            k["is_lampiran"] = True
+            k["source_count"] = k.get("source_count", 1) + 1
+            sumber = k.get("sumber", "")
+            if "lampiran" not in sumber.lower():
+                k["sumber"] = (sumber + " + lampiran" if sumber else "lampiran").strip(" +")
+
+            matched += 1
+        else:
+            # Bikin konsep baru dari Lampiran
+            if is_krama:
+                # Word is KRAMA → ngoko kosong (user isi manual)
+                new_ngoko = ""
+                new_krama = word
+            else:
+                new_ngoko = word
+                new_krama = ""
+
+            new_konsep = {
+                "ngoko": new_ngoko,
+                "krama": new_krama,
+                "krama_inggil": "",
+                "arti": arti,
+                "keterangan": "",
+                "aksara": "",
+                "register": "umum",
+                "status": "draft",
+                "sumber": "lampiran-raw.json (new)",
+                "is_lampiran": True,
+                "kelas": kelas,
+                "kelas_nama": kelas_nama,
+                "source_count": 1,
+            }
+            konseps.append(new_konsep)
+            new_from_lampiran += 1
+
+    print(f"  Match & enrich konsep existing: {matched}")
+    print(f"    (match by krama index): {matched_by_krama}")
+    print(f"    (match by ngoko index): {matched - matched_by_krama}")
+    print(f"  New konsep dari Lampiran (no match): {new_from_lampiran}")
     return konseps
 
 
@@ -1223,6 +1385,13 @@ def main():
     print(f"  angka.json: {len(angka_words):,} entries (angka 1-20, puluhan, ratusan, ribuan)")
     if angka_words:
         konseps = merge_angka_to_konseps(konseps, angka_words)
+
+    # Merge Lampiran Kamus Jawa-Indonesia (2724 entries, curated)
+    # Cross-reference: cek is_krama flag, JANGAN trust field label "ngoko"
+    lampiran_words = load_lampiran_json(RAW_LAMPIRAN)
+    print(f"  lampiran.json: {len(lampiran_words):,} entries (Lampiran Kamus Jawa-Indonesia)")
+    if lampiran_words:
+        konseps = merge_lampiran_to_konseps(konseps, lampiran_words)
 
     # Post-process arti (clean artifact, move long_def ke keterangan)
     konseps = post_process_konseps(konseps)

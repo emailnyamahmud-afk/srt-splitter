@@ -6,17 +6,17 @@ Source (JANGAN DIHAPUS, tetap utuh):
   kamus-jawa-lemma-raw.json   :   2,159 entries (id.wiktionary.org jv:Lema)
 
 Output:
-  kamus-jawa-draft.json       :  43,154 konsep (group by konsep + sinonim)
+  kamus-jawa-draft.json       :  44,065 konsep (group by konsep + sinonim)
 
 Stats:
-  total_konsep             :  43,154
-  with_krama               :   2,336
-  with_arti                :   2,082
-  with_keterangan          :  42,431
+  total_konsep             :  44,065
+  with_krama               :   2,515
+  with_arti                :   3,598
+  with_keterangan          :  42,631
   with_aksara              :  41,765
-  is_lemma                 :   2,157
-  ready_3_field            :     879
-  draft_2_field            :   1,203
+  is_lemma                 :   2,124
+  ready_3_field            :     908
+  draft_2_field            :   2,565
 
 Register: SEMUA 'umum' (jangan parse ngoko/krama dari Wiktionary — halusinasi/kesalahan parsing).
   User bisa set manual di kamus-tui.py kalau perlu.
