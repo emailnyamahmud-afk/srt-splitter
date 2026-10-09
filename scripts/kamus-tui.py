@@ -175,9 +175,17 @@ def show_stats(data):
     print()
     print(f'  Total entries: {total}')
     print()
-    print('  Register breakdown:')
-    for r, c in reg_count.most_common():
-        print(f'    {r:15s}: {c:6d}')
+    print('  Source tags (multi-source tracking):')
+    is_lemma = sum(1 for w in words if w.get('is_lemma'))
+    is_mend = sum(1 for w in words if w.get('is_mendeley'))
+    is_dasa = sum(1 for w in words if w.get('is_dasanama'))
+    is_angk = sum(1 for w in words if w.get('is_angka'))
+    approved = sum(1 for w in words if w.get('user_approved'))
+    print(f'    is_lemma:    {is_lemma:6d}  (dari id.wiktionary.org jv:Lema)')
+    print(f'    is_mendeley: {is_mend:6d}  (curated, data.mendeley.com)')
+    print(f'    is_dasanama: {is_dasa:6d}  (sinonim Jawa, user upload CSV)')
+    print(f'    is_angka:    {is_angk:6d}  (angka sistematis)')
+    print(f'    user_approved: {approved:6d}  ⭐ (validasi user, siap upload Supabase)')
     print()
     print('  Mapping stats:')
     print(f'    ngoko + krama (auto-filled):    {both_ngoko_krama:6d}  ⭐ (dari template Wikisastra)')
@@ -185,6 +193,10 @@ def show_stats(data):
     print(f'    krama_inggil filled:            {with_ki:6d}  (opsional)')
     print(f'    arti (Indonesia) filled:        {with_arti:6d}  ⭐ (user edit manual)')
     print(f'    SIAP UPLOAD (3 field lengkap): {ready_count:6d}  🚀')
+    print()
+    print('  Register breakdown (default umum, user bisa override):')
+    for r, c in reg_count.most_common():
+        print(f'    {r:15s}: {c:6d}')
     print()
     print('  Status (untuk upload):')
     for s, c in status_count.most_common():
@@ -213,6 +225,16 @@ def edit_entry(data, idx):
     print(f'║  ✏️  Edit Entry #{entry_id}' + ' ' * (44 - len(str(entry_id))) + '║')
     print('╚' + '═' * 60 + '╝')
     print()
+    # Source tags (multi-source tracking)
+    src_tags = []
+    if entry.get('is_lemma'): src_tags.append('lemma')
+    if entry.get('is_mendeley'): src_tags.append('mendeley')
+    if entry.get('is_dasanama'): src_tags.append(f'dasanama({entry.get("dasanama_count",0)})')
+    if entry.get('is_angka'): src_tags.append('angka')
+    src_str = ', '.join(src_tags) if src_tags else '-'
+    src_count = entry.get('source_count', 1)
+    approved = '✓' if entry.get('user_approved') else '○'
+
     print(f'  ┌─────────────────────────────────────────────┐')
     print(f'  │ entry_id:     #{entry_id}')
     print(f'  │ ngoko:        {ngoko_old[:42]}')
@@ -222,6 +244,8 @@ def edit_entry(data, idx):
     print(f'  │ arti (ID):     {arti_old[:42] or "(kosong)"}')
     print(f'  │ register:      {register}')
     print(f'  │ sumber:        {sumber[:42]}')
+    print(f'  │ source:        [{src_count}x] {src_str}')
+    print(f'  │ approved:      {approved} (✓=sudah, ○=belum)')
     print(f'  └─────────────────────────────────────────────┘')
     print()
     print('  📖 Keterangan (definisi JAWA — JANGAN HAPUS, bantu isi arti):')
@@ -295,6 +319,8 @@ def edit_entry(data, idx):
         del entry['krama_inggil']
     entry['arti'] = new_arti
     entry['register'] = new_register  # update register
+    # Mark user_approved (R-12: user wajib validasi 1-1 sebelum upload Supabase)
+    entry['user_approved'] = True
     # Status auto-detect di save_kamus (ngoko+krama+arti semua terisi → 'ready')
 
     save_kamus(data)
@@ -466,10 +492,37 @@ def browse_no_arti(data):
     browse_list(data, matches, '📝 Entries BELUM ada arti (Indonesia)')
 
 
-def browse_by_register(data, register):
-    """Browse entries berdasarkan register"""
-    matches = [(i, w) for i, w in enumerate(data['words']) if w.get('register', 'umum') == register]
-    browse_list(data, matches, f'🎯 Register: {register} ({len(matches)} entri)')
+def browse_by_source(data):
+    """Browse entries berdasarkan source tag (lemma/mendeley/dasanama/angka)"""
+    src_choices = [
+        'is_lemma (dari id.wiktionary.org jv:Lema)',
+        'is_mendeley (curated, data.mendeley.com)',
+        'is_dasanama (sinonim Jawa)',
+        'is_angka (angka sistematis)',
+        '↩ Kembali',
+    ]
+    src_selected = questionary.select(
+        'Pilih source:',
+        choices=src_choices,
+        default=src_choices[0],
+    ).ask()
+    if not src_selected or 'Kembali' in src_selected:
+        return
+    if 'is_lemma' in src_selected:
+        matches = [(i, w) for i, w in enumerate(data['words']) if w.get('is_lemma')]
+        title = f'📂 Source: lemma ({len(matches)} entri)'
+    elif 'is_mendeley' in src_selected:
+        matches = [(i, w) for i, w in enumerate(data['words']) if w.get('is_mendeley')]
+        title = f'📂 Source: mendeley ({len(matches)} entri)'
+    elif 'is_dasanama' in src_selected:
+        matches = [(i, w) for i, w in enumerate(data['words']) if w.get('is_dasanama')]
+        title = f'📂 Source: dasanama ({len(matches)} entri)'
+    elif 'is_angka' in src_selected:
+        matches = [(i, w) for i, w in enumerate(data['words']) if w.get('is_angka')]
+        title = f'📂 Source: angka ({len(matches)} entri)'
+    else:
+        return
+    browse_list(data, matches, title)
 
 
 def edit_env_file():
@@ -591,15 +644,13 @@ def main_menu(data):
         choices = [
             '📊 Statistik kamus',
             '🔍 Search (cari kata di semua field)',
-            '🚀 Browse SIAP UPLOAD (ngoko+krama+arti lengkap)',
+            '🚀 Browse SIAP UPLOAD (ngoko+krama+arti lengkap, approved)',
             '⭐ Browse entries dengan krama mapping (auto-filled, butuh arti)',
             '📝 Browse entries BELUM ada arti (Indonesia)',
-            '⚠ Browse register UMUM (perlu validasi)',
-            '🎯 Browse per register (ngoko/krama/krama_inggil/kawi/umum)',
+            '📂 Browse by source (lemma/mendeley/dasanama/angka)',
             '🔗 Merge 2 entries (search kata)',
             '🔑 Set Supabase .env (URL + anon key)',
-            '☁  Upload ke Supabase (hanya yang SIAP UPLOAD)',
-            '💾 Save JSON (manual)',
+            '☁  Upload ke Supabase (hanya yang USER APPROVED)',
             '❌ Keluar',
         ]
 
@@ -619,24 +670,16 @@ def main_menu(data):
         elif 'Upload ke Supabase' in selected:
             upload_to_supabase()
         elif 'SIAP UPLOAD' in selected and 'Browse' in selected:
-            ready_entries = [(i, w) for i, w in enumerate(data['words']) if w.get('status') == 'ready']
-            browse_list(data, ready_entries, f'🚀 Siap Upload ({len(ready_entries)} entri lengkap)')
-        elif 'register UMUM' in selected:
-            umum_entries = [(i, w) for i, w in enumerate(data['words']) if w.get('register', 'umum') == 'umum']
-            browse_list(data, umum_entries, f'⚠ Register UMUM ({len(umum_entries)} entries — perlu validasi)')
+            # Hanya entries yang status=ready DAN user_approved=True (R-12 compliance)
+            ready_entries = [(i, w) for i, w in enumerate(data['words'])
+                            if w.get('status') == 'ready' and w.get('user_approved')]
+            browse_list(data, ready_entries, f'🚀 Siap Upload ({len(ready_entries)} entri approved)')
+        elif 'by source' in selected:
+            browse_by_source(data)
         elif 'krama mapping' in selected:
             browse_with_krama(data)
         elif 'BELUM ada arti' in selected:
             browse_no_arti(data)
-        elif 'per register' in selected:
-            register_choices = ['ngoko', 'krama', 'krama_inggil', 'kawi', 'umum', '↩ Kembali']
-            reg_selected = questionary.select(
-                'Pilih register:',
-                choices=register_choices,
-                default=register_choices[0],
-            ).ask()
-            if reg_selected and 'Kembali' not in reg_selected:
-                browse_by_register(data, reg_selected)
         elif 'Merge 2 entries' in selected:
             # Merge 2 entries — LANGSUNG: search kata 1 → search kata 2 → preview → konfirmasi
             print('\n  ═══ MERGE 2 ENTRIES ═══')
@@ -848,10 +891,6 @@ def main_menu(data):
             input('  Tekan Enter...')
         elif 'Set Supabase' in selected:
             edit_env_file()
-        elif 'Save JSON' in selected:
-            save_kamus(data)
-            print('\n  ✅ JSON disimpan')
-            input('  Tekan Enter...')
 
 
 def upload_to_supabase():
@@ -899,18 +938,18 @@ print(f"\\n  → Load kamus: {KAMUS_PATH}")
 with open(KAMUS_PATH, "r", encoding="utf-8") as f:
     data = json.load(f)
 
-# Filter: HANYA upload entries yang SIAP UPLOAD
-# Yaitu: ngoko + krama + arti SEMUA terisi (3 field wajib lengkap)
-# krama_inggil OPSIONAL (include kalau ada)
-# Yang auto-fill krama tanpa arti TIDAK di-upload (belum divalidasi user)
+# Filter: HANYA upload entries yang USER APPROVED (R-12 compliance)
+# Syarat: ngoko + krama + arti terisi (status=ready) DAN user_approved=True
+# User wajib validasi 1-1 di TUI sebelum upload ke Supabase
 edited = []
 for entry in data.get("words", []):
     ngoko = (entry.get("ngoko") or "").strip()
     krama = (entry.get("krama") or "").strip()
     arti = (entry.get("arti") or "").strip()
+    approved = bool(entry.get("user_approved"))
 
-    # 3 field wajib: ngoko + krama + arti semua harus terisi
-    if ngoko and krama and arti:
+    # 3 field wajib + user_approved
+    if ngoko and krama and arti and approved:
         ki = (entry.get("krama_inggil") or "").strip()
         register = (entry.get("register") or "").strip()
         # SEMUA row harus punya keys yang sama (Supabase PGRST102: all keys must match)
@@ -929,9 +968,9 @@ for entry in data.get("words", []):
 
 if not edited:
     print("  ⚠ Tidak ada entri yang SIAP UPLOAD.")
-    print("     Syarat: ngoko + krama + arti SEMUA terisi (3 field wajib).")
-    print("     krama_inggil opsional.")
-    print("     Edit dulu di TUI: browse → pilih entri → isi arti Indonesia")
+    print("     Syarat: ngoko + krama + arti SEMUA terisi (3 field wajib)")
+    print("            DAN user_approved=True (edit entry di TUI untuk approve).")
+    print("     Flow: Browse SIAP UPLOAD → pilih entry → edit (auto-mark approved)")
     input("\\n  Tekan Enter...")
     sys.exit(0)
 
