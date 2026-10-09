@@ -10,12 +10,12 @@ Output:
 
 Stats:
   total_konsep             :  44,228
-  with_krama               :   2,540
+  with_krama               :   2,599
   with_arti                :   3,757
   with_keterangan          :  42,800
   with_aksara              :  41,761
   is_lemma                 :   2,120
-  ready_3_field            :     921
+  ready_3_field            :     983
   draft_2_field            :   2,550
 
 Register: SEMUA 'umum' (jangan parse ngoko/krama dari Wiktionary — halusinasi/kesalahan parsing).
