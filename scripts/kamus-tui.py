@@ -401,30 +401,11 @@ def browse_list(data, entries_with_idx, title):
         print()
 
         # Build label → idx mapping (untuk lookup saat select)
+        # Phase 2: pakai helper _entry_label (R-21: word tampil kalau NETRAL)
         label_to_idx = {}
         choices = []
         for orig_idx, entry in page:
-            ngoko = entry.get('ngoko', '') or entry.get('krama', '') or ''
-            ngoko_display = ngoko[:25]
-            krama = entry.get('krama', '') or ''
-            ki = entry.get('krama_inggil', '') or ''
-            arti = entry.get('arti', '') or ''
-            status = entry.get('status', 'draft')
-            register = entry.get('register', 'umum')
-            entry_id = entry.get('entry_id', orig_idx + 1)
-            icon = '✓' if status == 'ready' else '○'
-
-            # Build unique label — tampilkan entry_id (dari JSON) supaya user bisa referensi
-            label = f'{icon} #{entry_id:5d}. {ngoko_display:25s}'
-            if krama:
-                label += f' → {krama[:15]:15s}'
-            if ki:
-                label += f' | ki: {ki[:10]}'
-            if arti:
-                label += f' | {arti[:15]}'
-            # Tampilkan register kalau bukan default (umum)
-            if register != 'umum':
-                label += f' [{register}]'
+            label, _ = _entry_label(orig_idx, entry)
             label_to_idx[label] = orig_idx
             choices.append(label)
 
