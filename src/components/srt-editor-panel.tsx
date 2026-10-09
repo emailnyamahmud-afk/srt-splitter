@@ -111,11 +111,19 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
   }, [])
 
   // Compute top unknown words saat jawaEntries atau kamus berubah
+  // R-22: JANGAN short-circuit kalau kamus null. Kamus null bisa berarti:
+  //   - DB kosong (entries 0) → SEMUA kata SRT = unknown (perlu tampilkan)
+  //   - Supabase belum connect (env vars belum set) → skip (return [], jangan tampilkan)
+  // Logic: kalau jawaEntries kosong → []. Kalau kamus null → tetap compute (getTopUnknownWords handle).
   useEffect(() => {
-    if (jawaEntries.length === 0 || !kamus) {
+    if (jawaEntries.length === 0) {
       setUnknownWords([])
       return
     }
+    // Kalau kamus null (DB kosong atau Supabase belum connect), getTopUnknownWords akan:
+    //   - DB kosong: compute semua kata jadi unknown (R-22 benar)
+    //   - Supabase belum connect: getTopUnknownWords return [] (mode fallback, semua known)
+    // Catatan: isWordInKamus(kamus=null) → return false (R-22: semua unknown)
     const top = getTopUnknownWords(jawaEntries, kamus, 100)
     setUnknownWords(top)
   }, [jawaEntries, kamus])

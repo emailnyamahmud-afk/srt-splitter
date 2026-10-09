@@ -44,16 +44,22 @@ export interface RapikanResult {
  * Load kamus Jawa dari Supabase (bukan dari JSON file — terlalu besar 9.6MB, crash browser)
  * User edit kamus lokal pakai VSCode, upload ke Supabase kalau sudah lengkap
  *
- * Fallback: kalau Supabase belum tersedia, return null (kamus check skip, semua kata dianggap OK)
+ * R-22 fix: kalau DB kosong (data.length === 0), return kamus valid dengan words=[].
+ *   Sebelumnya: return null (salah — isWordInKamus dan getTopUnknownWords anggap semua known).
+ *   Sekarang: return {words: []} (benar — semua kata SRT jadi unknown, user tahu perlu isi kamus).
+ *
+ * Fallback: kalau Supabase belum tersedia (env vars belum set), return null.
+ *   null = "skip kamus check, anggap semua kata known" (untuk dev tanpa DB).
+ *   Tapi kalau Supabase connect tapi DB kosong → return {words: []} (semua unknown).
  */
 export async function loadKamusJawa(): Promise<KamusJawa | null> {
   try {
     const { isSupabaseAvailable } = await import('./supabase')
-    if (!isSupabaseAvailable()) return null
+    if (!isSupabaseAvailable()) return null  // env vars belum set → skip kamus check
 
     const { getSupabase } = await import('./supabase')
     const client = getSupabase()
-    if (!client) return null
+    if (!client) return null  // client tidak bisa dibuat → skip
 
     // Load SEMUA kamus dari Supabase — jangan filter/limit, database = ground of truth
     const { data, error } = await client
@@ -61,20 +67,23 @@ export async function loadKamusJawa(): Promise<KamusJawa | null> {
       .select('ngoko, aksara, krama, krama_inggil, arti, keterangan, register, sumber')
       .order('ngoko', { ascending: true })
 
-    if (error || !data || data.length === 0) {
-      console.warn('[Kamus] Supabase load failed or empty:', error?.message)
+    if (error) {
+      // Error koneksi/izin → skip kamus check (anggap semua known, mode fallback)
+      console.warn('[Kamus] Supabase load error:', error?.message)
       return null
     }
 
-    // Map Supabase 'arti' → JSON 'id' (untuk konsisten dengan KamusEntry interface)
-    const mappedWords = data.map((d: { ngoko: string; aksara: string; krama: string; krama_inggil?: string; arti: string; keterangan: string; register?: string; sumber: string }) => ({
+    // R-22: DB kosong (data.length === 0) → return kamus valid dengan words=[]
+    // Sehingga isWordInKamus return false untuk semua kata → semua jadi unknown.
+    // Jangan return null (yang artinya "skip check, semua known").
+    const mappedWords = (data || []).map((d: { ngoko: string; aksara: string; krama: string; krama_inggil?: string; arti: string; keterangan: string; register?: string; sumber: string }) => ({
       ngoko: d.ngoko || '',
       aksara: d.aksara || '',
       krama: d.krama || '',
-      krama_inggil: d.krama_inggil || '',  // v5 — kosong kalau kolom tidak ada (backward compat)
+      krama_inggil: d.krama_inggil || '',
       id: d.arti || '',  // Supabase 'arti' → interface 'id'
       keterangan: d.keterangan || '',
-      register: d.register || 'umum',  // v5 — default 'umum' kalau kolom tidak ada
+      register: d.register || 'umum',
       sumber: d.sumber || '',
     }))
 
@@ -82,14 +91,16 @@ export async function loadKamusJawa(): Promise<KamusJawa | null> {
       metadata: {
         version: 'supabase',
         source: 'Supabase PostgreSQL',
-        entries: data.length,
-        note: 'Kamus dari Supabase. User edit lokal, upload ke Supabase.',
+        entries: mappedWords.length,
+        note: mappedWords.length === 0
+          ? 'DB kosong — semua kata SRT = unknown (perlu isi kamus via TUI + upload)'
+          : 'Kamus dari Supabase. User edit lokal, upload ke Supabase.',
       },
       words: mappedWords,
     }
   } catch (e) {
     console.warn('[Kamus] Load failed:', e)
-    return null
+    return null  // exception → skip kamus check (anggap semua known, mode fallback)
   }
 }
 
@@ -99,11 +110,15 @@ export async function loadKamusJawa(): Promise<KamusJawa | null> {
  * BIDIRECTIONAL: cek alias di field ngoko DAN krama (kalau ada).
  *   Mis. kamus: ngoko="aku, inyong, nyong", krama="kula, dalem"
  *   → "aku", "inyong", "nyong", "kula", "dalem" semua dianggap KNOWN.
+ *
+ * R-22 fix: kalau kamus null (DB kosong / tidak connect), SEMUA kata = UNKNOWN.
+ *   Sebelumnya: return true (salah — user tidak tahu kalau DB kosong, semua kata dianggap known).
+ *   Sekarang: return false (benar — semua kata muncul sebagai unknown, user tahu perlu isi kamus).
  */
 export function isWordInKamus(word: string, kamus: KamusJawa | null): boolean {
-  if (!kamus) return true
+  if (!kamus) return false  // R-22: DB kosong = semua unknown (bukan known)
   const cleanWord = word.toLowerCase().replace(/[^\wàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ]/g, '')
-  if (!cleanWord) return true
+  if (!cleanWord) return true  // empty string after strip = skip (bukan unknown, bukan known)
   // Juga cek word as-is (untuk aksara Jawa yang case-sensitive, tidak perlu lowercase)
   return kamus.words.some(entry => {
     const ngokoVariants = entry.ngoko.split(',').map(n => n.trim().toLowerCase())
@@ -172,8 +187,12 @@ export function checkUnknownWords(
  * Untuk display di Editor SRT Jawa: user tahu kata mana yang sering muncul
  * tapi belum ada di kamus → prioritas add ke kamus.
  *
+ * R-22 fix: kalau kamus null (DB kosong / tidak connect), SEMUA kata = unknown.
+ *   Sebelumnya: return [] (salah — panel kosong, user tidak tahu perlu isi kamus).
+ *   Sekarang: compute semua kata di entries, semua jadi unknown (karena DB kosong).
+ *
  * @param entries SRT entries
- * @param kamus Kamus object (dari loadKamusJawa, in-memory)
+ * @param kamus Kamus object (dari loadKamusJawa, in-memory). null = DB kosong/error.
  * @param topN Default 100
  * @returns Array of {word, freq, cueIndices: number[]} — urut by freq desc
  */
@@ -182,7 +201,7 @@ export function getTopUnknownWords(
   kamus: KamusJawa | null,
   topN: number = 100,
 ): { word: string; freq: number; cueIndices: number[] }[] {
-  if (!kamus) return []
+  // R-22: JANGAN return [] kalau kamus null. Compute semua kata jadi unknown.
 
   const freqMap = new Map<string, { freq: number; cueIndices: Set<number> }>()
 
@@ -193,6 +212,7 @@ export function getTopUnknownWords(
       const cleanWord = word.toLowerCase().replace(/[^\wàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ]/g, '')
       if (!cleanWord) continue
       // Skip kalau dikenal kamus (cek kata asli juga untuk aksara)
+      // Catatan R-22: kalau kamus null, isWordInKamus return false → semua kata jadi unknown
       if (isWordInKamus(word, kamus) || isWordInKamus(cleanWord, kamus)) continue
       // Tambah ke freqMap
       if (!freqMap.has(cleanWord)) {
