@@ -1229,3 +1229,26 @@ Stage Summary:
 - dhingkluk R-12 violation: FIXED
 - kotang: TIDAK diubah (user confirm 'bh' benar)
 - Pending user: bulak + 2 empty entries (kakap, mletre) + aksara Jawa + typo beridiri
+
+---
+Task ID: kamus-R18-no-delete
+Agent: main
+Task: User: aturan baru — JANGAN hapus entry kamus, bahkan kosong/aksara/keterangan-only
+
+Work Log:
+- User konfirm filosofi: kamus = data ada, lengkap atau tidak, valid atau tidak
+- Tujuan: kamus deterministik ID→ngoko→krama paling lengkap, melebihi Wiktionary
+- 44k entries tetap di draft; 10k masuk Supabase (lengkap+verifikasi) dalam 1-6 bulan
+- Tambah R-18 di PROJECT_RULES.md: aturan no-delete
+- Audit build-kamus-bersih.py: cek cleanup_misplaced_krama + fix_angka_ngoko
+  - cleanup_misplaced_krama: hapus duplikat morfem krama (R-18 OK — dedup, bukan hapus data unik)
+  - fix_angka_ngoko: hapus ejaan lama SALAH (limalas/enemlas/wulas) — dedup, OK
+  - Tidak ada hapus empty entries di build script ✓
+- Commit dd51227 + push
+
+Stage Summary:
+- R-18 added: aturan no-delete entry kamus
+- Aksi bener: arti >30 → pindah keterangan; arti artifact → kosongkan; empty → biarkan status=draft
+- Pengecualian: duplikat persis + file .bak/tool-results (bukan data)
+- Pending user: bulak (2 senses) + 2 empty entries (kakap, mletre) + aksara Jawa + typo beridiri
+  → Sekarang pendekatan: FIX (isi/kosongkan), bukan hapus
