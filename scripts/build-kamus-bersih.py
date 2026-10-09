@@ -1168,8 +1168,10 @@ def clean_arti(arti_raw, ngoko, krama, is_angka=False):
     # User spec: arti harus sinonim pendek (1-2 kata Indonesia), bukan kalimat definisi
     # Mis. 'hutan; rimba; tali pada alat penyeimbang perahu kecil' (50 char) = definisi
     # Pindah ke keterangan, arti dikosongkan (user isi sinonim pendek manual)
+    # Skip untuk is_angka: angka komposisi (>30 char) valid, bukan definisi ensiklopedis
+    # Mis. 'seratus sembilan puluh sembilan' (33 char) = arti valid angka 199
     moved_to_ket = ""  # akumulasi text yang dipindah ke keterangan
-    if len(arti) > 30:
+    if len(arti) > 30 and not is_angka:
         return "", arti, "long_def"
 
     # 3b. Cek GRAMMAR/ENSIKLOPEDIS pattern PER SEGMENT (split ;)

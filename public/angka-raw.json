@@ -2,7 +2,7 @@
   "metadata": {
     "version": "6.0",
     "source": "id.wiktionary.org/wiki/Lampiran:Nama_angka_dalam_bahasa_Jawa (FULL scrape semua section) + sinonim Mendeley/Lampiran kamus + kawi",
-    "entries": 114
+    "entries": 213
   },
   "words": [
     {
@@ -260,7 +260,7 @@
     {
       "ngoko": "rongatus",
       "krama": "kalih atus",
-      "arti": "",
+      "arti": "dua ratus",
       "keterangan": "angka 200"
     },
     {
@@ -688,6 +688,600 @@
       "krama": "",
       "arti": "sembilan puluh tujuh",
       "keterangan": "angka 97"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus satu",
+      "keterangan": "angka 101"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus dua",
+      "keterangan": "angka 102"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tiga",
+      "keterangan": "angka 103"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus empat",
+      "keterangan": "angka 104"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus lima",
+      "keterangan": "angka 105"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus enam",
+      "keterangan": "angka 106"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tujuh",
+      "keterangan": "angka 107"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus delapan",
+      "keterangan": "angka 108"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus sembilan",
+      "keterangan": "angka 109"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus sepuluh",
+      "keterangan": "angka 110"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus sebelas",
+      "keterangan": "angka 111"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus dua belas",
+      "keterangan": "angka 112"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tiga belas",
+      "keterangan": "angka 113"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus empat belas",
+      "keterangan": "angka 114"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus lima belas",
+      "keterangan": "angka 115"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus enam belas",
+      "keterangan": "angka 116"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tujuh belas",
+      "keterangan": "angka 117"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus delapan belas",
+      "keterangan": "angka 118"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus sembilan belas",
+      "keterangan": "angka 119"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus dua puluh",
+      "keterangan": "angka 120"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus dua puluh satu",
+      "keterangan": "angka 121"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus dua puluh dua",
+      "keterangan": "angka 122"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus dua puluh tiga",
+      "keterangan": "angka 123"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus dua puluh empat",
+      "keterangan": "angka 124"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus dua puluh lima",
+      "keterangan": "angka 125"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus dua puluh enam",
+      "keterangan": "angka 126"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus dua puluh tujuh",
+      "keterangan": "angka 127"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus dua puluh delapan",
+      "keterangan": "angka 128"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus dua puluh sembilan",
+      "keterangan": "angka 129"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tiga puluh",
+      "keterangan": "angka 130"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tiga puluh satu",
+      "keterangan": "angka 131"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tiga puluh dua",
+      "keterangan": "angka 132"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tiga puluh tiga",
+      "keterangan": "angka 133"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tiga puluh empat",
+      "keterangan": "angka 134"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tiga puluh lima",
+      "keterangan": "angka 135"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tiga puluh enam",
+      "keterangan": "angka 136"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tiga puluh tujuh",
+      "keterangan": "angka 137"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tiga puluh delapan",
+      "keterangan": "angka 138"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tiga puluh sembilan",
+      "keterangan": "angka 139"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus empat puluh",
+      "keterangan": "angka 140"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus empat puluh satu",
+      "keterangan": "angka 141"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus empat puluh dua",
+      "keterangan": "angka 142"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus empat puluh tiga",
+      "keterangan": "angka 143"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus empat puluh empat",
+      "keterangan": "angka 144"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus empat puluh lima",
+      "keterangan": "angka 145"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus empat puluh enam",
+      "keterangan": "angka 146"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus empat puluh tujuh",
+      "keterangan": "angka 147"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus empat puluh delapan",
+      "keterangan": "angka 148"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus empat puluh sembilan",
+      "keterangan": "angka 149"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus lima puluh",
+      "keterangan": "angka 150"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus lima puluh satu",
+      "keterangan": "angka 151"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus lima puluh dua",
+      "keterangan": "angka 152"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus lima puluh tiga",
+      "keterangan": "angka 153"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus lima puluh empat",
+      "keterangan": "angka 154"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus lima puluh lima",
+      "keterangan": "angka 155"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus lima puluh enam",
+      "keterangan": "angka 156"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus lima puluh tujuh",
+      "keterangan": "angka 157"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus lima puluh delapan",
+      "keterangan": "angka 158"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus lima puluh sembilan",
+      "keterangan": "angka 159"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus enam puluh",
+      "keterangan": "angka 160"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus enam puluh satu",
+      "keterangan": "angka 161"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus enam puluh dua",
+      "keterangan": "angka 162"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus enam puluh tiga",
+      "keterangan": "angka 163"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus enam puluh empat",
+      "keterangan": "angka 164"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus enam puluh lima",
+      "keterangan": "angka 165"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus enam puluh enam",
+      "keterangan": "angka 166"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus enam puluh tujuh",
+      "keterangan": "angka 167"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus enam puluh delapan",
+      "keterangan": "angka 168"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus enam puluh sembilan",
+      "keterangan": "angka 169"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tujuh puluh",
+      "keterangan": "angka 170"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tujuh puluh satu",
+      "keterangan": "angka 171"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tujuh puluh dua",
+      "keterangan": "angka 172"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tujuh puluh tiga",
+      "keterangan": "angka 173"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tujuh puluh empat",
+      "keterangan": "angka 174"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tujuh puluh lima",
+      "keterangan": "angka 175"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tujuh puluh enam",
+      "keterangan": "angka 176"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tujuh puluh tujuh",
+      "keterangan": "angka 177"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tujuh puluh delapan",
+      "keterangan": "angka 178"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus tujuh puluh sembilan",
+      "keterangan": "angka 179"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus delapan puluh",
+      "keterangan": "angka 180"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus delapan puluh satu",
+      "keterangan": "angka 181"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus delapan puluh dua",
+      "keterangan": "angka 182"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus delapan puluh tiga",
+      "keterangan": "angka 183"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus delapan puluh empat",
+      "keterangan": "angka 184"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus delapan puluh lima",
+      "keterangan": "angka 185"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus delapan puluh enam",
+      "keterangan": "angka 186"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus delapan puluh tujuh",
+      "keterangan": "angka 187"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus delapan puluh delapan",
+      "keterangan": "angka 188"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus delapan puluh sembilan",
+      "keterangan": "angka 189"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus sembilan puluh",
+      "keterangan": "angka 190"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus sembilan puluh satu",
+      "keterangan": "angka 191"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus sembilan puluh dua",
+      "keterangan": "angka 192"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus sembilan puluh tiga",
+      "keterangan": "angka 193"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus sembilan puluh empat",
+      "keterangan": "angka 194"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus sembilan puluh lima",
+      "keterangan": "angka 195"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus sembilan puluh enam",
+      "keterangan": "angka 196"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus sembilan puluh tujuh",
+      "keterangan": "angka 197"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus sembilan puluh delapan",
+      "keterangan": "angka 198"
+    },
+    {
+      "ngoko": "",
+      "krama": "",
+      "arti": "seratus sembilan puluh sembilan",
+      "keterangan": "angka 199"
     }
   ]
 }
