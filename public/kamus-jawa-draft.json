@@ -23,11 +23,11 @@
     "stats": {
       "total_konsep": 43154,
       "with_krama": 2336,
-      "with_arti": 2194,
+      "with_arti": 2197,
       "with_keterangan": 42431,
       "with_aksara": 41765,
       "is_lemma": 2157,
-      "ready_3_field": 894,
+      "ready_3_field": 897,
       "draft_2_field": 1299
     },
     "workflow": [
@@ -232288,7 +232288,7 @@
       "ngoko": "lima, dlima",
       "krama": "gangsal",
       "krama_inggil": "",
-      "arti": "",
+      "arti": "lima",
       "keterangan": "wilangan 5 | lima; dlima. | {{ngoko}} lima | angka 5",
       "aksara": "ꦭꦶꦩ, ꦒꦁꦱꦭ꧀",
       "register": "umum",
@@ -402353,6 +402353,7 @@
       "source_count": 4,
       "is_lemma": true,
       "lemma_words": "papat",
+      "is_angka": true,
       "entry_id": 33114
     },
     {
@@ -460118,7 +460119,7 @@
       "ngoko": "sepuluh",
       "krama": "sadasa, sedasa",
       "krama_inggil": "",
-      "arti": "",
+      "arti": "sepuluh",
       "keterangan": "wilangan 10; urutan sawisé sanga (9) sadurungé sewelas (11) | sepuluh. | [[sepuluh]] | angka 10",
       "aksara": "ꦱꦼꦥꦸꦭꦸꦃ, ꦱꦢꦱ",
       "register": "umum",
@@ -462969,6 +462970,7 @@
       "lemma_words": "siji",
       "is_mendeley": true,
       "mendeley_id": "-LAxMnRs8-Iki-ZqK-FO",
+      "is_angka": true,
       "entry_id": 38091
     },
     {
@@ -486614,7 +486616,7 @@
       "ngoko": "telu",
       "krama": "tiga",
       "krama_inggil": "",
-      "arti": "",
+      "arti": "tiga",
       "keterangan": "wilangan 3 | telu. | [[tiga]] | angka 3",
       "aksara": "ꦠꦼꦭꦸ, ꦠꦶꦒ",
       "register": "umum",

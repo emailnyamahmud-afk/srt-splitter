@@ -763,13 +763,17 @@ def merge_angka_to_konseps(konseps, angka_words):
 # ============================================================
 # Post-processing arti (fix parsing artifacts)
 # ============================================================
-def clean_arti(arti_raw, ngoko, krama):
+def clean_arti(arti_raw, ngoko, krama, is_angka=False):
     """Clean arti Indonesia dari artifact parser Wiktionary.
 
     Returns: (clean_arti, moved_to_keterangan, status)
       - clean_arti: sinonim pendek yang valid, atau '' kalau gak valid
       - moved_to_keterangan: text yang dipindah ke keterangan (kalau arti panjang)
       - status: 'clean' | 'self_ref' | 'long_def' | 'empty'
+
+    Args:
+      is_angka: kalau True, skip SELF_REF check (angka Jawa sering punya
+                arti Indonesia == krama, e.g. telu/tiga/tiga — itu valid, bukan self_ref)
     """
     if not arti_raw or not arti_raw.strip():
         return "", "", "empty"
@@ -855,17 +859,20 @@ def clean_arti(arti_raw, ngoko, krama):
     arti = "; ".join(seen) if seen else ""
 
     # 7. SELF_REF: kalau arti = ngoko atau krama (loopback), kosongkan
-    ngoko_first = ngoko.split(",")[0].strip().lower()
-    krama_first = krama.split(",")[0].strip().lower() if krama else ""
-    if arti:
-        arti_words = [w.strip() for w in arti.split(";")]
-        # Kalau semua arti_words == ngoko atau krama → self_ref
-        if all(w == ngoko_first or w == krama_first for w in arti_words):
-            return "", arti_raw, "self_ref"
-        # Kalau ada arti_word yang self_ref → drop yang self_ref, sisanya tetap
-        non_self = [w for w in arti_words if w != ngoko_first and w != krama_first]
-        if non_self and len(non_self) < len(arti_words):
-            arti = "; ".join(non_self)
+    # Skip untuk is_angka: angka Jawa sering punya arti Indonesia == krama
+    # (mis. telu/tiga/tiga — itu valid, bukan loopback)
+    if not is_angka:
+        ngoko_first = ngoko.split(",")[0].strip().lower()
+        krama_first = krama.split(",")[0].strip().lower() if krama else ""
+        if arti:
+            arti_words = [w.strip() for w in arti.split(";")]
+            # Kalau semua arti_words == ngoko atau krama → self_ref
+            if all(w == ngoko_first or w == krama_first for w in arti_words):
+                return "", arti_raw, "self_ref"
+            # Kalau ada arti_word yang self_ref → drop yang self_ref, sisanya tetap
+            non_self = [w for w in arti_words if w != ngoko_first and w != krama_first]
+            if non_self and len(non_self) < len(arti_words):
+                arti = "; ".join(non_self)
 
     # 8. Capitalization: lowercase kecuali proper noun
     # Proper noun: kata pertama capitalize dan tidak ada di dict common words
@@ -908,7 +915,8 @@ def post_process_konseps(konseps):
             continue
 
         original_arti = arti_raw
-        clean, moved, status = clean_arti(arti_raw, ngoko, krama)
+        is_angka = bool(k.get("is_angka"))
+        clean, moved, status = clean_arti(arti_raw, ngoko, krama, is_angka=is_angka)
 
         if status == "long_def":
             # Pindah arti panjang ke keterangan (gabung dengan existing keterangan)
@@ -1035,6 +1043,7 @@ def merge_konsep_group(entries):
     is_lemma = False
     is_mendeley = False
     is_dasanama = False
+    is_angka = False
     dasanama_count = 0
 
     for e in entries:
@@ -1088,6 +1097,8 @@ def merge_konsep_group(entries):
             dc = e.get("dasanama_count", 0) or 0
             if dc > dasanama_count:
                 dasanama_count = dc
+        if e.get("is_angka"):
+            is_angka = True
         source_count += e.get("source_count", 1) or 1
 
     merged = {
@@ -1110,6 +1121,8 @@ def merge_konsep_group(entries):
     if is_dasanama:
         merged["is_dasanama"] = True
         merged["dasanama_count"] = dasanama_count
+    if is_angka:
+        merged["is_angka"] = True
     return merged
 
 

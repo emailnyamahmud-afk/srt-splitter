@@ -100,6 +100,16 @@ Wajib cek sebelum claim done:
       - arti tidak terlalu panjang (>60 char = definisi ensiklopedis, bukan sinonim)
       - keterangan (Jawa asli) dipertahankan, jangan dibuang
       Kalau data kacau = parsing AI tolol dan ngawur. Fix dulu, baru claim ready.
+- [ ] **JANGAN pakai placeholder seperti "(lengkap)" di laporan tabel**. Wajib tampilkan
+      data real untuk SEMUA baris. Kalau baris terlalu banyak, batasi jumlah baris
+      yang ditampilkan (mis. max 10 sample), tapi setiap baris harus berisi data
+      sebenarnya, bukan ringkasan placeholder. User gak bisa validasi dari "(lengkap)".
+- [ ] **Test corner case untuk kategori khusus** (angka, imbuhan, sinonim, dst.):
+      - Angka Jawa sering punya arti Indonesia == krama (mis. telu/tiga/tiga).
+        SELF_REF check harus skip kalau is_angka=True, atau angka akan kosong.
+      - Imbuhan (-a, -ake) gak punya arti Indonesia → biarkan kosong, jangan
+        paksa isi.
+      - Sinonim dari dasanama campur register → biarkan di ngoko, user sort manual.
 - [ ] **Upload ke Supabase = USER wajib validasi satu-satu**. AI gak boleh bilang
       "198 siap upload, langsung upload batch". AI cuma audit sample, USER yang
       validasi semua entries sebelum upload.
