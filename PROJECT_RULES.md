@@ -119,6 +119,8 @@ curl -L -o <filename> "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-
 
 User tinggal paste ke terminal MacBook. Jangan pernah kasih raw URL mentah — zsh akan reject karena `?` di-parse sebagai glob (`zsh: no matches found`).
 
+HANYA kasih curl command untuk file yang user JALANKAN di MacBook. Skip file yang cuma dipakai AI di sandbox (mis. `build-kamus-bersih.py`, `scrape-wiktionary-jv-lemma.py`, `parse-wiktionary-jv.py` — itu script generator, user gak perlu). Jangan kasih banyak link, kasih cuma yang user butuh.
+
 Keterangan:
 - `<filename>` = nama file lokal di MacBook (mis. `demucs-tui.py`)
 - `<path>` = path file di repo (mis. `scripts/demucs-tui.py`)
