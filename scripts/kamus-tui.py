@@ -132,11 +132,10 @@ def save_kamus(data):
     entry_id: urut posisi list (1-indexed). Kalau ada entry di-delete (via merge),
     re-number entry_id 1..N supaya tetap konsisten.
     """
-    for w in data['words']:
-        ngoko = (w.get('ngoko') or '').strip()
-        krama = (w.get('krama') or '').strip()
-        arti = (w.get('arti') or '').strip()
-        w['status'] = 'ready' if (ngoko and krama and arti) else 'draft'
+    # R-12: JANGAN auto-set status='ready'. 
+    # 3-field lengkap TIDAK otomatis = siap upload.
+    # User harus EXPLICIT mark ready via menu "Mark READY/DRAFT bulk".
+    # save_kamus() hanya pertahankan status existing (jangan recompute).
     # Re-number entry_id (urut posisi list)
     for i, w in enumerate(data['words'], 1):
         w['entry_id'] = i
@@ -353,15 +352,15 @@ def edit_entry(data, idx):
     elif not is_paired and not word_old and not has_ng and not has_kr and not has_ar:
         # Edge case: semua kosong, biarkan word kosong (R-18 tetap simpan entry)
         pass
-    # Status auto-detect di save_kamus (ngoko+krama+arti semua terisi → 'ready')
-    # User edit + save = user validasi implicit (status jadi 'ready' kalau 3-field lengkap)
-
+    # R-12: status='draft' setelah edit. User harus EXPLICIT mark ready via menu.
+    # 3-field lengkap TIDAK otomatis = siap upload.
     save_kamus(data)
-    # Status baru
-    new_status = 'ready' if (new_ngoko and new_krama and new_arti) else 'draft'
+    # Set status='draft' setelah edit (reset, user harus re-validate)
+    entry['status'] = 'draft'
     print(f'\n  ✅ Disimpan: ngoko={new_ngoko} → krama={new_krama} → arti={new_arti}')
     print(f'  Register: {new_register}')
-    print(f'  Status: {new_status}' + (' (siap upload Supabase)' if new_status == 'ready' else ' (butuh 3-field lengkap)'))
+    has_3field = bool(new_ngoko and new_krama and new_arti)
+    print(f'  Status: draft (3-field {"lengkap — bisa mark READY via menu" if has_3field else "belum lengkap"})')
 
     input('\n  Tekan Enter...')
 
@@ -1373,10 +1372,8 @@ def main():
     if not data:
         sys.exit(1)
 
-    # Phase 6: read-only status check (JANGAN auto-save tanpa user action)
-    # Sebelumnya: recompute status + auto-save di startup — bisa hilang perubahan user
-    # kalau ada bug. Sekarang: hanya tampilkan info, biarkan save manual via edit_entry.
-    # save_kamus() tetap recompute status saat user edit (R-12 compliance).
+    # Phase 6 + R-12 fix: read-only status check (JANGAN auto-save, JANGAN auto-ready)
+    # 3-field lengkap TIDAK otomatis = ready. User harus EXPLICIT mark ready.
     ready_count = sum(
         1 for w in data['words']
         if (w.get('ngoko') or '').strip()
@@ -1384,9 +1381,8 @@ def main():
         and (w.get('arti') or '').strip()
     )
     status_ready = sum(1 for w in data['words'] if w.get('status') == 'ready')
-    # R-12: 'user_approved' field TIDAK ADA lagi. Approval = status='ready'
-    # (set oleh save_kamus saat user save entry dengan 3-field lengkap).
-    # Upload script pakai status='ready' sebagai proxy approval (R-12 + R-22).
+    # R-12: status='ready' HANYA dari user explicit mark via menu "Mark READY/DRAFT bulk"
+    # 3-field lengkap = PERSYARATAN untuk ready, tapi bukan otomatis ready
     netral_count = sum(
         1 for w in data['words']
         if (w.get('word') or '').strip()
@@ -1396,12 +1392,11 @@ def main():
     )
 
     if ready_count != status_ready:
-        # Ada mismatch (3-field complete tapi status masih draft, atau sebaliknya)
-        # Tampilkan info, JANGAN auto-fix. User bisa edit entry untuk recompute.
-        print(f'  ℹ Info: {ready_count} entries 3-field lengkap, {status_ready} marked ready')
-        print(f'    Kalau status tidak match, edit entry → save → status auto-recompute (R-12)')
+        # 3-field lengkap ≠ ready. User harus explicit mark ready.
+        print(f'  ℹ {ready_count:,} entries 3-field lengkap, {status_ready} marked ready (user approved)')
+        print(f'    3-field lengkap ≠ siap upload. User harus mark READY via menu.')
         print()
-    print(f'  📊 Total: {len(data["words"]):,} | NETRAL: {netral_count:,} | 3-field ready: {ready_count:,} | Status ready: {status_ready}')
+    print(f'  📊 Total: {len(data["words"]):,} | NETRAL: {netral_count:,} | 3-field: {ready_count:,} | Approved: {status_ready}')
     print()
 
     main_menu(data)
