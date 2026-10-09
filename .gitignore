@@ -67,11 +67,13 @@ server.log
 # (e.g. wiktionary XML, kamus JSON). So we ignore specific patterns instead of whole /upload/.
 /upload/Pasted*
 /upload/Screenshot*
+/upload/*.png
 /upload/*-home.json
 /upload/voicertool-research/
 /upload/wiktionary/      # 86MB XML — too big for repo, user re-download from https://jv.wiktionary.org/wiki/Istimewa:Export
-/download/    # generated split SRT outputs
-/tool-results/ # debug output from Read tool
+/upload/mendeley/        # duplikat public/kamus-jawa-mendeley-raw.json — sumber asli mendeley.com
+/download/    # generated split SRT outputs + hasil download user
+/tool-results/ # debug output dari Read/Grep tool — JANGAN commit
 
 # Python bytecode cache (auto-generated, jangan commit)
 __pycache__/
@@ -81,10 +83,26 @@ __pycache__/
 # Build artifacts that aren't needed in repo
 Caddyfile
 
+# ZIP files (jangan commit ke repo, kecuali kalau memang distribusi)
+*.zip
+
+# Kamus Jawa legacy (12MB — sudah ada .gz 1.5MB sebagai backup)
+# R-20: kamus-jawa-draft.json = rujukan tunggal, full.json LEGACY bukan rujukan
+/public/kamus-jawa-full.json
+
 # Kamus Jawa JSON — TRACK di git supaya user bisa download dari GitHub (MacBook user)
-# File: public/kamus-jawa-full.json (11MB, generated dari scripts/parse-wiktionary-jv.py)
-# Compressed version: public/kamus-jawa-full.json.gz (~3MB)
-# Web app load dari Supabase, bukan dari file ini. File ini untuk user edit lokal + re-import.
+# File yang TETAP di-git (user curl dari MacBook):
+#   public/kamus-jawa-draft.json (17MB, AKTIF — rujukan tunggal per R-20)
+#   public/kamus-jawa-full.json.gz (1.5MB, backup compressed)
+#   public/angka-raw.json (172KB, angka 1-1000 + ejaan fix)
+#   public/dasanama-raw.csv (48KB, sinonim Jawa)
+#   public/kamus-jawa-mendeley-raw.json (148KB, Mendeley dataset)
+#   public/lampiran-raw.json (436KB, Lampiran Kamus Jawa-Indonesia)
+#   public/lampiran-angka-raw.json (8KB, Lampiran Nama angka)
+#   public/kamus-jawa-new-lemma.json (208KB, id.wiktionary jv:Lema)
+#   public/audit-suspects.json (88KB, hasil audit otomatis — R-19)
+# File yang DIHAPUS dari git (R-20: raw bukan rujukan lagi):
+#   public/kamus-jawa-full.json (12MB, LEGACY — sudah ada .gz 1.5MB sebagai backup)
 
 # Scraping / research artifacts (jangan commit ke repo)
 astd-home.json
@@ -102,3 +120,7 @@ softcat-*.json
 # VoiceStudio source reference (offline copy of github.com/debpalash/VoiceStudio)
 # Lihat worklog Task 7-a untuk list 36 file yang di-fetch untuk riset algoritma.
 /scripts/voicestudio-study/
+
+# Backup files (lokal, jangan commit)
+*.bak
+*.bak.*
