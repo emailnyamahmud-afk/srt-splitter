@@ -254,6 +254,35 @@ Yang BOLEH dihapus (pengecualian):
 
 Build script cleanup_misplaced_krama + fix_angka_ngoko + post-process: tetap jalan, tapi SKIP entries kosong — jangan hapus.
 
+### R-19 — Parser AI agresif merge → user wajib validasi ulang 1-1
+
+AKU TANGGUNG JAWAB: build-kamus-bersih.py parser agresif merge multi-source (Wiktionary, Mendeley, Lampiran, Dasanama). Banyak Indonesia word nyangkut sebagai "sinonim Jawa" (mis. `anak lutung` di entry `kowe`, `payung/payon` di entry `payu`, `pimpinan desa` untuk `kami tuwa`). User harus validasi ulang 1-1 karena parsing tolol.
+
+Pattern suspect (audit 9 Okt 2026, 205 entries suspect dari 45.021):
+
+1. **parsing_artifact_ngoko** (~62 entries): Indonesia word nyangkut di ngoko (`anak`, `payung`, `payon`, `panas`, `tuwa` — kadang valid sebagai compound seperti "anak bapak", tapi curiga di entry non-Compound)
+2. **parsing_artifact_arti** (~15 entries): Arti Indonesia non-baku/aneh (`sugi`, `beridiri` typo, `bercermin` untuk ilo yang sebenarnya "penglihatan", `pimpinan desa` untuk kami tuwa yang sebenarnya "sesepuh", `anak lutung` parsing artifact)
+3. **krama_inggil_no_tag** (~28 entries): Krama inggil words di krama field (per R-17 OK masuk krama, tapi user perlu tahu ini krama inggil vs krama biasa — `dhawuh`, `duka`, `dumugi`, `sare`, `dhahar`, `nedha`, dll.)
+4. **too_many_ngoko_synonyms** (~85 entries): ngoko dengan >8 sinonim (rawan merge artifact, mis. entry `banyu` punya 17 sinonim campur Sanskrit + Kawi + modern)
+5. **too_many_krama_synonyms** (~15 entries): krama dengan >3 sinonim (rawan merge artifact, mis. `arep` punya 7 krama sinonim: `ajeng, badhé, ngarep, ingajeng, doyan, kersa, ngajeng`)
+
+Audit script: `scripts/audit-otomatis-suspect-patterns.py` (idempotent, re-run kapan saja setelah build update). Output: `public/audit-suspects.json` (untuk user reference, bukan data kamus).
+
+Aksi yang BENAR saat user validasi (R-18 — JANGAN HAPUS):
+- Suspect parsing artifact → user lihat di TUI, edit manual: hapus kata Indonesia dari sinonim, sisakan kata Jawa valid
+- Krama inggil di krama → biarkan (per R-17 OK), tapi user bisa tag manual kalau mau pisah
+- Too many synonyms → user pilih mana sinonim yang valid, hapus yang artifact
+
+JANGAN:
+- Bikin script auto-fix yang hapus kata dari sinonim → bisa rusak data valid (R-18)
+- Upload ke Supabase tanpa user validasi 1-1 (R-12)
+- Skip audit script setelah build update — wajib re-run
+
+Wajib:
+- Setelah `build-kamus-bersih.py` jalan, jalankan `audit-otomatis-suspect-patterns.py`
+- Lampirkan `public/audit-suspects.json` ke user saat suggest upload batch
+- User buka kamus-tui.py → browse entries index di suspect list → validasi/edit manual
+
 ---
 
 ## Catatan untuk AI
