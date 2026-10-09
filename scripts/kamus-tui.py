@@ -192,7 +192,8 @@ def show_stats(data):
     print(f'    krama filled:                   {with_krama:6d}')
     print(f'    krama_inggil filled:            {with_ki:6d}  (opsional)')
     print(f'    arti (Indonesia) filled:        {with_arti:6d}  ⭐ (user edit manual)')
-    print(f'    SIAP UPLOAD (3 field lengkap): {ready_count:6d}  🚀')
+    print(f'    3-field lengkap (status=ready): {ready_count:6d}  (perlu approval user)')
+    print(f'    Siap upload (user_approved):    {approved:6d}  🚀 (yang bener di-upload ke Supabase)')
     print()
     print('  Register breakdown (default umum, user bisa override):')
     for r, c in reg_count.most_common():
@@ -621,6 +622,7 @@ def main_menu(data):
         words = data['words']
         total = len(words)
         ready = sum(1 for w in words if w.get('status') == 'ready')
+        approved = sum(1 for w in words if w.get('user_approved'))
         with_arti = sum(1 for w in words if (w.get('arti') or '').strip())
         no_arti = sum(1 for w in words if not (w.get('arti') or '').strip())
 
@@ -634,7 +636,7 @@ def main_menu(data):
         print()
         print(f'  📂 {get_kamus_path()}')
         print(f'  📊 Total: {total} | arti diisi: {with_arti} | belum ada arti: {no_arti}')
-        print(f'  🚀 Siap upload (ngoko+krama+arti lengkap): {ready}')
+        print(f'  📋 3-field ready: {ready} | ✅ approved: {approved} | 🚀 siap upload: {approved}')
         if supabase_ok:
             print(f'  ☁  Supabase: ✓ ter-set (dari .env atau env vars)')
         else:
@@ -1056,10 +1058,11 @@ def main():
     if reset_count > 0:
         save_kamus(data)
         ready_count = sum(1 for w in data['words'] if w.get('status') == 'ready')
+        approved_count = sum(1 for w in data['words'] if w.get('user_approved'))
         print(f'  ⚠ Update status: {reset_count} entries')
-        print(f'    Status: ready = ngoko+krama+arti lengkap (siap upload)')
-        print(f'           draft = belum lengkap (butuh arti)')
-        print(f'    Siap upload: {ready_count} entries')
+        print(f'    Status: ready = ngoko+krama+arti lengkap (perlu approval user)')
+        print(f'           approved = user sudah validasi (siap upload Supabase)')
+        print(f'    3-field ready: {ready_count} | Approved: {approved_count} | Siap upload: {approved_count}')
         print()
 
     main_menu(data)
