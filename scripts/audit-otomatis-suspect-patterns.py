@@ -99,6 +99,11 @@ def main():
         ng = (k.get("ngoko", "") or "").strip()
         kr = (k.get("krama", "") or "").strip()
         ar = (k.get("arti", "") or "").strip()
+        word = (k.get("word", "") or "").strip()
+        # R-21: skip NETRAL entries (word-only, belum terdefinisi)
+        # Audit hanya untuk entries yang SUDAH terdefinisi (paired)
+        if word and not ng and not kr and not ar:
+            continue
         if not (ng or kr or ar):
             continue
 

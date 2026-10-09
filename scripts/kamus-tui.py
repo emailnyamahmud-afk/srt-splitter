@@ -165,6 +165,7 @@ def show_stats(data):
     draft_count = status_count.get('draft', 0)
 
     # Komposisi kelengkapan field (prioritas kerja user)
+    has_word = sum(1 for w in words if (w.get('word') or '').strip())
     ngoko_only = sum(1 for w in words if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and not (w.get('arti') or '').strip())
     ngoko_krama = sum(1 for w in words if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and not (w.get('arti') or '').strip())
     ngoko_arti_no_krama = sum(1 for w in words if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and (w.get('arti') or '').strip())
@@ -194,6 +195,7 @@ def show_stats(data):
     print(f'    is_angka:    {is_angk:6d}  (angka sistematis)')
     print()
     print('  Komposisi kelengkapan field:')
+    print(f'    0. ⚠ NETRAL (word-only, belum terdefinisi): {has_word:6d}  (per R-21, user validasi manual)')
     print(f'    1. ngoko saja:               {ngoko_only:6d}  (perlu krama + arti)')
     print(f'    2. ngoko + krama:              {ngoko_krama:6d}  (perlu arti)')
     print(f'    3. ngoko + arti (no krama):    {ngoko_arti_no_krama:6d}  (perlu krama)')
@@ -228,6 +230,7 @@ def edit_entry(data, idx):
     """Edit 1 entry: ngoko, krama, krama_inggil, arti, register + merge dengan entry lain"""
     entry = data['words'][idx]
     entry_id = entry.get('entry_id', idx + 1)
+    word_old = entry.get('word', '')
     ngoko_old = entry.get('ngoko', '')
     krama_old = entry.get('krama', '')
     ki_old = entry.get('krama_inggil', '')
@@ -251,9 +254,14 @@ def edit_entry(data, idx):
     src_count = entry.get('source_count', 1)
     status_icon = '✅' if entry.get('status') == 'ready' else '📋'
 
+    # Netral indicator (per R-21)
+    is_neutral = bool(word_old) and not ngoko_old
+    netral_tag = ' [NETRAL — belum terdefinisi]' if is_neutral else ''
+
     print(f'  ┌─────────────────────────────────────────────┐')
     print(f'  │ entry_id:     #{entry_id}')
-    print(f'  │ ngoko:        {ngoko_old[:42]}')
+    print(f'  │ word:         {word_old[:42] or "(kosong)"}{netral_tag}')
+    print(f'  │ ngoko:        {ngoko_old[:42] or "(kosong)"}')
     print(f'  │ aksara:        {entry.get("aksara", "")[:42]}')
     print(f'  │ krama:         {krama_old[:42] or "(kosong)"}')
     print(f'  │ krama_inggil:  {ki_old[:42] or "(kosong)"}')
@@ -286,6 +294,13 @@ def edit_entry(data, idx):
 
     # Edit fields
     print('  Edit (Enter=keep existing, type new value):')
+    if is_neutral:
+        print('  ⚠ Entry ini NETRAL (belum terdefinisi).')
+        print('    - Isi ngoko kalau yakin ini kata ngoko')
+        print('    - Isi krama kalau yakin ini kata krama')
+        print('    - Isi arti kalau tahu arti Indonesia')
+        print('    - Setelah 2 dari 3 terisi (paired), word otomatis kosong saat save')
+        print()
     new_ngoko = questionary.text('  ngoko:', default=ngoko_old).ask()
     new_krama = questionary.text('  krama:', default=krama_old).ask()
     new_ki = questionary.text('  krama_inggil:', default=ki_old).ask()
@@ -335,6 +350,19 @@ def edit_entry(data, idx):
         del entry['krama_inggil']
     entry['arti'] = new_arti
     entry['register'] = new_register  # update register
+
+    # R-21: word otomatis kosong kalau sudah paired (ngoko + krama atau ngoko + arti atau krama + arti)
+    # TETAP dipertahankan kalau masih netral (belum ada pasangan)
+    has_ng = bool(new_ngoko)
+    has_kr = bool(new_krama) or bool(new_ki)
+    has_ar = bool(new_arti)
+    is_paired = (has_ng and has_kr) or (has_ng and has_ar) or (has_kr and has_ar)
+    if is_paired and word_old:
+        # User sudah defisini pasangan, word bisa kosong
+        entry['word'] = ''
+    elif not is_paired and not word_old and not has_ng and not has_kr and not has_ar:
+        # Edge case: semua kosong, biarkan word kosong (R-18 tetap simpan entry)
+        pass
     # Status auto-detect di save_kamus (ngoko+krama+arti semua terisi → 'ready')
     # User edit + save = user validasi implicit (status jadi 'ready' kalau 3-field lengkap)
 

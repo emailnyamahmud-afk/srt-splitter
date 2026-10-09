@@ -283,6 +283,79 @@ Wajib:
 - Lampirkan `public/audit-suspects.json` ke user saat suggest upload batch
 - User buka kamus-tui.py → browse entries index di suspect list → validasi/edit manual
 
+### R-20 — kamus-jawa-draft.json = satu-satunya rujukan (raw DISABLED)
+
+Per user 9 Okt 2026: "pasca data json jadi netral, maka referensi ke raw = tidak berlaku, karena kalau raw masih ada definisi, di next sesi AI akan halu lagi dengan parsing tolol."
+
+**Status script**:
+- `scripts/build-kamus-bersih.py` → **DISABLED** (rename `.DISABLED` + README besar)
+- `scripts/build-kamus-bersih.py.DISABLED.README.md` — JANGAN RUN, alasan + alternatif
+- Raw files tetap ada di `public/` sebagai ARSIP (R-16 jangan hapus), TAPI bukan rujukan
+
+**Rujukan tunggal**: `public/kamus-jawa-draft.json` (v2.3+ — pasca neutralize)
+- Field `word` = entri NETRAL (belum terdefinisi register)
+- Field `ngoko`/`krama`/`arti` hanya untuk entries yang SUDAH PAIRED
+
+**Yang BOLEH dengan raw**:
+- Read-only untuk referensi konteks (lihat keterangan asli)
+- Cross-check kalau user tanya "data ini dari mana?"
+- Archive — bukan untuk rebuild
+
+**Yang DILARANG**:
+- Run `build-kamus-bersih.py.DISABLED` (akan overwrite draft dengan data rusak lagi)
+- Modifikasi raw files (kecuali tambah data baru per R-16)
+- Bikin script baru yang parse raw dengan parser tolol lama
+- Rebuild dari raw untuk "memperbaiki" data — gunakan TUI/manual
+
+**User fallback** (kalau nemu kata belum dikenali di kamus):
+- Cari manual di kamus resmi Kemendikbud: https://kesakata.kemdikbud.go.id
+- Atau https://bahasa.kemdikbud.go.id
+- Atau Wiktionary online langsung (jangan batch scrape)
+- Setelah ketemu → user edit manual via TUI, AI bantu tapi jangan auto-merge
+
+### R-21 — Field 'word' = entri netral, belum terdefinisi register
+
+Per user 9 Okt 2026: "DATA kamus draf json sudah rusak, dengan mendefiniskan ngoko - padahal belum diketahui. bersihkan data kamus draft yg belum berpasangan jadi word umum (netral), saya dan ai belum tau ini ngoko atau bukan."
+
+**Skema field kamus-jawa-draft.json v2.3+**:
+
+| Field | Isi | Kapan diisi |
+|-------|-----|-----------|
+| `word` | kata netral (string) | Entry BELUM punya pasangan verified |
+| `ngoko` | ngoko (sinonim comma) | Entry SUDAH punya pasangan (krama atau arti) |
+| `krama` | krama + kramainggil (comma) | Entry SUDAH punya pasangan (ngoko atau arti) |
+| `arti` | arti Indonesia | Entry SUDAH punya pasangan (ngoko atau krama) |
+| `keterangan` | keterangan Jawa + Indonesia | SELALU ada (PERTAHANKAN, R-18) |
+| `aksara` | aksara Jawa | PERTAHANKAN kalau ada |
+| `register` | 'umum' (netral) / 'ngoko' / 'krama' | Default 'umum', user override via TUI |
+| `sumber` | sumber data | PERTAHANKAN |
+| `is_lemma` | bool (Wiktionary lemma tag) | PERTAHANKAN |
+| `is_angka` | bool (angka 1-1000) | true untuk angka entries |
+| `status` | 'draft' / 'ready' | User validate via TUI |
+
+**Aturan isi field**:
+- Entry punya `word` = BELUM terdefinisi (netral, register='umum')
+- Entry punya `ngoko` non-empty = SUDAH terdefinisi sebagai ngoko (paired dengan krama/arti)
+- Entry punya `krama` non-empty = SUDAH terdefinisi sebagai krama (paired dengan ngoko/arti)
+- Entry dengan `word` + `ngoko` + `krama` + `arti` semua = INCONSISTENT, harus di-fix
+
+**Workflow user di TUI** (per user 9 Okt):
+1. User browse entry `word` (netral)
+2. User cari pasangan: kalau tahu ngoko → isi `ngoko`, kalau tahu krama → isi `krama`, kalau tahu arti → isi `arti`
+3. Setelah 2 dari 3 field terisi (paired) → `word` otomatis pindah ke field yang sesuai (atau biarkan sebagai alias)
+4. Setelah 3-field lengkap → status='ready', siap upload Supabase
+
+**Aturan angka 1-1000** (contoh 3-pasangan terdefinisi):
+- Angka sudah punya ngoko + krama + arti (3-pasangan lengkap)
+- Status tetap 'draft' — user tetap validasi manual di TUI (R-12)
+- Angka = contoh sederhana yang membuat AI paham konsep ngoko-krama-arti
+- AI tidak bingung lagi setelah lihat angka 1-1000 (semua 3-pasangan terdefinisi)
+
+JANGAN:
+- Asumsi `word` = ngoko (BELUM terdefinisi, bisa jadi krama/kawi/loanword)
+- Isi `ngoko` kosong dengan tebakan AI (parser tolol, R-19)
+- Hapus entry `word` (R-18 — TETAP SIMPAN, user validasi manual nanti)
+
 ---
 
 ## Catatan untuk AI
