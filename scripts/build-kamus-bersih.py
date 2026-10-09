@@ -64,6 +64,7 @@ RAW_FULL = Path("/home/z/my-project/public/kamus-jawa-full.json")
 RAW_LEMMA = Path("/home/z/my-project/download/kamus-jawa-lemma-raw.json")
 RAW_MENDELEY = Path("/home/z/my-project/public/kamus-jawa-mendeley-raw.json")
 RAW_DASANAMA = Path("/home/z/my-project/public/dasanama-raw.csv")
+RAW_ANGKA = Path("/home/z/my-project/public/angka-raw.json")
 
 OUT_DRAFT = Path("/home/z/my-project/public/kamus-jawa-draft.json")
 OUT_REPORT = Path("/home/z/my-project/public/kamus-jawa-draft-report.txt")
@@ -650,6 +651,116 @@ def merge_dasanama_to_konseps(konseps, dasanama_entries):
 
 
 # ============================================================
+# Load Angka JSON (built-in AI reference, 26 entries)
+# Format: {"metadata": {...}, "words": [{ngoko, krama, arti, keterangan}]}
+# Curated, sistematis — angka 1-20, puluhan, ratusan, ribuan, juta
+# ============================================================
+def load_angka_json(path):
+    """Load angka-raw.json, return list of entries."""
+    if not path.exists():
+        print(f"⚠ Angka file tidak ditemukan: {path}")
+        return []
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    words = data.get("words", data if isinstance(data, list) else [])
+    return words
+
+
+def merge_angka_to_konseps(konseps, angka_words):
+    """Merge angka entries ke konsep existing.
+
+    Angka = curated AI reference, lengkap (ngoko + krama + arti Indonesia).
+    Strategi:
+      - Match by ngoko pertama (lowercase)
+      - Match → enrich (OVERRIDE arti kalau kosong, fix krama kalau ada artifact)
+        Khusus angka: arti OVERRIDE bahkan kalau ada (angka sistematis, AI curated valid)
+      - No match → bikin konsep baru
+    """
+    print(f"\n🔗 Merge {len(angka_words):,} Angka entries ke konsep...")
+
+    # Index konsep by primary ngoko (first word lowercase)
+    konsep_by_ngoko = defaultdict(list)
+    for i, k in enumerate(konseps):
+        ngoko_first = (k.get("ngoko", "") or "").split(",")[0].strip().lower()
+        if ngoko_first:
+            konsep_by_ngoko[ngoko_first].append(i)
+
+    matched = 0
+    enriched_arti = 0
+    fixed_krama = 0
+    new_from_angka = 0
+    for entry in angka_words:
+        angka_ngoko = (entry.get("ngoko", "") or "").strip().lower()
+        angka_arti = (entry.get("arti", "") or "").strip()
+        angka_krama = (entry.get("krama", "") or "").strip()
+        angka_ket = (entry.get("keterangan", "") or "").strip()
+
+        matches = konsep_by_ngoko.get(angka_ngoko, [])
+        if matches:
+            konsep_idx = matches[0]
+            k = konseps[konsep_idx]
+
+            # OVERRIDE arti (angka sistematis, AI curated valid)
+            # Sebelumnya arti bisa kosong atau artifact bocor
+            if angka_arti:
+                old_arti = k.get("arti", "")
+                if not old_arti or old_arti.lower() != angka_arti.lower():
+                    k["arti"] = angka_arti
+                    enriched_arti += 1
+
+            # FIX krama (kalau existing beda, gabung sebagai sinonim)
+            if angka_krama:
+                existing_krama = k.get("krama", "") or ""
+                angka_words_list = [w.strip().lower() for w in angka_krama.split(",") if w.strip()]
+                old_words = [w.strip().lower() for w in existing_krama.split(",") if w.strip()]
+                combined = []
+                for w in old_words + angka_words_list:
+                    if w not in combined:
+                        combined.append(w)
+                new_krama = ", ".join(combined)
+                if new_krama != existing_krama:
+                    k["krama"] = new_krama
+                    fixed_krama += 1
+
+            # Catat keterangan
+            if angka_ket:
+                existing_ket = k.get("keterangan", "")
+                if angka_ket not in existing_ket:
+                    k["keterangan"] = f"{existing_ket} | {angka_ket}".strip(" |") if existing_ket else angka_ket
+
+            # Tag is_angka + bump source_count
+            k["is_angka"] = True
+            k["source_count"] = k.get("source_count", 1) + 1
+            sumber = k.get("sumber", "")
+            if "angka" not in sumber.lower():
+                k["sumber"] = (sumber + " + angka" if sumber else "angka").strip(" +")
+
+            matched += 1
+        else:
+            # Bikin konsep baru dari angka
+            new_konsep = {
+                "ngoko": normalize_sinonim(entry.get("ngoko", "")),
+                "krama": normalize_sinonim(entry.get("krama", "")),
+                "krama_inggil": "",
+                "arti": angka_arti,
+                "keterangan": angka_ket,
+                "aksara": "",
+                "register": "umum",
+                "sumber": "angka-raw.json (new)",
+                "is_angka": True,
+                "source_count": 1,
+            }
+            konseps.append(new_konsep)
+            new_from_angka += 1
+
+    print(f"  Match & enrich konsep existing: {matched}")
+    print(f"    + enrich arti (override kosong/artifact): {enriched_arti}")
+    print(f"    + fix krama (gabung sinonim): {fixed_krama}")
+    print(f"  New konsep dari Angka (no match): {new_from_angka}")
+    return konseps
+
+
+# ============================================================
 # Post-processing arti (fix parsing artifacts)
 # ============================================================
 def clean_arti(arti_raw, ngoko, krama):
@@ -1083,6 +1194,13 @@ def main():
     print(f"  dasanama.csv: {len(dasanama_entries):,} entries (sinonim Jawa)")
     if dasanama_entries:
         konseps = merge_dasanama_to_konseps(konseps, dasanama_entries)
+
+    # Merge Angka JSON (built-in AI reference, 26 entries, sistematis)
+    # SEBELUM post-process — angka curated, jangan sampai clean_arti ganggu
+    angka_words = load_angka_json(RAW_ANGKA)
+    print(f"  angka.json: {len(angka_words):,} entries (angka 1-20, puluhan, ratusan, ribuan)")
+    if angka_words:
+        konseps = merge_angka_to_konseps(konseps, angka_words)
 
     # Post-process arti (clean artifact, move long_def ke keterangan)
     konseps = post_process_konseps(konseps)

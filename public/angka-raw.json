@@ -1,0 +1,36 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "source": "AI built-in (Jawa grammar reference)",
+    "description": "Angka dasar 1-20, puluhan, ratusan, ribuan — lengkap ngoko + krama + arti Indonesia",
+    "entries": 26
+  },
+  "words": [
+    {"ngoko": "siji", "krama": "satunggal, setunggal", "arti": "satu", "keterangan": "angka 1"},
+    {"ngoko": "loro", "krama": "kalih", "arti": "dua", "keterangan": "angka 2"},
+    {"ngoko": "telu", "krama": "tiga", "arti": "tiga", "keterangan": "angka 3"},
+    {"ngoko": "papat", "krama": "kawan, sekawan, sakawan", "arti": "empat", "keterangan": "angka 4"},
+    {"ngoko": "lima", "krama": "gangsal", "arti": "lima", "keterangan": "angka 5"},
+    {"ngoko": "enem", "krama": "enem", "arti": "enam", "keterangan": "angka 6"},
+    {"ngoko": "pitu", "krama": "pitu", "arti": "tujuh", "keterangan": "angka 7"},
+    {"ngoko": "wolu", "krama": "wolu", "arti": "delapan", "keterangan": "angka 8"},
+    {"ngoko": "sanga", "krama": "sanga", "arti": "sembilan", "keterangan": "angka 9"},
+    {"ngoko": "sepuluh", "krama": "sedasa", "arti": "sepuluh", "keterangan": "angka 10"},
+    {"ngoko": "sawelas", "krama": "setunggal welas, satunggal welas", "arti": "sebelas", "keterangan": "angka 11"},
+    {"ngoko": "rolas", "krama": "kalih welas", "arti": "dua belas", "keterangan": "angka 12"},
+    {"ngoko": "telulas", "krama": "tigang welas", "arti": "tiga belas", "keterangan": "angka 13"},
+    {"ngoko": "patbelas", "krama": "kawan welas, sekawan welas", "arti": "empat belas", "keterangan": "angka 14"},
+    {"ngoko": "limalas", "krama": "gangsal welas", "arti": "lima belas", "keterangan": "angka 15"},
+    {"ngoko": "enemlas", "krama": "enem welas", "arti": "enam belas", "keterangan": "angka 16"},
+    {"ngoko": "pitulas", "krama": "pitu welas", "arti": "tujuh belas", "keterangan": "angka 17"},
+    {"ngoko": "wulas", "krama": "wolu welas", "arti": "delapan belas", "keterangan": "angka 18"},
+    {"ngoko": "sangalas", "krama": "sanga welas", "arti": "sembilan belas", "keterangan": "angka 19"},
+    {"ngoko": "rongpuluh", "krama": "kalih dasa", "arti": "dua puluh", "keterangan": "angka 20"},
+    {"ngoko": "telungpuluh", "krama": "tigang dasa", "arti": "tiga puluh", "keterangan": "angka 30"},
+    {"ngoko": "patangpuluh", "krama": "kawan dasa", "arti": "empat puluh", "keterangan": "angka 40"},
+    {"ngoko": "sèket", "krama": "sèket", "arti": "lima puluh", "keterangan": "angka 50"},
+    {"ngoko": "seatus", "krama": "sa-atus, satunggal atus", "arti": "seratus", "keterangan": "angka 100"},
+    {"ngoko": "ewu", "krama": "siwu, sa-éwu", "arti": "seribu", "keterangan": "angka 1000"},
+    {"ngoko": "sayuta", "krama": "sayuta", "arti": "satu juta", "keterangan": "angka 1.000.000"}
+  ]
+}
