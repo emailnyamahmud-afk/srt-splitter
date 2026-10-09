@@ -1192,3 +1192,21 @@ Stage Summary:
 - kamus-jawa-draft.json v2.0 → v2.1
 - R-16 added: "Ejaan Jawa: diakritik é/è wajib, schwa polos 'e'"
 - Pending user: re-run kamus-tui.py untuk lihat hasil fix di TUI
+
+---
+Task ID: kamus-kramainggil-verify
+Agent: main
+Task: User minta masukan kramainggil Mendeley ke sinonim krama (dataset = ngoko, arti, krama)
+
+Work Log:
+- Cek build-kamus-bersih.py line 441-446 → TERNYATA sudah merge kramainggil ke krama sejak awal
+- Cross-check 955 Mendeley entries: 955/955 (100%) kramainggil SUDAH masuk krama di draft
+- Verifikasi sample: mangan→nedha+dhahar, turu→tilem+sare, aba→aba+dhawuh, abah-abah→abah-abah+kambil
+- Hitung: 1.036 draft entries punya ≥1 kramainggil word di krama
+- Tambah R-17 di PROJECT_RULES.md: skema field final + klarifikasi krama_inggil kosong BY DESIGN
+
+Stage Summary:
+- Tidak perlu patch data — kramainggil sudah ter-merge di build script
+- Aku koreksi audit sebelumnya yang bilang "krama_inggil: 0" sebagai bug — itu BY DESIGN, bukan bug
+- R-17 document skema: ngoko + krama + arti (krama_inggil MASUK krama, bukan field terpisah)
+- Commit d465612
