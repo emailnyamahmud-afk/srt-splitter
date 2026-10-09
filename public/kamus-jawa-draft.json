@@ -142600,7 +142600,7 @@
     },
     {
       "ngoko": "enematus séket",
-      "krama": "enem atus seket",
+      "krama": "enem atus séket",
       "krama_inggil": "",
       "arti": "enam ratus lima puluh",
       "keterangan": "angka 650",
@@ -142614,7 +142614,7 @@
     },
     {
       "ngoko": "enematus séket enem",
-      "krama": "enem atus seket enem",
+      "krama": "enem atus séket enem",
       "krama_inggil": "",
       "arti": "enam ratus lima puluh enam",
       "keterangan": "angka 656",
@@ -142628,7 +142628,7 @@
     },
     {
       "ngoko": "enematus séket lima",
-      "krama": "enem atus seket gangsal",
+      "krama": "enem atus séket gangsal",
       "krama_inggil": "",
       "arti": "enam ratus lima puluh lima",
       "keterangan": "angka 655",
@@ -142642,7 +142642,7 @@
     },
     {
       "ngoko": "enematus séket loro",
-      "krama": "enem atus seket kalih",
+      "krama": "enem atus séket kalih",
       "krama_inggil": "",
       "arti": "enam ratus lima puluh dua",
       "keterangan": "angka 652",
@@ -142656,7 +142656,7 @@
     },
     {
       "ngoko": "enematus séket papat",
-      "krama": "enem atus seket sekawan",
+      "krama": "enem atus séket sekawan",
       "krama_inggil": "",
       "arti": "enam ratus lima puluh empat",
       "keterangan": "angka 654",
@@ -142670,7 +142670,7 @@
     },
     {
       "ngoko": "enematus séket pitu",
-      "krama": "enem atus seket pitu",
+      "krama": "enem atus séket pitu",
       "krama_inggil": "",
       "arti": "enam ratus lima puluh tujuh",
       "keterangan": "angka 657",
@@ -142684,7 +142684,7 @@
     },
     {
       "ngoko": "enematus séket sanga",
-      "krama": "enem atus seket sanga",
+      "krama": "enem atus séket sanga",
       "krama_inggil": "",
       "arti": "enam ratus lima puluh sembilan",
       "keterangan": "angka 659",
@@ -142698,7 +142698,7 @@
     },
     {
       "ngoko": "enematus séket siji",
-      "krama": "enem atus seket setunggal",
+      "krama": "enem atus séket setunggal",
       "krama_inggil": "",
       "arti": "enam ratus lima puluh satu",
       "keterangan": "angka 651",
@@ -142712,7 +142712,7 @@
     },
     {
       "ngoko": "enematus séket telu",
-      "krama": "enem atus seket tiga",
+      "krama": "enem atus séket tiga",
       "krama_inggil": "",
       "arti": "enam ratus lima puluh tiga",
       "keterangan": "angka 653",
@@ -142726,7 +142726,7 @@
     },
     {
       "ngoko": "enematus séket wolu",
-      "krama": "enem atus seket wolu",
+      "krama": "enem atus séket wolu",
       "krama_inggil": "",
       "arti": "enam ratus lima puluh delapan",
       "keterangan": "angka 658",
@@ -263478,7 +263478,7 @@
     },
     {
       "ngoko": "limangatus séket",
-      "krama": "gangsal atus seket",
+      "krama": "gangsal atus séket",
       "krama_inggil": "",
       "arti": "lima ratus lima puluh",
       "keterangan": "angka 550",
@@ -263492,7 +263492,7 @@
     },
     {
       "ngoko": "limangatus séket enem",
-      "krama": "gangsal atus seket enem",
+      "krama": "gangsal atus séket enem",
       "krama_inggil": "",
       "arti": "lima ratus lima puluh enam",
       "keterangan": "angka 556",
@@ -263506,7 +263506,7 @@
     },
     {
       "ngoko": "limangatus séket lima",
-      "krama": "gangsal atus seket gangsal",
+      "krama": "gangsal atus séket gangsal",
       "krama_inggil": "",
       "arti": "lima ratus lima puluh lima",
       "keterangan": "angka 555",
@@ -263520,7 +263520,7 @@
     },
     {
       "ngoko": "limangatus séket loro",
-      "krama": "gangsal atus seket kalih",
+      "krama": "gangsal atus séket kalih",
       "krama_inggil": "",
       "arti": "lima ratus lima puluh dua",
       "keterangan": "angka 552",
@@ -263534,7 +263534,7 @@
     },
     {
       "ngoko": "limangatus séket papat",
-      "krama": "gangsal atus seket sekawan",
+      "krama": "gangsal atus séket sekawan",
       "krama_inggil": "",
       "arti": "lima ratus lima puluh empat",
       "keterangan": "angka 554",
@@ -263548,7 +263548,7 @@
     },
     {
       "ngoko": "limangatus séket pitu",
-      "krama": "gangsal atus seket pitu",
+      "krama": "gangsal atus séket pitu",
       "krama_inggil": "",
       "arti": "lima ratus lima puluh tujuh",
       "keterangan": "angka 557",
@@ -263562,7 +263562,7 @@
     },
     {
       "ngoko": "limangatus séket sanga",
-      "krama": "gangsal atus seket sanga",
+      "krama": "gangsal atus séket sanga",
       "krama_inggil": "",
       "arti": "lima ratus lima puluh sembilan",
       "keterangan": "angka 559",
@@ -263576,7 +263576,7 @@
     },
     {
       "ngoko": "limangatus séket siji",
-      "krama": "gangsal atus seket setunggal",
+      "krama": "gangsal atus séket setunggal",
       "krama_inggil": "",
       "arti": "lima ratus lima puluh satu",
       "keterangan": "angka 551",
@@ -263590,7 +263590,7 @@
     },
     {
       "ngoko": "limangatus séket telu",
-      "krama": "gangsal atus seket tiga",
+      "krama": "gangsal atus séket tiga",
       "krama_inggil": "",
       "arti": "lima ratus lima puluh tiga",
       "keterangan": "angka 553",
@@ -263604,7 +263604,7 @@
     },
     {
       "ngoko": "limangatus séket wolu",
-      "krama": "gangsal atus seket wolu",
+      "krama": "gangsal atus séket wolu",
       "krama_inggil": "",
       "arti": "lima ratus lima puluh delapan",
       "keterangan": "angka 558",
@@ -454391,7 +454391,7 @@
     },
     {
       "ngoko": "patangatus séket",
-      "krama": "sekawan atus seket",
+      "krama": "sekawan atus séket",
       "krama_inggil": "",
       "arti": "empat ratus lima puluh",
       "keterangan": "angka 450",
@@ -454405,7 +454405,7 @@
     },
     {
       "ngoko": "patangatus séket enem",
-      "krama": "sekawan atus seket enem",
+      "krama": "sekawan atus séket enem",
       "krama_inggil": "",
       "arti": "empat ratus lima puluh enam",
       "keterangan": "angka 456",
@@ -454419,7 +454419,7 @@
     },
     {
       "ngoko": "patangatus séket lima",
-      "krama": "sekawan atus seket gangsal",
+      "krama": "sekawan atus séket gangsal",
       "krama_inggil": "",
       "arti": "empat ratus lima puluh lima",
       "keterangan": "angka 455",
@@ -454433,7 +454433,7 @@
     },
     {
       "ngoko": "patangatus séket loro",
-      "krama": "sekawan atus seket kalih",
+      "krama": "sekawan atus séket kalih",
       "krama_inggil": "",
       "arti": "empat ratus lima puluh dua",
       "keterangan": "angka 452",
@@ -454447,7 +454447,7 @@
     },
     {
       "ngoko": "patangatus séket papat",
-      "krama": "sekawan atus seket sekawan",
+      "krama": "sekawan atus séket sekawan",
       "krama_inggil": "",
       "arti": "empat ratus lima puluh empat",
       "keterangan": "angka 454",
@@ -454461,7 +454461,7 @@
     },
     {
       "ngoko": "patangatus séket pitu",
-      "krama": "sekawan atus seket pitu",
+      "krama": "sekawan atus séket pitu",
       "krama_inggil": "",
       "arti": "empat ratus lima puluh tujuh",
       "keterangan": "angka 457",
@@ -454475,7 +454475,7 @@
     },
     {
       "ngoko": "patangatus séket sanga",
-      "krama": "sekawan atus seket sanga",
+      "krama": "sekawan atus séket sanga",
       "krama_inggil": "",
       "arti": "empat ratus lima puluh sembilan",
       "keterangan": "angka 459",
@@ -454489,7 +454489,7 @@
     },
     {
       "ngoko": "patangatus séket siji",
-      "krama": "sekawan atus seket setunggal",
+      "krama": "sekawan atus séket setunggal",
       "krama_inggil": "",
       "arti": "empat ratus lima puluh satu",
       "keterangan": "angka 451",
@@ -454503,7 +454503,7 @@
     },
     {
       "ngoko": "patangatus séket telu",
-      "krama": "sekawan atus seket tiga",
+      "krama": "sekawan atus séket tiga",
       "krama_inggil": "",
       "arti": "empat ratus lima puluh tiga",
       "keterangan": "angka 453",
@@ -454517,7 +454517,7 @@
     },
     {
       "ngoko": "patangatus séket wolu",
-      "krama": "sekawan atus seket wolu",
+      "krama": "sekawan atus séket wolu",
       "krama_inggil": "",
       "arti": "empat ratus lima puluh delapan",
       "keterangan": "angka 458",
@@ -471686,7 +471686,7 @@
     },
     {
       "ngoko": "pitungatus séket",
-      "krama": "pitung atus seket",
+      "krama": "pitung atus séket",
       "krama_inggil": "",
       "arti": "tujuh ratus lima puluh",
       "keterangan": "angka 750",
@@ -471700,7 +471700,7 @@
     },
     {
       "ngoko": "pitungatus séket enem",
-      "krama": "pitung atus seket enem",
+      "krama": "pitung atus séket enem",
       "krama_inggil": "",
       "arti": "tujuh ratus lima puluh enam",
       "keterangan": "angka 756",
@@ -471714,7 +471714,7 @@
     },
     {
       "ngoko": "pitungatus séket lima",
-      "krama": "pitung atus seket gangsal",
+      "krama": "pitung atus séket gangsal",
       "krama_inggil": "",
       "arti": "tujuh ratus lima puluh lima",
       "keterangan": "angka 755",
@@ -471728,7 +471728,7 @@
     },
     {
       "ngoko": "pitungatus séket loro",
-      "krama": "pitung atus seket kalih",
+      "krama": "pitung atus séket kalih",
       "krama_inggil": "",
       "arti": "tujuh ratus lima puluh dua",
       "keterangan": "angka 752",
@@ -471742,7 +471742,7 @@
     },
     {
       "ngoko": "pitungatus séket papat",
-      "krama": "pitung atus seket sekawan",
+      "krama": "pitung atus séket sekawan",
       "krama_inggil": "",
       "arti": "tujuh ratus lima puluh empat",
       "keterangan": "angka 754",
@@ -471756,7 +471756,7 @@
     },
     {
       "ngoko": "pitungatus séket pitu",
-      "krama": "pitung atus seket pitu",
+      "krama": "pitung atus séket pitu",
       "krama_inggil": "",
       "arti": "tujuh ratus lima puluh tujuh",
       "keterangan": "angka 757",
@@ -471770,7 +471770,7 @@
     },
     {
       "ngoko": "pitungatus séket sanga",
-      "krama": "pitung atus seket sanga",
+      "krama": "pitung atus séket sanga",
       "krama_inggil": "",
       "arti": "tujuh ratus lima puluh sembilan",
       "keterangan": "angka 759",
@@ -471784,7 +471784,7 @@
     },
     {
       "ngoko": "pitungatus séket siji",
-      "krama": "pitung atus seket setunggal",
+      "krama": "pitung atus séket setunggal",
       "krama_inggil": "",
       "arti": "tujuh ratus lima puluh satu",
       "keterangan": "angka 751",
@@ -471798,7 +471798,7 @@
     },
     {
       "ngoko": "pitungatus séket telu",
-      "krama": "pitung atus seket tiga",
+      "krama": "pitung atus séket tiga",
       "krama_inggil": "",
       "arti": "tujuh ratus lima puluh tiga",
       "keterangan": "angka 753",
@@ -471812,7 +471812,7 @@
     },
     {
       "ngoko": "pitungatus séket wolu",
-      "krama": "pitung atus seket wolu",
+      "krama": "pitung atus séket wolu",
       "krama_inggil": "",
       "arti": "tujuh ratus lima puluh delapan",
       "keterangan": "angka 758",
@@ -496109,7 +496109,7 @@
     },
     {
       "ngoko": "rongatus séket",
-      "krama": "kalih atus seket",
+      "krama": "kalih atus séket",
       "krama_inggil": "",
       "arti": "dua ratus lima puluh",
       "keterangan": "angka 250",
@@ -496123,7 +496123,7 @@
     },
     {
       "ngoko": "rongatus séket enem",
-      "krama": "kalih atus seket enem",
+      "krama": "kalih atus séket enem",
       "krama_inggil": "",
       "arti": "dua ratus lima puluh enam",
       "keterangan": "angka 256",
@@ -496137,7 +496137,7 @@
     },
     {
       "ngoko": "rongatus séket lima",
-      "krama": "kalih atus seket gangsal",
+      "krama": "kalih atus séket gangsal",
       "krama_inggil": "",
       "arti": "dua ratus lima puluh lima",
       "keterangan": "angka 255",
@@ -496151,7 +496151,7 @@
     },
     {
       "ngoko": "rongatus séket loro",
-      "krama": "kalih atus seket kalih",
+      "krama": "kalih atus séket kalih",
       "krama_inggil": "",
       "arti": "dua ratus lima puluh dua",
       "keterangan": "angka 252",
@@ -496165,7 +496165,7 @@
     },
     {
       "ngoko": "rongatus séket papat",
-      "krama": "kalih atus seket sekawan",
+      "krama": "kalih atus séket sekawan",
       "krama_inggil": "",
       "arti": "dua ratus lima puluh empat",
       "keterangan": "angka 254",
@@ -496179,7 +496179,7 @@
     },
     {
       "ngoko": "rongatus séket pitu",
-      "krama": "kalih atus seket pitu",
+      "krama": "kalih atus séket pitu",
       "krama_inggil": "",
       "arti": "dua ratus lima puluh tujuh",
       "keterangan": "angka 257",
@@ -496193,7 +496193,7 @@
     },
     {
       "ngoko": "rongatus séket sanga",
-      "krama": "kalih atus seket sanga",
+      "krama": "kalih atus séket sanga",
       "krama_inggil": "",
       "arti": "dua ratus lima puluh sembilan",
       "keterangan": "angka 259",
@@ -496207,7 +496207,7 @@
     },
     {
       "ngoko": "rongatus séket siji",
-      "krama": "kalih atus seket setunggal",
+      "krama": "kalih atus séket setunggal",
       "krama_inggil": "",
       "arti": "dua ratus lima puluh satu",
       "keterangan": "angka 251",
@@ -496221,7 +496221,7 @@
     },
     {
       "ngoko": "rongatus séket telu",
-      "krama": "kalih atus seket tiga",
+      "krama": "kalih atus séket tiga",
       "krama_inggil": "",
       "arti": "dua ratus lima puluh tiga",
       "keterangan": "angka 253",
@@ -496235,7 +496235,7 @@
     },
     {
       "ngoko": "rongatus séket wolu",
-      "krama": "kalih atus seket wolu",
+      "krama": "kalih atus séket wolu",
       "krama_inggil": "",
       "arti": "dua ratus lima puluh delapan",
       "keterangan": "angka 258",
@@ -507642,7 +507642,7 @@
     },
     {
       "ngoko": "sangangatus séket",
-      "krama": "sangang atus seket",
+      "krama": "sangang atus séket",
       "krama_inggil": "",
       "arti": "sembilan ratus lima puluh",
       "keterangan": "angka 950",
@@ -507656,7 +507656,7 @@
     },
     {
       "ngoko": "sangangatus séket enem",
-      "krama": "sangang atus seket enem",
+      "krama": "sangang atus séket enem",
       "krama_inggil": "",
       "arti": "sembilan ratus lima puluh enam",
       "keterangan": "angka 956",
@@ -507670,7 +507670,7 @@
     },
     {
       "ngoko": "sangangatus séket lima",
-      "krama": "sangang atus seket gangsal",
+      "krama": "sangang atus séket gangsal",
       "krama_inggil": "",
       "arti": "sembilan ratus lima puluh lima",
       "keterangan": "angka 955",
@@ -507684,7 +507684,7 @@
     },
     {
       "ngoko": "sangangatus séket loro",
-      "krama": "sangang atus seket kalih",
+      "krama": "sangang atus séket kalih",
       "krama_inggil": "",
       "arti": "sembilan ratus lima puluh dua",
       "keterangan": "angka 952",
@@ -507698,7 +507698,7 @@
     },
     {
       "ngoko": "sangangatus séket papat",
-      "krama": "sangang atus seket sekawan",
+      "krama": "sangang atus séket sekawan",
       "krama_inggil": "",
       "arti": "sembilan ratus lima puluh empat",
       "keterangan": "angka 954",
@@ -507712,7 +507712,7 @@
     },
     {
       "ngoko": "sangangatus séket pitu",
-      "krama": "sangang atus seket pitu",
+      "krama": "sangang atus séket pitu",
       "krama_inggil": "",
       "arti": "sembilan ratus lima puluh tujuh",
       "keterangan": "angka 957",
@@ -507726,7 +507726,7 @@
     },
     {
       "ngoko": "sangangatus séket sanga",
-      "krama": "sangang atus seket sanga",
+      "krama": "sangang atus séket sanga",
       "krama_inggil": "",
       "arti": "sembilan ratus lima puluh sembilan",
       "keterangan": "angka 959",
@@ -507740,7 +507740,7 @@
     },
     {
       "ngoko": "sangangatus séket siji",
-      "krama": "sangang atus seket setunggal",
+      "krama": "sangang atus séket setunggal",
       "krama_inggil": "",
       "arti": "sembilan ratus lima puluh satu",
       "keterangan": "angka 951",
@@ -507754,7 +507754,7 @@
     },
     {
       "ngoko": "sangangatus séket telu",
-      "krama": "sangang atus seket tiga",
+      "krama": "sangang atus séket tiga",
       "krama_inggil": "",
       "arti": "sembilan ratus lima puluh tiga",
       "keterangan": "angka 953",
@@ -507768,7 +507768,7 @@
     },
     {
       "ngoko": "sangangatus séket wolu",
-      "krama": "sangang atus seket wolu",
+      "krama": "sangang atus séket wolu",
       "krama_inggil": "",
       "arti": "sembilan ratus lima puluh delapan",
       "keterangan": "angka 958",
@@ -512751,7 +512751,7 @@
     },
     {
       "ngoko": "satus séket",
-      "krama": "setunggal atus seket",
+      "krama": "setunggal atus séket",
       "krama_inggil": "",
       "arti": "seratus lima puluh",
       "keterangan": "angka 150",
@@ -512765,7 +512765,7 @@
     },
     {
       "ngoko": "satus séket enem",
-      "krama": "setunggal atus seket enem",
+      "krama": "setunggal atus séket enem",
       "krama_inggil": "",
       "arti": "seratus lima puluh enam",
       "keterangan": "angka 156",
@@ -512779,7 +512779,7 @@
     },
     {
       "ngoko": "satus séket lima",
-      "krama": "setunggal atus seket gangsal",
+      "krama": "setunggal atus séket gangsal",
       "krama_inggil": "",
       "arti": "seratus lima puluh lima",
       "keterangan": "angka 155",
@@ -512793,7 +512793,7 @@
     },
     {
       "ngoko": "satus séket loro",
-      "krama": "setunggal atus seket kalih",
+      "krama": "setunggal atus séket kalih",
       "krama_inggil": "",
       "arti": "seratus lima puluh dua",
       "keterangan": "angka 152",
@@ -512807,7 +512807,7 @@
     },
     {
       "ngoko": "satus séket papat",
-      "krama": "setunggal atus seket sekawan",
+      "krama": "setunggal atus séket sekawan",
       "krama_inggil": "",
       "arti": "seratus lima puluh empat",
       "keterangan": "angka 154",
@@ -512821,7 +512821,7 @@
     },
     {
       "ngoko": "satus séket pitu",
-      "krama": "setunggal atus seket pitu",
+      "krama": "setunggal atus séket pitu",
       "krama_inggil": "",
       "arti": "seratus lima puluh tujuh",
       "keterangan": "angka 157",
@@ -512835,7 +512835,7 @@
     },
     {
       "ngoko": "satus séket sanga",
-      "krama": "setunggal atus seket sanga",
+      "krama": "setunggal atus séket sanga",
       "krama_inggil": "",
       "arti": "seratus lima puluh sembilan",
       "keterangan": "angka 159",
@@ -512849,7 +512849,7 @@
     },
     {
       "ngoko": "satus séket siji",
-      "krama": "setunggal atus seket setunggal",
+      "krama": "setunggal atus séket setunggal",
       "krama_inggil": "",
       "arti": "seratus lima puluh satu",
       "keterangan": "angka 151",
@@ -512863,7 +512863,7 @@
     },
     {
       "ngoko": "satus séket telu",
-      "krama": "setunggal atus seket tiga",
+      "krama": "setunggal atus séket tiga",
       "krama_inggil": "",
       "arti": "seratus lima puluh tiga",
       "keterangan": "angka 153",
@@ -512877,7 +512877,7 @@
     },
     {
       "ngoko": "satus séket wolu",
-      "krama": "setunggal atus seket wolu",
+      "krama": "setunggal atus séket wolu",
       "krama_inggil": "",
       "arti": "seratus lima puluh delapan",
       "keterangan": "angka 158",
@@ -539845,7 +539845,7 @@
       "entry_id": 40621
     },
     {
-      "ngoko": "sèwu, saharsa, saiwu",
+      "ngoko": "séwu, saharsa, saiwu",
       "krama": "setunggal ewu",
       "krama_inggil": "",
       "arti": "seribu",
@@ -540090,7 +540090,7 @@
     },
     {
       "ngoko": "séket",
-      "krama": "seket",
+      "krama": "séket",
       "krama_inggil": "",
       "arti": "lima puluh",
       "keterangan": "angka 50",
@@ -540104,7 +540104,7 @@
     },
     {
       "ngoko": "séket enem",
-      "krama": "seket enem",
+      "krama": "séket enem",
       "krama_inggil": "",
       "arti": "lima puluh enam",
       "keterangan": "angka 56",
@@ -540118,7 +540118,7 @@
     },
     {
       "ngoko": "séket lima",
-      "krama": "seket gangsal",
+      "krama": "séket gangsal",
       "krama_inggil": "",
       "arti": "lima puluh lima",
       "keterangan": "angka 55",
@@ -540132,7 +540132,7 @@
     },
     {
       "ngoko": "séket loro",
-      "krama": "seket kalih",
+      "krama": "séket kalih",
       "krama_inggil": "",
       "arti": "lima puluh dua",
       "keterangan": "angka 52",
@@ -540146,7 +540146,7 @@
     },
     {
       "ngoko": "séket papat",
-      "krama": "seket sekawan",
+      "krama": "séket sekawan",
       "krama_inggil": "",
       "arti": "lima puluh empat",
       "keterangan": "angka 54",
@@ -540160,7 +540160,7 @@
     },
     {
       "ngoko": "séket pitu",
-      "krama": "seket pitu",
+      "krama": "séket pitu",
       "krama_inggil": "",
       "arti": "lima puluh tujuh",
       "keterangan": "angka 57",
@@ -540174,7 +540174,7 @@
     },
     {
       "ngoko": "séket sanga",
-      "krama": "seket sanga",
+      "krama": "séket sanga",
       "krama_inggil": "",
       "arti": "lima puluh sembilan",
       "keterangan": "angka 59",
@@ -540188,7 +540188,7 @@
     },
     {
       "ngoko": "séket siji",
-      "krama": "seket setunggal",
+      "krama": "séket setunggal",
       "krama_inggil": "",
       "arti": "lima puluh satu",
       "keterangan": "angka 51",
@@ -540202,7 +540202,7 @@
     },
     {
       "ngoko": "séket telu",
-      "krama": "seket tiga",
+      "krama": "séket tiga",
       "krama_inggil": "",
       "arti": "lima puluh tiga",
       "keterangan": "angka 53",
@@ -540216,7 +540216,7 @@
     },
     {
       "ngoko": "séket wolu",
-      "krama": "seket wolu",
+      "krama": "séket wolu",
       "krama_inggil": "",
       "arti": "lima puluh delapan",
       "keterangan": "angka 58",
@@ -550641,7 +550641,7 @@
     },
     {
       "ngoko": "telungatus séket",
-      "krama": "tigang atus seket",
+      "krama": "tigang atus séket",
       "krama_inggil": "",
       "arti": "tiga ratus lima puluh",
       "keterangan": "angka 350",
@@ -550655,7 +550655,7 @@
     },
     {
       "ngoko": "telungatus séket enem",
-      "krama": "tigang atus seket enem",
+      "krama": "tigang atus séket enem",
       "krama_inggil": "",
       "arti": "tiga ratus lima puluh enam",
       "keterangan": "angka 356",
@@ -550669,7 +550669,7 @@
     },
     {
       "ngoko": "telungatus séket lima",
-      "krama": "tigang atus seket gangsal",
+      "krama": "tigang atus séket gangsal",
       "krama_inggil": "",
       "arti": "tiga ratus lima puluh lima",
       "keterangan": "angka 355",
@@ -550683,7 +550683,7 @@
     },
     {
       "ngoko": "telungatus séket loro",
-      "krama": "tigang atus seket kalih",
+      "krama": "tigang atus séket kalih",
       "krama_inggil": "",
       "arti": "tiga ratus lima puluh dua",
       "keterangan": "angka 352",
@@ -550697,7 +550697,7 @@
     },
     {
       "ngoko": "telungatus séket papat",
-      "krama": "tigang atus seket sekawan",
+      "krama": "tigang atus séket sekawan",
       "krama_inggil": "",
       "arti": "tiga ratus lima puluh empat",
       "keterangan": "angka 354",
@@ -550711,7 +550711,7 @@
     },
     {
       "ngoko": "telungatus séket pitu",
-      "krama": "tigang atus seket pitu",
+      "krama": "tigang atus séket pitu",
       "krama_inggil": "",
       "arti": "tiga ratus lima puluh tujuh",
       "keterangan": "angka 357",
@@ -550725,7 +550725,7 @@
     },
     {
       "ngoko": "telungatus séket sanga",
-      "krama": "tigang atus seket sanga",
+      "krama": "tigang atus séket sanga",
       "krama_inggil": "",
       "arti": "tiga ratus lima puluh sembilan",
       "keterangan": "angka 359",
@@ -550739,7 +550739,7 @@
     },
     {
       "ngoko": "telungatus séket siji",
-      "krama": "tigang atus seket setunggal",
+      "krama": "tigang atus séket setunggal",
       "krama_inggil": "",
       "arti": "tiga ratus lima puluh satu",
       "keterangan": "angka 351",
@@ -550753,7 +550753,7 @@
     },
     {
       "ngoko": "telungatus séket telu",
-      "krama": "tigang atus seket tiga",
+      "krama": "tigang atus séket tiga",
       "krama_inggil": "",
       "arti": "tiga ratus lima puluh tiga",
       "keterangan": "angka 353",
@@ -550767,7 +550767,7 @@
     },
     {
       "ngoko": "telungatus séket wolu",
-      "krama": "tigang atus seket wolu",
+      "krama": "tigang atus séket wolu",
       "krama_inggil": "",
       "arti": "tiga ratus lima puluh delapan",
       "keterangan": "angka 358",
@@ -586559,7 +586559,7 @@
     },
     {
       "ngoko": "wolungatus séket",
-      "krama": "wolung atus seket",
+      "krama": "wolung atus séket",
       "krama_inggil": "",
       "arti": "delapan ratus lima puluh",
       "keterangan": "angka 850",
@@ -586573,7 +586573,7 @@
     },
     {
       "ngoko": "wolungatus séket enem",
-      "krama": "wolung atus seket enem",
+      "krama": "wolung atus séket enem",
       "krama_inggil": "",
       "arti": "delapan ratus lima puluh enam",
       "keterangan": "angka 856",
@@ -586587,7 +586587,7 @@
     },
     {
       "ngoko": "wolungatus séket lima",
-      "krama": "wolung atus seket gangsal",
+      "krama": "wolung atus séket gangsal",
       "krama_inggil": "",
       "arti": "delapan ratus lima puluh lima",
       "keterangan": "angka 855",
@@ -586601,7 +586601,7 @@
     },
     {
       "ngoko": "wolungatus séket loro",
-      "krama": "wolung atus seket kalih",
+      "krama": "wolung atus séket kalih",
       "krama_inggil": "",
       "arti": "delapan ratus lima puluh dua",
       "keterangan": "angka 852",
@@ -586615,7 +586615,7 @@
     },
     {
       "ngoko": "wolungatus séket papat",
-      "krama": "wolung atus seket sekawan",
+      "krama": "wolung atus séket sekawan",
       "krama_inggil": "",
       "arti": "delapan ratus lima puluh empat",
       "keterangan": "angka 854",
@@ -586629,7 +586629,7 @@
     },
     {
       "ngoko": "wolungatus séket pitu",
-      "krama": "wolung atus seket pitu",
+      "krama": "wolung atus séket pitu",
       "krama_inggil": "",
       "arti": "delapan ratus lima puluh tujuh",
       "keterangan": "angka 857",
@@ -586643,7 +586643,7 @@
     },
     {
       "ngoko": "wolungatus séket sanga",
-      "krama": "wolung atus seket sanga",
+      "krama": "wolung atus séket sanga",
       "krama_inggil": "",
       "arti": "delapan ratus lima puluh sembilan",
       "keterangan": "angka 859",
@@ -586657,7 +586657,7 @@
     },
     {
       "ngoko": "wolungatus séket siji",
-      "krama": "wolung atus seket setunggal",
+      "krama": "wolung atus séket setunggal",
       "krama_inggil": "",
       "arti": "delapan ratus lima puluh satu",
       "keterangan": "angka 851",
@@ -586671,7 +586671,7 @@
     },
     {
       "ngoko": "wolungatus séket telu",
-      "krama": "wolung atus seket tiga",
+      "krama": "wolung atus séket tiga",
       "krama_inggil": "",
       "arti": "delapan ratus lima puluh tiga",
       "keterangan": "angka 853",
@@ -586685,7 +586685,7 @@
     },
     {
       "ngoko": "wolungatus séket wolu",
-      "krama": "wolung atus seket wolu",
+      "krama": "wolung atus séket wolu",
       "krama_inggil": "",
       "arti": "delapan ratus lima puluh delapan",
       "keterangan": "angka 858",
