@@ -62,6 +62,7 @@ from collections import defaultdict
 # ============================================================
 RAW_FULL = Path("/home/z/my-project/public/kamus-jawa-full.json")
 RAW_LEMMA = Path("/home/z/my-project/download/kamus-jawa-lemma-raw.json")
+RAW_MENDELEY = Path("/home/z/my-project/public/kamus-jawa-mendeley-raw.json")
 
 OUT_DRAFT = Path("/home/z/my-project/public/kamus-jawa-draft.json")
 OUT_REPORT = Path("/home/z/my-project/public/kamus-jawa-draft-report.txt")
@@ -368,6 +369,151 @@ def merge_lemma_to_konseps(konseps, lemma_words):
 
 
 # ============================================================
+# Load Mendeley dataset (Faisal Rahutomo et al, 2018)
+# Format: {"employees": {"<firebase_id>": {indonesia, kramaalus, kramainggil, ngoko}}}
+# Schema mapping (sesuai user spec 9 Okt 2026):
+#   indonesia  → arti       (arti Indonesia, curated - BUKAN scrape)
+#   ngoko      → ngoko
+#   kramaalus + kramainggil → krama  (gabung comma sebagai sinonim)
+# ============================================================
+def load_mendeley_words(path):
+    """Load Mendeley kamus-2cba6-export.json, return list of konsep-like entries.
+
+    Output format sama dengan lemma_raw:
+      [{ngoko, krama, arti, keterangan, aksara, register, sumber}, ...]
+    """
+    if not path.exists():
+        print(f"⚠ Mendeley file tidak ditemukan: {path}")
+        return []
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    employees = data.get("employees", {})
+    if not isinstance(employees, dict):
+        return []
+
+    entries = []
+    for fid, v in employees.items():
+        ngoko = (v.get("ngoko", "") or "").strip()
+        kramaalus = (v.get("kramaalus", "") or "").strip()
+        kramainggil = (v.get("kramainggil", "") or "").strip()
+        indonesia = (v.get("indonesia", "") or "").strip()
+        if not ngoko or not indonesia:
+            continue  # skip entries tanpa ngoko atau arti
+        # Gabung kramaalus + kramainggil sebagai sinonim krama (sesuai user spec)
+        krama_parts = []
+        for k in (kramaalus, kramainggil):
+            for w in (k or "").split(","):
+                w = w.strip()
+                if w and w.lower() not in [x.lower() for x in krama_parts]:
+                    krama_parts.append(w)
+        krama = ", ".join(krama_parts)
+        entries.append({
+            "ngoko": ngoko,
+            "krama": krama,
+            "arti": indonesia,
+            "keterangan": "",  # Mendeley dataset tidak punya keterangan Jawa
+            "aksara": "",
+            "register": "umum",  # SEMUA umum (jangan parse — halusinasi)
+            "sumber": f"data.mendeley.com/datasets/y3hstv4bfn (firebase_id={fid})",
+            "_firebase_id": fid,
+        })
+    return entries
+
+
+def merge_mendeley_to_konseps(konseps, mendeley_words):
+    """Merge Mendeley entries ke konsep existing (kalau match by ngoko).
+
+    Mendeley punya arti Indonesia curated + krama (gabungan kramaalus+kramainggil).
+    Strategi:
+      - Match by ngoko pertama (lowercase)
+      - Match → enrich:
+          * arti: kalau kosong, isi dari Mendeley (curated, BUKAN scrape)
+          * krama: gabung comma (sinonim baru dari Mendeley)
+      - No match → bikin konsep baru
+    """
+    print(f"\n🔗 Merge {len(mendeley_words):,} Mendeley entries ke konsep...")
+
+    # Index konsep by primary ngoko (first word lowercase)
+    konsep_by_ngoko = defaultdict(list)
+    for i, k in enumerate(konseps):
+        ngoko_first = (k.get("ngoko", "") or "").split(",")[0].strip().lower()
+        if ngoko_first:
+            konsep_by_ngoko[ngoko_first].append(i)
+
+    matched = 0
+    enriched_arti = 0
+    enriched_krama = 0
+    new_from_mendeley = 0
+    for entry in mendeley_words:
+        mendeley_ngoko = (entry.get("ngoko", "") or "").strip().lower()
+        mendeley_arti = (entry.get("arti", "") or "").strip()
+        mendeley_krama = (entry.get("krama", "") or "").strip()
+        mendeley_ket = (entry.get("keterangan", "") or "").strip()
+
+        matches = konsep_by_ngoko.get(mendeley_ngoko, [])
+        if matches:
+            konsep_idx = matches[0]
+            k = konseps[konsep_idx]
+
+            # Enrich arti: prioritas Mendeley (curated Indonesia) > existing kosong
+            if mendeley_arti and not k.get("arti"):
+                k["arti"] = mendeley_arti
+                enriched_arti += 1
+            elif mendeley_arti and k.get("arti") and mendeley_arti.lower() not in k["arti"].lower():
+                # Kalau existing ada arti beda → gabung sebagai sinonim arti
+                k["arti"] = f"{k['arti']}; {mendeley_arti}"
+
+            # Enrich krama: gabung comma (sinonim baru)
+            if mendeley_krama:
+                existing_krama = k.get("krama", "") or ""
+                # Dedup word-level
+                new_words = [w.strip().lower() for w in mendeley_krama.split(",") if w.strip()]
+                old_words = [w.strip().lower() for w in existing_krama.split(",") if w.strip()]
+                combined = []
+                for w in old_words + new_words:
+                    if w not in combined:
+                        combined.append(w)
+                new_krama = ", ".join(combined)
+                if new_krama != existing_krama:
+                    k["krama"] = new_krama
+                    enriched_krama += 1
+
+            # Tag is_mendeley + bump source_count
+            k["is_mendeley"] = True
+            k["mendeley_id"] = entry.get("_firebase_id", "")
+            k["source_count"] = k.get("source_count", 1) + 1
+            # Update sumber
+            sumber = k.get("sumber", "")
+            if "mendeley" not in sumber.lower():
+                k["sumber"] = (sumber + " + mendeley" if sumber else "mendeley").strip(" +")
+
+            matched += 1
+        else:
+            # Bikin konsep baru dari Mendeley
+            new_konsep = {
+                "ngoko": normalize_sinonim(entry.get("ngoko", "")),
+                "krama": normalize_sinonim(entry.get("krama", "")),
+                "krama_inggil": "",
+                "arti": mendeley_arti,
+                "keterangan": mendeley_ket,
+                "aksara": "",
+                "register": "umum",
+                "sumber": "data.mendeley.com/datasets/y3hstv4bfn (new)",
+                "is_mendeley": True,
+                "mendeley_id": entry.get("_firebase_id", ""),
+                "source_count": 1,
+            }
+            konseps.append(new_konsep)
+            new_from_mendeley += 1
+
+    print(f"  Match & enrich konsep existing: {matched:,}")
+    print(f"    + enrich arti (yang kosong): {enriched_arti:,}")
+    print(f"    + enrich krama (tambah sinonim): {enriched_krama:,}")
+    print(f"  New konsep dari Mendeley (no match): {new_from_mendeley:,}")
+    return konseps
+
+
+# ============================================================
 # Post-processing arti (fix parsing artifacts)
 # ============================================================
 def clean_arti(arti_raw, ngoko, krama):
@@ -581,6 +727,12 @@ def main():
 
     # Merge lemma
     konseps = merge_lemma_to_konseps(konseps, lemma_words)
+
+    # Merge Mendeley dataset (curated Indonesia + krama gabungan kramaalus+kramainggil)
+    mendeley_words = load_mendeley_words(RAW_MENDELEY)
+    print(f"  mendeley.json: {len(mendeley_words):,} entries (data.mendeley.com/datasets/y3hstv4bfn)")
+    if mendeley_words:
+        konseps = merge_mendeley_to_konseps(konseps, mendeley_words)
 
     # Post-process arti (clean artifact, move long_def ke keterangan)
     konseps = post_process_konseps(konseps)
