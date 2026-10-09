@@ -2,7 +2,7 @@
 """
 upload-supabase.py — Upload entri kamus ke Supabase (USER-TRIGGERED ONLY)
 
-⚠ KRITIS — R-12 + R-18 + R-20 + R-21 COMPLIANCE:
+⚠ KRITIS — R-12 + R-18 + R-22 COMPLIANCE:
   - HANYA entries dengan status='ready' (3-field: ngoko+krama+arti lengkap) di-upload.
     Status='ready' = USER EXPLICIT APPROVE via TUI (save_kamus set 'ready' saat user
     save entry dengan 3-field lengkap, R-12 implicit approval).
@@ -99,7 +99,7 @@ def collect_ready_entries(data):
         # Build row (hanya kolom yang ada di DB)
         ki = (entry.get("krama_inggil") or "").strip()
         register = (entry.get("register") or "umum").strip()
-        sumber = (entry.get("sumber") or "kamus-jawa-draft.json v2.3 (R-20)").strip()
+        sumber = (entry.get("sumber") or "kamus-jawa-draft.json (R-22)").strip()
         row = {
             "ngoko": ngoko,
             "aksara": entry.get("aksara", ""),
@@ -164,7 +164,7 @@ def confirm_upload(ready_entries, stats, url):
     print("     - Script akan INSERT row baru ke table kamus di Supabase.")
     print("     - TIDAK ada undo. Kalau upload duplikat, harus hapus manual di Supabase Table Editor.")
     print("     - Pastikan kamu sudah validasi entries INI sebelum upload (R-12).")
-    print("     - Build script DISABLED (R-20), jangan rebuild dari raw.")
+    print("     - R-22: SEMUA raw + parser DIHAPUS, jangan rebuild dari raw (sampah parsing tolol).")
     print()
     print("  Ketik 'y' untuk konfirmasi upload, atau apapun untuk batal.")
     answer = input("  > ").strip().lower()
@@ -225,7 +225,7 @@ def do_upload(ready_entries, url, key):
 def main():
     load_env_file()
 
-    # R-20: kamus-jawa-draft.json = SATU-SATUNYA rujukan.
+    # R-22: kamus-jawa-draft.json = SATU-SATUNYA sumber (NETRAL).
     kamus_path = Path.home() / "Dubbing" / "kamus-jawa-draft.json"
 
     url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
@@ -248,8 +248,8 @@ def main():
 
     if not kamus_path.exists():
         print(f"\n  ❌ Kamus JSON tidak ditemukan: {kamus_path}")
-        print(f"     R-20: kamus-jawa-draft.json = rujukan tunggal.")
-        print(f"     Download: curl -L -o ~/Dubbing/kamus-jawa-draft.json \"https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?v=23\"")
+        print(f"     R-22: kamus-jawa-draft.json = satu-satunya sumber (NETRAL).")
+        print(f"     Download: curl -L -o ~/Dubbing/kamus-jawa-draft.json \"https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?v=26\"")
         input("\n  Tekan Enter...")
         sys.exit(1)
 

@@ -44,11 +44,10 @@ except ImportError:
     print('\n❌ pip3 install questionary')
     sys.exit(1)
 
-# Kamus JSON path — R-20: kamus-jawa-draft.json = SATU-SATUNYA rujukan.
+# Kamus JSON path — R-22: kamus-jawa-draft.json = SATU-SATUNYA sumber (NETRAL).
 # Schema konsep v6.1: {entry_id, word (R-21 netral), ngoko, krama, krama_inggil (R-17 kosong),
 #   arti, keterangan, aksara, register, sumber, is_lemma, source_count, status}
-# Raw files (kamus-jawa-full.json, lampiran-raw.json, dll) = ARSIP, BUKAN rujukan lagi.
-# Build script (build-kamus-bersih.py.DISABLED) JANGAN dijalankan — parser tolol merusak data (R-19).
+# R-22: SEMUA raw files + parser scripts DIHAPUS. JANGAN merujuk raw (sampah parsing AI tolol).
 # User fallback kalau nemu kata belum dikenali: https://kesakata.kemdikbud.go.id
 KAMUS_PATH = Path.home() / 'Dubbing' / 'kamus-jawa-draft.json'
 
@@ -97,9 +96,9 @@ SUPABASE_KEY = os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY', '')
 
 
 def get_kamus_path():
-    """Cari kamus JSON di ~/Dubbing/kamus-jawa-draft.json (R-20: rujukan tunggal).
+    """Cari kamus JSON di ~/Dubbing/kamus-jawa-draft.json (R-22: sumber tunggal NETRAL).
 
-    R-20 compliance: JANGAN fallback ke kamus-jawa-full.json (legacy, raw arsip).
+    R-22 compliance: SEMUA raw files DIHAPUS. Hanya kamus-jawa-draft.json.
     Kalau draft.json tidak ada, return None → load_kamus() tampilkan curl command.
     """
     if KAMUS_PATH.exists():
@@ -108,10 +107,10 @@ def get_kamus_path():
 
 
 def load_kamus():
-    """Load kamus-jawa-draft.json (R-20: rujukan tunggal)."""
+    """Load kamus-jawa-draft.json (R-22: sumber tunggal NETRAL)."""
     if not KAMUS_PATH.exists():
         print(f'\n❌ Kamus JSON tidak ditemukan: {KAMUS_PATH}')
-        print(f'\n   R-20: kamus-jawa-draft.json = satu-satunya rujukan.')
+        print(f'\n   R-22: kamus-jawa-draft.json = satu-satunya sumber (NETRAL).')
         print(f'\n   Download:')
         print(f'   curl -L -o ~/Dubbing/kamus-jawa-draft.json \\')
         print(f'     "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?v=23"')
@@ -130,15 +129,15 @@ def save_kamus(data):
     SELALU recompute status setiap save (jangan skip yang sudah punya status).
     User edit arti → status harus recompute dari draft → ready.
 
-    entry_id: dipertahankan dari build-kamus-bersih (urut alfabetis).
-    Kalau ada entry yang di-delete (via merge), re-number entry_id 1..N supaya tetap konsisten.
+    entry_id: urut posisi list (1-indexed). Kalau ada entry di-delete (via merge),
+    re-number entry_id 1..N supaya tetap konsisten.
     """
     for w in data['words']:
         ngoko = (w.get('ngoko') or '').strip()
         krama = (w.get('krama') or '').strip()
         arti = (w.get('arti') or '').strip()
         w['status'] = 'ready' if (ngoko and krama and arti) else 'draft'
-    # Re-number entry_id (urut posisi list = urut alfabetis dari build-kamus-bersih)
+    # Re-number entry_id (urut posisi list)
     for i, w in enumerate(data['words'], 1):
         w['entry_id'] = i
     path = get_kamus_path()
@@ -1245,7 +1244,7 @@ def main():
     status_ready = sum(1 for w in data['words'] if w.get('status') == 'ready')
     # R-12: 'user_approved' field TIDAK ADA lagi. Approval = status='ready'
     # (set oleh save_kamus saat user save entry dengan 3-field lengkap).
-    # Upload script pakai status='ready' sebagai proxy approval (R-12 + R-20).
+    # Upload script pakai status='ready' sebagai proxy approval (R-12 + R-22).
     netral_count = sum(
         1 for w in data['words']
         if (w.get('word') or '').strip()
