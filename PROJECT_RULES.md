@@ -181,6 +181,26 @@ Workflow:
 
 Jangan pernah: ucapkan note → tutup sesi → harap ingat di sesi berikutnya. Itu gagal.
 
+### R-16 — Ejaan Jawa: diakritik é/è wajib, schwa polos "e"
+
+Jawa modern pakai 3 diakritik untuk vokal "e":
+- **é** = /e/ close-mid (kayak "e" di "kayu"). Contoh: `séket` (50), `séwu` (1000), `limangéwu` (5000), `éka` (Sanskrit 1), akhiran `wé` di `sèlawé`.
+- **è** = /ɛ/ open-mid (kayak "e" di "lemari"). Contoh: awalan `sè` di `sèlawé` (25).
+- **ê** = /ə/ schwa (kayak "e" di "telu"). **Jawa modern tulis polos "e" TANPA diakritik**. Contoh: `telu`, `enem`, `sepuluh`, `sewelas`, `sedasa`, `sekawan`, `setunggal`, `sewidak`, `selikur`, `ewu`, `welas`.
+
+Aturan praktis audit angka:
+1. Sanskrit loan yang masih /e/ close-mid → wajib **é** (mis. `eka` → `éka`).
+2. Kata native Jawa dengan schwa → polos "e", JANGAN tambah diakritik (mis. `telu`, `enem`, `sepuluh`).
+3. Wiktionary baku: `séket` (50), `séwu` (1000), `sèlawé` (25), `limangéwu` (5000) — sudah pakai diakritik benar di angka-raw.json v6.1+.
+
+Krama-only words (JANGAN taruh di ngoko):
+`éka, dwi, hastha, asta, catur, ponco, panca, sad, sapta, tri, nawa, nowo, songo, doso, yuta, sékawan`
+
+Ngoko words (JANGAN taruh di krama, KECUALI yang betul dipakai di dua register):
+`papat, papat, lima, enem, pitu, wolu, sanga` — sanga & wolong dipakai di dua register.
+
+Verifikasi per angka WAJIB cek isi data (R-12), bukan asumsi dari pola komposisi AI-generated. Setiap angka punya potensi anomali (mis. `séket` (50), `sewidak` (60) = pengecualian komposisi).
+
 ---
 
 ## Catatan untuk AI

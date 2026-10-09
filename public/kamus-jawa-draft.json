@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "version": "2.0",
+    "version": "2.1",
     "description": "Kamus Jawa komprehensif — group by konsep, gabung sinonim",
     "sources": [
       "jv.wiktionary.org (44,585 entries, raw preserved)",
@@ -36,7 +36,8 @@
       "3. Yang belum lengkap (arti/krama) = PR bersama, isi bertahap",
       "4. Target: 2.000 entries dengan 3-field lengkap dalam 1 tahun (50/minggu)",
       "5. Upload yang lengkap ke Supabase (DB = ground of truth)"
-    ]
+    ],
+    "last_fix": "fix-draft-angka-ejaan.py: eka→éka, songo dari ngoko→hapus, Nol→nol"
   },
   "words": [
     {
@@ -506492,7 +506493,7 @@
       "entry_id": 38118
     },
     {
-      "ngoko": "sanga, songo",
+      "ngoko": "sanga",
       "krama": "sanga, nowo, songo, nawa",
       "krama_inggil": "",
       "arti": "sembilan",
@@ -523450,7 +523451,7 @@
     },
     {
       "ngoko": "siji",
-      "krama": "satunggal, setunggal, eka, setunggil",
+      "krama": "satunggal, setunggal, éka, setunggil",
       "krama_inggil": "",
       "arti": "satu",
       "keterangan": "wilangan 1 | siji. | {{ngoko}} [[satu]]\n{{malang}} [[satu]] | angka 1 | siji.",

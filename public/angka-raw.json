@@ -1,19 +1,20 @@
 {
   "metadata": {
-    "version": "6.0",
+    "version": "6.1",
     "source": "id.wiktionary.org/wiki/Lampiran:Nama_angka_dalam_bahasa_Jawa (FULL scrape semua section) + sinonim Mendeley/Lampiran kamus + kawi",
-    "entries": 1009
+    "entries": 1009,
+    "last_fix": "fix-angka-ejaan.py: eka→éka, Nol→nol, songo dari ngoko→hapus"
   },
   "words": [
     {
       "ngoko": "",
-      "krama": "Nol",
+      "krama": "nol",
       "arti": "nol",
       "keterangan": "angka 0"
     },
     {
       "ngoko": "siji",
-      "krama": "setunggal, eka",
+      "krama": "setunggal, éka",
       "arti": "satu",
       "keterangan": "angka 1"
     },
@@ -60,7 +61,7 @@
       "keterangan": "angka 8"
     },
     {
-      "ngoko": "sanga, songo",
+      "ngoko": "sanga",
       "krama": "sanga, nowo, songo, nawa",
       "arti": "sembilan",
       "keterangan": "angka 9. Wiktionary ngoko: sanga+songo. nowo/songo=krama (Lampiran kamus). nawa=kawi. sanga=ngoko DAN krama (sama di kedua register)"
