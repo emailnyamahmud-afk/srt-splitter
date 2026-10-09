@@ -44,12 +44,13 @@ except ImportError:
     print('\n❌ pip3 install questionary')
     sys.exit(1)
 
-# Kamus JSON path — sekarang pakai kamus-jawa-draft.json (group by konsep, 43.109 entri, register umum)
-# Schema konsep: {entry_id, ngoko, krama, krama_inggil, arti, keterangan, aksara, register, sumber, is_lemma, lemma_words, source_count}
-# Source raw dipertahankan: kamus-jawa-full.json (44.585) + kamus-jawa-lemma-raw.json (2.159) — JANGAN DIHAPUS
-# "bersih" = ambigu, ganti ke "draft" karena masih banyak kosong. User isi bertahap, upload yang ready ke Supabase.
-KAMUS_FULL = Path.home() / 'Dubbing' / 'kamus-jawa-draft.json'
-KAMUS_LEGACY = Path.home() / 'Dubbing' / 'kamus-jawa-full.json'  # fallback kalau draft.json belum didownload
+# Kamus JSON path — R-20: kamus-jawa-draft.json = SATU-SATUNYA rujukan.
+# Schema konsep v6.1: {entry_id, word (R-21 netral), ngoko, krama, krama_inggil (R-17 kosong),
+#   arti, keterangan, aksara, register, sumber, is_lemma, source_count, status}
+# Raw files (kamus-jawa-full.json, lampiran-raw.json, dll) = ARSIP, BUKAN rujukan lagi.
+# Build script (build-kamus-bersih.py.DISABLED) JANGAN dijalankan — parser tolol merusak data (R-19).
+# User fallback kalau nemu kata belum dikenali: https://kesakata.kemdikbud.go.id
+KAMUS_PATH = Path.home() / 'Dubbing' / 'kamus-jawa-draft.json'
 
 # .env file di ~/Dubbing/ — user simpan Supabase URL + anon key di sini
 # Format .env:
@@ -96,30 +97,26 @@ SUPABASE_KEY = os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY', '')
 
 
 def get_kamus_path():
-    """Cari kamus JSON di ~/Dubbing/ — prefer kamus-jawa-draft.json, fallback ke kamus-jawa-full.json."""
-    if KAMUS_FULL.exists():
-        return KAMUS_FULL
-    if KAMUS_LEGACY.exists():
-        print(f'  ⚠ {KAMUS_FULL.name} tidak ditemukan, pakai legacy: {KAMUS_LEGACY.name}')
-        print(f'  💡 Download kamus-jawa-draft.json (43.109 konsep, group by konsep, register umum):')
-        print(f'     curl -L -o ~/Dubbing/kamus-jawa-draft.json \\')
-        print(f'       "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?v=1"')
-        print()
-        return KAMUS_LEGACY
+    """Cari kamus JSON di ~/Dubbing/kamus-jawa-draft.json (R-20: rujukan tunggal).
+
+    R-20 compliance: JANGAN fallback ke kamus-jawa-full.json (legacy, raw arsip).
+    Kalau draft.json tidak ada, return None → load_kamus() tampilkan curl command.
+    """
+    if KAMUS_PATH.exists():
+        return KAMUS_PATH
     return None
 
 
 def load_kamus():
-    path = get_kamus_path()
-    if not path:
-        print(f'\n❌ Kamus JSON tidak ada di:')
-        print(f'   {KAMUS_FULL}')
-        print(f'   {KAMUS_LEGACY}')
-        print(f'\n   Download kamus-jawa-draft.json (43.109 konsep, RECOMMEND):')
+    """Load kamus-jawa-draft.json (R-20: rujukan tunggal)."""
+    if not KAMUS_PATH.exists():
+        print(f'\n❌ Kamus JSON tidak ditemukan: {KAMUS_PATH}')
+        print(f'\n   R-20: kamus-jawa-draft.json = satu-satunya rujukan.')
+        print(f'\n   Download:')
         print(f'   curl -L -o ~/Dubbing/kamus-jawa-draft.json \\')
-        print(f'     "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?v=1"')
+        print(f'     "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?v=23"')
         return None
-    with open(path, 'r', encoding='utf-8') as f:
+    with open(KAMUS_PATH, 'r', encoding='utf-8') as f:
         return json.load(f)
 
 

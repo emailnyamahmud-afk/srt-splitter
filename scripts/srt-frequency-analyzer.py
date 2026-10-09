@@ -333,8 +333,8 @@ Contoh:
   python3 srt-frequency-analyzer.py
   python3 srt-frequency-analyzer.py ~/Dubbing/S1-jw.srt
 
-Note: Kamus di-fetch dari Supabase DB (yang user upload via kamus-tui.py).
-      Bukan dari kamus-jawa-full.json lokal (itu cuma working draft untuk TUI edit).
+Note: Kamus di-fetch dari Supabase DB (yang user upload via kamus-tui.py + upload-supabase.py).
+      Bukan dari kamus-jawa-draft.json lokal (itu cuma working draft untuk TUI edit, R-20).
         """,
     )
     parser.add_argument('srt', nargs='?', default=str(DEFAULT_SRT),

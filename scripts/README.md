@@ -228,12 +228,14 @@ python3 srt-frequency-analyzer.py ~/Dubbing/S1-jw.srt
 # User copy list → paste di kamus-tui.py → search + add entry
 ```
 
-### `parse-wiktionary-jv.py` — Parser Wiktionary XML
+### `parse-wiktionary-jv.py` — Parser Wiktionary XML (R-20: ARSIP, bukan rujukan)
 
 ```bash
 python3 scripts/parse-wiktionary-jv.py
 # Input: jv.wiktionary XML dump → Output: kamus-jawa-full.json (44.585 entries)
 # Parser v5: register tag + krama_inggil + xref
+# ⚠ R-20: Output ini = ARSIP raw, BUKAN rujukan. Jangan rebuild kamus-draft.json dari sini.
+#   Build script (build-kamus-bersih.py.DISABLED) sudah di-disable — parser tolol merusak data.
 ```
 
 ### `scrape-lampiran-kamus.py` — Scraper Lampiran Kamus

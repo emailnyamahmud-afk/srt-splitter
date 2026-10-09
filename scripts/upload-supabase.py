@@ -51,11 +51,9 @@ def load_env_file():
 def main():
     load_env_file()
 
-    # Prefer kamus-jawa-draft.json (v3, group by konsep, register umum)
-    # Fallback ke kamus-jawa-full.json (legacy, sebelum Phase 2.3 netral)
-    kamus_draft = Path.home() / "Dubbing" / "kamus-jawa-draft.json"
-    kamus_legacy = Path.home() / "Dubbing" / "kamus-jawa-full.json"
-    kamus_path = kamus_draft if kamus_draft.exists() else kamus_legacy
+    # R-20: kamus-jawa-draft.json = SATU-SATUNYA rujukan.
+    # JANGAN fallback ke kamus-jawa-full.json (legacy, raw arsip, BUKAN rujukan).
+    kamus_path = Path.home() / "Dubbing" / "kamus-jawa-draft.json"
 
     url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
     key = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY", "")

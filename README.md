@@ -158,12 +158,9 @@ curl -L -o audit-suspects.json \
   "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/audit-suspects.json?v=2"
 ```
 
-Backup compressed (legacy, kalau perlu):
-```bash
-curl -L -o kamus-jawa-full.json.gz \
-  https://github.com/emailnyamahmud-afk/srt-splitter/raw/main/public/kamus-jawa-full.json.gz
-gunzip kamus-jawa-full.json.gz  # 11MB uncompressed
-```
+> ⚠ **R-20: kamus-jawa-full.json + .gz DIHAPUS dari repo.**
+> Raw files (kamus-jawa-full.json 12MB, lampiran-raw.json, dll) tetap ada di `public/` sebagai ARSIP lokal AI sandbox, TAPI **tidak di-commit ke GitHub** dan **bukan rujukan lagi**. Build script (build-kamus-bersih.py.DISABLED) sudah di-disable.
+> User fallback kalau nemu kata belum dikenali di kamus-draft: cari manual di https://kesakata.kemdikbud.go.id.
 
 ### 3. Python Lokal (untuk Demucs + Mix)
 
@@ -334,7 +331,6 @@ srt-splitter/
 │   └── health.js                        # Health check
 └── public/                              # Static assets (user download via curl)
     ├── kamus-jawa-draft.json            # Kamus v2.3 (17MB, AKTIF — rujukan tunggal R-20)
-    ├── kamus-jawa-full.json.gz           # Backup compressed (1.5MB)
     ├── angka-raw.json                    # Angka 1-1000 (172KB, v6.1 ejaan fix)
     ├── dasanama-raw.csv                  # Sinonim Jawa (48KB)
     ├── kamus-jawa-mendeley-raw.json      # Mendeley dataset (148KB, krama+kramainggil)

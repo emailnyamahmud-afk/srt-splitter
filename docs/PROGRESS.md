@@ -250,10 +250,15 @@ Dokumen ini catatan status project untuk AI / developer next time baca. Update s
 - Parser: `scripts/parse-wiktionary-jv.py` v5 (343 lines)
 
 **6. Kamus JSON di GitHub** (commit `4972137`)
-- public/kamus-jawa-full.json (11MB, 44.585 entri) — TRACK di git
-- public/kamus-jawa-full.json.gz (1.3MB compressed) — download cepat
+- public/kamus-jawa-full.json (11MB, 44.585 entri) — TRACK di git (kemudian DIHAPUS R-20)
+- public/kamus-jawa-full.json.gz (1.3MB compressed) — download cepat (kemudian DIHAPUS R-20)
 - 86MB wiktionary XML → UNTRACK (user re-download dari Wiktionary kalau butuh)
 - User di MacBook bisa download kamus dari GitHub, edit di VSCode, upload ke Supabase
+
+**Update R-20 (9 Okt 2026)**: kamus-jawa-full.json + .gz DIHAPUS dari GitHub.
+Alasan: parser tolol merusak data, kamus-draft.json = rujukan tunggal.
+Raw files tetap sebagai ARSIP lokal AI sandbox, bukan rujukan.
+User fallback: https://kesakata.kemdikbud.go.id (kamus resmi Kemendikbud).
 
 ---
 
@@ -320,22 +325,32 @@ Fase 2: mix-audio-dub.py --sfx-wav → mp4-id-final.mp4 (7 detik, 0 DTS warnings
 ### Files di GitHub
 | File | Size | Status |
 |---|---|---|
-| `public/kamus-jawa-full.json` | 11MB | TRACK di git |
-| `public/kamus-jawa-full.json.gz` | 1.3MB | TRACK di git (download cepat) |
+| `public/kamus-jawa-draft.json` | 17MB | TRACK di git (R-20: rujukan tunggal) |
+| `public/angka-raw.json` | 172KB | TRACK di git (angka 1-1000, v6.1) |
+| `public/dasanama-raw.csv` | 48KB | TRACK di git (sinonim Jawa) |
+| `public/kamus-jawa-mendeley-raw.json` | 148KB | TRACK di git (Mendeley krama+kramainggil) |
+| `public/lampiran-raw.json` | 436KB | TRACK di git (Lampiran Kamus Jawa-Indonesia) |
+| `public/lampiran-angka-raw.json` | 8KB | TRACK di git (Lampiran Nama angka) |
+| `public/kamus-jawa-new-lemma.json` | 208KB | TRACK di git (id.wiktionary jv:Lema) |
+| `public/audit-suspects.json` | 88KB | TRACK di git (R-19 suspect entries) |
+| ~~`public/kamus-jawa-full.json`~~ | 12MB | DIHAPUS R-20 (LEGACY raw, BUKAN rujukan) |
+| ~~`public/kamus-jawa-full.json.gz`~~ | 1.5MB | DIHAPUS R-20 (LEGACY backup, BUKAN rujukan) |
 
-### Filosofi kamus
+### Filosofi kamus (R-20, 9 Okt 2026)
 - **Supabase DB = ground of truth** (yang user upload, mulai dari 2 entries)
-- **Kamus JSON lokal 44.585 entries = working draft** di MacBook (untuk TUI edit)
+- **kamus-jawa-draft.json = satu-satunya rujukan lokal** (45.021 entries, v2.3)
+- **Raw files (kamus-jawa-full.json, lampiran-raw.json, dll) = ARSIP**, BUKAN rujukan lagi
+- **Build script DISABLED** — parser tolol merusak data (R-19), JANGAN rebuild dari raw
 - **Web app + analyzer** pakai Supabase, bukan JSON lokal
 - **Web app READ-ONLY** untuk kamus (TIDAK edit dari UI) — editing via TUI lokal
 - **Validasi level 2** = user edit langsung di DB Supabase (Table Editor) kalau ada keanehan
+- **User fallback**: https://kesakata.kemdikbud.go.id (kamus resmi Kemendikbud) untuk kata belum dikenali
 
-### Workflow user (MacBook)
-1. Download `public/kamus-jawa-full.json.gz` dari GitHub (1.3MB)
-2. Extract: `gunzip kamus-jawa-full.json.gz` → 11MB JSON
-3. Edit di `kamus-tui.py` (cari entry, isi krama + arti)
-4. Upload ke Supabase (menu ☁ Upload, hanya yang ngoko+krama+arti lengkap)
-5. Web app load dari Supabase → bisa convert cue (Krama/Ngoko)
+### Workflow user (MacBook) — R-20
+1. Download `public/kamus-jawa-draft.json` dari GitHub (17MB, R-20: rujukan tunggal)
+2. Edit di `kamus-tui.py` (cari entry, isi ngoko/krama/arti — 2 dari 3 → paired)
+3. Upload ke Supabase (menu ☁ Upload, hanya yang user_approved=True — R-12)
+4. Web app load dari Supabase → bisa convert cue (Krama/Ngoko)
 
 ---
 
@@ -376,8 +391,9 @@ Source code download
 ## 📁 File Path Conventions
 
 User MacBook folder: `~/Dubbing/`
-- `~/Dubbing/kamus-jawa-full.json` — Kamus JSON 44.585 entries (working draft)
-- `~/Dubbing/kamus-tui.py` — TUI editor kamus v2
+- `~/Dubbing/kamus-jawa-draft.json` — Kamus JSON v2.3 (45.021 entries, R-20: rujukan tunggal)
+- `~/Dubbing/kamus-tui.py` — TUI editor kamus v2.3 (Phase 1-6 refactor)
+- `~/Dubbing/upload-supabase.py` — Upload script (Phase 5, file terpisah)
 - `~/Dubbing/srt-frequency-analyzer.py` — Analyzer SRT (pakai Supabase)
 - `~/Dubbing/.env` — Supabase credentials (URL + anon key)
 - `~/Dubbing/srt-freq-report.txt` — Output analyzer (top unknown words)
