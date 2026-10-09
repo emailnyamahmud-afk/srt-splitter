@@ -1,30 +1,29 @@
-Build Kamus Bersih Report
-==================================================
+Build Kamus Bersih v2 Report
+============================================================
 
-Input:
-  kamus-jawa-full.json       :   44585 entries
-  kamus-jawa-new-lemma.json   :     859 entries
-  Total raw                  :   45444 entries
+Source (JANGAN DIHAPUS, tetap utuh):
+  kamus-jawa-full.json        :  44,585 entries (jv.wiktionary.org)
+  kamus-jawa-lemma-raw.json   :   2,159 entries (id.wiktionary.org jv:Lema)
 
 Output:
-  kamus-jawa-bersih.json      :      19 entries (3-field lengkap)
-    dengan aksara             :       0
-    dengan keterangan         :      19
-  kamus-jawa-draft.json       :     782 entries (krama kosong)
-    dengan aksara             :       4
-    dengan keterangan         :     782
-  Skipped (gak punya ngoko/arti):   44643
+  kamus-jawa-bersih.json      :  43,109 konsep (group by konsep + gabung sinonim)
 
-Schema bersih (sesuai user spec 9 Okt 2026):
-  ngoko      = sinonim comma-separated (e.g. 'aku, nyong, inyong')
-  krama      = sinonim comma-separated (e.g. 'kula, dalem, abdi')
-  arti       = sinonim Indonesia comma-separated (e.g. 'aku, saya, gue, gua')
-  keterangan = asli Wiktionary Jawa, dipertahankan
-  aksara     = aksara Jawa (bonus, opsional)
-  sumber     = sumber data
+Stats:
+  total_konsep             :  43,109
+  with_krama               :   1,881
+  with_arti                :   2,049
+  with_keterangan          :  42,655
+  with_aksara              :  42,151
+  is_lemma                 :   2,158
+  ready_3_field            :     279
+  draft_2_field            :   1,768
 
 Workflow:
-  1. Raw (full + lemma) → build-kamus-bersih.py → bersih + draft
-  2. User isi krama di draft via kamus-tui.py → pindah ke bersih
-  3. Bersih → upload ke Supabase (DB = ground of truth)
-  4. Target realistis: 2.000 entries bersih dalam 1 tahun (50/minggu)
+  1. Raw preserved (full + lemma) — JANGAN DIHAPUS
+  2. Kamus bersih = 1 file komprehensif, group by konsep
+  3. Sinonim digabung comma (ngoko, krama, arti)
+  4. Keterangan Jawa asli dipertahankan (gabung '|')
+  5. Aksara Jawa digabung comma kalau beda
+  6. Yang belum lengkap = PR bersama, isi bertahap
+  7. Target: 2.000 entries 3-field lengkap dalam 1 tahun (50/minggu)
+  8. Upload yang lengkap ke Supabase (DB = ground of truth)

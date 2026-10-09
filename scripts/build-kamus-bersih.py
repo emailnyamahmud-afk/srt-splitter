@@ -1,41 +1,50 @@
 #!/usr/bin/env python3
 """
-build-kamus-bersih.py — Merge raw kamus + filter yang 3-field lengkap → kamus-jawa-bersih.json
+build-kamus-bersih.py v2 — Gabung kamus-jawa-full.json + lemma jadi 1 kamus komprehensif
 
-Tujuan:
-  Konsolidasi 2 file raw → 1 file bersih siap masuk database Supabase.
+Strategi (sesuai user 9 Okt 2026):
+  - Source JSON (full + lemma raw) JANGAN DIHAPUS — tetap utuh
+  - 1 kamus bersih komprehensif: gabung sinonim jadi 1 konsep
+  - Yang belum lengkap = PR bersama, isi bertahap
+  - 0 drop, semua data dipertahankan
 
-Input (raw):
-  1. /home/z/my-project/public/kamus-jawa-full.json (44.585 entries, dari Wiktionary XML)
-  2. /home/z/my-project/public/kamus-jawa-new-lemma.json (859 entries, dari scrape jv:Lema)
+Group by konsep (3 strategi):
+  1. Group by KRAMA: entries dengan krama sama = 1 konsep (sinonim ngoko digabung comma)
+  2. Group by NGOKO: no-krama entries dengan ngoko sama = 1 konsep (sinonim/duplikat)
+  3. (TIDAK ada orphan) — semua entries pasti punya ngoko
 
-Output:
-  1. /home/z/my-project/public/kamus-jawa-bersih.json
-     — Entries dengan 3 field wajib LENGKAP: ngoko + krama + arti (Indonesia)
-     — Plus keterangan asli (dipertahankan), aksara (bonus kalau ada)
-     — Sinonim comma-separated, dedup, trimmed
-     — Siap upload ke Supabase
-  2. /home/z/my-project/public/kamus-jawa-draft.json
-     — Entries dengan ngoko + arti (Indonesia) tapi krama kosong
-     — User isi krama manual di kamus-tui.py → pindah ke bersih
-  3. /home/z/my-project/public/kamus-jawa-bersih-report.txt
-     — Statistik merge
+  ⚠ JANGAN group by keterangan — definisi Jawa bisa generic (mis. "ikan.")
+    yang dipakai banyak entries beda konsep.
 
-Schema bersih (sesuai user spec 9 Okt 2026):
+Merge lemma dengan full:
+  - Lemma entries yang match full (by ngoko) → tambah arti Indonesia dari lemma
+  - Lemma entries baru (no match) → jadi entries baru di kamus bersih
+
+Conflict resolution:
+  - Aksara: gabung comma kalau beda (sinonim aksara)
+  - Keterangan: gabung "| " kalau beda (semua dipertahankan)
+  - Krama: ambil yang paling panjang (banyak alias)
+  - Arti: prefer dari lemma (Indonesia translation yang sudah ada)
+  - Register: krama_inggil > krama > ngoko > umum (prioritas highest register)
+
+Schema output:
   {
-    "ngoko": "aku, nyong, inyong",        # sinonim comma-separated
-    "krama": "kula, dalem, abdi",          # sinonim comma-separated
-    "arti": "aku, saya, gue, gua",         # sinonim Indonesia comma-separated
-    "keterangan": "sesulih pandarbé...",   # asli dari Wiktionary Jawa, dipertahankan
-    "aksara": "ꦲꦏꦸ",                     # bonus, kalau ada
-    "sumber": "id.wiktionary.org + scrape jv:Lema"
+    "ngoko": "ika, iki, kaé, kiyé, kuwi",     ← sinonim comma
+    "krama": "punika",                         ← sinonim comma
+    "krama_inggil": "",                        ← (kalau ada)
+    "arti": "ini, itu",                        ← Indonesia, dari lemma/isi user
+    "keterangan": "panuduh marang... | iki. | iku.",  ← gabungan Jawa asli
+    "aksara": "ꦲꦶꦏ",                          ← gabung comma kalau beda
+    "register": "ngoko",                       ← dari Wiktionary
+    "sumber": "jv.wiktionary.org + id.wiktionary.org",
+    "is_lemma": true,                          ← tag: ada di jv:Lema?
+    "lemma_words": "iki",                      ← match ke lemma mana?
+    "source_count": 7                          ← berapa entries asli yang digabung
   }
 
-Filosofi:
-  - Raw = working draft (44.585 + 859 = 45.444 entries, banyak field kosong)
-  - Bersih = siap pakai (hanya 3-field lengkap, sinonim rapi)
-  - Draft = staging area (user isi krama manual → pindah ke bersih)
-  - Supabase DB = ground of truth (user upload bertahap, target 2.000 entries)
+Output:
+  /home/z/my-project/public/kamus-jawa-bersih.json  (kamus komprehensif)
+  /home/z/my-project/public/kamus-jawa-bersih-report.txt  (statistik)
 
 Usage:
   python3 build-kamus-bersih.py
@@ -44,39 +53,33 @@ Usage:
 
 import json
 import re
-from pathlib import Path
 import argparse
+from pathlib import Path
+from collections import defaultdict
 
 # ============================================================
 # Config
 # ============================================================
 RAW_FULL = Path("/home/z/my-project/public/kamus-jawa-full.json")
-RAW_LEMMA = Path("/home/z/my-project/public/kamus-jawa-new-lemma.json")
+RAW_LEMMA = Path("/home/z/my-project/download/kamus-jawa-lemma-raw.json")
 
 OUT_BERSIH = Path("/home/z/my-project/public/kamus-jawa-bersih.json")
-OUT_DRAFT = Path("/home/z/my-project/public/kamus-jawa-draft.json")
 OUT_REPORT = Path("/home/z/my-project/public/kamus-jawa-bersih-report.txt")
 
 
 # ============================================================
-# Normalisasi sinonim
+# Helpers
 # ============================================================
 def normalize_sinonim(value):
-    """Normalize field comma-separated: split, trim, dedup, lowercase, join.
-
-    Input: "Aku, Nyong,  Inyong , Aku"
-    Output: "aku, nyong, inyong"
-    """
+    """Split, trim, dedup, lowercase, join comma."""
     if not value:
         return ""
     parts = []
     seen = set()
     for w in value.split(","):
         w = w.strip().lower()
-        # Skip empty, skip words with newline (multi-line leak dari definisi)
         if not w or "\n" in w or "|" in w or "[" in w or "{" in w:
             continue
-        # Skip jika ada angka atau karakter aneh (artifact dari parser)
         if w in seen:
             continue
         seen.add(w)
@@ -84,97 +87,336 @@ def normalize_sinonim(value):
     return ", ".join(parts)
 
 
-def clean_keterangan(value):
-    """Clean keterangan: hapus sisa template/link, trim.
-
-    Input: "{{banyumas}} terbuka lebar"
-    Output: "terbuka lebar"
-    """
+def normalize_field_keep(value):
+    """Trim + strip newline, preserve original case untuk arti/aksara/keterangan."""
     if not value:
         return ""
-    # Hapus template {{...}} sederhana (1 level)
-    v = re.sub(r"\{\{[^}]+\}\}", "", value)
-    # Hapus link [[...]] → ambil text (boleh dengan pipe)
-    v = re.sub(r"\[\[([^]|]+)\|([^]]+)\]\]", r"\2", v)
-    v = re.sub(r"\[\[([^]]+)\]\]", r"\1", v)
-    # Hapus sisa bracket aneh
-    v = re.sub(r"\[\[?", "", v)
-    v = v.strip().strip(";,. ").replace("  ", " ")
-    # Trim per baris, max 10 baris
-    lines = [ln.strip().strip(";,. ") for ln in v.split("\n") if ln.strip()]
-    return "\n".join(lines[:10])
+    return value.strip()
+
+
+def merge_sinonim_field(existing, new_value):
+    """Merge comma-separated sinonim dengan dedup."""
+    existing = existing or ""
+    new_value = new_value or ""
+    combined = ""
+    if existing:
+        combined += existing + ", "
+    if new_value:
+        combined += new_value
+    return normalize_sinonim(combined)
+
+
+def merge_keterangan_field(existing, new_value):
+    """Merge keterangan dengan ' | ' separator, dedup."""
+    existing = (existing or "").strip()
+    new_value = (new_value or "").strip()
+    if not existing:
+        return new_value
+    if not new_value:
+        return existing
+    # Cek kalau new_value sudah ada di existing (substring)
+    if new_value.lower() in existing.lower():
+        return existing
+    return f"{existing} | {new_value}"
+
+
+def merge_aksara_field(existing, new_value):
+    """Merge aksara comma-separated dengan dedup."""
+    return merge_sinonim_field(existing, new_value)
+
+
+def register_priority(register):
+    """Prioritas register: krama_inggil > krama > ngoko > kawi > umum."""
+    order = {"krama_inggil": 0, "krama": 1, "ngoko": 2, "kawi": 3, "umum": 4}
+    return order.get((register or "umum").strip(), 99)
 
 
 # ============================================================
-# Load raw
+# Load
 # ============================================================
-def load_raw(path):
-    """Load kamus JSON, return list of word entries.
-
-    Format support:
-      - {"metadata": {...}, "words": [...]} → ambil words
-      - [...] → langsung
-    """
+def load_json(path):
     if not path.exists():
         print(f"⚠ File tidak ditemukan: {path}")
-        return []
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    if isinstance(data, dict) and "words" in data:
-        return data["words"]
-    if isinstance(data, list):
-        return data
-    print(f"⚠ Format tidak dikenali di {path}: {type(data).__name__}")
-    return []
-
-
-# ============================================================
-# Build bersih entry
-# ============================================================
-def build_entry(raw):
-    """Build entry bersih dari raw. Return dict atau None kalau skip.
-
-    Rules:
-      - ngoko + arti wajib (arti = Indonesia translation)
-      - krama: kalau ada → masuk 'bersih'. Kalau kosong → masuk 'draft'
-      - keterangan + aksara dipertahankan
-    """
-    ngoko = normalize_sinonim(raw.get("ngoko", ""))
-    krama = normalize_sinonim(raw.get("krama", ""))
-    arti = normalize_sinonim(raw.get("arti", ""))
-    keterangan = clean_keterangan(raw.get("keterangan", ""))
-    aksara = raw.get("aksara", "").strip()
-    sumber = raw.get("sumber", "Wiktionary")
-
-    # Wajib: ngoko + arti (arti = Indonesia)
-    if not ngoko or not arti:
         return None
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
-    entry = {
+
+# ============================================================
+# Build konsep dari full.json
+# ============================================================
+def build_konsep_full(full_words):
+    """Group entries di full.json by konsep.
+
+    Strategy:
+      1. Group by KRAMA (lowercase) — entries dengan krama sama = 1 konsep (sinonim ngoko)
+      2. Group by NGOKO (lowercase, untuk no-krama) — entries dengan ngoko sama = 1 konsep
+         (entries no-krama dengan ngoko sama bisa sinonim atau duplikat)
+      3. Semua entries pasti masuk ke salah satu group (no orphan drop)
+
+    ⚠ JANGAN group by keterangan — definisi Jawa bisa generic (mis. "ikan.") yang
+      dipakai banyak entries beda konsep. Bikin 44 entries beda ikan jadi 1 konsep = SALAH.
+
+    Returns: list of konsep dicts
+    """
+    print(f"\n🔍 Group {len(full_words):,} entries dari full.json by konsep...")
+
+    # Build groups
+    by_krama = defaultdict(list)
+    by_ngoko_no_krama = defaultdict(list)
+
+    for i, e in enumerate(full_words):
+        krama = (e.get("krama", "") or "").strip().lower()
+        ngoko = (e.get("ngoko", "") or "").strip().lower()
+
+        if krama:
+            by_krama[krama].append(e)
+        elif ngoko:
+            by_ngoko_no_krama[ngoko].append(e)
+        # Edge case: no krama + no ngoko → skip (shouldn't happen, but safe)
+
+    print(f"  Group by krama            : {len(by_krama):,} konsep (dari {sum(len(v) for v in by_krama.values()):,} entries)")
+    print(f"  Group by ngoko (no-krama) : {len(by_ngoko_no_krama):,} konsep (dari {sum(len(v) for v in by_ngoko_no_krama.values()):,} entries)")
+
+    # Build konsep dari setiap group
+    konseps = []
+    for krama, entries in by_krama.items():
+        konsep = merge_full_entries(entries, group_by="krama")
+        konsep["sumber"] = "jv.wiktionary.org (group by krama)"
+        konseps.append(konsep)
+
+    for ngoko, entries in by_ngoko_no_krama.items():
+        konsep = merge_full_entries(entries, group_by="ngoko")
+        konsep["sumber"] = "jv.wiktionary.org (group by ngoko)"
+        konseps.append(konsep)
+
+    print(f"  Total konsep dari full: {len(konseps):,}")
+    return konseps
+
+
+def merge_full_entries(entries, group_by="krama"):
+    """Merge multiple full entries jadi 1 konsep (sinonim comma).
+
+    group_by:
+      - "krama"  : entries dengan krama sama, gabung ngoko sebagai sinonim
+      - "ngoko"  : entries dengan ngoko sama (no-krama), gabung keterangan + aksara
+    """
+    ngoko_parts = []
+    krama_parts = []
+    ki_parts = []
+    aksara_parts = []
+    keterangan_merged = ""
+    register = "umum"
+
+    for e in entries:
+        n = (e.get("ngoko", "") or "").strip()
+        k = (e.get("krama", "") or "").strip()
+        ki = (e.get("krama_inggil", "") or "").strip()
+        a = (e.get("aksara", "") or "").strip()
+        ket = (e.get("keterangan", "") or "").strip()
+        reg = (e.get("register", "") or "").strip()
+
+        if n:
+            ngoko_parts.append(n)
+        if k:
+            krama_parts.append(k)
+        if ki:
+            ki_parts.append(ki)
+        if a:
+            aksara_parts.append(a)
+        if ket:
+            keterangan_merged = merge_keterangan_field(keterangan_merged, ket)
+        if reg and register_priority(reg) < register_priority(register):
+            register = reg
+
+    # Dedup sinonim per word (split by comma dulu, supaya "ika, iki" + "ika, iku"
+    # → "ika, iki, iku" bukan "ika, iki, ika, iku")
+    ngoko_words = []
+    for p in ngoko_parts:
+        for w in p.split(","):
+            w = w.strip().lower()
+            if w and w not in ngoko_words:
+                ngoko_words.append(w)
+    ngoko = ", ".join(ngoko_words)
+
+    krama_words = []
+    for p in krama_parts:
+        for w in p.split(","):
+            w = w.strip().lower()
+            if w and w not in krama_words:
+                krama_words.append(w)
+    krama = ", ".join(krama_words)
+
+    ki_words = []
+    for p in ki_parts:
+        for w in p.split(","):
+            w = w.strip().lower()
+            if w and w not in ki_words:
+                ki_words.append(w)
+    krama_inggil = ", ".join(ki_words)
+
+    aksara_words = []
+    for p in aksara_parts:
+        for w in p.split(","):
+            w = w.strip()
+            if w and w not in aksara_words:
+                aksara_words.append(w)
+    aksara = ", ".join(aksara_words)
+
+    return {
         "ngoko": ngoko,
         "krama": krama,
-        "arti": arti,
-        "keterangan": keterangan,
+        "krama_inggil": krama_inggil,
+        "arti": "",  # belum ada Indonesia, user isi
+        "keterangan": keterangan_merged,
         "aksara": aksara,
-        "sumber": sumber,
+        "register": register,
+        "source_count": len(entries),
     }
-    return entry
+
+
+def sort_konseps(konseps):
+    """Sort alfabetis by primary ngoko, fallback ke krama kalau ngoko kosong."""
+
+    def sort_key(k):
+        n = (k.get("ngoko", "") or "").split(",")[0].strip().lower()
+        if n:
+            # Strip prefix "-" supaya "-a, -ake, aba, abab" urut natural
+            return (0, n.lstrip("-"), n)
+        # Fallback: ngoko kosong → sort by krama
+        kr = (k.get("krama", "") or "").split(",")[0].strip().lower()
+        return (1, kr.lstrip("-"), kr)
+
+    return sorted(konseps, key=sort_key)
 
 
 # ============================================================
-# Dedup bersih
+# Merge lemma entries ke konsep existing (kalau match)
 # ============================================================
-def dedup_bersih(entries):
-    """Dedup entries by (ngoko, krama, arti) tuple. Keep first."""
-    seen = set()
-    unique = []
-    for e in entries:
-        key = (e["ngoko"], e["krama"], e["arti"])
-        if key in seen:
-            continue
-        seen.add(key)
-        unique.append(e)
-    return unique
+def merge_lemma_to_konseps(konseps, lemma_words):
+    """Untuk setiap lemma entry:
+      - Cari konsep di full yang punya ngoko sama → tambah arti Indonesia dari lemma
+      - Kalau gak match → bikin konsep baru
+    """
+    print(f"\n🔗 Merge {len(lemma_words):,} lemma entries ke konsep...")
+
+    # Index konsep by primary ngoko (first word lowercase)
+    konsep_by_ngoko = defaultdict(list)
+    for i, k in enumerate(konseps):
+        ngoko_first = (k.get("ngoko", "") or "").split(",")[0].strip().lower()
+        if ngoko_first:
+            konsep_by_ngoko[ngoko_first].append(i)
+
+    matched = 0
+    new_from_lemma = 0
+    for lemma in lemma_words:
+        lemma_ngoko = (lemma.get("ngoko", "") or "").strip().lower()
+        lemma_arti = (lemma.get("arti", "") or "").strip()
+        lemma_krama = (lemma.get("krama", "") or "").strip()
+        lemma_aksara = (lemma.get("aksara", "") or "").strip()
+        lemma_ket = (lemma.get("keterangan", "") or "").strip()
+        lemma_register = (lemma.get("register", "") or "umum").strip()
+
+        # Cari konsep yang match (by first ngoko)
+        matches = konsep_by_ngoko.get(lemma_ngoko, [])
+        if matches:
+            konsep_idx = matches[0]
+            k = konseps[konsep_idx]
+
+            # Tambah arti dari lemma (Indonesia) — prioritas lemma
+            if lemma_arti and not k.get("arti"):
+                k["arti"] = lemma_arti
+
+            # Tambah krama dari lemma (kalau konsep belum punya)
+            if lemma_krama and not k.get("krama"):
+                k["krama"] = normalize_sinonim(lemma_krama)
+
+            # Tambah aksara dari lemma (gabung)
+            if lemma_aksara:
+                k["aksara"] = merge_aksara_field(k.get("aksara", ""), lemma_aksara)
+
+            # Tambah keterangan dari lemma (gabung)
+            if lemma_ket:
+                k["keterangan"] = merge_keterangan_field(k.get("keterangan", ""), lemma_ket)
+
+            # Update register kalau lemma punya prioritas lebih tinggi
+            if register_priority(lemma_register) < register_priority(k.get("register", "umum")):
+                k["register"] = lemma_register
+
+            # Tag is_lemma
+            k["is_lemma"] = True
+            k["lemma_words"] = lemma_ngoko
+            k["source_count"] = k.get("source_count", 1) + 1
+
+            matched += 1
+        else:
+            # Bikin konsep baru dari lemma
+            new_konsep = {
+                "ngoko": normalize_sinonim(lemma.get("ngoko", "")),
+                "krama": normalize_sinonim(lemma.get("krama", "")),
+                "krama_inggil": "",
+                "arti": lemma_arti,
+                "keterangan": lemma_ket,
+                "aksara": lemma_aksara,
+                "register": lemma_register,
+                "sumber": "id.wiktionary.org Kategori:jv:Lema (new)",
+                "is_lemma": True,
+                "lemma_words": lemma_ngoko,
+                "source_count": 1,
+            }
+            konseps.append(new_konsep)
+            new_from_lemma += 1
+
+    print(f"  Match & merge ke konsep existing: {matched:,}")
+    print(f"  New konsep dari lemma (no match): {new_from_lemma:,}")
+    return konseps
+
+
+# ============================================================
+# Stats + sample
+# ============================================================
+def compute_stats(konseps):
+    stats = {
+        "total_konsep": len(konseps),
+        "with_krama": sum(1 for k in konseps if (k.get("krama") or "").strip()),
+        "with_arti": sum(1 for k in konseps if (k.get("arti") or "").strip()),
+        "with_keterangan": sum(1 for k in konseps if (k.get("keterangan") or "").strip()),
+        "with_aksara": sum(1 for k in konseps if (k.get("aksara") or "").strip()),
+        "is_lemma": sum(1 for k in konseps if k.get("is_lemma")),
+        "ready_3_field": sum(
+            1 for k in konseps
+            if (k.get("ngoko") or "").strip()
+            and (k.get("krama") or "").strip()
+            and (k.get("arti") or "").strip()
+        ),
+        "draft_2_field": sum(
+            1 for k in konseps
+            if (k.get("ngoko") or "").strip()
+            and (k.get("arti") or "").strip()
+            and not (k.get("krama") or "").strip()
+        ),
+    }
+    return stats
+
+
+def print_samples(konseps, n=5):
+    """Print sample konsep untuk verifikasi."""
+    print(f"\n📋 Sample {n} konsep pertama (urut alfabetis):")
+    for k in konseps[:n]:
+        print(f"  ngoko: {k.get('ngoko', '')!r}")
+        print(f"    krama: {k.get('krama', '')!r}")
+        print(f"    arti: {k.get('arti', '')[:60]!r}")
+        print(f"    aksara: {k.get('aksara', '')!r}")
+        print(f"    register: {k.get('register', '')} | source_count: {k.get('source_count', 1)}")
+        print()
+
+    # Print top 5 konsep dengan sinonim terbanyak
+    print(f"📋 Top 5 konsep dengan sinonim terbanyak:")
+    sorted_by_count = sorted(konseps, key=lambda x: -x.get("source_count", 1))
+    for k in sorted_by_count[:5]:
+        print(f"  ngoko: {k.get('ngoko', '')!r}")
+        print(f"    krama: {k.get('krama', '')!r}")
+        print(f"    source_count: {k.get('source_count', 1)} (entries asli yang digabung)")
 
 
 # ============================================================
@@ -185,146 +427,98 @@ def main():
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
-    print("📦 Loading raw kamus...")
-    full_words = load_raw(RAW_FULL)
-    lemma_words = load_raw(RAW_LEMMA)
-    print(f"  kamus-jawa-full.json: {len(full_words)} entries")
-    print(f"  kamus-jawa-new-lemma.json: {len(lemma_words)} entries")
-    print()
+    print("📦 Loading source JSON...")
+    full = load_json(RAW_FULL)
+    lemma_raw = load_json(RAW_LEMMA)
+    if not full or not lemma_raw:
+        return
 
-    # Merge semua
-    all_raw = full_words + lemma_words
-    print(f"  Total raw: {len(all_raw)} entries")
-    print()
+    full_words = full["words"] if isinstance(full, dict) and "words" in full else full
+    lemma_words = lemma_raw if isinstance(lemma_raw, list) else lemma_raw.get("words", [])
+    print(f"  full.json: {len(full_words):,} entries (jv.wiktionary.org)")
+    print(f"  lemma-raw: {len(lemma_words):,} entries (id.wiktionary.org jv:Lema)")
 
-    # Filter
-    bersih = []
-    draft = []
-    skipped = 0
-    for raw in all_raw:
-        if not isinstance(raw, dict):
-            skipped += 1
-            continue
-        entry = build_entry(raw)
-        if entry is None:
-            skipped += 1
-            continue
-        if entry["krama"]:
-            bersih.append(entry)
-        else:
-            draft.append(entry)
-    print(f"🔍 Filter results:")
-    print(f"  Bersih (ngoko + krama + arti lengkap): {len(bersih)}")
-    print(f"  Draft (ngoko + arti, krama kosong)    : {len(draft)}")
-    print(f"  Skipped (gak punya ngoko atau arti)   : {skipped}")
-    print()
+    # Build konsep dari full
+    konseps = build_konsep_full(full_words)
 
-    # Dedup
-    bersih = dedup_bersih(bersih)
-    draft = dedup_bersih(draft)
-    print(f"  Setelah dedup:")
-    print(f"    Bersih: {len(bersih)}")
-    print(f"    Draft : {len(draft)}")
-    print()
+    # Merge lemma
+    konseps = merge_lemma_to_konseps(konseps, lemma_words)
 
-    # Stats
-    stats = {
-        "input_full": len(full_words),
-        "input_lemma": len(lemma_words),
-        "input_total": len(all_raw),
-        "bersih_count": len(bersih),
-        "draft_count": len(draft),
-        "skipped": skipped,
-        "bersih_with_aksara": sum(1 for e in bersih if e["aksara"]),
-        "bersih_with_keterangan": sum(1 for e in bersih if e["keterangan"]),
-        "draft_with_aksara": sum(1 for e in draft if e["aksara"]),
-        "draft_with_keterangan": sum(1 for e in draft if e["keterangan"]),
-    }
+    # Sort alfabetis
+    print(f"\n🔤 Sort {len(konseps):,} konsep alfabetis by ngoko pertama...")
+    konseps = sort_konseps(konseps)
 
-    # Sample
-    print("📋 Sample bersih (5 pertama):")
-    for e in bersih[:5]:
-        print(f"  ngoko={e['ngoko']!r}, krama={e['krama']!r}, arti={e['arti']!r}")
-        if e["aksara"]:
-            print(f"    aksara={e['aksara']!r}")
-    print()
-    print("📋 Sample draft (5 pertama):")
-    for e in draft[:5]:
-        print(f"  ngoko={e['ngoko']!r}, krama=(KOSONG), arti={e['arti']!r}")
+    # Compute stats
+    stats = compute_stats(konseps)
+    print(f"\n📊 Hasil:")
+    for k, v in stats.items():
+        print(f"  {k:20s}: {v:,}")
+    print_samples(konseps)
 
     if args.dry_run:
         print("\n⚠ Dry run, tidak save file")
         return
 
     # Save
-    bersih_output = {
+    output = {
         "metadata": {
-            "version": "1.0",
-            "source": "merged kamus-jawa-full.json + kamus-jawa-new-lemma.json",
-            "description": "Entries dengan 3 field wajib lengkap (ngoko + krama + arti Indonesia)",
-            "entries": len(bersih),
-            "with_aksara": stats["bersih_with_aksara"],
-            "with_keterangan": stats["bersih_with_keterangan"],
+            "version": "2.0",
+            "description": "Kamus Jawa komprehensif — group by konsep, gabung sinonim",
+            "sources": [
+                f"jv.wiktionary.org ({len(full_words):,} entries, raw preserved)",
+                f"id.wiktionary.org Kategori:jv:Lema ({len(lemma_words):,} entries, raw preserved)",
+            ],
+            "total_konsep": stats["total_konsep"],
             "schema": {
-                "ngoko": "sinonim comma-separated",
-                "krama": "sinonim comma-separated",
-                "arti": "sinonim Indonesia comma-separated",
-                "keterangan": "asli dari Wiktionary Jawa, dipertahankan",
-                "aksara": "aksara Jawa (opsional, bonus)",
-                "sumber": "sumber data entry ini",
+                "ngoko": "sinonim ngoko comma-separated",
+                "krama": "sinonim krama comma-separated",
+                "krama_inggil": "krama inggil (opsional)",
+                "arti": "terjemahan Indonesia comma-separated",
+                "keterangan": "definisi Jawa asli dari Wiktionary (gabungan, dipertahankan)",
+                "aksara": "aksara Jawa (gabung comma kalau beda)",
+                "register": "ngoko|krama|krama_inggil|kawi|umum",
+                "sumber": "sumber data konsep ini",
+                "is_lemma": "true kalau ada di jv:Lema (prioritas kerja)",
+                "lemma_words": "word di lemma yang match konsep ini",
+                "source_count": "jumlah entries asli yang digabung jadi 1 konsep",
             },
+            "stats": stats,
+            "workflow": [
+                "1. Raw (full + lemma) dipertahankan utuh — JANGAN DIHAPUS",
+                "2. Kamus bersih = group by konsep + gabung sinonim",
+                "3. Yang belum lengkap (arti/krama) = PR bersama, isi bertahap",
+                "4. Target: 2.000 entries dengan 3-field lengkap dalam 1 tahun (50/minggu)",
+                "5. Upload yang lengkap ke Supabase (DB = ground of truth)",
+            ],
         },
-        "words": bersih,
+        "words": konseps,
     }
     with open(OUT_BERSIH, "w", encoding="utf-8") as f:
-        json.dump(bersih_output, f, ensure_ascii=False, indent=2)
-    print(f"\n✓ Save bersih: {OUT_BERSIH} ({len(bersih)} entries)")
-
-    draft_output = {
-        "metadata": {
-            "version": "1.0",
-            "source": "merged kamus-jawa-full.json + kamus-jawa-new-lemma.json",
-            "description": "Entries dengan ngoko + arti Indonesia, TAPI krama masih kosong",
-            "entries": len(draft),
-            "with_aksara": stats["draft_with_aksara"],
-            "with_keterangan": stats["draft_with_keterangan"],
-            "note": "User isi krama manual di kamus-tui.py → pindah ke kamus-jawa-bersih.json",
-        },
-        "words": draft,
-    }
-    with open(OUT_DRAFT, "w", encoding="utf-8") as f:
-        json.dump(draft_output, f, ensure_ascii=False, indent=2)
-    print(f"✓ Save draft: {OUT_DRAFT} ({len(draft)} entries)")
+        json.dump(output, f, ensure_ascii=False, indent=2)
+    print(f"\n✓ Save: {OUT_BERSIH} ({len(konseps):,} konsep)")
 
     # Report
     with open(OUT_REPORT, "w", encoding="utf-8") as f:
-        f.write("Build Kamus Bersih Report\n")
-        f.write("=" * 50 + "\n\n")
-        f.write("Input:\n")
-        f.write(f"  kamus-jawa-full.json       : {stats['input_full']:>7} entries\n")
-        f.write(f"  kamus-jawa-new-lemma.json   : {stats['input_lemma']:>7} entries\n")
-        f.write(f"  Total raw                  : {stats['input_total']:>7} entries\n\n")
+        f.write("Build Kamus Bersih v2 Report\n")
+        f.write("=" * 60 + "\n\n")
+        f.write("Source (JANGAN DIHAPUS, tetap utuh):\n")
+        f.write(f"  kamus-jawa-full.json        : {len(full_words):>7,} entries (jv.wiktionary.org)\n")
+        f.write(f"  kamus-jawa-lemma-raw.json   : {len(lemma_words):>7,} entries (id.wiktionary.org jv:Lema)\n\n")
         f.write("Output:\n")
-        f.write(f"  kamus-jawa-bersih.json      : {stats['bersih_count']:>7} entries (3-field lengkap)\n")
-        f.write(f"    dengan aksara             : {stats['bersih_with_aksara']:>7}\n")
-        f.write(f"    dengan keterangan         : {stats['bersih_with_keterangan']:>7}\n")
-        f.write(f"  kamus-jawa-draft.json       : {stats['draft_count']:>7} entries (krama kosong)\n")
-        f.write(f"    dengan aksara             : {stats['draft_with_aksara']:>7}\n")
-        f.write(f"    dengan keterangan         : {stats['draft_with_keterangan']:>7}\n")
-        f.write(f"  Skipped (gak punya ngoko/arti): {stats['skipped']:>7}\n\n")
-        f.write("Schema bersih (sesuai user spec 9 Okt 2026):\n")
-        f.write("  ngoko      = sinonim comma-separated (e.g. 'aku, nyong, inyong')\n")
-        f.write("  krama      = sinonim comma-separated (e.g. 'kula, dalem, abdi')\n")
-        f.write("  arti       = sinonim Indonesia comma-separated (e.g. 'aku, saya, gue, gua')\n")
-        f.write("  keterangan = asli Wiktionary Jawa, dipertahankan\n")
-        f.write("  aksara     = aksara Jawa (bonus, opsional)\n")
-        f.write("  sumber     = sumber data\n\n")
-        f.write("Workflow:\n")
-        f.write("  1. Raw (full + lemma) → build-kamus-bersih.py → bersih + draft\n")
-        f.write("  2. User isi krama di draft via kamus-tui.py → pindah ke bersih\n")
-        f.write("  3. Bersih → upload ke Supabase (DB = ground of truth)\n")
-        f.write("  4. Target realistis: 2.000 entries bersih dalam 1 tahun (50/minggu)\n")
-    print(f"✓ Save report: {OUT_REPORT}")
+        f.write(f"  kamus-jawa-bersih.json      : {stats['total_konsep']:>7,} konsep (group by konsep + gabung sinonim)\n\n")
+        f.write("Stats:\n")
+        for k, v in stats.items():
+            f.write(f"  {k:25s}: {v:>7,}\n")
+        f.write("\nWorkflow:\n")
+        f.write("  1. Raw preserved (full + lemma) — JANGAN DIHAPUS\n")
+        f.write("  2. Kamus bersih = 1 file komprehensif, group by konsep\n")
+        f.write("  3. Sinonim digabung comma (ngoko, krama, arti)\n")
+        f.write("  4. Keterangan Jawa asli dipertahankan (gabung '|')\n")
+        f.write("  5. Aksara Jawa digabung comma kalau beda\n")
+        f.write("  6. Yang belum lengkap = PR bersama, isi bertahap\n")
+        f.write("  7. Target: 2.000 entries 3-field lengkap dalam 1 tahun (50/minggu)\n")
+        f.write("  8. Upload yang lengkap ke Supabase (DB = ground of truth)\n")
+    print(f"✓ Save: {OUT_REPORT}")
 
 
 if __name__ == "__main__":
