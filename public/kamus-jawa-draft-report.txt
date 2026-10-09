@@ -11,12 +11,12 @@ Output:
 Stats:
   total_konsep             :  43,154
   with_krama               :   2,336
-  with_arti                :   2,197
+  with_arti                :   2,082
   with_keterangan          :  42,431
   with_aksara              :  41,765
   is_lemma                 :   2,157
-  ready_3_field            :     897
-  draft_2_field            :   1,299
+  ready_3_field            :     879
+  draft_2_field            :   1,203
 
 Register: SEMUA 'umum' (jangan parse ngoko/krama dari Wiktionary — halusinasi/kesalahan parsing).
   User bisa set manual di kamus-tui.py kalau perlu.

@@ -797,9 +797,12 @@ def clean_arti(arti_raw, ngoko, krama, is_angka=False):
     # Mis. "bisa (mampu)" → "bisa" (karena "bisa" = ngoko, parentheses = context)
     # Tapi "berat (tentang pikiran)" → "berat" (drop context)
 
-    # 3. Cek LONG_DEF (>60 char): arti ensiklopedis, pindah ke keterangan
+    # 3. Cek LONG_DEF (>30 char): arti ensiklopedis, pindah ke keterangan
+    # User spec: arti harus sinonim pendek (1-2 kata Indonesia), bukan kalimat definisi
+    # Mis. 'hutan; rimba; tali pada alat penyeimbang perahu kecil' (50 char) = definisi
+    # Pindah ke keterangan, arti dikosongkan (user isi sinonim pendek manual)
     moved_to_ket = ""  # akumulasi text yang dipindah ke keterangan
-    if len(arti) > 60:
+    if len(arti) > 30:
         return "", arti, "long_def"
 
     # 3b. Cek GRAMMAR/ENSIKLOPEDIS pattern PER SEGMENT (split ;)
