@@ -1,0 +1,210 @@
+{
+  "metadata": {
+    "version": "v1.0 (jv_ngoko pure SUSPECT — 2+ sinonim = merge AI suspect)",
+    "description": "jv.wiktionary PURE dengan 2+ sinonim (comma di word/ngoko/krama/lemma_words). Rawan merge AI tolol dari sesi sebelumnya. User audit manual via TUI, R-18: tidak hapus, simpan terpisah.",
+    "sources": [
+      "jv.wiktionary.org (44,585 entries, raw preserved)",
+      "id.wiktionary.org Kategori:jv:Lema (2,159 entries, raw preserved)"
+    ],
+    "total_konsep": 45021,
+    "schema": {
+      "fields": [
+        "aksara",
+        "arti",
+        "dasanama_count",
+        "entry_id",
+        "is_angka",
+        "is_dasanama",
+        "is_lampiran",
+        "is_lemma",
+        "is_mendeley",
+        "kelas",
+        "kelas_nama",
+        "keterangan",
+        "krama",
+        "lemma_words",
+        "mendeley_id",
+        "ngoko",
+        "source_count",
+        "status",
+        "sumber",
+        "word"
+      ],
+      "version": "v2.7 (drop register + krama_inggil — R-26)",
+      "description": "Kamus 3-bahasa (Jawa ngoko + Jawa krama + Indonesia) + metadata + word NETRAL + status. Register + krama_inggil DROPPED (R-26: register 100% umum tidak informatif, krama_inggil kosong by R-17)."
+    },
+    "stats": {
+      "total_konsep": 45021,
+      "with_krama": 3493,
+      "with_arti": 4555,
+      "with_keterangan": 43593,
+      "with_aksara": 41760,
+      "is_lemma": 2120,
+      "ready_3_field": 1881,
+      "draft_2_field": 2549
+    },
+    "workflow": [
+      "1. Raw (full + lemma) dipertahankan utuh — JANGAN DIHAPUS",
+      "2. Kamus bersih = group by konsep + gabung sinonim",
+      "3. Yang belum lengkap (arti/krama) = PR bersama, isi bertahap",
+      "4. Target: 2.000 entries dengan 3-field lengkap dalam 1 tahun (50/minggu)",
+      "5. Upload yang lengkap ke Supabase (DB = ground of truth)"
+    ],
+    "last_fix": "kembalikan 39230 word = kata Jawa (netral: word=Jawa, arti=ID, ngoko+krama kosong)",
+    "source_filter": "sumber == 'jv.wiktionary.org (group by ngoko)' AND comma in word/ngoko/krama/lemma_words",
+    "total_suspect": 6,
+    "parent_file": "kamus-jawa-draft.json"
+  },
+  "words": [
+    {
+      "entry_id": 1,
+      "word": "",
+      "lemma_words": "api",
+      "ngoko": "api, beluk, uwab",
+      "krama": "",
+      "arti": "uap",
+      "keterangan": "geni; api-api éthok-éthok, samudana kaya ... | uap | kebul kukus (pedhut).; ama pari ( uler).; kokok-beluk manuk guweg; dibeluk; diundang; di; mbeluk; ménggok, minger; bali. | uap, asap | kukus (ing banyu kepanasan lsp) | uap",
+      "aksara": "ꦲꦥꦶ, ꦧꦺꦭꦸꦏ꧀, ꦲꦸꦮꦧ꧀",
+      "sumber": "jv.wiktionary.org (group by ngoko)",
+      "status": "draft",
+      "source_count": 2,
+      "is_lemma": true,
+      "is_mendeley": false,
+      "is_dasanama": false,
+      "is_angka": false,
+      "is_lampiran": false,
+      "kelas": "",
+      "kelas_nama": "",
+      "mendeley_id": "",
+      "dasanama_count": 0,
+      "_suspect_fields": [
+        "ngoko"
+      ]
+    },
+    {
+      "entry_id": 2,
+      "word": "",
+      "lemma_words": "asep",
+      "ngoko": "asep, kebul",
+      "krama": "",
+      "arti": "asap",
+      "keterangan": "kukus, uwab; kebul. | asap | kukusing barang sing kobong | asap",
+      "aksara": "ꦲꦱꦼꦥ꧀, ꦏꦼꦧꦸꦭ꧀",
+      "sumber": "jv.wiktionary.org (group by ngoko)",
+      "status": "draft",
+      "source_count": 2,
+      "is_lemma": true,
+      "is_mendeley": false,
+      "is_dasanama": false,
+      "is_angka": false,
+      "is_lampiran": false,
+      "kelas": "",
+      "kelas_nama": "",
+      "mendeley_id": "",
+      "dasanama_count": 0,
+      "_suspect_fields": [
+        "ngoko"
+      ]
+    },
+    {
+      "entry_id": 3,
+      "word": "",
+      "lemma_words": "hyang suksma",
+      "ngoko": "hyang suksma, hyang widi",
+      "krama": "",
+      "arti": "allah; tuhan",
+      "keterangan": "Allah | Allah; Tuhan | Déwa kang linuwih (Allah) | Allah; Tuhan",
+      "aksara": "ꦲꦾꦁꦱꦸꦏ꧀ꦱ꧀ꦩ, ꦲꦾꦁꦮꦶꦢꦶ",
+      "sumber": "jv.wiktionary.org (group by ngoko)",
+      "status": "draft",
+      "source_count": 2,
+      "is_lemma": true,
+      "is_mendeley": false,
+      "is_dasanama": false,
+      "is_angka": false,
+      "is_lampiran": false,
+      "kelas": "",
+      "kelas_nama": "",
+      "mendeley_id": "",
+      "dasanama_count": 0,
+      "_suspect_fields": [
+        "ngoko"
+      ]
+    },
+    {
+      "entry_id": 4,
+      "word": "",
+      "lemma_words": "medhut",
+      "ngoko": "medhut, pedhut",
+      "krama": "",
+      "arti": "kabut",
+      "keterangan": "nglimputi pedhut; adoh banget; pedhut. | kabut | uwabing banyu kang katon kandel kaya méga; kasusahan | kabut",
+      "aksara": "ꦩꦼꦝꦸꦠ꧀, ꦥꦼꦝꦸꦠ꧀",
+      "sumber": "jv.wiktionary.org (group by ngoko)",
+      "status": "draft",
+      "source_count": 2,
+      "is_lemma": true,
+      "is_mendeley": false,
+      "is_dasanama": false,
+      "is_angka": false,
+      "is_lampiran": false,
+      "kelas": "",
+      "kelas_nama": "",
+      "mendeley_id": "",
+      "dasanama_count": 0,
+      "_suspect_fields": [
+        "ngoko"
+      ]
+    },
+    {
+      "entry_id": 5,
+      "word": "",
+      "lemma_words": "ranu",
+      "ngoko": "ranu, tlaga",
+      "krama": "",
+      "arti": "danau",
+      "keterangan": "tlaga; banyu. | danau | talaga. | danau",
+      "aksara": "ꦫꦤꦸ, ꦠ꧀ꦭꦒ",
+      "sumber": "jv.wiktionary.org (group by ngoko)",
+      "status": "draft",
+      "source_count": 2,
+      "is_lemma": true,
+      "is_mendeley": false,
+      "is_dasanama": false,
+      "is_angka": false,
+      "is_lampiran": false,
+      "kelas": "",
+      "kelas_nama": "",
+      "mendeley_id": "",
+      "dasanama_count": 0,
+      "_suspect_fields": [
+        "ngoko"
+      ]
+    },
+    {
+      "entry_id": 6,
+      "word": "",
+      "lemma_words": "senèn",
+      "ngoko": "senèn, senen",
+      "krama": "",
+      "arti": "senin",
+      "keterangan": "dina kang kapisan. (mulai saka Senèn); (ing pétungan liya) dina kang kapindho. (mulai saka Minggu) | dina sing kapisan | Senin | sorot, cahya; éndah, kaéndahan | Senin",
+      "aksara": "ꦱꦼꦤꦺꦤ꧀, ꦱꦼꦤꦼꦤ꧀",
+      "sumber": "jv.wiktionary.org (group by ngoko)",
+      "status": "draft",
+      "source_count": 3,
+      "is_lemma": true,
+      "is_mendeley": false,
+      "is_dasanama": false,
+      "is_angka": false,
+      "is_lampiran": false,
+      "kelas": "",
+      "kelas_nama": "",
+      "mendeley_id": "",
+      "dasanama_count": 0,
+      "_suspect_fields": [
+        "ngoko"
+      ]
+    }
+  ]
+}
