@@ -75,6 +75,12 @@ KAMUS_SOURCES = {
         'desc': 'Parsed dari XML dump resmi Wikimedia (jv.wiktionary.org). 1 lemma = 1 entry, TIDAK ADA merge sinonim AI. Paling bersih, akar dari sumber.',
         'url': 'https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus_jv_wiktionary_raw.json?t=CMD_TIMESTAMP',
     },
+    'jv_integrated_mendeley': {
+        'path': Path.home() / 'Dubbing' / 'kamus_jv_wiktionary_integrated_mendeley.json',
+        'label': 'kamus_jv_wiktionary_integrated_mendeley.json (44.716 entries — jv + mendeley integrated)',
+        'desc': 'jv.wiktionary XML dump + mendeley curated dataset, integrated. 1 konsep = 1 entry (no duplikat). Sinonim comma, arti dipisah | (Indonesia | Jawa). R-18: tidak hapus, hanya merge.',
+        'url': 'https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus_jv_wiktionary_integrated_mendeley.json?t=CMD_TIMESTAMP',
+    },
 }
 
 # Default source: 'draft'. Bisa di-switch di runtime via menu "📂 Switch source JSON".
