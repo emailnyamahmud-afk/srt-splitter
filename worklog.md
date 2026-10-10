@@ -2152,3 +2152,63 @@ Stage Summary:
 - Register = label raw tolol, DROPPED PERMANEN dari JSON + TUI + upload + docs
 - User download JSON v2.7 + TUI v9 (post-R-26) + upload-supabase v3
 - Total rules: 26 (R-01 sampai R-26)
+
+---
+Task ID: kamus-mendeley-subset-multi-source-tui
+Agent: main
+Task: User mau kerja bertahap dari source PURE, mulai mendeley. Edit TUI tambah pilihan source.
+
+Work Log:
+- User: 'json rusak parah, parsing dan merge AI HALU PARAH, BANYAK KATA TERCAMPUR
+  DALAM SATU ENTRY TAPI SANGAT BEDA MAKNA. GIMANA KALAU KEMBALI KE SUMBER DAN PARSING
+  ULANG. SANGAT TOLOL.'
+- AI ingatkan R-22 (GIGO): parsing ulang dari raw = sampah lagi
+- User: 'DILARANG PAKE SCRIP, SCRIP = SUMBER MASALAH PARSING. AI SEMBARANGAN PARSING
+  TANPA TAU KONTEKS, TANPA BACA KETERANGAN.'
+- User paham, kasih solusi: 'SUDAH TERLANJUR, BACKUP SAJA KAMUS DRAFT JSON. ITU BANYAK
+  SUMBER, BANYAK SUMBER = BANYAK SAMPAH. SEKARANG KERJAKAN BERTAHAP, BIKIN
+  kamus_lemma.json = kita kerjakan ini dulu, agar tak tercampur dengan data sampah
+  dari sumber lain.'
+- Backup kamus-jawa-draft.json → .bak (di ~/Dubbing/, gitignored)
+- Bikin kamus_lemma.json (1.816 entries is_lemma=True) — TAPI 42.6% sudah merged dengan
+  sumber lain (mendeley/dasanama/lampiran/angka). Lemma bukan source PURE
+- User: 'lema sudah tercampur parsing tolol merge AI TOLOL. kerjakan is_mendeley saja dulu'
+- Cek distribusi sumber di is_mendeley:
+  - 814 entries is_mendeley=True total
+  - 145 PURE (sumber = 'data.mendeley.com/datasets/y3hstv4bfn (new)' exact, no merge)
+  - 669 merged dengan wiktionary/lampiran/dasanama/lemma/angka
+- Bikin kamus_mendeley.json (145 PURE, 100% paired 3-field, 0.08 MB)
+- User: 'uplod kamus_mendeley.json di github. edit agar kamus tui ada pilihan source dari
+  json is_mendeley. user akan edit manual. masalah kelengkapan, justru is_mendeley yg
+  paling memenuhi standar minimal = ada indo, ngoko dan krama. tapi json dibuat standar
+  ada keterangan = agar bisa nerima dari source lain, minimal user akan bersihin,
+  kurasi manual is_mendeley'
+
+- Edit kamus-tui.py tambah multi-source switch:
+  - Variable KAMUS_SOURCES dict: 'draft' (44.005 campur) + 'mendeley' (145 PURE)
+  - Variable CURRENT_SOURCE = 'draft' (default)
+  - Function select_kamus_source() — menu pilih source, tampilkan status ada/belum
+    download + curl command kalau belum ada
+  - Function get_kamus_path() pakai CURRENT_SOURCE, bukan KAMUS_PATH hardcoded
+  - Function load_kamus() load dari CURRENT_SOURCE
+  - Menu choice '📂 Switch source JSON (draft / mendeley / dll)' di main_menu
+  - Dispatch: kalau switch, reload data dari source baru (data.clear() + update)
+  - Header tampilkan '[draft]' atau '[mendeley]' di depan path file aktif
+
+- Verify: py_compile OK, test multi-source switch jalan
+  - Default CURRENT_SOURCE='draft', get_kamus_path() return None di sandbox (no file)
+  - Switch ke 'mendeley', get_kamus_path() return path, load_kamus() tampilkan curl command
+- Kamus_mendeley.json schema 20 field match kamus-jawa-draft.json (R-26 compliant)
+- Commit 994cb30 + push
+
+Stage Summary:
+- public/kamus_mendeley.json: 145 entries PURE mendeley, 100% paired 3-field
+- kamus-tui.py: tambah menu '📂 Switch source JSON' untuk pilih draft atau mendeley
+- User workflow: download kamus_mendeley.json (0.08 MB) → TUI → switch source →
+  pilih mendeley → browse 145 entries → edit manual → curate 1-1
+- Setelah mendeley siap, user bisa minta bikin subset source lain (lemma, lampiran,
+  dasanama, angka) — kerja bertahap
+- Setelah semua source di-kurasi, merge manual ke kamus-jawa-draft.json
+- R-22 OK: filter dari kamus draft, BUKAN parsing ulang dari raw
+- R-18 OK: kamus draft tetap utuh 44.005 (backup .bak di ~/Dubbing/)
+- R-12 OK: user edit manual via TUI, no auto-fix
