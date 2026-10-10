@@ -2093,3 +2093,62 @@ Stage Summary:
   * detect_duplicates WAJIB tampilkan word NETRAL (R-25)
 - Audit script scripts/audit-statistik-duplikat.py = reference, jalan kapan saja
 - Next: user mau bahas logika upload Supabase
+
+---
+Task ID: r26-drop-register-krama-inggil-permanen
+Agent: main
+Task: User capek ulang-ulang register tolol. Drop PERMANEN + update docs + push + kasih curl.
+
+Work Log:
+- User: 'apa fungsi register? saya capek mengulang-ulang bahwa register dari source
+  raw adalah tolol. tapi ya sudahlah, saya jelaskan juga AI kan amnesia.'
+- Aku catat R-23/R-24/R-25 sebelumnya tapi masih halu soal register
+- Verify: register 100% 'umum' di 44.005 entries, krama_inggil 0 entries terisi
+- Drop PERMANEN end-to-end:
+
+1. JSON kamus-jawa-draft.json:
+   - 22 → 20 field per entry (drop register + krama_inggil)
+   - 44.005 entries tetap (R-18 OK)
+   - Field lain preserve (ngoko/krama/arti/keterangan/aksara/sumber/is_*/kelas/dll)
+   - metadata.version = 'v2.7 (drop register + krama_inggil — R-26)'
+   - Size: 28.4 MB → 24.9 MB (-3.5 MB)
+
+2. kamus-tui.py:
+   - Header docstring, schema comment update ke v2.7
+   - show_stats: hapus register breakdown + krama_inggil filled
+   - edit_entry: hapus register dropdown, krama_inggil input, krama_inggil + register
+     field display, register print setelah save
+   - search_menu + browse_list: hapus krama_inggil dari fields
+   - _search_entries docstring: hapus krama_inggil
+   - _entry_label: hapus register badge + krama_inggil badge
+   - merge_2_entries: hapus krama_inggil + register merge logic
+   - detect_duplicates NETRAL comment: update
+   - Verify: py_compile OK, show_stats + detect_duplicates jalan
+
+3. upload-supabase.py:
+   - Docstring: DB schema 10 kolom (post-R-26)
+   - collect_ready_entries: hapus register + krama_inggil dari row mapping
+   - confirm_upload: hapus register dari sample display
+
+4. AGENTS.md:
+   - Status pipeline v2.7 (post-R-26)
+   - Field terisi: register + krama_inggil marked DROPPED
+   - DB Supabase section: 10 kolom
+   - Aturan emas #16: register + krama_inggil DROPPED PERMANEN (R-26)
+   - Pre-session checklist + Baca dulu: '25 rules' → '26 rules'
+
+5. PROJECT_RULES.md:
+   - Add R-26: 'Drop field register + krama_inggil PERMANEN. Bukan hapus data,
+     hapus kolom tolol.'
+   - Quote user: 'apa fungsi register? saya capek mengulang-ulang bahwa register
+     dari source raw adalah tolol.'
+   - Audit sebelum drop (wajib): cek distribusi, cek non-default, backup, verify
+
+- Commit 26990e5 + push
+
+Stage Summary:
+- R-26 catat permanen di PROJECT_RULES.md + AGENTS.md
+- AI next session baca R-26: JANGAN pernah diskusi 'apa fungsi register' lagi
+- Register = label raw tolol, DROPPED PERMANEN dari JSON + TUI + upload + docs
+- User download JSON v2.7 + TUI v9 (post-R-26) + upload-supabase v3
+- Total rules: 26 (R-01 sampai R-26)
