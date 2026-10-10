@@ -81,10 +81,17 @@ KAMUS_SOURCES = {
         'desc': 'jv.wiktionary XML dump + mendeley curated dataset, integrated. 1 konsep = 1 entry (no duplikat). Sinonim comma, arti dipisah | (Indonesia | Jawa). R-18: tidak hapus, hanya merge.',
         'url': 'https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus_jv_wiktionary_integrated_mendeley.json?t=CMD_TIMESTAMP',
     },
+    'unified': {
+        'path': Path.home() / 'Dubbing' / 'kamus_unified.json',
+        'label': 'kamus_unified.json (46.929 entries — jv + mendeley + dasanama + lemma + lampiran + angka)',
+        'desc': 'Kamus UTAMA — jv.wiktionary XML + mendeley + dasanama PURE + lemma PURE + lampiran PURE + angka PURE. 1 konsep = 1 entry. Skip kamus draft merged (sampah AI). Source paling lengkap + bersih.',
+        'url': 'https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus_unified.json?t=CMD_TIMESTAMP',
+    },
 }
 
-# Default source: 'draft'. Bisa di-switch di runtime via menu "📂 Switch source JSON".
-CURRENT_SOURCE = 'draft'
+# Default source: 'unified' (kamus UTAMA — jv + mendeley + dasanama + lemma + lampiran + angka).
+# Bisa di-switch di runtime via menu "📂 Switch source JSON".
+CURRENT_SOURCE = 'unified'
 
 # .env file di ~/Dubbing/ — user simpan Supabase URL + anon key di sini
 # Format .env:
