@@ -2039,3 +2039,57 @@ Stage Summary:
 - Teks data utuh (link text, definisi, konteks Jawa tetap ada)
 - Aksara Jawa + diakritik Jawa tetap utuh (R-16a, R-18)
 - Kamus sekarang lebih bersih, siap untuk audit + validasi user via TUI
+
+---
+Task ID: audit-statistik-duplikat-update-docs
+Agent: main
+Task: User minta audit statistik + scan duplikat global, lalu update dokumentasi sebelum bahas logika upload Supabase
+
+Work Log:
+- User bilang "BUKAN 100% FILLED MENIPU, TAPI HASIL TERJEMAHAN DAN ENGGA APA-APA,
+  INILAH GUNANYA TUI UNTUK VERIFIKASI SATU-SATU" — fallback arti=word BUKAN bug,
+  itu alat marking NETRAL. User verifikasi 1-1 via TUI.
+- Bikin scripts/audit-statistik-duplikat.py — audit penuh 44.005 entries,
+  logika sama dengan detect_duplicates() di TUI (8 kategori lintas entry + field)
+- Hasil audit:
+  * Total entries: 44.005
+  * NETRAL: 39.230 (89.15%) — word terisi, ngoko+krama kosong
+  * PAIRED 3-field: 2.937 (6.67%)
+  * NGOKO+ARTI: 1.766 (4.01%)
+  * Arti analisa: 4.771 Indonesia real + 39.231 fallback = word
+  * Duplikat 3.275 tokens: 877 same-field + 2.398 cross-field
+    - Same-field: ngoko 211 + krama 192 + word 61 + arti 413
+    - Cross-field: ngoko↔krama 140 + ngoko↔arti 730 + krama↔arti 277
+                   + word↔ngoko 581 + word↔krama 258 + word↔arti 412
+
+- Update dokumentasi (R-15: update docs tiap workflow berubah):
+  1. AGENTS.md — status pipeline 10 Okt 2026, kamus v2.6.1, 22 field standar,
+     analisa arti CRITICAL, audit duplikat global, source flags, kelas,
+     register, krama_inggil dokumentasi lengkap
+     - Aturan emas: tambah #13 (R-23), #14 (R-24), #15 (R-25)
+     - Pre-session checklist: '21 rules' → '25 rules'
+  2. PROJECT_RULES.md — tambah R-23, R-24, R-25 dengan quote user:
+     - R-23: Standarisasi ≠ HAPUS field. R-18 berlaku untuk FIELD juga.
+       Audit sebelum hapus, backup, verify 0 data hilang.
+     - R-24: Statistik 'arti 100% filled' MENIPU. Fallback = alat marking NETRAL.
+       AI TIDAK auto-replace fallback (R-22 GIGO).
+     - R-25: detect_duplicates WAJIB tampilkan word NETRAL. 8 kategori lintas
+       entry + lintas field, edit langsung dari list.
+  3. README.md (root) — stats update v2.27 → v2.6.1, tambah analisa arti
+     CRITICAL, duplikat breakdown, wiki markup cleaning log, menu TUI v9
+  4. scripts/README.md — tambah audit-statistik-duplikat.py,
+     bersihkan-wiki-markup.py, standarisasi scripts (REVERTED + PROPER).
+     Curl commands pakai cache-buster t=$(date +%s).
+     Detail kamus-tui.py v9 dengan 8 kategori duplikat.
+     Aturan kamus R-12 sampai R-25.
+
+- Commit f3194b4 + push
+
+Stage Summary:
+- Documentation konsisten dengan code terkini (R-02 compliance)
+- R-23/R-24/R-25 catat permanen supaya AI next session tidak halu lagi:
+  * Jangan hapus field tanpa konfirmasi user (R-23)
+  * Audit arti real vs fallback sebelum klaim "100% filled" (R-24)
+  * detect_duplicates WAJIB tampilkan word NETRAL (R-25)
+- Audit script scripts/audit-statistik-duplikat.py = reference, jalan kapan saja
+- Next: user mau bahas logika upload Supabase
