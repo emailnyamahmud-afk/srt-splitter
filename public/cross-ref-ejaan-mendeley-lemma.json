@@ -1,0 +1,469 @@
+{
+  "summary": {
+    "lemma_pure_count": 644,
+    "lemma_with_diacritik_unique": 9837,
+    "mendeley_count": 145,
+    "matches_count": 51
+  },
+  "matches": [
+    {
+      "eid": 6,
+      "field": "ngoko",
+      "mendeley_ejaan": "ayake",
+      "lemma_ejaan": "ayaké",
+      "mendeley_ngoko": "ayake",
+      "mendeley_krama": "mbok menawi",
+      "mendeley_arti": "barangkali"
+    },
+    {
+      "eid": 17,
+      "field": "krama",
+      "mendeley_ejaan": "sade",
+      "lemma_ejaan": "sadé",
+      "mendeley_ngoko": "dol",
+      "mendeley_krama": "sade",
+      "mendeley_arti": "jual"
+    },
+    {
+      "eid": 19,
+      "field": "krama",
+      "mendeley_ejaan": "kendel",
+      "lemma_ejaan": "kèndel",
+      "mendeley_ngoko": "endheg",
+      "mendeley_krama": "kendel",
+      "mendeley_arti": "henti"
+    },
+    {
+      "eid": 19,
+      "field": "krama",
+      "mendeley_ejaan": "kendel",
+      "lemma_ejaan": "kêndêl",
+      "mendeley_ngoko": "endheg",
+      "mendeley_krama": "kendel",
+      "mendeley_arti": "henti"
+    },
+    {
+      "eid": 29,
+      "field": "ngoko",
+      "mendeley_ejaan": "inten",
+      "lemma_ejaan": "intên",
+      "mendeley_ngoko": "inten",
+      "mendeley_krama": "sela",
+      "mendeley_arti": "intan"
+    },
+    {
+      "eid": 29,
+      "field": "krama",
+      "mendeley_ejaan": "sela",
+      "lemma_ejaan": "séla",
+      "mendeley_ngoko": "inten",
+      "mendeley_krama": "sela",
+      "mendeley_arti": "intan"
+    },
+    {
+      "eid": 34,
+      "field": "ngoko",
+      "mendeley_ejaan": "karep",
+      "lemma_ejaan": "karêp",
+      "mendeley_ngoko": "karep",
+      "mendeley_krama": "kajeng, kersa",
+      "mendeley_arti": "kehendak"
+    },
+    {
+      "eid": 36,
+      "field": "ngoko",
+      "mendeley_ejaan": "karo-karone",
+      "lemma_ejaan": "karo-karoné",
+      "mendeley_ngoko": "karo-karone",
+      "mendeley_krama": "kalih-kalihipun",
+      "mendeley_arti": "keduanya"
+    },
+    {
+      "eid": 40,
+      "field": "krama",
+      "mendeley_ejaan": "kasaenan",
+      "lemma_ejaan": "kasaénan",
+      "mendeley_ngoko": "kebecikan",
+      "mendeley_krama": "kasaenan",
+      "mendeley_arti": "kebaikan"
+    },
+    {
+      "eid": 44,
+      "field": "ngoko",
+      "mendeley_ejaan": "kelalen",
+      "lemma_ejaan": "kelalèn",
+      "mendeley_ngoko": "kelalen",
+      "mendeley_krama": "kesupen",
+      "mendeley_arti": "terlupa"
+    },
+    {
+      "eid": 44,
+      "field": "krama",
+      "mendeley_ejaan": "kesupen",
+      "lemma_ejaan": "kesupèn",
+      "mendeley_ngoko": "kelalen",
+      "mendeley_krama": "kesupen",
+      "mendeley_arti": "terlupa"
+    },
+    {
+      "eid": 45,
+      "field": "ngoko",
+      "mendeley_ejaan": "kelangan",
+      "lemma_ejaan": "kélangan",
+      "mendeley_ngoko": "kelangan",
+      "mendeley_krama": "kecalan",
+      "mendeley_arti": "kehilangan"
+    },
+    {
+      "eid": 45,
+      "field": "krama",
+      "mendeley_ejaan": "kecalan",
+      "lemma_ejaan": "kécalan",
+      "mendeley_ngoko": "kelangan",
+      "mendeley_krama": "kecalan",
+      "mendeley_arti": "kehilangan"
+    },
+    {
+      "eid": 48,
+      "field": "ngoko",
+      "mendeley_ejaan": "kelingan",
+      "lemma_ejaan": "kèlingan",
+      "mendeley_ngoko": "kelingan",
+      "mendeley_krama": "kemutan, kengetan",
+      "mendeley_arti": "teringat"
+    },
+    {
+      "eid": 48,
+      "field": "krama",
+      "mendeley_ejaan": "kemutan",
+      "lemma_ejaan": "kèmutan",
+      "mendeley_ngoko": "kelingan",
+      "mendeley_krama": "kemutan, kengetan",
+      "mendeley_arti": "teringat"
+    },
+    {
+      "eid": 48,
+      "field": "krama",
+      "mendeley_ejaan": "kengetan",
+      "lemma_ejaan": "kèngetan",
+      "mendeley_ngoko": "kelingan",
+      "mendeley_krama": "kemutan, kengetan",
+      "mendeley_arti": "teringat"
+    },
+    {
+      "eid": 50,
+      "field": "krama",
+      "mendeley_ejaan": "sela",
+      "lemma_ejaan": "séla",
+      "mendeley_ngoko": "kemenyan",
+      "mendeley_krama": "sela",
+      "mendeley_arti": "kemenyan"
+    },
+    {
+      "eid": 53,
+      "field": "ngoko",
+      "mendeley_ejaan": "kentekan",
+      "lemma_ejaan": "kentèkan",
+      "mendeley_ngoko": "kentekan",
+      "mendeley_krama": "ketelasan",
+      "mendeley_arti": "kehabisan"
+    },
+    {
+      "eid": 54,
+      "field": "ngoko",
+      "mendeley_ejaan": "kesuwen",
+      "lemma_ejaan": "kesuwèn",
+      "mendeley_ngoko": "kesuwen",
+      "mendeley_krama": "kedangon",
+      "mendeley_arti": "teralu lama"
+    },
+    {
+      "eid": 56,
+      "field": "ngoko",
+      "mendeley_ejaan": "ketok",
+      "lemma_ejaan": "kétok",
+      "mendeley_ngoko": "ketok",
+      "mendeley_krama": "ketingal",
+      "mendeley_arti": "kelihatan"
+    },
+    {
+      "eid": 57,
+      "field": "ngoko",
+      "mendeley_ejaan": "kewengen",
+      "lemma_ejaan": "kewengèn",
+      "mendeley_ngoko": "kewengen",
+      "mendeley_krama": "kedalon",
+      "mendeley_arti": "kemalaman"
+    },
+    {
+      "eid": 59,
+      "field": "ngoko",
+      "mendeley_ejaan": "kleru",
+      "lemma_ejaan": "klèru",
+      "mendeley_ngoko": "kleru",
+      "mendeley_krama": "klintu",
+      "mendeley_arti": "kliru"
+    },
+    {
+      "eid": 62,
+      "field": "ngoko",
+      "mendeley_ejaan": "lalen",
+      "lemma_ejaan": "lalèn",
+      "mendeley_ngoko": "lalen",
+      "mendeley_krama": "supenan",
+      "mendeley_arti": "pelupa"
+    },
+    {
+      "eid": 69,
+      "field": "krama",
+      "mendeley_ejaan": "ngrencangi",
+      "lemma_ejaan": "ngréncangi",
+      "mendeley_ngoko": "mbaturi",
+      "mendeley_krama": "ngrencangi",
+      "mendeley_arti": "menemani"
+    },
+    {
+      "eid": 76,
+      "field": "ngoko",
+      "mendeley_ejaan": "murungake",
+      "lemma_ejaan": "murungaké",
+      "mendeley_ngoko": "murungake",
+      "mendeley_krama": "nyandekaken",
+      "mendeley_arti": "membatalkan"
+    },
+    {
+      "eid": 76,
+      "field": "krama",
+      "mendeley_ejaan": "nyandekaken",
+      "lemma_ejaan": "nyandèkaken",
+      "mendeley_ngoko": "murungake",
+      "mendeley_krama": "nyandekaken",
+      "mendeley_arti": "membatalkan"
+    },
+    {
+      "eid": 83,
+      "field": "ngoko",
+      "mendeley_ejaan": "ngajokake",
+      "lemma_ejaan": "ngajokaké",
+      "mendeley_ngoko": "ngajokake",
+      "mendeley_krama": "ngajengaken, nyawungaken",
+      "mendeley_arti": "mengajukan; mencalonkan"
+    },
+    {
+      "eid": 84,
+      "field": "ngoko",
+      "mendeley_ejaan": "ngambakake",
+      "lemma_ejaan": "ngambakaké",
+      "mendeley_ngoko": "ngambakake",
+      "mendeley_krama": "miyaraken",
+      "mendeley_arti": "memperluas"
+    },
+    {
+      "eid": 88,
+      "field": "ngoko",
+      "mendeley_ejaan": "ngeling-eling",
+      "lemma_ejaan": "ngéling-éling",
+      "mendeley_ngoko": "ngeling-eling",
+      "mendeley_krama": "ngemut-emut",
+      "mendeley_arti": "mengingat-ingat"
+    },
+    {
+      "eid": 88,
+      "field": "krama",
+      "mendeley_ejaan": "ngemut-emut",
+      "lemma_ejaan": "ngémut-émut",
+      "mendeley_ngoko": "ngeling-eling",
+      "mendeley_krama": "ngemut-emut",
+      "mendeley_arti": "mengingat-ingat"
+    },
+    {
+      "eid": 89,
+      "field": "ngoko",
+      "mendeley_ejaan": "ngelingi",
+      "lemma_ejaan": "ngélingi",
+      "mendeley_ngoko": "ngelingi",
+      "mendeley_krama": "ngengeti",
+      "mendeley_arti": "mengingat"
+    },
+    {
+      "eid": 89,
+      "field": "krama",
+      "mendeley_ejaan": "ngengeti",
+      "lemma_ejaan": "ngèngeti",
+      "mendeley_ngoko": "ngelingi",
+      "mendeley_krama": "ngengeti",
+      "mendeley_arti": "mengingat"
+    },
+    {
+      "eid": 90,
+      "field": "ngoko",
+      "mendeley_ejaan": "ngendhegake",
+      "lemma_ejaan": "ngendhegaké",
+      "mendeley_ngoko": "ngendhegake",
+      "mendeley_krama": "ngendelaken",
+      "mendeley_arti": "menghentikan"
+    },
+    {
+      "eid": 90,
+      "field": "krama",
+      "mendeley_ejaan": "ngendelaken",
+      "lemma_ejaan": "ngèndelaken",
+      "mendeley_ngoko": "ngendhegake",
+      "mendeley_krama": "ngendelaken",
+      "mendeley_arti": "menghentikan"
+    },
+    {
+      "eid": 91,
+      "field": "ngoko",
+      "mendeley_ejaan": "ngeneni",
+      "lemma_ejaan": "ngenèni",
+      "mendeley_ngoko": "ngeneni",
+      "mendeley_krama": "mugut",
+      "mendeley_arti": "menuai"
+    },
+    {
+      "eid": 97,
+      "field": "krama",
+      "mendeley_ejaan": "munageni",
+      "lemma_ejaan": "munagèni",
+      "mendeley_ngoko": "ngujari",
+      "mendeley_krama": "ngujari, munageni",
+      "mendeley_arti": "berjanji untuk"
+    },
+    {
+      "eid": 100,
+      "field": "ngoko",
+      "mendeley_ejaan": "njerokake",
+      "lemma_ejaan": "njerokaké",
+      "mendeley_ngoko": "njerokake",
+      "mendeley_krama": "nglebetaken",
+      "mendeley_arti": "memperdalam"
+    },
+    {
+      "eid": 101,
+      "field": "ngoko",
+      "mendeley_ejaan": "njoged",
+      "lemma_ejaan": "njogèd",
+      "mendeley_ngoko": "njoged",
+      "mendeley_krama": "njoged, mbeksa",
+      "mendeley_arti": "menari"
+    },
+    {
+      "eid": 101,
+      "field": "krama",
+      "mendeley_ejaan": "njoged",
+      "lemma_ejaan": "njogèd",
+      "mendeley_ngoko": "njoged",
+      "mendeley_krama": "njoged, mbeksa",
+      "mendeley_arti": "menari"
+    },
+    {
+      "eid": 105,
+      "field": "ngoko",
+      "mendeley_ejaan": "nyuweni",
+      "lemma_ejaan": "nyuwèni",
+      "mendeley_ngoko": "nyuweni",
+      "mendeley_krama": "ndedangu",
+      "mendeley_arti": "membuat lama"
+    },
+    {
+      "eid": 106,
+      "field": "ngoko",
+      "mendeley_ejaan": "oleh-oleh",
+      "lemma_ejaan": "olèh-olèh",
+      "mendeley_ngoko": "oleh-oleh",
+      "mendeley_krama": "angsal-angsal",
+      "mendeley_arti": "oleh-oleh"
+    },
+    {
+      "eid": 107,
+      "field": "ngoko",
+      "mendeley_ejaan": "ora-orane",
+      "lemma_ejaan": "ora-orané",
+      "mendeley_ngoko": "ora-orane",
+      "mendeley_krama": "mboten-mbotenipun",
+      "mendeley_arti": "tidak mungkin"
+    },
+    {
+      "eid": 109,
+      "field": "ngoko",
+      "mendeley_ejaan": "padesan",
+      "lemma_ejaan": "padésan",
+      "mendeley_ngoko": "padesan",
+      "mendeley_krama": "pedhusunan",
+      "mendeley_arti": "pedesaan"
+    },
+    {
+      "eid": 113,
+      "field": "krama",
+      "mendeley_ejaan": "pareden",
+      "lemma_ejaan": "paredèn",
+      "mendeley_ngoko": "pegunungan",
+      "mendeley_krama": "pareden",
+      "mendeley_arti": "pegunungan"
+    },
+    {
+      "eid": 123,
+      "field": "ngoko",
+      "mendeley_ejaan": "sasen-sasen",
+      "lemma_ejaan": "sasèn-sasèn",
+      "mendeley_ngoko": "sasen-sasen",
+      "mendeley_krama": "wewulanan",
+      "mendeley_arti": "berbulan-bulan"
+    },
+    {
+      "eid": 127,
+      "field": "ngoko",
+      "mendeley_ejaan": "seprene",
+      "lemma_ejaan": "sepréné",
+      "mendeley_ngoko": "seprene",
+      "mendeley_krama": "sepriki",
+      "mendeley_arti": "sampai sekarang"
+    },
+    {
+      "eid": 129,
+      "field": "ngoko",
+      "mendeley_ejaan": "sesuk esuk",
+      "lemma_ejaan": "sésuk ésuk",
+      "mendeley_ngoko": "sesuk esuk",
+      "mendeley_krama": "benjang enjang, benjing enjing",
+      "mendeley_arti": "besok pagi"
+    },
+    {
+      "eid": 129,
+      "field": "krama",
+      "mendeley_ejaan": "benjang enjang",
+      "lemma_ejaan": "bénjang énjang",
+      "mendeley_ngoko": "sesuk esuk",
+      "mendeley_krama": "benjang enjang, benjing enjing",
+      "mendeley_arti": "besok pagi"
+    },
+    {
+      "eid": 129,
+      "field": "krama",
+      "mendeley_ejaan": "benjing enjing",
+      "lemma_ejaan": "bénjing énjing",
+      "mendeley_ngoko": "sesuk esuk",
+      "mendeley_krama": "benjang enjang, benjing enjing",
+      "mendeley_arti": "besok pagi"
+    },
+    {
+      "eid": 135,
+      "field": "ngoko",
+      "mendeley_ejaan": "suwe-suwe",
+      "lemma_ejaan": "suwé-suwé",
+      "mendeley_ngoko": "suwe-suwe",
+      "mendeley_krama": "dangu-dangu",
+      "mendeley_arti": "lama-kelamaan"
+    },
+    {
+      "eid": 144,
+      "field": "ngoko",
+      "mendeley_ejaan": "unen-unen",
+      "lemma_ejaan": "unèn-unèn",
+      "mendeley_ngoko": "unen-unen",
+      "mendeley_krama": "ungel-ungelan",
+      "mendeley_arti": "ungkapan"
+    }
+  ]
+}
