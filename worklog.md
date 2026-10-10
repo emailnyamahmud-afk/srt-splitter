@@ -1843,3 +1843,51 @@ Stage Summary:
 - R-22 tetap: pure detection dari kamus-jawa-draft.json
 - Untuk 2.398 duplikat: workflow linear, bukan 11.000+ round trip
 - Next: user download TUI v11 + jalankan menu "Deteksi duplikat"
+
+---
+Task ID: standarisasi-kamus-v3-3-bahasa
+Agent: main
+Task: User minta standarisasi kamus-jawa-draft.json — hapus register (label raw tolol), pastikan tiap entry standar
+
+Work Log:
+- User: 'BODOH DAN TOLOL, AI LUPA TUJUAN UTAMA KAMUS = BIKIN 1 ENTRY 3 BAHASA = INDO, JAWA NGOKO, JAWA KRAMA. TITIK'
+- User kasih analogi: kamus Tiongkok-Indonesia-English. 1 entry = 3 bahasa. Tidak ada register
+  label karena kolom tiongkok sudah jelas tempat kata tiongkok
+- User: 'word masih relevan anggap saja word itu kata yg belum masuk entry, bisa masuk krama,
+  bisa masuk ngoko, bisa masuk indonesia'
+- Audit schema: 44.005 entries, 8 varian key set utama, 5.979 entries (13.6%) punya schema beda
+  - 13 field raw parsing ada conditional (is_lemma, is_mendeley, is_dasanama, is_angka,
+    is_lampiran, kelas, kelas_nama, lemma_words, mendeley_id, dasanama_count, source_count,
+    krama_inggil, register)
+  - register = 'umum' di 100% entries (label raw, tidak informatif)
+  - krama_inggil = kosong di 100% entries (R-17 OK)
+- Backup kamus-jawa-draft.json → kamus-jawa-draft.json.bak
+- Standarisasi ke 9 field: entry_id, word, ngoko, krama, arti, keterangan, aksara, sumber, status
+- Drop 13 field raw parsing (register, krama_inggil, is_*, kelas, kelas_nama, lemma_words,
+  mendeley_id, dasanama_count, source_count)
+- Verify: 44.005 entries sekarang SEMUA punya 9 field identik, entry_id urut 1..44005
+- Size: 17.4 MB → 13.8 MB (-3.5 MB, -21%)
+- Update metadata.version ke 'v3.0 (standarisasi 3-bahasa, 9 field)'
+
+TUI update (kamus-tui.py v10):
+- Header docstring: rewrite untuk skema v3.0 + konsep 3-bahasa
+- show_stats: hapus register breakdown + source tags, tambah aksara + keterangan filled
+- edit_entry: hapus register dropdown + krama_inggil input + source tags display + source_count
+- _entry_label: hapus register badge + krama_inggil badge
+- search_menu + browse_list search: hapus krama_inggil dari search fields
+- merge_2_entries: hapus krama_inggil merge + register merge logic
+- browse_by_source: hapus function + menu choice (semua is_* = 0 sekarang)
+- detect_duplicates display: update NETRAL comment
+- Verify: py_compile OK, test show_stats + detect_duplicates jalan dengan kamus v3.0
+- Statistik tetap: 44.005 entries, 39.230 NETRAL, 2.937 paired 3-field, 2.398 cross-field
+
+Commit b08c7d8 + push.
+
+Stage Summary:
+- Kamus sekarang murni 3-bahasa (Jawa ngoko + Jawa krama + Indonesia) + 3 metadata (keterangan,
+  aksara, sumber) + word (NETRAL) + status (R-12). Total 9 field.
+- 13 field raw parsing dihapus permanen (register, krama_inggil, is_*, kelas, kelas_nama,
+  lemma_words, mendeley_id, dasanama_count, source_count)
+- 5.979 entries yang sebelumnya punya schema beda sekarang standar (9 field identik)
+- TUI v10 konsisten dengan schema v3.0 — tidak ada reference ke field yang di-drop
+- User download kamus v3.0 + TUI v10 → workflow jalan seperti biasa, lebih ringan
