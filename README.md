@@ -298,6 +298,52 @@ Per R-22: cari manual di kamus resmi Kemendikbud:
 
 Setelah ketemu → user edit manual via TUI, AI bantu tapi jangan auto-merge (R-18 — jangan hapus).
 
+### Phase kerja bertahap kamus (R-27, 10 Okt 2026)
+
+Kamus draft (44.005 entries) = campur 5+ sumber (Wiktionary lemma/ngoko/krama, Mendeley, Dasanama, Lampiran, Angka). Banyak sumber = banyak sampah (merge AI tolol: 1 entry campur kata beda makna).
+
+**Solusi**: kerja bertahap. Bikin subset PURE per sumber, kurasi 1-1 manual via TUI. Setelah semua source di-kurasi, merge manual ke kamus-jawa-draft.json (clean).
+
+| Phase | Source | Filter sumber exact | Estimasi entries | Status |
+|-------|--------|---------------------|------------------:|--------|
+| **1** (NOW) | Mendeley PURE | `data.mendeley.com/datasets/y3hstv4bfn (new)` | 145 | ✅ Ready (`kamus_mendeley.json`) |
+| 2 | Pure lemma | `id.wiktionary.org Kategori:jv:Lema (new)` | ~1.043 | 🔜 Bikin setelah phase 1 |
+| 3 | Pure lampiran | `lampiran-raw.json (new)` | ~2.151 | 🔜 Setelah phase 2 |
+| 4 | Pure dasanama | `dasanama-raw.csv (new)` | ~427 | 🔜 Setelah phase 3 |
+| 5 | Pure angka | `angka-raw.json (new)` | ~1.027 | 🔜 Setelah phase 4 |
+| 6 | Pure wiktionary ngoko | `jv.wiktionary.org (group by ngoko)` | ~sisa | 🔜 Setelah phase 5 |
+| 7 | Pure wiktionary krama | `jv.wiktionary.org (group by krama)` | ~sisa | 🔜 Setelah phase 6 |
+| **Akhir** | Merge manual | Hasil kurasi semua phase | 44.005 (clean) | Setelah semua phase |
+
+#### Workflow user per phase
+
+```bash
+# Download subset source (mis. phase 1 = mendeley)
+curl -L -H 'Cache-Control: no-cache' -o ~/Dubbing/kamus_mendeley.json \
+  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus_mendeley.json?t=$(date +%s)"
+
+# Download TUI v10 (multi-source switch)
+curl -L -H 'Cache-Control: no-cache' -o ~/Dubbing/kamus-tui.py \
+  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/kamus-tui.py?t=$(date +%s)"
+
+# Jalankan TUI, switch ke mendeley
+python3 ~/Dubbing/kamus-tui.py
+# Menu → 📂 Switch source JSON → pilih 'mendeley'
+# Header akan tampilkan: 📂 [mendeley] /Users/.../kamus_mendeley.json
+# Browse 145 entries → edit manual → curate 1-1
+# Save → simpan ke kamus_mendeley.json (preserve 20 field, R-18 OK)
+
+# Setelah phase 1 selesai, kasih tau AI → bikin subset phase 2 (lemma PURE)
+```
+
+#### Komitmen kerja bertahap
+
+- **R-22**: filter subset dari kamus draft, BUKAN parsing ulang dari raw (raw = sampah parsing AI tolol)
+- **R-18**: kamus draft tetap utuh 44.005 (backup .bak di ~/Dubbing/)
+- **R-12**: user edit manual via TUI, no auto-fix
+- **R-26**: subset 20 field match kamus draft (drop register + krama_inggil)
+- **R-27**: kerja bertahap per source, tidak campur sampah merge AI
+
 ---
 
 ## Stack Teknologi

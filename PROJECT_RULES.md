@@ -431,6 +431,53 @@ User 9 Okt 2026: "GERBANGE IN GERBANGE OUT. SAMPAH YG MASUK = SAMPAH YG KELUAR. 
   - Frequency analyzer pakai DB, bukan draft lokal
 - AI tidak pernah upload — user selalu putuskan
 
+### R-27 — Kerja bertahap per source. Filter subset PURE, jangan campur sampah merge AI.
+
+User 10 Okt 2026: "semua source berguna, semua tetap akan digunakan. anggap saja ini phase 1, yaitu user selesaikan audit manual via kamus tui mendeley dulu. phase 2 next source. sehingga data bersih, tidak tercampur parsing TOLOL AI."
+
+**Konteks**:
+- Kamus draft (44.005 entries) = campur 5+ sumber (Wiktionary lemma, Wiktionary ngoko, Mendeley, Dasanama, Lampiran, Angka)
+- Banyak sumber = banyak sampah. Merge AI tolol: 1 entry campur kata beda makna (mis. "mangsa" + list 12 musim Jawa dalam 1 field ngoko)
+- Audit 10 Okt 2026: 3.275 duplikat (877 same-field + 2.398 cross-field), arti 89.15% fallback=word (BUKAN Indonesia)
+
+**Solusi phase kerja bertahap**:
+1. Bikin subset PURE per sumber (filter dari kamus draft, BUKAN parsing ulang dari raw — R-22)
+2. Subset = entries dengan `sumber` exact match (no merge), mis. "data.mendeley.com/datasets/y3hstv4bfn (new)" exact
+3. User kurasi 1-1 manual via TUI (switch source → browse → edit)
+4. Setelah phase selesai, user kasih tau AI → bikin subset phase berikutnya
+5. Setelah semua phase (1-7) di-kurasi, merge manual ke kamus-jawa-draft.json (clean)
+
+**Roadmap phase**:
+| Phase | Source | Filter sumber exact | Estimasi entries |
+|-------|--------|---------------------|------------------|
+| 1 (NOW) | Mendeley PURE | `data.mendeley.com/datasets/y3hstv4bfn (new)` | 145 |
+| 2 | Pure lemma | `id.wiktionary.org Kategori:jv:Lema (new)` | ~1.043 |
+| 3 | Pure lampiran | `lampiran-raw.json (new)` | ~2.151 (perlu verify) |
+| 4 | Pure dasanama | `dasanama-raw.csv (new)` | ~427 |
+| 5 | Pure angka | `angka-raw.json (new)` | ~1.027 |
+| 6 | Pure wiktionary ngoko | `jv.wiktionary.org (group by ngoko)` | ~sisa |
+| 7 | Pure wiktionary krama | `jv.wiktionary.org (group by krama)` | ~sisa |
+| Akhir | Merge manual | Hasil kurasi semua phase | 44.005 (clean) |
+
+**Aturan subset**:
+- Schema 20 field match kamus draft (R-26 compliant, no register + krama_inggil)
+- entry_id re-number 1..N di subset (urut posisi list)
+- metadata.version = "v1.0 (<source> pure subset)"
+- metadata.source_filter = "sumber == '<exact string>'"
+- metadata.parent_file = "kamus-jawa-draft.json"
+
+**Yang DILARANG**:
+- Parsing ulang dari raw (R-22 GIGO: raw = sampah parsing AI tolol)
+- Bikin script auto-fix data (R-18: user edit manual via TUI)
+- Merge subset sebelum semua phase selesai (rawan campur sampah lagi)
+- Hapus kamus draft (R-18: tetap utuh 44.005, backup .bak di ~/Dubbing/)
+
+**Yang WAJIB**:
+- Filter subset dari kamus draft yang ada (BUKAN dari raw)
+- User edit manual via TUI menu "📂 Switch source JSON"
+- Verify post-filter: total entries, schema 20 field, no data hilang
+- Commit + push subset ke GitHub supaya user bisa curl download
+
 ### R-26 — Drop field register + krama_inggil PERMANEN. Bukan hapus data, hapus kolom tolol.
 
 User 10 Okt 2026: "apa fungsi register? saya capek mengulang-ulang bahwa register dari source raw adalah tolol. tapi ya sudahlah, saya jelaskan juga AI kan amnesia."

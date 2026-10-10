@@ -8,7 +8,7 @@
 Saat user bilang **"baca AGENTS.md dan PROJECT_RULES.md"** (atau variasi: "mulai" / "baca dokumen" / chat pertama di session baru):
 
 1. **Baca dokumen (wajib)** — baca full file ini, lalu:
-   - `PROJECT_RULES.md` — **26 rules** project-specific (R-01 sampai R-26)
+   - `PROJECT_RULES.md` — **27 rules** project-specific (R-01 sampai R-27)
    - `README.md` (root) — workflow 4 fase + status
    - `scripts/README.md` — detail per script (kalau kerja Python)
    - `worklog.md` — baca entry terakhir untuk konteks task sebelumnya
@@ -29,7 +29,7 @@ Setelah checklist selesai, AI siap kerja. Tidak perlu ulang di chat berikutnya d
 
 ## Baca dulu (wajib, tiap session)
 
-1. **`PROJECT_RULES.md`** — **26 rules** project-specific. Baca full sebelum kerja apapun.
+1. **`PROJECT_RULES.md`** — **27 rules** project-specific. Baca full sebelum kerja apapun.
    - R-01 sampai R-15: workflow, docs, marker, kode
    - R-16: ejaan Jawa (é/è/ê, schwa polos)
    - R-17: skema field (krama_inggil masuk krama)
@@ -42,6 +42,7 @@ Setelah checklist selesai, AI siap kerja. Tidak perlu ulang di chat berikutnya d
    - R-24: Statistik "arti 100% filled" MENIPU. Audit real Indonesia.
    - R-25: detect_duplicates WAJIB tampilkan word NETRAL.
    - R-26: register + krama_inggil DROPPED PERMANEN. Bukan hapus data, hapus kolom tolol.
+   - R-27: Kerja bertahap per source. Filter subset PURE, jangan campur sampah merge AI.
 2. **`README.md`** (root) — workflow 4 fase, 2 mode dubbing, status pipeline.
 3. **`scripts/README.md`** — detail per Python script.
 4. **`worklog.md`** — baca entry terakhir (Task ID + Stage Summary).
@@ -150,6 +151,7 @@ Audit script: scripts/audit-statistik-duplikat.py (jalan kapan saja, read-only)
 14. **Audit dulu sebelum klaim "100% filled" (R-24).** Cek isi, bukan cuma count.
 15. **detect_duplicates WAJIB tampilkan word NETRAL (R-25).** Tanpa word, user tidak bisa putuskan merge.
 16. **register + krama_inggil DROPPED PERMANEN (R-26).** register 100% 'umum' (label raw tolol), krama_inggil kosong by R-17. Bukan hapus data, hapus kolom tolol.
+17. **Kerja bertahap per source (R-27).** Filter subset PURE per sumber, user kurasi 1-1 manual via TUI, jangan campur sampah merge AI.
 
 ## Yang sedang nunggu
 
@@ -159,3 +161,16 @@ Audit script: scripts/audit-statistik-duplikat.py (jalan kapan saja, read-only)
 - User validasi entries NETRAL (39.230) via TUI → isi ngoko/krama → status='ready' → upload Supabase
 - User bersihkan duplikat via TUI menu 'Deteksi Duplikat' (JANGAN HAPUS otomatis, R-18)
 - AI bantu workflow: statistik, scan pattern, compare draft vs DB (read-only). AI TIDAK upload.
+
+## Phase kerja bertahap kamus (R-27, 10 Okt 2026)
+
+| Phase | Source | Status |
+|-------|--------|--------|
+| 1 (NOW) | Mendeley PURE (145 entries) — `kamus_mendeley.json` | 🔄 User kurasi via TUI |
+| 2 | Pure lemma — bikin `kamus_lemma_pure.json` | 🔜 Setelah phase 1 selesai |
+| 3 | Pure lampiran — bikin `kamus_lampiran_pure.json` | 🔜 Setelah phase 2 selesai |
+| 4 | Pure dasanama — bikin `kamus_dasanama_pure.json` | 🔜 Setelah phase 3 selesai |
+| 5 | Pure angka — bikin `kamus_angka_pure.json` | 🔜 Setelah phase 4 selesai |
+| 6 | Pure wiktionary ngoko | 🔜 Setelah phase 5 selesai |
+| 7 | Pure wiktionary krama | 🔜 Setelah phase 6 selesai |
+| Akhir | Merge manual hasil semua phase ke kamus draft | Setelah semua phase selesai |

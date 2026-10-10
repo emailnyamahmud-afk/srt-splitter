@@ -2,7 +2,7 @@
 
 Dokumen ini catatan status project untuk AI / developer next time baca. Update setiap sesi kerja.
 
-**Last updated:** 9 Oktober 2026, 22:00 WIB
+**Last updated:** 10 Oktober 2026, 14:00 WIB
 
 ---
 
@@ -16,22 +16,62 @@ Dokumen ini catatan status project untuk AI / developer next time baca. Update s
 | **Auto-strip aksen Jawa di TTS (SRT final tetap utuh)** | ✅ Deployed |
 | **UI panel "Top 100 Unknown Words" + badge per cue** | ✅ Deployed (8 Okt 2026) |
 | **UI panel "Unknown Words" fix — DB kosong = semua tak dikenal (R-22)** | ✅ Fixed (9 Okt 2026) |
-| **Kamus schema v2.27 (R-21: word netral + R-17: krama_inggil masuk krama + merge duplikat)** | ✅ Code ready |
-| **Kamus JSON 44.004 entries (2.936 paired 3-field + 39.230 NETRAL + 2 empty)** | ✅ User bisa download |
-| **kamus-tui.py v9 (Phase 1-6 refactor + filter NETRAL + Deteksi Duplikat)** | ✅ User bisa pakai |
-| **upload-supabase.py (Phase 5, user-triggered only, R-12 konfirmasi 'y')** | ✅ User bisa pakai |
-| **Duplikat audit (211 ngoko + 192 krama + 140 cross-field)** | ✅ Catatan untuk TUI |
+| **Kamus schema v2.7 (10 Okt 2026, R-26 drop register + krama_inggil)** | ✅ Code ready |
+| **Kamus JSON 44.005 entries (20 field, 2.937 paired + 39.230 NETRAL + 1.766 ngoko+arti)** | ✅ User bisa download |
+| **Wiki markup cleaning 1.918 entries (R-18 no data loss)** | ✅ Done (10 Okt 2026) |
+| **kamus-tui.py v10 (multi-source switch: draft / mendeley / dll)** | ✅ User bisa pakai |
+| **kamus_mendeley.json — 145 entries PURE mendeley (Phase 1)** | ✅ User bisa pakai |
+| **upload-supabase.py v3 (R-26 compliance, 8 kolom upload)** | ✅ User bisa pakai |
+| **Audit global 3.275 duplikat (877 same-field + 2.398 cross-field)** | ✅ Catatan untuk TUI |
+| **Audit statistik arti real vs fallback (R-24)** | ✅ 4.771 real / 39.231 fallback |
 | **Web app kamus READ-ONLY (jangan rusak kamus dari UI)** | ✅ Audited |
 | **Mode ON + Smart Fit (video = ground truth)** | ✅ User rating 9/10 (cap 2.0x, pitch -15Hz laki) |
 | **Python `demucs-tui.py` + `mix-tui.py`** | ✅ Working (MILESTONE Test #25, 10000% sync) |
 | Pitch control (Edge TTS -10Hz laki, +10Hz perempuan) | ✅ Working, user pakai -15Hz |
 | User run migration v2+v3 SQL di Supabase | ✅ Done (8 Okt 2026) |
-| User upload 2 entries ke Supabase (test awal) | ✅ Done (8 Okt 2026) → DIHAPUS (logika lama, R-22) |
-| DB Supabase kamus = 0 entries (fresh start, R-22 compliance) | ✅ Clean |
+| User upload 1 entry test ke Supabase (status='ready') | ✅ Done (10 Okt 2026) |
+| DB Supabase standardisasi (DROP register + krama_inggil, R-26) | 🔄 Pending user run SQL |
+| Phase 1: User kurasi kamus_mendeley.json (145 entries) via TUI | 🔄 In progress |
+| Phase 2-7: Bikin subset source lain (lemma/lampiran/dasanama/angka/wiktionary) | 🔜 Next step |
 | User validasi entries NETRAL (39.230) via TUI → status='ready' → upload | 🔄 In progress (R-21) |
 | User bersihkan duplikat via TUI menu 'Deteksi Duplikat' (JANGAN HAPUS, R-18) | 🔄 In progress |
 | Test full season S7-id (2.5 jam) | ⏳ Pending user |
 | Workflow multi-bahasa (Jawa/Sunda/dll) | 🔜 Next step |
+
+---
+
+## 🎉 MILESTONE: Phase Kerja Bertahap per Source (10 Okt 2026)
+
+### Konsep Phase (R-27)
+
+Kamus draft = campur 5+ sumber (Wiktionary lemma, Wiktionary ngoko, Mendeley, Dasanama, Lampiran, Angka). Banyak sumber = banyak sampah (merge AI tolol: 1 entry campur kata beda makna).
+
+**Solusi**: kerja bertahap. Bikin subset PURE per sumber, kurasi 1-1 manual via TUI. Setelah semua source di-kurasi, merge manual ke kamus-jawa-draft.json (clean).
+
+| Phase | Source | Entries | Status |
+|-------|--------|--------:|--------|
+| **1** (NOW) | Mendeley PURE | 145 | ✅ Ready untuk user kurasi |
+| 2 | Pure lemma | ~1.043 | 🔜 Aku bikin next |
+| 3 | Pure lampiran | ~sisa | 🔜 Aku bikin next |
+| 4 | Pure dasanama | ~427 | 🔜 Aku bikin next |
+| 5 | Pure angka | ~1.027 | 🔜 Aku bikin next |
+| 6 | Pure wiktionary ngoko | ~sisa | 🔜 Aku bikin next |
+| 7 | Pure wiktionary krama | ~sisa | 🔜 Aku bikin next |
+| **Akhir** | Merge manual | 44.005 (clean) | User kerja semua phase |
+
+### Workflow user per phase
+1. Download kamus_<source>.json (mis. `kamus_mendeley.json`)
+2. `python3 kamus-tui.py` → menu "📂 Switch source JSON" → pilih `<source>`
+3. Browse entries → edit manual → curate 1-1 (R-12: user explicit mark ready)
+4. Save → simpan ke kamus_<source>.json (preserve 20 field, R-18 OK)
+5. Setelah phase selesai, kasih tau AI → bikin subset phase berikutnya
+
+### Komitmen kerja bertahap
+- R-22: filter dari kamus draft, BUKAN parsing ulang dari raw (raw = sampah parsing AI tolol)
+- R-18: kamus draft tetap utuh 44.005 (backup .bak di ~/Dubbing/)
+- R-12: user edit manual via TUI, no auto-fix
+- R-26: subset 20 field match kamus draft (drop register + krama_inggil)
+- R-27: kerja bertahap per source, tidak campur sampah merge AI
 
 ---
 
