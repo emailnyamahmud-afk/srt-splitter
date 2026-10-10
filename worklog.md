@@ -2212,3 +2212,61 @@ Stage Summary:
 - R-22 OK: filter dari kamus draft, BUKAN parsing ulang dari raw
 - R-18 OK: kamus draft tetap utuh 44.005 (backup .bak di ~/Dubbing/)
 - R-12 OK: user edit manual via TUI, no auto-fix
+
+---
+Task ID: r27-docs-update-phase-kerja-bertahap
+Agent: main
+Task: User minta update dokumentasi (README, docs, AGENTS, PROJECT_RULES) dengan konsep phase kerja bertahap
+
+Work Log:
+- User: 'semua source berguna, semua tetap akan digunakan. anggap saja ini phase 1,
+  yaitu user selesaikan audit manual via kamus tui mendeley dulu. phase 2 next source.
+  sehingga data bersih, tidak tercampur parsing TOLOL AI.'
+- Konsep phase kerja bertahap catat permanen sebagai R-27
+
+Update 4 file dokumentasi:
+
+1. PROJECT_RULES.md:
+   - Add R-27: 'Kerja bertahap per source. Filter subset PURE, jangan campur
+     sampah merge AI.'
+   - Quote user asli
+   - Konteks: kamus draft = campur 5+ sumber = banyak sampah merge AI
+   - Solusi 5 langkah: bikin subset PURE → user kurasi → next phase → merge akhir
+   - Roadmap 7 phase table dengan filter sumber exact + estimasi entries
+   - Aturan subset (schema 20 field, entry_id re-number, metadata fields)
+   - Yang DILARANG: parsing ulang raw, bikin script auto-fix, merge premature,
+     hapus kamus draft
+   - Yang WAJIB: filter dari kamus draft, user edit manual via TUI, verify
+     post-filter, commit + push subset
+
+2. AGENTS.md:
+   - Pre-session checklist: '26 rules' → '27 rules'
+   - Baca dulu section: add R-27 line
+   - Aturan emas: tambah #17 (Kerja bertahap per source, R-27)
+   - Section 'Phase kerja bertahap kamus (R-27, 10 Okt 2026)' — tabel 7 phase
+     + status (Phase 1 NOW: mendeley, Phase 2-7 next, Akhir: merge manual)
+
+3. README.md (root):
+   - Add section 'Phase kerja bertahap kamus (R-27, 10 Okt 2026)'
+   - Roadmap 7 phase table dengan filter sumber exact + estimasi entries + status
+   - Workflow user per phase (curl download subset + TUI switch source + edit manual)
+   - Komitmen kerja bertahap (R-22, R-18, R-12, R-26, R-27)
+
+4. docs/PROGRESS.md:
+   - Last updated: 9 Okt 22:00 → 10 Okt 14:00 WIB
+   - Quick Status update: kamus v2.7 (R-26), TUI v10 (multi-source),
+     kamus_mendeley.json (145 entries Phase 1), audit duplikat 3.275,
+     arti real vs fallback, wiki markup cleaning, DB Supabase standardisasi
+   - New MILESTONE section: 'Phase Kerja Bertahap per Source (10 Okt 2026)'
+     dengan roadmap + workflow + komitmen
+
+- Commit 0f3e8ea + push
+
+Stage Summary:
+- R-27 catat permanen di 4 file dokumentasi (PROJECT_RULES, AGENTS, README, PROGRESS)
+- AI next session baca R-27: kerja kamus = bertahap per source
+- Jangan campur semua source sekaligus (rawan sampah merge AI)
+- Bikin subset PURE per sumber (filter exact), user kurasi 1-1 via TUI
+- Setelah phase selesai, user kasih tau → bikin phase berikutnya
+- Total rules: 27 (R-01 sampai R-27)
+- Phase 1 (mendeley PURE 145 entries) sudah ready, user bisa mulai kurasi kapan saja
