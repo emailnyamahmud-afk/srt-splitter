@@ -8,7 +8,7 @@
 Saat user bilang **"baca AGENTS.md dan PROJECT_RULES.md"** (atau variasi: "mulai" / "baca dokumen" / chat pertama di session baru):
 
 1. **Baca dokumen (wajib)** — baca full file ini, lalu:
-   - `PROJECT_RULES.md` — **25 rules** project-specific (R-01 sampai R-25)
+   - `PROJECT_RULES.md` — **26 rules** project-specific (R-01 sampai R-26)
    - `README.md` (root) — workflow 4 fase + status
    - `scripts/README.md` — detail per script (kalau kerja Python)
    - `worklog.md` — baca entry terakhir untuk konteks task sebelumnya
@@ -29,7 +29,7 @@ Setelah checklist selesai, AI siap kerja. Tidak perlu ulang di chat berikutnya d
 
 ## Baca dulu (wajib, tiap session)
 
-1. **`PROJECT_RULES.md`** — **25 rules** project-specific. Baca full sebelum kerja apapun.
+1. **`PROJECT_RULES.md`** — **26 rules** project-specific. Baca full sebelum kerja apapun.
    - R-01 sampai R-15: workflow, docs, marker, kode
    - R-16: ejaan Jawa (é/è/ê, schwa polos)
    - R-17: skema field (krama_inggil masuk krama)
@@ -41,6 +41,7 @@ Setelah checklist selesai, AI siap kerja. Tidak perlu ulang di chat berikutnya d
    - R-23: Standarisasi ≠ HAPUS field. R-18 berlaku untuk FIELD juga.
    - R-24: Statistik "arti 100% filled" MENIPU. Audit real Indonesia.
    - R-25: detect_duplicates WAJIB tampilkan word NETRAL.
+   - R-26: register + krama_inggil DROPPED PERMANEN. Bukan hapus data, hapus kolom tolol.
 2. **`README.md`** (root) — workflow 4 fase, 2 mode dubbing, status pipeline.
 3. **`scripts/README.md`** — detail per Python script.
 4. **`worklog.md`** — baca entry terakhir (Task ID + Stage Summary).
@@ -57,30 +58,30 @@ Kalau ada konflik antara dokumen, `PROJECT_RULES.md` menang.
 ⏳ Fase 4: mix-tui       → mp4-{lang}-final.mp4 (nunggu dub ready)
 ```
 
-## Kamus Jawa status (v2.6.1, 10 Okt 2026 — post-wiki-markup-cleanup)
+## Kamus Jawa status (v2.7, 10 Okt 2026 — post-R-26 drop register + krama_inggil)
 
 ```
-Total entries:           44.005 (22 field per entry, semua identik — standarisasi PROPER)
+Total entries:           44.005 (20 field per entry, semua identik — drop register + krama_inggil)
 ✅ PAIRED 3-field:        2.937  (6.67%)  ← ngoko+krama+arti lengkap
 🟡 NGOKO+ARTI:           1.766  (4.01%)  ← perlu krama
 ⚠ NETRAL (word+arti):   39.230  (89.15%) ← arti=word (fallback), user tentukan ngoko/krama
 
-Analisa arti (CRITICAL — statistik 'arti 100% filled' MENIPU):
+Analisa arti (CRITICAL — statistik 'arti 100% filled' MENIPU, R-24):
   arti total terisi:        44.002 (99.99%)
   arti = word (fallback):  39.231 (89.15%) — BUKAN Indonesia, cuma copy word
   arti Indonesia real:     4.771 (10.84%) — paired + ngoko+arti (valid)
-  → User verifikasi 1-1 via TUI. Fallback = alat untuk marking NETRAL.
+  → User verifikasi 1-1 via TUI. Fallback = alat marking NETRAL.
 
-Field terisi:
+Field terisi (20 field per entry, R-26 drop register + krama_inggil):
   word:        39.231 (89.15%) — NETRAL unassigned
   ngoko:        4.704 (10.69%)
   krama:        3.006 (6.83%)
   arti:        44.002 (99.99%) — lihat analisa di atas
   aksara:      41.350 (93.97%)
   keterangan:  42.924 (97.54%)
-  register:    44.005 (100%) — semua 'umum' (label raw, tidak informatif)
+  register:    DROPPED (R-26: 100% 'umum' tidak informatif)
+  krama_inggil: DROPPED (R-17: 0 entries terisi, sudah masuk krama)
   kelas:         1.404 (3.20%) — kelas kata linguistik (t.a., t.k., t.s., dll)
-  krama_inggil:     0 (R-17: kosong by design)
 
 Source flags:
   is_lemma:    1.816 (4.13%)  is_mendeley:   814 (1.85%)
@@ -100,6 +101,13 @@ Wiki markup cleaning (10 Okt 2026):
   - 0 data hilang (R-18 compliance)
   - Hapus: [[...]] bracket, {{...}} template, <sup>/<br> tag
   - Preserve: link text, teks data, aksara, diakritik Jawa
+
+DB Supabase (post-R-26 standardisasi):
+  Table `kamus` (10 kolom):
+    id (uuid, auto-gen), ngoko, aksara, krama, arti, keterangan,
+    sumber, status, created_at, updated_at
+  → register + krama_inggil DROPPED dari DB (R-26)
+  → user run SQL DROP COLUMN untuk standardisasi DB
 
 Build script: DISABLED (R-20) — parser tolol merusak data
 Audit script: scripts/audit-statistik-duplikat.py (jalan kapan saja, read-only)
@@ -141,6 +149,7 @@ Audit script: scripts/audit-statistik-duplikat.py (jalan kapan saja, read-only)
 13. **JANGAN hapus field tanpa konfirmasi user (R-23).** Standarisasi ≠ hapus. R-18 berlaku untuk FIELD juga.
 14. **Audit dulu sebelum klaim "100% filled" (R-24).** Cek isi, bukan cuma count.
 15. **detect_duplicates WAJIB tampilkan word NETRAL (R-25).** Tanpa word, user tidak bisa putuskan merge.
+16. **register + krama_inggil DROPPED PERMANEN (R-26).** register 100% 'umum' (label raw tolol), krama_inggil kosong by R-17. Bukan hapus data, hapus kolom tolol.
 
 ## Yang sedang nunggu
 

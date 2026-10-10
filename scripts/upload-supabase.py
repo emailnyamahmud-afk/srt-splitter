@@ -10,17 +10,20 @@ upload-supabase.py — Upload entri kamus ke Supabase (USER-TRIGGERED ONLY)
   - JANGAN auto-run script ini. Hanya jalan kalau user klik menu '☁ Upload ke Supabase'
     di kamus-tui.py dan konfirmasi eksplisit (y/n) dengan preview entries.
 
-R-21 compliance:
+R-21 + R-26 compliance:
   - Field `word` di kamus-draft.json TIDAK di-upload (DB Supabase tidak punya kolom word).
-  - Field `entry_id`, `is_angka`, `is_lemma`, `source_count` TIDAK di-upload (DB tidak punya).
-  - Hanya upload: ngoko, aksara, krama, krama_inggil (R-17: kosong by design), arti,
-    keterangan (R-18: pertahankan konteks), register, sumber, status.
+  - Field `entry_id`, `is_angka`, `is_lemma`, `source_count`, `kelas`, `kelas_nama`,
+    `lemma_words`, `mendeley_id`, `dasanama_count` TIDAK di-upload (DB tidak punya).
+  - Field `register` + `krama_inggil` DROPPED dari JSON (R-26: register 100% 'umum' tidak
+    informatif, krama_inggil kosong by R-17). DB tidak punya kolom ini.
+  - Hanya upload: ngoko, aksara, krama, arti, keterangan (R-18: pertahankan konteks),
+    sumber, status.
 
-DB Supabase struktur aktual (10 Okt 2026, verified via REST API):
-  Table `kamus` (12 kolom):
-    id (uuid, auto-gen), ngoko, aksara, krama, krama_inggil, arti, keterangan,
-    register, sumber, status, created_at, updated_at
-  Total rows saat ini: 0 (DB clean sejak task docs-update-v2.27)
+DB Supabase struktur (10 Okt 2026, post-R-26 standardisasi):
+  Table `kamus` (10 kolom):
+    id (uuid, auto-gen), ngoko, aksara, krama, arti, keterangan,
+    sumber, status, created_at, updated_at
+  Total rows saat ini: 1 (sample test 9 Okt, akan di-drop saat standardisasi DB)
 
 Usage:
   # Dipanggil dari kamus-tui.py (menu '☁ Upload ke Supabase'):
@@ -95,18 +98,14 @@ def collect_ready_entries(data):
             skipped_draft += 1
             continue
 
-        # Build row (hanya kolom yang ada di DB)
-        ki = (entry.get("krama_inggil") or "").strip()
-        register = (entry.get("register") or "umum").strip()
+        # Build row (hanya kolom yang ada di DB, R-26: no register, no krama_inggil)
         sumber = (entry.get("sumber") or "kamus-jawa-draft.json (R-22)").strip()
         row = {
             "ngoko": ngoko,
             "aksara": entry.get("aksara", ""),
             "krama": krama,
-            "krama_inggil": ki,        # R-17: kosong by design (kramainggil masuk krama)
             "arti": arti,
             "keterangan": entry.get("keterangan", ""),
-            "register": register,
             "sumber": sumber,
             "status": "ready",        # DB status (mirror dari draft)
         }
@@ -152,7 +151,7 @@ def confirm_upload(ready_entries, stats, url):
         print(f"    {i}. ngoko:  {row['ngoko'][:35]!r}")
         print(f"       krama: {row['krama'][:35]!r}")
         print(f"       arti:  {row['arti'][:35]!r}")
-        print(f"       register: {row['register']}  sumber: {row['sumber'][:30]!r}")
+        print(f"       sumber: {row['sumber'][:30]!r}")
         print()
 
     if len(ready_entries) > 5:

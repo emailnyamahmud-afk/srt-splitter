@@ -431,6 +431,39 @@ User 9 Okt 2026: "GERBANGE IN GERBANGE OUT. SAMPAH YG MASUK = SAMPAH YG KELUAR. 
   - Frequency analyzer pakai DB, bukan draft lokal
 - AI tidak pernah upload — user selalu putuskan
 
+### R-26 — Drop field register + krama_inggil PERMANEN. Bukan hapus data, hapus kolom tolol.
+
+User 10 Okt 2026: "apa fungsi register? saya capek mengulang-ulang bahwa register dari source raw adalah tolol. tapi ya sudahlah, saya jelaskan juga AI kan amnesia."
+
+**Register = label raw yang TIDAK informatif:**
+- 100% entries = `'umum'` di 44.005 entries (sebaran 100% sama, tidak ada variasi)
+- Label `ngoko`/`krama`/`kawi` dari raw parsing AI tolol — tidak akurat
+- Kolom ngoko/krama/arti SUDAH jadi label — kata di kolom ngoko = kata ngoko, tidak perlu label terpisah
+- Analogi kamus Tiongkok-Indonesia: tidak ada kolom 'register' karena kolom 'tiongkok' sudah jelas tempat kata tiongkok
+
+**krama_inggil = kosong by R-17:**
+- 0 entries terisi (semua kosong)
+- R-17 sudah tetapkan krama_inggil masuk ke kolom krama (sinonim comma)
+- Kolom krama_inggil di DB = sampah kosong
+
+**Drop PERMANEN dari JSON + DB + TUI + upload script:**
+- JSON: 22 field → 20 field per entry (drop register + krama_inggil)
+- DB Supabase: 12 kolom → 10 kolom (drop register + krama_inggil)
+- TUI: hapus register dropdown, krama_inggil input, register breakdown display
+- upload-supabase.py: hapus register + krama_inggil dari row mapping
+
+**BUKAN melanggar R-18 (JANGAN HAPUS data):**
+- R-18 berlaku untuk data bernilai (ngoko, krama, arti, keterangan, aksara, sumber)
+- Register 'umum' 100% sama = tidak ada variasi, tidak ada info hilang
+- krama_inggil '' 100% kosong = tidak ada data hilang
+- Drop kolom tolol = clean-up, bukan hapus data
+
+**Audit sebelum drop (wajib):**
+1. Cek distribusi nilai field — kalau 100% sama (tidak ada variasi) = aman di-drop
+2. Cek apakah ada entries dengan nilai non-default — kalau ada, JANGAN drop (R-18)
+3. Backup dulu, baru drop
+4. Verify post-drop: total entries tetap, field lain preserve
+
 ### R-23 — Standarisasi ≠ HAPUS field. R-18 berlaku untuk FIELD juga.
 
 User 10 Okt 2026: "YG AKU MAU DISTANDARISASI JSON, BUKAN HAPUS DATA. TOLOL"
