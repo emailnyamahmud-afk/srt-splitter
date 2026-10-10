@@ -61,17 +61,23 @@ Kalau ada konflik antara dokumen, `PROJECT_RULES.md` menang.
 ⏳ Fase 4: mix-tui       → mp4-{lang}-final.mp4 (nunggu dub ready)
 ```
 
-## Kamus Jawa status (v4.1, 10 Okt 2026 — 3 source integrated: jv_wiktionary + mendeley + id_wiktionary)
+## Kamus Jawa status (v5.3, 10 Okt 2026 — 3 source + merge sinonim jadi 1 entry)
 
 ```
-Total entries:           45.638 (20 field per entry, semua identik)
-Version:                 v4.1 (definisi indo → keterangan, indo = terjemahan saja)
-Size:                    34.25 MB
+Total entries:           43.630 (20 field per entry, semua identik)
+Version:                 v5.3 (merge sinonim jadi 1 entry, standardisasi sumber + ejaan)
+Size:                    25.5 MB
+Duplikat:                1 (minor, user verifikasi manual)
 
 3 source integrated (NO kamus draft sampah):
   ✅ jv.wiktionary XML dump (parsed minimal) — 44.615 base
   ✅ mendeley curated academic — 145 (44 merged, 101 new)
   ✅ id.wiktionary XML dump (section Jawa) — 2.303 (1.363 merged, 940 new)
+
+Merge sinonim jadi 1 entry (R-28):
+  1.502 clusters, 1.898 entries di-merge
+  1.514 entries dengan word comma (sinonim)
+  word + keterangan = alat bantu untuk user isi indo/ngoko/krama
 
 Source belum integrasi (phase berikutnya — sampah merge AI, perlu parse XML resmi):
   🔜 dasanama — ~427 entries (kamus draft, sampah)
@@ -80,29 +86,31 @@ Source belum integrasi (phase berikutnya — sampah merge AI, perlu parse XML re
   🔜 lemma — ~644 entries (kamus draft, sampah)
 
 Field terisi:
-  word:       45.518 (99.7%) — lemma Jawa (NETRAL unassigned)
-  ngoko:         144 (0.3%) — dari mendeley
-  krama:       1.530 (3.4%) — dari jv_wiktionary {{ngoko|...}} + mendeley + id_wiktionary
-  indo:        1.963 (4.3%) — terjemahan Indonesia (mendeley + id_wiktionary)
-  keterangan: 45.542 (99.8%) — definisi Jawa (jv) + definisi ID (id_wiktionary) preserve
-  aksara:     44.585 (97.7%) — dari jv_wiktionary {{sirah|alt=...}}
-  kelas:          55 (0.1%) — kelas kata linguistik (t.a., t.k., t.s.)
+  word:       43.533 (99.8%) — lemma Jawa + sinonim comma (alat bantu)
+  ngoko:       1.396 (3.2%) — dari jv_wiktionary + mendeley
+  krama:       1.396 (3.2%) — dari jv_wiktionary + mendeley
+  indo:        1.468 (3.4%) — terjemahan Indonesia (mendeley + id_wiktionary)
+  keterangan: 43.475 (99.6%) — definisi Jawa + Indonesia (alat bantu)
+  aksara:     42.904 (98.3%) — dari jv_wiktionary
+  kelas:          46 (0.1%) — kelas kata linguistik
 
 Komposisi kelengkapan:
-  NETRAL (word, ngoko+krama kosong): 44.087 (96.6%)
-  PAIRED 3-field (ngoko+krama+indo):    141 (0.3%) — siap upload Supabase
-  indo only (no ngoko+krama):         1.622 (3.6%) — dari id_wiktionary
+  NETRAL (word, ngoko+krama kosong): 42.213 (96.8%)
+  PAIRED 3-field:                      323 (0.7%) — siap upload Supabase
+  ngoko+krama (no indo):             1.073 (2.5%)
+  indo only (no ngoko+krama):        1.145 (2.6%)
 
 Source breakdown:
-  jv only (XML dump):           43.256
-  jv + id_wiktionary:            2.238
-  jv + mendeley:                  137
-  jv + mendeley + id_wiktionary:     7
+  jv only (XML dump):           41.564
+  jv + id_wiktionary:            1.924
+  jv + mendeley:                  131
+  jv + id_wiktionary + mendeley:    11
 
-Multi-source (source_count > 1): 1.363
+Multi-source (source_count ≥ 2): 2.342
 Status: semua draft (user belum mark ready, R-12)
-Ejaan (diakritik é/è/ê): 9.785 (21.4%)
 Schema: 20 field, no register + no krama_inggil (R-26), arti → indo (rename)
+Sumber baku: jv.wiktionary.org (XML dump) + id.wiktionary.org (XML dump) + mendeley.com (curated)
+Ejaan: mendeley distandardisasi ke jv.wiktionary baku (28 tokens)
 
 TUI: kamus-tui.py v10 — compatible dengan field indo (bukan arti)
 Upload: upload-supabase.py v3 — compatible dengan field indo (R-26)
