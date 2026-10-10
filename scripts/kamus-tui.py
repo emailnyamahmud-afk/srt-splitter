@@ -69,6 +69,12 @@ KAMUS_SOURCES = {
         'desc': 'PURE mendeley dataset (curated academic, Faisal Rahutomo et al 2018). Paling terpercaya, sudah 100% ngoko+krama+arti. Kerja bertahap mulai dari sini.',
         'url': 'https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus_mendeley.json?t=CMD_TIMESTAMP',
     },
+    'jv_wiktionary_raw': {
+        'path': Path.home() / 'Dubbing' / 'kamus_jv_wiktionary_raw.json',
+        'label': 'kamus_jv_wiktionary_raw.json (44.615 entries — XML dump jv.wiktionary parsed minimal)',
+        'desc': 'Parsed dari XML dump resmi Wikimedia (jv.wiktionary.org). 1 lemma = 1 entry, TIDAK ADA merge sinonim AI. Paling bersih, akar dari sumber.',
+        'url': 'https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus_jv_wiktionary_raw.json?t=CMD_TIMESTAMP',
+    },
 }
 
 # Default source: 'draft'. Bisa di-switch di runtime via menu "📂 Switch source JSON".
