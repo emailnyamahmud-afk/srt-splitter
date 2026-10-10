@@ -8,7 +8,7 @@
 Saat user bilang **"baca AGENTS.md dan PROJECT_RULES.md"** (atau variasi: "mulai" / "baca dokumen" / chat pertama di session baru):
 
 1. **Baca dokumen (wajib)** — baca full file ini, lalu:
-   - `PROJECT_RULES.md` — **27 rules** project-specific (R-01 sampai R-27)
+   - `PROJECT_RULES.md` — **29 rules** project-specific (R-01 sampai R-29)
    - `README.md` (root) — workflow 4 fase + status
    - `scripts/README.md` — detail per script (kalau kerja Python)
    - `worklog.md` — baca entry terakhir untuk konteks task sebelumnya
@@ -29,7 +29,7 @@ Setelah checklist selesai, AI siap kerja. Tidak perlu ulang di chat berikutnya d
 
 ## Baca dulu (wajib, tiap session)
 
-1. **`PROJECT_RULES.md`** — **27 rules** project-specific. Baca full sebelum kerja apapun.
+1. **`PROJECT_RULES.md`** — **29 rules** project-specific. Baca full sebelum kerja apapun.
    - R-01 sampai R-15: workflow, docs, marker, kode
    - R-16: ejaan Jawa (é/è/ê, schwa polos)
    - R-17: skema field (krama_inggil masuk krama)
@@ -43,6 +43,8 @@ Setelah checklist selesai, AI siap kerja. Tidak perlu ulang di chat berikutnya d
    - R-25: detect_duplicates WAJIB tampilkan word NETRAL.
    - R-26: register + krama_inggil DROPPED PERMANEN. Bukan hapus data, hapus kolom tolol.
    - R-27: Kerja bertahap per source. Filter subset PURE, jangan campur sampah merge AI.
+   - R-28: Merge integrasi: KATA IDENTIK = merge jadi 1 entry. BEDA KATA = sinonim comma. DILARANG biarkan duplikat.
+   - R-29: Duplikat = kata IDENTIK lintas entry. Bukan sinonim, bukan token sama di field beda.
 2. **`README.md`** (root) — workflow 4 fase, 2 mode dubbing, status pipeline.
 3. **`scripts/README.md`** — detail per Python script.
 4. **`worklog.md`** — baca entry terakhir (Task ID + Stage Summary).
@@ -145,6 +147,8 @@ DB Supabase: 10 kolom (post-R-26, DROP register + krama_inggil)
 15. **detect_duplicates WAJIB tampilkan word NETRAL (R-25).** Tanpa word, user tidak bisa putuskan merge.
 16. **register + krama_inggil DROPPED PERMANEN (R-26).** register 100% 'umum' (label raw tolol), krama_inggil kosong by R-17. Bukan hapus data, hapus kolom tolol.
 17. **Kerja bertahap per source (R-27).** Filter subset PURE per sumber, user kurasi 1-1 manual via TUI, jangan campur sampah merge AI.
+18. **Merge integrasi: KATA IDENTIK = merge jadi 1 entry (R-28).** BEDA KATA = sinonim comma. DILARANG biarkan kata identik di 2+ entries (itu = duplikat).
+19. **Duplikat = kata IDENTIK lintas entry (R-29).** Bukan sinonim, bukan token sama di field beda. Kalau dalam 1 entry beda kata = itu sinonim.
 
 ## Yang sedang nunggu
 

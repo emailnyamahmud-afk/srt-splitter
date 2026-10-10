@@ -511,6 +511,65 @@ User 10 Okt 2026: "apa fungsi register? saya capek mengulang-ulang bahwa registe
 3. Backup dulu, baru drop
 4. Verify post-drop: total entries tetap, field lain preserve
 
+### R-28 — Aturan Merge Integrasi: KATA IDENTIK = MERGE jadi 1 entry. BEDA KATA = sinonim comma.
+
+User 10 Okt 2026: 'AI TOLOL GAGAL INTEGRASI, PADAHAL ATURAN MERGE KALAU IDENTIK
+DAN JADIKAN SINONIM DENGAN COMA KALAU BEDA. INI SUDAH USER JELASKAN TIAP SESI,
+TAPI AI MASIH TOLOL, SEHINGGA MENGHASILKA 900 LEBIH DUPLIKAT.'
+
+**Aturan merge yang BENAR (user sudah jelaskan tiap sesi):**
+
+1. **Kata identik** (case-insensitive) di 2+ entries → MERGE jadi 1 entry
+   - Contoh: entry A word='mangan' krama='nedha', entry B word='mangan' krama='dhahar'
+   - Hasil: 1 entry, word='mangan', krama='nedha, dhahar' (sinonim comma)
+   - BUKAN: 2 entries dengan word='mangan' (itu = DUPLIKAT, gagal merge)
+
+2. **Beda kata** di 1 entry = SINONIM, bukan duplikat
+   - Contoh: 1 entry ngoko='madhang, mangan' krama='nedha, dhahar'
+   - Itu = sinonim valid, BUKAN duplikat
+
+3. **Beda ngoko, sama krama** = sinonim valid, BUKAN duplikat
+   - Contoh: entry A ngoko='madhang' krama='nedha', entry B ngoko='mangan' krama='nedha'
+   - Krama 'nedha' sama, tapi ngoko beda = 2 konsep beda, 2 entries valid
+   - BUKAN duplikat yang harus di-merge
+
+**Bug yang terjadi (GAGAL integrasi):**
+- Aku merge berdasarkan token match (kata di krama/ngoko match) → tapi TIDAK merge kata identik di field word
+- Akibat: 989 duplikat (kata identik di 2+ entries yang seharusnya di-merge)
+- User harus validasi manual 989 duplikat karena AI tolol gagal merge dari awal
+
+**Yang HARUS dilakukan saat integrasi:**
+- Build index: lowercase kata → list entries yang punya kata itu
+- Untuk setiap kata yang muncul di 2+ entries:
+  - Merge jadi 1 entry: ngoko gabung comma, krama gabung comma, indo gabung ;
+  - Hapus entry duplikat, pertahankan 1 entry hasil merge
+- Setelah merge: 0 duplikat (kata identik = 1 entry)
+
+**Yang DILARANG:**
+- Merge berdasarkan token match saja (lupa merge word identik)
+- Biarkan kata identik di 2+ entries (itu = duplikat, bukan sinonim)
+- Klaim "duplikat krama = sinonim valid" padahal belum merge word identik
+
+### R-29 — Duplikat = KATA IDENTIK lintas entry. Bukan sinonim, bukan token sama di field beda.
+
+User 10 Okt 2026: 'aku cuma mau duplikat = kata identik, lintas entry.
+kalau dalam satu entry, beda kata = itu artinya sinonim.'
+
+**Definisi duplikat (USER yang putuskan, BUKAN AI):**
+- **Duplikat** = kata yang sama (case-insensitive) muncul di 2+ entries
+  - Contoh: entry #1 word='mangan', entry #2 word='mangan' → DUPLIKAT
+  - Contoh: entry #1 word='Setu', entry #2 word='setu' → DUPLIKAT (case-insensitive)
+
+- **Bukan duplikat** = sinonim (beda kata di 1 entry, atau beda ngoko dengan krama sama)
+  - Contoh: 1 entry ngoko='madhang, mangan' → sinonim, bukan duplikat
+  - Contoh: 2 entries ngoko beda tapi krama sama → sinonim, bukan duplikat
+
+**Bug TUI lama (sudah fix commit 67439ba):**
+- detect_duplicates pakai logika "token sama di field yang sama, beda entry"
+- Itu = sinonim detection, BUKAN duplikat detection
+- 8 kategori (ngoko, krama, word, arti, cross-field) = semua salah label
+- Code 267 baris → sederhanakan jadi 107 baris, logika simple: kata identik lintas entry
+
 ### R-23 — Standarisasi ≠ HAPUS field. R-18 berlaku untuk FIELD juga.
 
 User 10 Okt 2026: "YG AKU MAU DISTANDARISASI JSON, BUKAN HAPUS DATA. TOLOL"
