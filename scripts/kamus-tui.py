@@ -1060,11 +1060,45 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
     input('  Tekan Enter...')
 
 
-def _show_cross_field(cross_dict, field1, field2):
-    """Tampilkan cross-field duplikat — kata di field1 entry A = field2 entry B (beda entry).
+def _entry_idx_by_eid(data, eid):
+    """Map entry_id ke index di data['words']. Return -1 kalau gak ketemu."""
+    # entry_id 1-indexed, list 0-indexed. Tapi setelah merge bisa shift, jadi search by field.
+    for i, w in enumerate(data['words']):
+        if w.get('entry_id') == eid:
+            return i
+    return -1
+
+
+def _edit_by_eid_prompt(data, prompt_text='Edit entry_id (ketik angka, Enter=kembali):'):
+    """Prompt user input entry_id → cari index → panggil edit_entry. Loop sampai Enter kosong.
+
+    Dipakai di detect_duplicates supaya user bisa edit langsung dari list duplikat,
+    tanpa harus catat entry_id + balik menu utama + search lagi.
+    """
+    while True:
+        sel = input(f'  {prompt_text} ').strip()
+        if not sel:
+            return
+        try:
+            eid = int(sel)
+        except ValueError:
+            print(f'  ⚠ Bukan angka. Enter=kembali.')
+            continue
+        idx = _entry_idx_by_eid(data, eid)
+        if idx < 0:
+            print(f'  ⚠ entry_id #{eid} tidak ditemukan. Cek angka di list.')
+            continue
+        edit_entry(data, idx)
+        # Setelah edit, kasih pause supaya user bisa lihat hasil, lalu loop lagi
+        input('  Tekan Enter untuk lanjut edit entry lain (atau Enter kosong = kembali ke list)...')
+
+
+def _show_cross_field(data, cross_dict, field1, field2):
+    """Tampilkan cross-field duplikat + edit langsung dari list.
 
     Pure detection: tunjukin fakta, BUKAN filter "valid" / "halu" / "bug".
     User baca konteks, putuskan manual (R-18: jangan hapus otomatis).
+    Setelah display, user bisa ketik entry_id untuk edit langsung.
     """
     print(f'\n  Cross-field {field1}↔{field2} (kata di {field1} entry A = {field2} entry B, beda entry)')
     print(f'  Total: {len(cross_dict)} tokens')
@@ -1072,23 +1106,24 @@ def _show_cross_field(cross_dict, field1, field2):
     if not cross_dict:
         input('\n  Tekan Enter untuk kembali...')
         return
-    # Sort by total entries (e1 + e2) terbanyak
     sorted_cross = sorted(cross_dict.items(),
                          key=lambda x: len(x[1][0]) + len(x[1][1]),
                          reverse=True)
     for token, (e1, e2) in sorted_cross[:50]:
         print(f"\n  '{token}' muncul di {field1} ({len(e1)} entries) dan {field2} ({len(e2)} entries):")
-        for e in e1[:3]:
-            print(f"    {field1:6} [{e[1]}] arti={e[2][:30]!r}")
-        if len(e1) > 3:
-            print(f"    ... +{len(e1) - 3} more di {field1}")
-        for e in e2[:3]:
-            print(f"    {field2:6} [{e[1]}] arti={e[2][:30]!r}")
-        if len(e2) > 3:
-            print(f"    ... +{len(e2) - 3} more di {field2}")
+        for e in e1[:5]:
+            print(f"    {field1:6} [{e[1]}] arti={e[2][:50]!r}")
+        if len(e1) > 5:
+            print(f"    ... +{len(e1) - 5} more di {field1}")
+        for e in e2[:5]:
+            print(f"    {field2:6} [{e[1]}] arti={e[2][:50]!r}")
+        if len(e2) > 5:
+            print(f"    ... +{len(e2) - 5} more di {field2}")
     print(f'\n  Total {field1}↔{field2}: {len(cross_dict)} tokens')
-    print(f'  ⚠ JANGAN HAPUS otomatis. User baca konteks, edit manual via TUI.')
-    input('\n  Tekan Enter untuk kembali...')
+    print(f'  ⚠ JANGAN HAPUS otomatis. Baca konteks, edit manual.')
+    print(f'  → Ketik entry_id (angka di [..]) untuk edit langsung. Enter=kembali ke menu.')
+    _edit_by_eid_prompt(data)
+
 
 
 def detect_duplicates(data):
@@ -1232,13 +1267,13 @@ def detect_duplicates(data):
         dupes = dupes_arti
         field_name = 'arti'
     elif cat_sel.startswith('5.'):
-        _show_cross_field(cross_ng_kr, 'ngoko', 'krama')
+        _show_cross_field(data, cross_ng_kr, 'ngoko', 'krama')
         return
     elif cat_sel.startswith('6.'):
-        _show_cross_field(cross_ng_ar, 'ngoko', 'arti')
+        _show_cross_field(data, cross_ng_ar, 'ngoko', 'arti')
         return
     elif cat_sel.startswith('7.'):
-        _show_cross_field(cross_kr_ar, 'krama', 'arti')
+        _show_cross_field(data, cross_kr_ar, 'krama', 'arti')
         return
     elif cat_sel.startswith('8.'):
         # NETRAL duplikat di paired entry — gabung 3 pasangan
@@ -1257,13 +1292,14 @@ def detect_duplicates(data):
         for token, occ in sorted_comb[:50]:
             unique_entries = set(e[1][0] for e in occ)
             print(f"\n  '{token}' muncul di {len(unique_entries)} entries:")
-            for field, (idx, eid, ar, ket) in occ[:6]:
-                print(f"    {field:6} [{eid}] arti={ar[:30]!r}")
-            if len(occ) > 6:
-                print(f"    ... +{len(occ) - 6} more")
+            for field, (idx, eid, ar, ket) in occ[:8]:
+                print(f"    {field:6} [{eid}] arti={ar[:50]!r}")
+            if len(occ) > 8:
+                print(f"    ... +{len(occ) - 8} more")
         print(f"\n  Total: {len(combined)} tokens")
-        print(f'  ⚠ JANGAN HAPUS otomatis. User baca konteks, edit manual via TUI.')
-        input('\n  Tekan Enter untuk kembali...')
+        print(f'  ⚠ JANGAN HAPUS otomatis. Baca konteks, edit manual.')
+        print(f'  → Ketik entry_id (angka di [..]) untuk edit langsung. Enter=kembali ke menu.')
+        _edit_by_eid_prompt(data)
         return
 
     # Tampilkan duplikat (sorted by jumlah entries terbanyak)
@@ -1275,14 +1311,15 @@ def detect_duplicates(data):
 
     for token, entries in sorted_dupes[:50]:
         print(f"\n  '{token}' muncul di {len(entries)} entries:")
-        for idx, eid, ar, ket in entries[:5]:
-            print(f"    [{eid}] arti={ar[:30]!r}  ket={ket!r}")
-        if len(entries) > 5:
-            print(f"    ... +{len(entries) - 5} more")
+        for idx, eid, ar, ket in entries[:8]:
+            print(f"    [{eid}] arti={ar[:50]!r}  ket={ket[:40]!r}")
+        if len(entries) > 8:
+            print(f"    ... +{len(entries) - 8} more")
 
     print(f"\n  Total duplikat {field_name}: {len(sorted_dupes)} tokens")
-    print(f"  ⚠ JANGAN HAPUS otomatis. User baca konteks, edit manual via TUI.")
-    input('\n  Tekan Enter untuk kembali...')
+    print(f'  ⚠ JANGAN HAPUS otomatis. Baca konteks, edit manual.')
+    print(f'  → Ketik entry_id (angka di [..]) untuk edit langsung. Enter=kembali ke menu.')
+    _edit_by_eid_prompt(data)
 
 
 def main_menu(data):
