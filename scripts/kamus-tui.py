@@ -1112,11 +1112,11 @@ def _show_cross_field(data, cross_dict, field1, field2):
     for token, (e1, e2) in sorted_cross[:50]:
         print(f"\n  '{token}' muncul di {field1} ({len(e1)} entries) dan {field2} ({len(e2)} entries):")
         for e in e1[:5]:
-            print(f"    {field1:6} [{e[1]}] arti={e[2][:50]!r}")
+            print(f"    {field1:6} [{e[1]}] word={e[4]!r} arti={e[2][:40]!r}")
         if len(e1) > 5:
             print(f"    ... +{len(e1) - 5} more di {field1}")
         for e in e2[:5]:
-            print(f"    {field2:6} [{e[1]}] arti={e[2][:50]!r}")
+            print(f"    {field2:6} [{e[1]}] word={e[4]!r} arti={e[2][:40]!r}")
         if len(e2) > 5:
             print(f"    ... +{len(e2) - 5} more di {field2}")
     print(f'\n  Total {field1}↔{field2}: {len(cross_dict)} tokens')
@@ -1167,25 +1167,26 @@ def detect_duplicates(data):
         word = (k.get('word', '') or '').strip().lower()
         ar = (k.get('arti', '') or '').strip().lower()
         ar_raw = (k.get('arti', '') or '').strip()[:60]  # Original case untuk display
+        word_raw = (k.get('word', '') or '').strip()[:40]  # Original case untuk display
         ket = (k.get('keterangan', '') or '').strip()[:60]
         eid = k.get('entry_id', '?')
 
         for t in ng.split(','):
             t = t.strip()
             if t and len(t) > 1:
-                ngoko_idx[t].append((i, eid, ar_raw, ket))
+                ngoko_idx[t].append((i, eid, ar_raw, ket, word_raw))
         for t in kr.split(','):
             t = t.strip()
             if t and len(t) > 1:
-                krama_idx[t].append((i, eid, ar_raw, ket))
+                krama_idx[t].append((i, eid, ar_raw, ket, word_raw))
         for t in word.split(','):
             t = t.strip()
             if t and len(t) > 1:
-                word_idx[t].append((i, eid, ar_raw, ket))
+                word_idx[t].append((i, eid, ar_raw, ket, word_raw))
         for t in ar.split(','):
             t = t.strip()
             if t and len(t) > 1:
-                arti_idx[t].append((i, eid, ar_raw, ket))
+                arti_idx[t].append((i, eid, ar_raw, ket, word_raw))
 
     # Find dupes (kata sama di field yang sama, beda entry)
     dupes_ngoko = {t: v for t, v in ngoko_idx.items() if len(v) > 1}
@@ -1292,8 +1293,8 @@ def detect_duplicates(data):
         for token, occ in sorted_comb[:50]:
             unique_entries = set(e[1][0] for e in occ)
             print(f"\n  '{token}' muncul di {len(unique_entries)} entries:")
-            for field, (idx, eid, ar, ket) in occ[:8]:
-                print(f"    {field:6} [{eid}] arti={ar[:50]!r}")
+            for field, (idx, eid, ar, ket, word_raw) in occ[:8]:
+                print(f"    {field:6} [{eid}] word={word_raw!r} arti={ar[:40]!r}")
             if len(occ) > 8:
                 print(f"    ... +{len(occ) - 8} more")
         print(f"\n  Total: {len(combined)} tokens")
@@ -1311,8 +1312,10 @@ def detect_duplicates(data):
 
     for token, entries in sorted_dupes[:50]:
         print(f"\n  '{token}' muncul di {len(entries)} entries:")
-        for idx, eid, ar, ket in entries[:8]:
-            print(f"    [{eid}] arti={ar[:50]!r}  ket={ket[:40]!r}")
+        for idx, eid, ar, ket, word_raw in entries[:8]:
+            print(f"    [{eid}] word={word_raw!r} arti={ar[:40]!r}")
+            if ket:
+                print(f"          ket={ket[:50]!r}")
         if len(entries) > 8:
             print(f"    ... +{len(entries) - 8} more")
 
