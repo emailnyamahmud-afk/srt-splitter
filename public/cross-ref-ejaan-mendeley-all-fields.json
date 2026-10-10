@@ -1,23 +1,58 @@
 {
   "summary": {
     "mendeley_count": 145,
-    "broad_index_unique": 9837,
-    "matches_count": 51,
+    "broad_index_unique_all_fields": 15283,
+    "field_token_count": {
+      "keterangan": 34654,
+      "word": 8788,
+      "arti": 9937,
+      "krama": 428,
+      "lemma_words": 62,
+      "ngoko": 902
+    },
+    "matches_count": 71,
     "source_breakdown": {
-      "jv.wiktionary PURE": 46,
-      "merged/mixed": 3,
-      "dasanama PURE": 3,
-      "lampiran PURE": 1
+      "jv.wiktionary PURE": 66,
+      "lampiran PURE": 14,
+      "merged/mixed": 9,
+      "dasanama PURE": 4,
+      "lemma PURE": 2,
+      "mendeley PURE": 4
     }
   },
   "matches": [
+    {
+      "eid": 4,
+      "field": "ngoko",
+      "mendeley_ejaan": "akehe",
+      "baku_ejaan": "akèhé",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
+      "mendeley_ngoko": "akehe",
+      "mendeley_krama": "kathahipun",
+      "mendeley_arti": "umumnya"
+    },
     {
       "eid": 6,
       "field": "ngoko",
       "mendeley_ejaan": "ayake",
       "baku_ejaan": "ayaké",
       "baku_sources": [
-        "jv.wiktionary PURE"
+        "jv.wiktionary PURE",
+        "lampiran PURE"
+      ],
+      "mendeley_ngoko": "ayake",
+      "mendeley_krama": "mbok menawi",
+      "mendeley_arti": "barangkali"
+    },
+    {
+      "eid": 6,
+      "field": "ngoko",
+      "mendeley_ejaan": "ayake",
+      "baku_ejaan": "Ayaké",
+      "baku_sources": [
+        "merged/mixed"
       ],
       "mendeley_ngoko": "ayake",
       "mendeley_krama": "mbok menawi",
@@ -29,11 +64,24 @@
       "mendeley_ejaan": "sade",
       "baku_ejaan": "sadé",
       "baku_sources": [
+        "lampiran PURE",
         "merged/mixed"
       ],
       "mendeley_ngoko": "dol",
       "mendeley_krama": "sade",
       "mendeley_arti": "jual"
+    },
+    {
+      "eid": 19,
+      "field": "ngoko",
+      "mendeley_ejaan": "endheg",
+      "baku_ejaan": "endhèg",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
+      "mendeley_ngoko": "endheg",
+      "mendeley_krama": "kendel",
+      "mendeley_arti": "henti"
     },
     {
       "eid": 19,
@@ -78,11 +126,40 @@
       "baku_ejaan": "séla",
       "baku_sources": [
         "jv.wiktionary PURE",
+        "lampiran PURE",
         "merged/mixed"
       ],
       "mendeley_ngoko": "inten",
       "mendeley_krama": "sela",
       "mendeley_arti": "intan"
+    },
+    {
+      "eid": 31,
+      "field": "ngoko",
+      "mendeley_ejaan": "jenggot",
+      "baku_ejaan": "jénggot",
+      "baku_sources": [
+        "jv.wiktionary PURE",
+        "lemma PURE",
+        "merged/mixed"
+      ],
+      "mendeley_ngoko": "jenggot",
+      "mendeley_krama": "jenggot, gumbala",
+      "mendeley_arti": "janggut"
+    },
+    {
+      "eid": 31,
+      "field": "krama",
+      "mendeley_ejaan": "jenggot",
+      "baku_ejaan": "jénggot",
+      "baku_sources": [
+        "jv.wiktionary PURE",
+        "lemma PURE",
+        "merged/mixed"
+      ],
+      "mendeley_ngoko": "jenggot",
+      "mendeley_krama": "jenggot, gumbala",
+      "mendeley_arti": "janggut"
     },
     {
       "eid": 34,
@@ -95,6 +172,19 @@
       "mendeley_ngoko": "karep",
       "mendeley_krama": "kajeng, kersa",
       "mendeley_arti": "kehendak"
+    },
+    {
+      "eid": 35,
+      "field": "ngoko",
+      "mendeley_ejaan": "karepe",
+      "baku_ejaan": "karepé",
+      "baku_sources": [
+        "jv.wiktionary PURE",
+        "mendeley PURE"
+      ],
+      "mendeley_ngoko": "karepe",
+      "mendeley_krama": "kajengipun, kersanipun",
+      "mendeley_arti": "biarlah"
     },
     {
       "eid": 36,
@@ -150,7 +240,8 @@
       "mendeley_ejaan": "kelangan",
       "baku_ejaan": "kélangan",
       "baku_sources": [
-        "jv.wiktionary PURE"
+        "jv.wiktionary PURE",
+        "lampiran PURE"
       ],
       "mendeley_ngoko": "kelangan",
       "mendeley_krama": "kecalan",
@@ -173,6 +264,19 @@
       "field": "ngoko",
       "mendeley_ejaan": "kelingan",
       "baku_ejaan": "kèlingan",
+      "baku_sources": [
+        "jv.wiktionary PURE",
+        "mendeley PURE"
+      ],
+      "mendeley_ngoko": "kelingan",
+      "mendeley_krama": "kemutan, kengetan",
+      "mendeley_arti": "teringat"
+    },
+    {
+      "eid": 48,
+      "field": "ngoko",
+      "mendeley_ejaan": "kelingan",
+      "baku_ejaan": "kélingan",
       "baku_sources": [
         "jv.wiktionary PURE"
       ],
@@ -211,6 +315,7 @@
       "baku_ejaan": "séla",
       "baku_sources": [
         "jv.wiktionary PURE",
+        "lampiran PURE",
         "merged/mixed"
       ],
       "mendeley_ngoko": "kemenyan",
@@ -222,6 +327,18 @@
       "field": "ngoko",
       "mendeley_ejaan": "kentekan",
       "baku_ejaan": "kentèkan",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
+      "mendeley_ngoko": "kentekan",
+      "mendeley_krama": "ketelasan",
+      "mendeley_arti": "kehabisan"
+    },
+    {
+      "eid": 53,
+      "field": "ngoko",
+      "mendeley_ejaan": "kentekan",
+      "baku_ejaan": "kentékan",
       "baku_sources": [
         "jv.wiktionary PURE"
       ],
@@ -283,11 +400,36 @@
       "mendeley_ejaan": "lalen",
       "baku_ejaan": "lalèn",
       "baku_sources": [
+        "jv.wiktionary PURE",
         "lampiran PURE"
       ],
       "mendeley_ngoko": "lalen",
       "mendeley_krama": "supenan",
       "mendeley_arti": "pelupa"
+    },
+    {
+      "eid": 68,
+      "field": "ngoko",
+      "mendeley_ejaan": "ngenger",
+      "baku_ejaan": "ngèngèr",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
+      "mendeley_ngoko": "mbatur, ngenger",
+      "mendeley_krama": "ngerencang, ngabdi, ngenger",
+      "mendeley_arti": "mengabdi"
+    },
+    {
+      "eid": 68,
+      "field": "krama",
+      "mendeley_ejaan": "ngenger",
+      "baku_ejaan": "ngèngèr",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
+      "mendeley_ngoko": "mbatur, ngenger",
+      "mendeley_krama": "ngerencang, ngabdi, ngenger",
+      "mendeley_arti": "mengabdi"
     },
     {
       "eid": 69,
@@ -326,6 +468,18 @@
       "mendeley_arti": "membatalkan"
     },
     {
+      "eid": 80,
+      "field": "ngoko",
+      "mendeley_ejaan": "ndokokake",
+      "baku_ejaan": "ndokokaké",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
+      "mendeley_ngoko": "ndelehaken, ndokokake",
+      "mendeley_krama": "nyukakaken, maringaken, ddekekaken",
+      "mendeley_arti": "meletakkan"
+    },
+    {
       "eid": 83,
       "field": "ngoko",
       "mendeley_ejaan": "ngajokake",
@@ -350,6 +504,22 @@
       "mendeley_arti": "memperluas"
     },
     {
+      "eid": 85,
+      "field": "ngoko",
+      "mendeley_ejaan": "nganakake",
+      "baku_ejaan": "nganakaké",
+      "baku_sources": [
+        "dasanama PURE",
+        "jv.wiktionary PURE",
+        "lampiran PURE",
+        "mendeley PURE",
+        "merged/mixed"
+      ],
+      "mendeley_ngoko": "nganakake",
+      "mendeley_krama": "ngawontenake",
+      "mendeley_arti": "mengadakan"
+    },
+    {
       "eid": 88,
       "field": "ngoko",
       "mendeley_ejaan": "ngeling-eling",
@@ -372,6 +542,18 @@
       "mendeley_ngoko": "ngeling-eling",
       "mendeley_krama": "ngemut-emut",
       "mendeley_arti": "mengingat-ingat"
+    },
+    {
+      "eid": 89,
+      "field": "ngoko",
+      "mendeley_ejaan": "ngelingi",
+      "baku_ejaan": "ngèlingi",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
+      "mendeley_ngoko": "ngelingi",
+      "mendeley_krama": "ngengeti",
+      "mendeley_arti": "mengingat"
     },
     {
       "eid": 89,
@@ -434,6 +616,18 @@
       "mendeley_arti": "menuai"
     },
     {
+      "eid": 94,
+      "field": "ngoko",
+      "mendeley_ejaan": "nggampangake",
+      "baku_ejaan": "nggampangaké",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
+      "mendeley_ngoko": "nggampangake",
+      "mendeley_krama": "nggampilaken",
+      "mendeley_arti": "meremehkan"
+    },
+    {
       "eid": 97,
       "field": "krama",
       "mendeley_ejaan": "munageni",
@@ -444,6 +638,18 @@
       "mendeley_ngoko": "ngujari",
       "mendeley_krama": "ngujari, munageni",
       "mendeley_arti": "berjanji untuk"
+    },
+    {
+      "eid": 98,
+      "field": "ngoko",
+      "mendeley_ejaan": "njarwakake",
+      "baku_ejaan": "njarwakaké",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
+      "mendeley_ngoko": "njarwakake",
+      "mendeley_krama": "njarwakaken",
+      "mendeley_arti": "menjelaskan"
     },
     {
       "eid": 100,
@@ -463,7 +669,8 @@
       "mendeley_ejaan": "njoged",
       "baku_ejaan": "njogèd",
       "baku_sources": [
-        "jv.wiktionary PURE"
+        "jv.wiktionary PURE",
+        "lampiran PURE"
       ],
       "mendeley_ngoko": "njoged",
       "mendeley_krama": "njoged, mbeksa",
@@ -475,11 +682,27 @@
       "mendeley_ejaan": "njoged",
       "baku_ejaan": "njogèd",
       "baku_sources": [
-        "jv.wiktionary PURE"
+        "jv.wiktionary PURE",
+        "lampiran PURE"
       ],
       "mendeley_ngoko": "njoged",
       "mendeley_krama": "njoged, mbeksa",
       "mendeley_arti": "menari"
+    },
+    {
+      "eid": 103,
+      "field": "ngoko",
+      "mendeley_ejaan": "nyenengake",
+      "baku_ejaan": "nyenengaké",
+      "baku_sources": [
+        "jv.wiktionary PURE",
+        "lampiran PURE",
+        "mendeley PURE",
+        "merged/mixed"
+      ],
+      "mendeley_ngoko": "nyenengake",
+      "mendeley_krama": "ngremenaken",
+      "mendeley_arti": "menyenangkan"
     },
     {
       "eid": 105,
@@ -523,7 +746,8 @@
       "mendeley_ejaan": "padesan",
       "baku_ejaan": "padésan",
       "baku_sources": [
-        "jv.wiktionary PURE"
+        "jv.wiktionary PURE",
+        "lampiran PURE"
       ],
       "mendeley_ngoko": "padesan",
       "mendeley_krama": "pedhusunan",
@@ -540,6 +764,46 @@
       "mendeley_ngoko": "pegunungan",
       "mendeley_krama": "pareden",
       "mendeley_arti": "pegunungan"
+    },
+    {
+      "eid": 118,
+      "field": "ngoko",
+      "mendeley_ejaan": "sadurunge",
+      "baku_ejaan": "sadurungé",
+      "baku_sources": [
+        "jv.wiktionary PURE",
+        "lampiran PURE",
+        "merged/mixed"
+      ],
+      "mendeley_ngoko": "sadurunge",
+      "mendeley_krama": "saderengipun",
+      "mendeley_arti": "sebelumnya"
+    },
+    {
+      "eid": 119,
+      "field": "ngoko",
+      "mendeley_ejaan": "sajen",
+      "baku_ejaan": "sajèn",
+      "baku_sources": [
+        "jv.wiktionary PURE",
+        "lampiran PURE"
+      ],
+      "mendeley_ngoko": "sajen",
+      "mendeley_krama": "sajen, caosan",
+      "mendeley_arti": "sajian"
+    },
+    {
+      "eid": 119,
+      "field": "krama",
+      "mendeley_ejaan": "sajen",
+      "baku_ejaan": "sajèn",
+      "baku_sources": [
+        "jv.wiktionary PURE",
+        "lampiran PURE"
+      ],
+      "mendeley_ngoko": "sajen",
+      "mendeley_krama": "sajen, caosan",
+      "mendeley_arti": "sajian"
     },
     {
       "eid": 123,
@@ -612,6 +876,18 @@
       "mendeley_ngoko": "suwe-suwe",
       "mendeley_krama": "dangu-dangu",
       "mendeley_arti": "lama-kelamaan"
+    },
+    {
+      "eid": 136,
+      "field": "krama",
+      "mendeley_ejaan": "taken",
+      "baku_ejaan": "takèn",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
+      "mendeley_ngoko": "takon",
+      "mendeley_krama": "taken, tangglet",
+      "mendeley_arti": "bertanya"
     },
     {
       "eid": 144,
