@@ -79,7 +79,7 @@ def collect_ready_entries(data):
     for entry in data.get("words", []):
         ngoko = (entry.get("ngoko") or "").strip()
         krama = (entry.get("krama") or "").strip()
-        arti = (entry.get("arti") or "").strip()
+        arti = (entry.get("indo") or "").strip()
         word = (entry.get("word") or "").strip()
         status = (entry.get("status") or "draft").strip().lower()
 
@@ -104,7 +104,7 @@ def collect_ready_entries(data):
             "ngoko": ngoko,
             "aksara": entry.get("aksara", ""),
             "krama": krama,
-            "arti": arti,
+            "indo": arti,
             "keterangan": entry.get("keterangan", ""),
             "sumber": sumber,
             "status": "ready",        # DB status (mirror dari draft)
@@ -150,7 +150,7 @@ def confirm_upload(ready_entries, stats, url):
     for i, row in enumerate(ready_entries[:5], 1):
         print(f"    {i}. ngoko:  {row['ngoko'][:35]!r}")
         print(f"       krama: {row['krama'][:35]!r}")
-        print(f"       arti:  {row['arti'][:35]!r}")
+        print(f"       arti:  {row['indo'][:35]!r}")
         print(f"       sumber: {row['sumber'][:30]!r}")
         print()
 

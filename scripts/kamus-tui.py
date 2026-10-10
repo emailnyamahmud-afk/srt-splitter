@@ -7,13 +7,13 @@ User tinggal tab/panah, pilih menu:
   🔍 Search (cari kata)
   📋 Browse semua (pagination)
   ⭐ Browse entri dengan krama mapping (auto-filled)
-  📝 Browse entri yang BELUM ada arti
+  📝 Browse entri yang BELUM ada indo
   📊 Browse per kelengkapan (NETRAL / ngoko-only / paired / lengkap)
   🔍 Deteksi Duplikat (audit, JANGAN hapus, user putuskan)
   ☁  Upload ke Supabase (hanya yang sudah di-mark ready oleh user)
   ❌ Keluar
 
-Edit per entri: ngoko, krama, arti (Indonesia)
+Edit per entri: ngoko, krama, indo
   - keterangan JAWA read-only (JANGAN HAPUS)
   - R-21: field 'word' otomatis kosong kalau paired (ngoko/krama terisi)
   - R-21: field 'word' terisi hanya untuk entries NETRAL (belum ada ngoko/krama)
@@ -21,7 +21,7 @@ Edit per entri: ngoko, krama, arti (Indonesia)
 Status tracking (R-12 compliance — JANGAN auto-set ready):
   status='draft' = default (belum di-mark ready oleh user)
   status='ready' = user EXPLICIT mark via menu 'Mark READY/DRAFT bulk'
-  3-field lengkap (ngoko+krama+arti) TIDAK otomatis = ready
+  3-field lengkap (ngoko+krama+indo) TIDAK otomatis = ready
 
 Merge: menu khusus, search kata 1 → search kata 2 → preview → konfirmasi
 Upload: HANYA entries dengan status='ready' + 3-field lengkap (R-12)
@@ -229,15 +229,15 @@ def show_stats(data):
 
     # Komposisi kelengkapan field (prioritas kerja user)
     has_word = sum(1 for w in words if (w.get('word') or '').strip())
-    ngoko_only = sum(1 for w in words if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and not (w.get('arti') or '').strip())
-    ngoko_krama = sum(1 for w in words if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and not (w.get('arti') or '').strip())
-    ngoko_arti_no_krama = sum(1 for w in words if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and (w.get('arti') or '').strip())
-    ngoko_krama_arti = sum(1 for w in words if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and (w.get('arti') or '').strip())
+    ngoko_only = sum(1 for w in words if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and not (w.get('indo') or '').strip())
+    ngoko_krama = sum(1 for w in words if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and not (w.get('indo') or '').strip())
+    ngoko_arti_no_krama = sum(1 for w in words if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and (w.get('indo') or '').strip())
+    ngoko_krama_arti = sum(1 for w in words if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and (w.get('indo') or '').strip())
     no_ngoko = sum(1 for w in words if not (w.get('ngoko') or '').strip())
 
     # Mapping stats (detail) — for Reference
     with_krama = sum(1 for w in words if (w.get('krama') or '').strip())
-    with_arti = sum(1 for w in words if (w.get('arti') or '').strip())
+    with_arti = sum(1 for w in words if (w.get('indo') or '').strip())
     both_ngoko_krama = sum(1 for w in words if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip())
 
     print('╔' + '═' * 60 + '╗')
@@ -258,11 +258,11 @@ def show_stats(data):
     print()
     print('  Komposisi kelengkapan field:')
     has_word_netral = sum(1 for w in words if (w.get("word") or "").strip() and not (w.get("ngoko") or "").strip() and not (w.get("krama") or "").strip())
-    print(f"    0. NETRAL (word+arti, ngoko+krama kosong): {has_word_netral:6d}  (per R-21, user tentukan ngoko/krama)")
-    print(f'    1. ngoko saja:               {ngoko_only:6d}  (perlu krama + arti)')
-    print(f'    2. ngoko + krama:              {ngoko_krama:6d}  (perlu arti)')
-    print(f'    3. ngoko + arti (no krama):    {ngoko_arti_no_krama:6d}  (perlu krama)')
-    print(f'    4. ngoko + krama + arti:       {ngoko_krama_arti:6d}  (3-field lengkap)')
+    print(f"    0. NETRAL (word+indo, ngoko+krama kosong): {has_word_netral:6d}  (per R-21, user tentukan ngoko/krama)")
+    print(f'    1. ngoko saja:               {ngoko_only:6d}  (perlu krama + indo)')
+    print(f'    2. ngoko + krama:              {ngoko_krama:6d}  (perlu indo)')
+    print(f'    3. ngoko + indo (no krama):    {ngoko_arti_no_krama:6d}  (perlu krama)')
+    print(f'    4. ngoko + krama + indo:       {ngoko_krama_arti:6d}  (3-field lengkap)')
     print(f'    5. no ngoko (orphan):         {no_ngoko:6d}  (krama-only, kawi)')
     print()
     print('  Status (patokan valid — pakai field status):')
@@ -272,7 +272,7 @@ def show_stats(data):
     print('  Mapping stats (detail):')
     print(f'    ngoko + krama (auto-filled):    {both_ngoko_krama:6d}  ⭐ (dari template Wikisastra)')
     print(f'    krama filled (total):           {with_krama:6d}')
-    print(f'    arti (Indonesia) filled:        {with_arti:6d}  ⭐ (user edit manual)')
+    print(f'    indo filled:        {with_arti:6d}  ⭐ (user edit manual)')
     print()
     print('  Status (untuk upload):')
     for s, c in status_count.most_common():
@@ -291,7 +291,7 @@ def edit_entry(data, idx):
     word_old = entry.get('word', '')
     ngoko_old = entry.get('ngoko', '')
     krama_old = entry.get('krama', '')
-    arti_old = entry.get('arti', '')
+    arti_old = entry.get('indo', '')
     ket = entry.get('keterangan', '')
     sumber = entry.get('sumber', '')
 
@@ -320,7 +320,7 @@ def edit_entry(data, idx):
     print(f'  │ ngoko:        {ngoko_old[:42] or "(kosong)"}')
     print(f'  │ aksara:        {entry.get("aksara", "")[:42]}')
     print(f'  │ krama:         {krama_old[:42] or "(kosong)"}')
-    print(f'  │ arti (ID):     {arti_old[:42] or "(kosong)"}')
+    print(f'  │ indo:     {arti_old[:42] or "(kosong)"}')
     print(f'  │ sumber:        {sumber[:42]}')
     print(f'  │ source:        [{src_count}x] {src_str}')
     print(f'  │ status:        {status_icon} {entry.get("status", "draft")}')
@@ -351,7 +351,7 @@ def edit_entry(data, idx):
         print()
     new_ngoko = questionary.text('  ngoko:', default=ngoko_old).ask()
     new_krama = questionary.text('  krama:', default=krama_old).ask()
-    new_arti = questionary.text('  arti (Indonesia):', default=arti_old).ask()
+    new_arti = questionary.text('  indo:', default=arti_old).ask()
 
     if new_ngoko is None or new_krama is None or new_arti is None:
         print('\n  ⏹ Dibatalkan.')
@@ -377,7 +377,7 @@ def edit_entry(data, idx):
     # Update entry
     entry['ngoko'] = new_ngoko
     entry['krama'] = new_krama
-    entry['arti'] = new_arti
+    entry['indo'] = new_arti
 
     # R-21: word otomatis kosong kalau sudah paired (ngoko + krama atau ngoko + arti atau krama + arti)
     # TETAP dipertahankan kalau masih netral (belum ada pasangan)
@@ -471,7 +471,7 @@ def browse_list(data, entries_with_idx, title):
                 mini_data = {'words': [e for _, e in entries_with_idx]}
                 mini_matches = _search_entries(
                     mini_data, search_query,
-                    fields=['ngoko', 'krama', 'arti'],
+                    fields=['ngoko', 'krama', 'indo'],
                 )
                 # Remap mini indices (0..N-1) ke orig_idx dari entries_with_idx
                 orig_indices = [orig for orig, _ in entries_with_idx]
@@ -500,7 +500,7 @@ def _search_entries(data, query, fields=None, exclude_idx=None):
         data: kamus data dict (punya key 'words')
         query: kata yang dicari (akan di-lowercase + strip)
         fields: list field yang di-search. Default: ngoko, krama, arti (R-21: word opsional).
-                Pilihan valid: 'ngoko', 'krama', 'arti', 'word'
+                Pilihan valid: 'ngoko', 'krama', 'indo', 'word'
         exclude_idx: index yang di-skip (mis. untuk merge, skip entry pertama)
 
     Returns:
@@ -508,7 +508,7 @@ def _search_entries(data, query, fields=None, exclude_idx=None):
         Konsisten dengan behavior lama (search_menu, browse_list search, bulk_mark, merge_2).
     """
     if fields is None:
-        fields = ['ngoko', 'krama', 'arti']
+        fields = ['ngoko', 'krama', 'indo']
     q = (query or '').lower().strip()
     if not q:
         return []
@@ -538,7 +538,7 @@ def _entry_label(orig_idx, entry):
     word = (entry.get('word', '') or '').strip()
     ngoko = (entry.get('ngoko', '') or '').strip()
     kr = (entry.get('krama', '') or '').strip()
-    ar = (entry.get('arti', '') or '').strip()
+    ar = (entry.get('indo', '') or '').strip()
     eid = entry.get('entry_id', orig_idx + 1)
     icon = '✓' if entry.get('status') == 'ready' else '○'
 
@@ -567,7 +567,7 @@ def search_menu(data):
     # Phase 1: pakai helper _search_entries (fields: ngoko, krama, arti)
     matches = _search_entries(
         data, query,
-        fields=['ngoko', 'krama', 'arti'],
+        fields=['ngoko', 'krama', 'indo'],
     )
 
     if not matches:
@@ -586,7 +586,7 @@ def browse_with_krama(data):
 
 def browse_no_arti(data):
     """Browse entries yang BELUM ada arti (Indonesia)"""
-    matches = [(i, w) for i, w in enumerate(data['words']) if not (w.get('arti') or '').strip()]
+    matches = [(i, w) for i, w in enumerate(data['words']) if not (w.get('indo') or '').strip()]
     browse_list(data, matches, '📝 Entries BELUM ada arti (Indonesia)')
 
 
@@ -626,19 +626,19 @@ def browse_by_source(data):
 def browse_by_kelengkapan(data):
     """Browse entries berdasarkan komposisi kelengkapan field.
     User bisa pilih kerja bertahap:
-      0. NETRAL (word+arti, ngoko+krama kosong) — per R-21, mayoritas entries
-      1. ngoko saja (perlu krama + arti)
-      2. ngoko + krama (perlu arti)
-      3. ngoko + arti (no krama) (perlu krama)
-      4. ngoko + krama + arti (3-field ready, perlu validasi)
+      0. NETRAL (word+indo, ngoko+krama kosong) — per R-21, mayoritas entries
+      1. ngoko saja (perlu krama + indo)
+      2. ngoko + krama (perlu indo)
+      3. ngoko + indo (no krama) (perlu krama)
+      4. ngoko + krama + indo (3-field ready, perlu validasi)
       5. no ngoko (orphan krama-only)
     """
     kel_choices = [
-        '0. ⚠ NETRAL (word+arti, ngoko+krama kosong — user tentukan ngoko/krama)',
-        '1. ngoko saja (perlu krama + arti)',
-        '2. ngoko + krama (perlu arti)',
+        '0. ⚠ NETRAL (word+indo, ngoko+krama kosong — user tentukan ngoko/krama)',
+        '1. ngoko saja (perlu krama + indo)',
+        '2. ngoko + krama (perlu indo)',
         '3. ngoko + arti (no krama, perlu krama)',
-        '4. ngoko + krama + arti (3-field ready, perlu validasi)',
+        '4. ngoko + krama + indo (3-field ready, perlu validasi)',
         '5. no ngoko (orphan krama-only)',
         '↩ Kembali',
     ]
@@ -660,25 +660,25 @@ def browse_by_kelengkapan(data):
         matches = [(i, w) for i, w in enumerate(data['words'])
                    if (w.get('ngoko') or '').strip()
                    and not (w.get('krama') or '').strip()
-                   and not (w.get('arti') or '').strip()]
+                   and not (w.get('indo') or '').strip()]
         title = f'📋 Kelengkapan: ngoko saja ({len(matches)} entri, perlu krama+arti)'
     elif kel_selected.startswith('2.'):
         matches = [(i, w) for i, w in enumerate(data['words'])
                    if (w.get('ngoko') or '').strip()
                    and (w.get('krama') or '').strip()
-                   and not (w.get('arti') or '').strip()]
-        title = f'📋 Kelengkapan: ngoko+krama ({len(matches)} entri, perlu arti)'
+                   and not (w.get('indo') or '').strip()]
+        title = f'📋 Kelengkapan: ngoko+krama ({len(matches)} entri, perlu indo)'
     elif kel_selected.startswith('3.'):
         matches = [(i, w) for i, w in enumerate(data['words'])
                    if (w.get('ngoko') or '').strip()
                    and not (w.get('krama') or '').strip()
-                   and (w.get('arti') or '').strip()]
+                   and (w.get('indo') or '').strip()]
         title = f'📋 Kelengkapan: ngoko+arti ({len(matches)} entri, perlu krama)'
     elif kel_selected.startswith('4.'):
         matches = [(i, w) for i, w in enumerate(data['words'])
                    if (w.get('ngoko') or '').strip()
                    and (w.get('krama') or '').strip()
-                   and (w.get('arti') or '').strip()]
+                   and (w.get('indo') or '').strip()]
         title = f'📋 Kelengkapan: 3-field ready ({len(matches)} entri, perlu validasi)'
     elif kel_selected.startswith('5.'):
         matches = [(i, w) for i, w in enumerate(data['words'])
@@ -723,8 +723,8 @@ def bulk_mark_valid_draft(data):
     for i, (orig_idx, entry) in enumerate(matches[:30]):
         ngoko = (entry.get('ngoko') or '')[:25]
         krama = (entry.get('krama') or '')[:20]
-        arti = (entry.get('arti') or '')[:20]
-        ready = (entry.get('ngoko') or '').strip() and (entry.get('krama') or '').strip() and (entry.get('arti') or '').strip()
+        arti = (entry.get('indo') or '')[:20]
+        ready = (entry.get('ngoko') or '').strip() and (entry.get('krama') or '').strip() and (entry.get('indo') or '').strip()
         status = entry.get('status', 'draft')
         # Icon: ✅=ready (user edit), 📋=3-field lengkap tapi draft, ❌=draft (3-field belum lengkap)
         if status == 'ready':
@@ -757,13 +757,13 @@ def bulk_mark_valid_draft(data):
         return
 
     entry = data['words'][orig_idx]
-    ready = (entry.get('ngoko') or '').strip() and (entry.get('krama') or '').strip() and (entry.get('arti') or '').strip()
+    ready = (entry.get('ngoko') or '').strip() and (entry.get('krama') or '').strip() and (entry.get('indo') or '').strip()
 
     if not ready:
         print(f'\n  ❌ Entry ini 3-field belum lengkap. Tidak bisa di-mark READY.')
         print(f'     ngoko={entry.get("ngoko","")!r}')
         print(f'     krama={entry.get("krama","")!r}')
-        print(f'     arti={entry.get("arti","")!r}')
+        print(f'     arti={entry.get("indo","")!r}')
         input('\n  Tekan Enter...')
         return
 
@@ -771,7 +771,7 @@ def bulk_mark_valid_draft(data):
     print(f'\n  📋 Entry dipilih:')
     print(f'    ngoko:  {entry.get("ngoko","")!r}')
     print(f'    krama:  {entry.get("krama","")!r}')
-    print(f'    arti:   {entry.get("arti","")!r}')
+    print(f'    arti:   {entry.get("indo","")!r}')
     print(f'    Status sekarang: {entry.get("status", "draft")}')
     print()
 
@@ -852,7 +852,7 @@ def merge_2_entries(data):
 
     entry1 = data['words'][idx1]
     eid1 = entry1.get('entry_id', '?')
-    print(f'\n  Entry 1: ngoko={entry1.get("ngoko","")!r} krama={entry1.get("krama","")!r} arti={entry1.get("arti","")!r}')
+    print(f'\n  Entry 1: ngoko={entry1.get("ngoko","")!r} krama={entry1.get("krama","")!r} arti={entry1.get("indo","")!r}')
 
     # Step 2: Search entry kedua (skip entry pertama)
     q2 = questionary.text('\n2. Cari kata kedua (mis. "ingkang"):').ask()
@@ -884,7 +884,7 @@ def merge_2_entries(data):
 
     entry2 = data['words'][idx2]
     eid2 = entry2.get('entry_id', '?')
-    print(f'\n  Entry 2: ngoko={entry2.get("ngoko","")!r} krama={entry2.get("krama","")!r} arti={entry2.get("arti","")!r}')
+    print(f'\n  Entry 2: ngoko={entry2.get("ngoko","")!r} krama={entry2.get("krama","")!r} arti={entry2.get("indo","")!r}')
 
     # Step 3: Preview merge
     # Gabung field: kalau kedua entries punya ngoko → gabung sebagai alias (comma)
@@ -893,8 +893,8 @@ def merge_2_entries(data):
     e1_krama = (entry1.get('krama') or '').strip()
     e2_ngoko = (entry2.get('ngoko') or '').strip()
     e2_krama = (entry2.get('krama') or '').strip()
-    e1_arti = (entry1.get('arti') or '').strip()
-    e2_arti = (entry2.get('arti') or '').strip()
+    e1_arti = (entry1.get('indo') or '').strip()
+    e2_arti = (entry2.get('indo') or '').strip()
 
     # Smart merge ngoko:
     # Kalau entry2 ngoko == entry1 krama → entry2 itu krama word → jadi krama
@@ -949,7 +949,7 @@ def merge_2_entries(data):
     # Apply: simpan ke entry1, delete entry2
     entry1['ngoko'] = merged_ngoko
     entry1['krama'] = merged_krama
-    entry1['arti'] = merged_arti
+    entry1['indo'] = merged_arti
     # Combine aksara (jangan hilangkan aksara dari entry2)
     a1 = (entry1.get('aksara') or '').strip()
     a2 = (entry2.get('aksara') or '').strip()
@@ -1175,8 +1175,8 @@ def detect_duplicates(data):
         ng = (k.get('ngoko', '') or '').strip().lower()
         kr = (k.get('krama', '') or '').strip().lower()
         word = (k.get('word', '') or '').strip().lower()
-        ar = (k.get('arti', '') or '').strip().lower()
-        ar_raw = (k.get('arti', '') or '').strip()[:60]  # Original case untuk display
+        ar = (k.get('indo', '') or '').strip().lower()
+        ar_raw = (k.get('indo', '') or '').strip()[:60]  # Original case untuk display
         word_raw = (k.get('word', '') or '').strip()[:40]  # Original case untuk display
         ket = (k.get('keterangan', '') or '').strip()[:60]
         eid = k.get('entry_id', '?')
@@ -1276,15 +1276,15 @@ def detect_duplicates(data):
         field_name = 'word'
     elif cat_sel.startswith('4.'):
         dupes = dupes_arti
-        field_name = 'arti'
+        field_name = 'indo'
     elif cat_sel.startswith('5.'):
         _show_cross_field(data, cross_ng_kr, 'ngoko', 'krama')
         return
     elif cat_sel.startswith('6.'):
-        _show_cross_field(data, cross_ng_ar, 'ngoko', 'arti')
+        _show_cross_field(data, cross_ng_ar, 'ngoko', 'indo')
         return
     elif cat_sel.startswith('7.'):
-        _show_cross_field(data, cross_kr_ar, 'krama', 'arti')
+        _show_cross_field(data, cross_kr_ar, 'krama', 'indo')
         return
     elif cat_sel.startswith('8.'):
         # NETRAL duplikat di paired entry — gabung 3 pasangan
@@ -1298,7 +1298,7 @@ def detect_duplicates(data):
         for token, (w_e, kr_e) in cross_word_kr.items():
             combined.setdefault(token, []).extend([('word', x) for x in w_e] + [('krama', x) for x in kr_e])
         for token, (w_e, ar_e) in cross_word_ar.items():
-            combined.setdefault(token, []).extend([('word', x) for x in w_e] + [('arti', x) for x in ar_e])
+            combined.setdefault(token, []).extend([('word', x) for x in w_e] + [('indo', x) for x in ar_e])
         sorted_comb = sorted(combined.items(), key=lambda x: len(set(e[1][0] for e in x[1])), reverse=True)
         for token, occ in sorted_comb[:50]:
             unique_entries = set(e[1][0] for e in occ)
@@ -1342,8 +1342,8 @@ def main_menu(data):
         words = data['words']
         total = len(words)
         ready = sum(1 for w in words if w.get('status') == 'ready')
-        with_arti = sum(1 for w in words if (w.get('arti') or '').strip())
-        no_arti = sum(1 for w in words if not (w.get('arti') or '').strip())
+        with_arti = sum(1 for w in words if (w.get('indo') or '').strip())
+        no_arti = sum(1 for w in words if not (w.get('indo') or '').strip())
 
         # Cek Supabase status
         supabase_ok = bool(os.environ.get('NEXT_PUBLIC_SUPABASE_URL') and os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY'))
@@ -1365,17 +1365,17 @@ def main_menu(data):
         # Compute counts for filter menu labels
         # R-21: NETRAL = word terisi (Jawa), ngoko+krama kosong (arti boleh terisi = ID)
         count_netral = sum(1 for w in words if (w.get('word') or '').strip() and not (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip())
-        count_3field = sum(1 for w in words if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and (w.get('arti') or '').strip())
-        count_ngoko_krama = sum(1 for w in words if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and not (w.get('arti') or '').strip())
-        count_ngoko_only = sum(1 for w in words if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and not (w.get('arti') or '').strip())
-        count_ngoko_arti = sum(1 for w in words if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and (w.get('arti') or '').strip())
+        count_3field = sum(1 for w in words if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and (w.get('indo') or '').strip())
+        count_ngoko_krama = sum(1 for w in words if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and not (w.get('indo') or '').strip())
+        count_ngoko_only = sum(1 for w in words if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and not (w.get('indo') or '').strip())
+        count_ngoko_arti = sum(1 for w in words if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and (w.get('indo') or '').strip())
 
         choices = [
             '📊 Statistik kamus',
             '🔍 Search (cari kata di semua field)',
             '✅ Browse READY (status=ready, siap upload)',
             '📋 Browse DRAFT (belum di-edit user)',
-            f'⚠ Filter: NETRAL ({count_netral} entri, word+arti, ngoko+krama kosong — user tentukan — R-21)',
+            f'⚠ Filter: NETRAL ({count_netral} entri, word+indo, ngoko+krama kosong — user tentukan — R-21)',
             f'🟢 Filter: LENGKAP 3-field ({count_3field} entri, siap review/upload)',
             f'🟡 Filter: NGOKO+KRAMA ({count_ngoko_krama} entri, perlu isi arti)',
             f'⚪ Filter: NGOKO SAJA ({count_ngoko_only} entri, perlu isi krama+arti)',
@@ -1421,26 +1421,26 @@ def main_menu(data):
                        if (w.get('word') or '').strip()
                        and not (w.get('ngoko') or '').strip()
                        and not (w.get('krama') or '').strip()]
-            browse_list(data, matches, f'⚠ NETRAL ({len(matches)} entri, word+arti, ngoko+krama kosong — R-21)')
+            browse_list(data, matches, f'⚠ NETRAL ({len(matches)} entri, word+indo, ngoko+krama kosong — R-21)')
         elif 'LENGKAP 3-field' in selected:
-            # Filter: ngoko + krama + arti semua terisi (siap review/upload)
+            # Filter: ngoko + krama + indo semua terisi (siap review/upload)
             matches = [(i, w) for i, w in enumerate(data['words'])
-                       if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and (w.get('arti') or '').strip()]
+                       if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and (w.get('indo') or '').strip()]
             browse_list(data, matches, f'🟢 LENGKAP 3-field ({len(matches)} entri, siap review)')
         elif 'NGOKO+KRAMA' in selected:
             # Filter: ngoko + krama terisi, arti kosong (perlu isi arti)
             matches = [(i, w) for i, w in enumerate(data['words'])
-                       if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and not (w.get('arti') or '').strip()]
+                       if (w.get('ngoko') or '').strip() and (w.get('krama') or '').strip() and not (w.get('indo') or '').strip()]
             browse_list(data, matches, f'🟡 NGOKO+KRAMA ({len(matches)} entri, perlu isi arti)')
         elif 'NGOKO SAJA' in selected:
             # Filter: ngoko terisi, krama + arti kosong (perlu isi krama+arti)
             matches = [(i, w) for i, w in enumerate(data['words'])
-                       if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and not (w.get('arti') or '').strip()]
+                       if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and not (w.get('indo') or '').strip()]
             browse_list(data, matches, f'⚪ NGOKO SAJA ({len(matches)} entri, perlu isi krama+arti)')
         elif 'NGOKO+ARTI' in selected:
             # Filter: ngoko + arti terisi, krama kosong (perlu isi krama)
             matches = [(i, w) for i, w in enumerate(data['words'])
-                       if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and (w.get('arti') or '').strip()]
+                       if (w.get('ngoko') or '').strip() and not (w.get('krama') or '').strip() and (w.get('indo') or '').strip()]
             browse_list(data, matches, f'🔵 NGOKO+ARTI ({len(matches)} entri, perlu isi krama)')
         elif 'by source' in selected:
             browse_by_source(data)
@@ -1525,7 +1525,7 @@ def main():
         1 for w in data['words']
         if (w.get('ngoko') or '').strip()
         and (w.get('krama') or '').strip()
-        and (w.get('arti') or '').strip()
+        and (w.get('indo') or '').strip()
     )
     status_ready = sum(1 for w in data['words'] if w.get('status') == 'ready')
     # R-12: status='ready' HANYA dari user explicit mark via menu "Mark READY/DRAFT bulk"
