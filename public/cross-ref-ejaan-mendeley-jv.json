@@ -1,16 +1,24 @@
 {
   "summary": {
-    "lemma_pure_count": 644,
-    "lemma_with_diacritik_unique": 9837,
     "mendeley_count": 145,
-    "matches_count": 51
+    "broad_index_unique": 9837,
+    "matches_count": 51,
+    "source_breakdown": {
+      "jv.wiktionary PURE": 46,
+      "merged/mixed": 3,
+      "dasanama PURE": 3,
+      "lampiran PURE": 1
+    }
   },
   "matches": [
     {
       "eid": 6,
       "field": "ngoko",
       "mendeley_ejaan": "ayake",
-      "lemma_ejaan": "ayaké",
+      "baku_ejaan": "ayaké",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "ayake",
       "mendeley_krama": "mbok menawi",
       "mendeley_arti": "barangkali"
@@ -19,7 +27,10 @@
       "eid": 17,
       "field": "krama",
       "mendeley_ejaan": "sade",
-      "lemma_ejaan": "sadé",
+      "baku_ejaan": "sadé",
+      "baku_sources": [
+        "merged/mixed"
+      ],
       "mendeley_ngoko": "dol",
       "mendeley_krama": "sade",
       "mendeley_arti": "jual"
@@ -28,7 +39,10 @@
       "eid": 19,
       "field": "krama",
       "mendeley_ejaan": "kendel",
-      "lemma_ejaan": "kèndel",
+      "baku_ejaan": "kêndêl",
+      "baku_sources": [
+        "dasanama PURE"
+      ],
       "mendeley_ngoko": "endheg",
       "mendeley_krama": "kendel",
       "mendeley_arti": "henti"
@@ -37,7 +51,10 @@
       "eid": 19,
       "field": "krama",
       "mendeley_ejaan": "kendel",
-      "lemma_ejaan": "kêndêl",
+      "baku_ejaan": "kèndel",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "endheg",
       "mendeley_krama": "kendel",
       "mendeley_arti": "henti"
@@ -46,7 +63,10 @@
       "eid": 29,
       "field": "ngoko",
       "mendeley_ejaan": "inten",
-      "lemma_ejaan": "intên",
+      "baku_ejaan": "intên",
+      "baku_sources": [
+        "dasanama PURE"
+      ],
       "mendeley_ngoko": "inten",
       "mendeley_krama": "sela",
       "mendeley_arti": "intan"
@@ -55,7 +75,11 @@
       "eid": 29,
       "field": "krama",
       "mendeley_ejaan": "sela",
-      "lemma_ejaan": "séla",
+      "baku_ejaan": "séla",
+      "baku_sources": [
+        "jv.wiktionary PURE",
+        "merged/mixed"
+      ],
       "mendeley_ngoko": "inten",
       "mendeley_krama": "sela",
       "mendeley_arti": "intan"
@@ -64,7 +88,10 @@
       "eid": 34,
       "field": "ngoko",
       "mendeley_ejaan": "karep",
-      "lemma_ejaan": "karêp",
+      "baku_ejaan": "karêp",
+      "baku_sources": [
+        "dasanama PURE"
+      ],
       "mendeley_ngoko": "karep",
       "mendeley_krama": "kajeng, kersa",
       "mendeley_arti": "kehendak"
@@ -73,7 +100,10 @@
       "eid": 36,
       "field": "ngoko",
       "mendeley_ejaan": "karo-karone",
-      "lemma_ejaan": "karo-karoné",
+      "baku_ejaan": "karo-karoné",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "karo-karone",
       "mendeley_krama": "kalih-kalihipun",
       "mendeley_arti": "keduanya"
@@ -82,7 +112,10 @@
       "eid": 40,
       "field": "krama",
       "mendeley_ejaan": "kasaenan",
-      "lemma_ejaan": "kasaénan",
+      "baku_ejaan": "kasaénan",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "kebecikan",
       "mendeley_krama": "kasaenan",
       "mendeley_arti": "kebaikan"
@@ -91,7 +124,10 @@
       "eid": 44,
       "field": "ngoko",
       "mendeley_ejaan": "kelalen",
-      "lemma_ejaan": "kelalèn",
+      "baku_ejaan": "kelalèn",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "kelalen",
       "mendeley_krama": "kesupen",
       "mendeley_arti": "terlupa"
@@ -100,7 +136,10 @@
       "eid": 44,
       "field": "krama",
       "mendeley_ejaan": "kesupen",
-      "lemma_ejaan": "kesupèn",
+      "baku_ejaan": "kesupèn",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "kelalen",
       "mendeley_krama": "kesupen",
       "mendeley_arti": "terlupa"
@@ -109,7 +148,10 @@
       "eid": 45,
       "field": "ngoko",
       "mendeley_ejaan": "kelangan",
-      "lemma_ejaan": "kélangan",
+      "baku_ejaan": "kélangan",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "kelangan",
       "mendeley_krama": "kecalan",
       "mendeley_arti": "kehilangan"
@@ -118,7 +160,10 @@
       "eid": 45,
       "field": "krama",
       "mendeley_ejaan": "kecalan",
-      "lemma_ejaan": "kécalan",
+      "baku_ejaan": "kécalan",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "kelangan",
       "mendeley_krama": "kecalan",
       "mendeley_arti": "kehilangan"
@@ -127,7 +172,10 @@
       "eid": 48,
       "field": "ngoko",
       "mendeley_ejaan": "kelingan",
-      "lemma_ejaan": "kèlingan",
+      "baku_ejaan": "kèlingan",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "kelingan",
       "mendeley_krama": "kemutan, kengetan",
       "mendeley_arti": "teringat"
@@ -136,7 +184,10 @@
       "eid": 48,
       "field": "krama",
       "mendeley_ejaan": "kemutan",
-      "lemma_ejaan": "kèmutan",
+      "baku_ejaan": "kèmutan",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "kelingan",
       "mendeley_krama": "kemutan, kengetan",
       "mendeley_arti": "teringat"
@@ -145,7 +196,10 @@
       "eid": 48,
       "field": "krama",
       "mendeley_ejaan": "kengetan",
-      "lemma_ejaan": "kèngetan",
+      "baku_ejaan": "kèngetan",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "kelingan",
       "mendeley_krama": "kemutan, kengetan",
       "mendeley_arti": "teringat"
@@ -154,7 +208,11 @@
       "eid": 50,
       "field": "krama",
       "mendeley_ejaan": "sela",
-      "lemma_ejaan": "séla",
+      "baku_ejaan": "séla",
+      "baku_sources": [
+        "jv.wiktionary PURE",
+        "merged/mixed"
+      ],
       "mendeley_ngoko": "kemenyan",
       "mendeley_krama": "sela",
       "mendeley_arti": "kemenyan"
@@ -163,7 +221,10 @@
       "eid": 53,
       "field": "ngoko",
       "mendeley_ejaan": "kentekan",
-      "lemma_ejaan": "kentèkan",
+      "baku_ejaan": "kentèkan",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "kentekan",
       "mendeley_krama": "ketelasan",
       "mendeley_arti": "kehabisan"
@@ -172,7 +233,10 @@
       "eid": 54,
       "field": "ngoko",
       "mendeley_ejaan": "kesuwen",
-      "lemma_ejaan": "kesuwèn",
+      "baku_ejaan": "kesuwèn",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "kesuwen",
       "mendeley_krama": "kedangon",
       "mendeley_arti": "teralu lama"
@@ -181,7 +245,10 @@
       "eid": 56,
       "field": "ngoko",
       "mendeley_ejaan": "ketok",
-      "lemma_ejaan": "kétok",
+      "baku_ejaan": "kétok",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "ketok",
       "mendeley_krama": "ketingal",
       "mendeley_arti": "kelihatan"
@@ -190,7 +257,10 @@
       "eid": 57,
       "field": "ngoko",
       "mendeley_ejaan": "kewengen",
-      "lemma_ejaan": "kewengèn",
+      "baku_ejaan": "kewengèn",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "kewengen",
       "mendeley_krama": "kedalon",
       "mendeley_arti": "kemalaman"
@@ -199,7 +269,10 @@
       "eid": 59,
       "field": "ngoko",
       "mendeley_ejaan": "kleru",
-      "lemma_ejaan": "klèru",
+      "baku_ejaan": "klèru",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "kleru",
       "mendeley_krama": "klintu",
       "mendeley_arti": "kliru"
@@ -208,7 +281,10 @@
       "eid": 62,
       "field": "ngoko",
       "mendeley_ejaan": "lalen",
-      "lemma_ejaan": "lalèn",
+      "baku_ejaan": "lalèn",
+      "baku_sources": [
+        "lampiran PURE"
+      ],
       "mendeley_ngoko": "lalen",
       "mendeley_krama": "supenan",
       "mendeley_arti": "pelupa"
@@ -217,7 +293,10 @@
       "eid": 69,
       "field": "krama",
       "mendeley_ejaan": "ngrencangi",
-      "lemma_ejaan": "ngréncangi",
+      "baku_ejaan": "ngréncangi",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "mbaturi",
       "mendeley_krama": "ngrencangi",
       "mendeley_arti": "menemani"
@@ -226,7 +305,10 @@
       "eid": 76,
       "field": "ngoko",
       "mendeley_ejaan": "murungake",
-      "lemma_ejaan": "murungaké",
+      "baku_ejaan": "murungaké",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "murungake",
       "mendeley_krama": "nyandekaken",
       "mendeley_arti": "membatalkan"
@@ -235,7 +317,10 @@
       "eid": 76,
       "field": "krama",
       "mendeley_ejaan": "nyandekaken",
-      "lemma_ejaan": "nyandèkaken",
+      "baku_ejaan": "nyandèkaken",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "murungake",
       "mendeley_krama": "nyandekaken",
       "mendeley_arti": "membatalkan"
@@ -244,7 +329,10 @@
       "eid": 83,
       "field": "ngoko",
       "mendeley_ejaan": "ngajokake",
-      "lemma_ejaan": "ngajokaké",
+      "baku_ejaan": "ngajokaké",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "ngajokake",
       "mendeley_krama": "ngajengaken, nyawungaken",
       "mendeley_arti": "mengajukan; mencalonkan"
@@ -253,7 +341,10 @@
       "eid": 84,
       "field": "ngoko",
       "mendeley_ejaan": "ngambakake",
-      "lemma_ejaan": "ngambakaké",
+      "baku_ejaan": "ngambakaké",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "ngambakake",
       "mendeley_krama": "miyaraken",
       "mendeley_arti": "memperluas"
@@ -262,7 +353,10 @@
       "eid": 88,
       "field": "ngoko",
       "mendeley_ejaan": "ngeling-eling",
-      "lemma_ejaan": "ngéling-éling",
+      "baku_ejaan": "ngéling-éling",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "ngeling-eling",
       "mendeley_krama": "ngemut-emut",
       "mendeley_arti": "mengingat-ingat"
@@ -271,7 +365,10 @@
       "eid": 88,
       "field": "krama",
       "mendeley_ejaan": "ngemut-emut",
-      "lemma_ejaan": "ngémut-émut",
+      "baku_ejaan": "ngémut-émut",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "ngeling-eling",
       "mendeley_krama": "ngemut-emut",
       "mendeley_arti": "mengingat-ingat"
@@ -280,7 +377,10 @@
       "eid": 89,
       "field": "ngoko",
       "mendeley_ejaan": "ngelingi",
-      "lemma_ejaan": "ngélingi",
+      "baku_ejaan": "ngélingi",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "ngelingi",
       "mendeley_krama": "ngengeti",
       "mendeley_arti": "mengingat"
@@ -289,7 +389,10 @@
       "eid": 89,
       "field": "krama",
       "mendeley_ejaan": "ngengeti",
-      "lemma_ejaan": "ngèngeti",
+      "baku_ejaan": "ngèngeti",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "ngelingi",
       "mendeley_krama": "ngengeti",
       "mendeley_arti": "mengingat"
@@ -298,7 +401,10 @@
       "eid": 90,
       "field": "ngoko",
       "mendeley_ejaan": "ngendhegake",
-      "lemma_ejaan": "ngendhegaké",
+      "baku_ejaan": "ngendhegaké",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "ngendhegake",
       "mendeley_krama": "ngendelaken",
       "mendeley_arti": "menghentikan"
@@ -307,7 +413,10 @@
       "eid": 90,
       "field": "krama",
       "mendeley_ejaan": "ngendelaken",
-      "lemma_ejaan": "ngèndelaken",
+      "baku_ejaan": "ngèndelaken",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "ngendhegake",
       "mendeley_krama": "ngendelaken",
       "mendeley_arti": "menghentikan"
@@ -316,7 +425,10 @@
       "eid": 91,
       "field": "ngoko",
       "mendeley_ejaan": "ngeneni",
-      "lemma_ejaan": "ngenèni",
+      "baku_ejaan": "ngenèni",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "ngeneni",
       "mendeley_krama": "mugut",
       "mendeley_arti": "menuai"
@@ -325,7 +437,10 @@
       "eid": 97,
       "field": "krama",
       "mendeley_ejaan": "munageni",
-      "lemma_ejaan": "munagèni",
+      "baku_ejaan": "munagèni",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "ngujari",
       "mendeley_krama": "ngujari, munageni",
       "mendeley_arti": "berjanji untuk"
@@ -334,7 +449,10 @@
       "eid": 100,
       "field": "ngoko",
       "mendeley_ejaan": "njerokake",
-      "lemma_ejaan": "njerokaké",
+      "baku_ejaan": "njerokaké",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "njerokake",
       "mendeley_krama": "nglebetaken",
       "mendeley_arti": "memperdalam"
@@ -343,7 +461,10 @@
       "eid": 101,
       "field": "ngoko",
       "mendeley_ejaan": "njoged",
-      "lemma_ejaan": "njogèd",
+      "baku_ejaan": "njogèd",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "njoged",
       "mendeley_krama": "njoged, mbeksa",
       "mendeley_arti": "menari"
@@ -352,7 +473,10 @@
       "eid": 101,
       "field": "krama",
       "mendeley_ejaan": "njoged",
-      "lemma_ejaan": "njogèd",
+      "baku_ejaan": "njogèd",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "njoged",
       "mendeley_krama": "njoged, mbeksa",
       "mendeley_arti": "menari"
@@ -361,7 +485,10 @@
       "eid": 105,
       "field": "ngoko",
       "mendeley_ejaan": "nyuweni",
-      "lemma_ejaan": "nyuwèni",
+      "baku_ejaan": "nyuwèni",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "nyuweni",
       "mendeley_krama": "ndedangu",
       "mendeley_arti": "membuat lama"
@@ -370,7 +497,10 @@
       "eid": 106,
       "field": "ngoko",
       "mendeley_ejaan": "oleh-oleh",
-      "lemma_ejaan": "olèh-olèh",
+      "baku_ejaan": "olèh-olèh",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "oleh-oleh",
       "mendeley_krama": "angsal-angsal",
       "mendeley_arti": "oleh-oleh"
@@ -379,7 +509,10 @@
       "eid": 107,
       "field": "ngoko",
       "mendeley_ejaan": "ora-orane",
-      "lemma_ejaan": "ora-orané",
+      "baku_ejaan": "ora-orané",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "ora-orane",
       "mendeley_krama": "mboten-mbotenipun",
       "mendeley_arti": "tidak mungkin"
@@ -388,7 +521,10 @@
       "eid": 109,
       "field": "ngoko",
       "mendeley_ejaan": "padesan",
-      "lemma_ejaan": "padésan",
+      "baku_ejaan": "padésan",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "padesan",
       "mendeley_krama": "pedhusunan",
       "mendeley_arti": "pedesaan"
@@ -397,7 +533,10 @@
       "eid": 113,
       "field": "krama",
       "mendeley_ejaan": "pareden",
-      "lemma_ejaan": "paredèn",
+      "baku_ejaan": "paredèn",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "pegunungan",
       "mendeley_krama": "pareden",
       "mendeley_arti": "pegunungan"
@@ -406,7 +545,10 @@
       "eid": 123,
       "field": "ngoko",
       "mendeley_ejaan": "sasen-sasen",
-      "lemma_ejaan": "sasèn-sasèn",
+      "baku_ejaan": "sasèn-sasèn",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "sasen-sasen",
       "mendeley_krama": "wewulanan",
       "mendeley_arti": "berbulan-bulan"
@@ -415,7 +557,10 @@
       "eid": 127,
       "field": "ngoko",
       "mendeley_ejaan": "seprene",
-      "lemma_ejaan": "sepréné",
+      "baku_ejaan": "sepréné",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "seprene",
       "mendeley_krama": "sepriki",
       "mendeley_arti": "sampai sekarang"
@@ -424,7 +569,10 @@
       "eid": 129,
       "field": "ngoko",
       "mendeley_ejaan": "sesuk esuk",
-      "lemma_ejaan": "sésuk ésuk",
+      "baku_ejaan": "sésuk ésuk",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "sesuk esuk",
       "mendeley_krama": "benjang enjang, benjing enjing",
       "mendeley_arti": "besok pagi"
@@ -433,7 +581,10 @@
       "eid": 129,
       "field": "krama",
       "mendeley_ejaan": "benjang enjang",
-      "lemma_ejaan": "bénjang énjang",
+      "baku_ejaan": "bénjang énjang",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "sesuk esuk",
       "mendeley_krama": "benjang enjang, benjing enjing",
       "mendeley_arti": "besok pagi"
@@ -442,7 +593,10 @@
       "eid": 129,
       "field": "krama",
       "mendeley_ejaan": "benjing enjing",
-      "lemma_ejaan": "bénjing énjing",
+      "baku_ejaan": "bénjing énjing",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "sesuk esuk",
       "mendeley_krama": "benjang enjang, benjing enjing",
       "mendeley_arti": "besok pagi"
@@ -451,7 +605,10 @@
       "eid": 135,
       "field": "ngoko",
       "mendeley_ejaan": "suwe-suwe",
-      "lemma_ejaan": "suwé-suwé",
+      "baku_ejaan": "suwé-suwé",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "suwe-suwe",
       "mendeley_krama": "dangu-dangu",
       "mendeley_arti": "lama-kelamaan"
@@ -460,7 +617,10 @@
       "eid": 144,
       "field": "ngoko",
       "mendeley_ejaan": "unen-unen",
-      "lemma_ejaan": "unèn-unèn",
+      "baku_ejaan": "unèn-unèn",
+      "baku_sources": [
+        "jv.wiktionary PURE"
+      ],
       "mendeley_ngoko": "unen-unen",
       "mendeley_krama": "ungel-ungelan",
       "mendeley_arti": "ungkapan"
