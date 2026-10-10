@@ -43,14 +43,36 @@ except ImportError:
     print('\n❌ pip3 install questionary')
     sys.exit(1)
 
-# Kamus JSON path — R-22: kamus-jawa-draft.json = SATU-SATUNYA sumber (NETRAL).
-# Schema v2.7 (10 Okt 2026, R-26 drop register + krama_inggil): {entry_id, word (R-21
-#   netral), ngoko, krama, arti, keterangan, aksara, sumber, is_lemma, is_mendeley,
-#   is_dasanama, is_angka, is_lampiran, kelas, kelas_nama, lemma_words, mendeley_id,
-#   dasanama_count, source_count, status}
+# Kamus JSON path — R-22: kamus-jawa-draft.json = sumber utama NETRAL.
+# R-26: 20 field per entry (drop register + krama_inggil).
+# Schema v2.7 (10 Okt 2026): {entry_id, word (R-21 netral), ngoko, krama, arti,
+#   keterangan, aksara, sumber, is_lemma, is_mendeley, is_dasanama, is_angka,
+#   is_lampiran, kelas, kelas_nama, lemma_words, mendeley_id, dasanama_count,
+#   source_count, status}
 # R-22: SEMUA raw files + parser scripts DIHAPUS. JANGAN merujuk raw (sampah parsing AI tolol).
 # User fallback kalau nemu kata belum dikenali: https://kesakata.kemdikbud.go.id
 KAMUS_PATH = Path.home() / 'Dubbing' / 'kamus-jawa-draft.json'
+
+# Multiple source files — user bisa pilih kerja dari subset mana.
+# Default = kamus-jawa-draft.json (44.005 entries, semua sumber campur).
+# Opsi lain = subset PURE per sumber, lebih bersih, kerja bertahap.
+KAMUS_SOURCES = {
+    'draft': {
+        'path': Path.home() / 'Dubbing' / 'kamus-jawa-draft.json',
+        'label': 'kamus-jawa-draft.json (44.005 entries — semua sumber campur)',
+        'desc': 'Sumber utama NETRAL. Campur 5+ sumber (Wiktionary, Mendeley, Dasanama, Lampiran, Angka). Banyak sumber = banyak sampah. Untuk kerja komprehensif.',
+        'url': 'https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?t=CMD_TIMESTAMP',
+    },
+    'mendeley': {
+        'path': Path.home() / 'Dubbing' / 'kamus_mendeley.json',
+        'label': 'kamus_mendeley.json (145 entries — PURE mendeley, 100% paired 3-field)',
+        'desc': 'PURE mendeley dataset (curated academic, Faisal Rahutomo et al 2018). Paling terpercaya, sudah 100% ngoko+krama+arti. Kerja bertahap mulai dari sini.',
+        'url': 'https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus_mendeley.json?t=CMD_TIMESTAMP',
+    },
+}
+
+# Default source: 'draft'. Bisa di-switch di runtime via menu "📂 Switch source JSON".
+CURRENT_SOURCE = 'draft'
 
 # .env file di ~/Dubbing/ — user simpan Supabase URL + anon key di sini
 # Format .env:
@@ -97,26 +119,81 @@ SUPABASE_KEY = os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY', '')
 
 
 def get_kamus_path():
-    """Cari kamus JSON di ~/Dubbing/kamus-jawa-draft.json (R-22: sumber tunggal NETRAL).
+    """Cari kamus JSON aktif (CURRENT_SOURCE). Bisa draft atau mendeley subset.
 
-    R-22 compliance: SEMUA raw files DIHAPUS. Hanya kamus-jawa-draft.json.
-    Kalau draft.json tidak ada, return None → load_kamus() tampilkan curl command.
+    Return None kalau file tidak ada → load_kamus() tampilkan curl command.
     """
-    if KAMUS_PATH.exists():
-        return KAMUS_PATH
+    src = KAMUS_SOURCES.get(CURRENT_SOURCE)
+    if src and src['path'].exists():
+        return src['path']
     return None
 
 
+def select_kamus_source():
+    """Menu pilih source JSON. User bisa switch antara kamus-jawa-draft.json
+    (44.005 entries campur) dan kamus_mendeley.json (145 PURE mendeley).
+    """
+    global CURRENT_SOURCE
+    os.system('clear' if os.name != 'nt' else 'cls')
+    print('╔' + '═' * 60 + '╗')
+    print('║  📂 Pilih Source Kamus JSON' + ' ' * 30 + '║')
+    print('╚' + '═' * 60 + '╝')
+    print()
+
+    # Tampilkan status tiap source
+    for key, src in KAMUS_SOURCES.items():
+        path = src['path']
+        exists = '✓ ada' if path.exists() else '✗ belum download'
+        active = ' [ACTIVE]' if key == CURRENT_SOURCE else ''
+        print(f'  {key:10} {exists:18} {src["label"]}{active}')
+        print(f'             {src["desc"][:80]}')
+        print()
+        if not path.exists():
+            # Tampilkan curl command
+            url = src['url'].replace('CMD_TIMESTAMP', '$(date +%s)')
+            print(f'             curl -L -H "Cache-Control: no-cache" -o {path.name} \\')
+            print(f'               "{url}"')
+            print()
+
+    # Pilih source
+    choices = []
+    for key, src in KAMUS_SOURCES.items():
+        marker = '✓' if key == CURRENT_SOURCE else ' '
+        path = src['path']
+        exists = 'ada' if path.exists() else 'BELUM DOWNLOAD'
+        choices.append(f'{marker} {key:10} ({exists}) — {src["label"][:50]}')
+    choices.append('↩ Kembali')
+
+    sel = questionary.select('Pilih source (aktif ditandai ✓):', choices=choices, default=choices[0]).ask()
+    if not sel or 'Kembali' in sel:
+        return False
+
+    # Parse selection
+    for key in KAMUS_SOURCES:
+        if sel.startswith(f'✓ {key}') or sel.startswith(f'  {key}') or sel.startswith(f' {key}'):
+            if key != CURRENT_SOURCE:
+                CURRENT_SOURCE = key
+                print(f'\n  ✅ Source di-switch ke: {key}')
+                print(f'     {KAMUS_SOURCES[key]["label"]}')
+                input('\n  Tekan Enter...')
+                return True  # signal reload needed
+            return False
+    return False
+
+
 def load_kamus():
-    """Load kamus-jawa-draft.json (R-22: sumber tunggal NETRAL)."""
-    if not KAMUS_PATH.exists():
-        print(f'\n❌ Kamus JSON tidak ditemukan: {KAMUS_PATH}')
-        print(f'\n   R-22: kamus-jawa-draft.json = satu-satunya sumber (NETRAL).')
+    """Load kamus JSON aktif (CURRENT_SOURCE)."""
+    path = get_kamus_path()
+    if not path:
+        src = KAMUS_SOURCES.get(CURRENT_SOURCE, {})
+        url = src.get('url', '').replace('CMD_TIMESTAMP', '$(date +%s)')
+        print(f'\n❌ Kamus JSON tidak ditemukan: {src.get("path", KAMUS_PATH)}')
+        print(f'\n   Source: {CURRENT_SOURCE}')
         print(f'\n   Download:')
-        print(f'   curl -L -o ~/Dubbing/kamus-jawa-draft.json \\')
-        print(f'     "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?v=26"')
+        print(f'   curl -L -H "Cache-Control: no-cache" -o {src.get("path", KAMUS_PATH).name} \\')
+        print(f'     "{url}"')
         return None
-    with open(KAMUS_PATH, 'r', encoding='utf-8') as f:
+    with open(path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
 
@@ -1281,7 +1358,7 @@ def main_menu(data):
         print('║  Tab/panah untuk navigasi, Enter untuk pilih' + ' ' * 11 + '║')
         print('╚' + '═' * 60 + '╝')
         print()
-        print(f'  📂 {get_kamus_path()}')
+        print(f'  📂 [{CURRENT_SOURCE}] {get_kamus_path()}')
         print(f'  📊 Total: {total} | arti diisi: {with_arti} | belum ada arti: {no_arti}')
         print(f'  📋 Draft: {total - ready} | ✅ Ready: {ready} | 🚀 Siap upload: {ready}')
         if supabase_ok:
@@ -1316,6 +1393,7 @@ def main_menu(data):
             '⚡ Mark READY/DRAFT bulk (search kata, tanpa edit)',
             '🔑 Set Supabase .env (URL + anon key)',
             '☁  Upload ke Supabase (hanya yang READY)',
+            '📂 Switch source JSON (draft / mendeley / dll)',
             '❌ Keluar',
         ]
 
@@ -1384,6 +1462,17 @@ def main_menu(data):
             detect_duplicates(data)
         elif 'Set Supabase' in selected:
             edit_env_file()
+        elif 'Switch source JSON' in selected:
+            if select_kamus_source():
+                # Reload data dari source baru
+                new_data = load_kamus()
+                if new_data:
+                    # Update data reference di-loop
+                    # Trick: replace content data dict dengan data baru
+                    data.clear()
+                    data.update(new_data)
+                    print(f'\n  ✅ Kamus aktif: {KAMUS_SOURCES[CURRENT_SOURCE]["label"]}')
+                    input('\n  Tekan Enter untuk lanjut...')
 
 
 def upload_to_supabase():
