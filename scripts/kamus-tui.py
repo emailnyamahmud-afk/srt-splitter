@@ -1070,269 +1070,112 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
     input('  Tekan Enter...')
 
 
-def _entry_idx_by_eid(data, eid):
-    """Map entry_id ke index di data['words']. Return -1 kalau gak ketemu."""
-    # entry_id 1-indexed, list 0-indexed. Tapi setelah merge bisa shift, jadi search by field.
-    for i, w in enumerate(data['words']):
-        if w.get('entry_id') == eid:
-            return i
-    return -1
-
-
-def _edit_by_eid_prompt(data, prompt_text='Edit entry_id (ketik angka, Enter=kembali):'):
-    """Prompt user input entry_id → cari index → panggil edit_entry. Loop sampai Enter kosong.
-
-    Dipakai di detect_duplicates supaya user bisa edit langsung dari list duplikat,
-    tanpa harus catat entry_id + balik menu utama + search lagi.
-    """
-    while True:
-        sel = input(f'  {prompt_text} ').strip()
-        if not sel:
-            return
-        try:
-            eid = int(sel)
-        except ValueError:
-            print(f'  ⚠ Bukan angka. Enter=kembali.')
-            continue
-        idx = _entry_idx_by_eid(data, eid)
-        if idx < 0:
-            print(f'  ⚠ entry_id #{eid} tidak ditemukan. Cek angka di list.')
-            continue
-        edit_entry(data, idx)
-        # Setelah edit, kasih pause supaya user bisa lihat hasil, lalu loop lagi
-        input('  Tekan Enter untuk lanjut edit entry lain (atau Enter kosong = kembali ke list)...')
-
-
-def _show_cross_field(data, cross_dict, field1, field2):
-    """Tampilkan cross-field duplikat + edit langsung dari list.
-
-    Pure detection: tunjukin fakta, BUKAN filter "valid" / "halu" / "bug".
-    User baca konteks, putuskan manual (R-18: jangan hapus otomatis).
-    Setelah display, user bisa ketik entry_id untuk edit langsung.
-    """
-    print(f'\n  Cross-field {field1}↔{field2} (kata di {field1} entry A = {field2} entry B, beda entry)')
-    print(f'  Total: {len(cross_dict)} tokens')
-    print()
-    if not cross_dict:
-        input('\n  Tekan Enter untuk kembali...')
-        return
-    sorted_cross = sorted(cross_dict.items(),
-                         key=lambda x: len(x[1][0]) + len(x[1][1]),
-                         reverse=True)
-    for token, (e1, e2) in sorted_cross[:50]:
-        print(f"\n  '{token}' muncul di {field1} ({len(e1)} entries) dan {field2} ({len(e2)} entries):")
-        for e in e1[:5]:
-            print(f"    {field1:6} [{e[1]}] word={e[4]!r} arti={e[2][:40]!r}")
-        if len(e1) > 5:
-            print(f"    ... +{len(e1) - 5} more di {field1}")
-        for e in e2[:5]:
-            print(f"    {field2:6} [{e[1]}] word={e[4]!r} arti={e[2][:40]!r}")
-        if len(e2) > 5:
-            print(f"    ... +{len(e2) - 5} more di {field2}")
-    print(f'\n  Total {field1}↔{field2}: {len(cross_dict)} tokens')
-    print(f'  ⚠ JANGAN HAPUS otomatis. Baca konteks, edit manual.')
-    print(f'  → Ketik entry_id (angka di [..]) untuk edit langsung. Enter=kembali ke menu.')
-    _edit_by_eid_prompt(data)
-
-
 
 def detect_duplicates(data):
-    """Deteksi duplikat di kamus — JANGAN HAPUS, hanya tunjukin ke user.
+    """Deteksi duplikat = kata IDENTIK lintas entry. Bukan sinonim.
 
-    User lihat duplikat, baca konteks, putuskan manual:
-    - Sinonim valid? → biarkan
-    - Sinonim salah (kita di arti='kamu')? → user edit/hapus token manual
-    - Perlu merge? → user pakai menu Merge 2 entries
-
-    Duplikat yang dideteksi:
-    1. ngoko: kata yang sama muncul di ngoko multiple entries
-    2. krama: kata yang sama muncul di krama multiple entries
-    3. word: kata yang sama muncul di word multiple entries (NETRAL)
-    4. cross-field: kata di ngoko entry A = krama entry B
+    Duplikat: kata yang sama (case-insensitive) muncul di 2+ entries.
+    Sinonim (beda kata di 1 entry) = BUKAN duplikat.
     """
     from collections import defaultdict
-
     words = data['words']
     os.system('clear' if os.name != 'nt' else 'cls')
     print('╔' + '═' * 60 + '╗')
-    print('║  🔍 Deteksi Duplikat (JANGAN HAPUS — user putuskan)' + ' ' * 6 + '║')
+    print('║  🔍 Deteksi Duplikat (kata identik lintas entry)' + ' ' * 10 + '║')
     print('╚' + '═' * 60 + '╝')
     print()
-    print('  ⚠ Duplikat = JANGAN HAPUS otomatis (R-18).')
-    print('  User baca konteks, putuskan manual:')
-    print('    - Sinonim valid? → biarkan')
-    print('    - Sinonim salah? → edit entry, hapus token')
-    print('    - Perlu merge? → pakai menu Merge 2 entries')
+
+    # Index: lowercase kata → list of (entry_id, field, word)
+    # Cari di field word, ngoko, krama, indo (tokenize comma)
+    index = defaultdict(list)
+    for w in words:
+        eid = w.get('entry_id', '?')
+        word = (w.get('word') or '').strip()
+        if word and len(word) > 1:
+            index[word.lower()].append((eid, 'word', word))
+        for field in ['ngoko', 'krama', 'indo']:
+            val = (w.get(field) or '').strip()
+            if val:
+                for tok in val.split(','):
+                    tok = tok.strip()
+                    if tok and len(tok) > 1:
+                        index[tok.lower()].append((eid, field, tok))
+
+    # Filter: hanya yang muncul di 2+ entries
+    # Group by entry_id dulu — kalau kata muncul 2x di 1 entry = sinonim, bukan duplikat
+    dupes = {}
+    for kata, occ in index.items():
+        unique_entries = set(eid for eid, _, _ in occ)
+        if len(unique_entries) > 1:
+            dupes[kata] = occ
+
+    print(f'  Total kata unik di kamus: {len(index):,}')
+    print(f'  Duplikat (kata identik lintas entry): {len(dupes):,}')
     print()
 
-    # Build index untuk semua field (ngoko, krama, arti, word)
-    ngoko_idx = defaultdict(list)
-    krama_idx = defaultdict(list)
-    word_idx = defaultdict(list)
-    arti_idx = defaultdict(list)
+    if not dupes:
+        input('  Tekan Enter untuk kembali...')
+        return
 
-    for i, k in enumerate(words):
-        ng = (k.get('ngoko', '') or '').strip().lower()
-        kr = (k.get('krama', '') or '').strip().lower()
-        word = (k.get('word', '') or '').strip().lower()
-        ar = (k.get('indo', '') or '').strip().lower()
-        ar_raw = (k.get('indo', '') or '').strip()[:60]  # Original case untuk display
-        word_raw = (k.get('word', '') or '').strip()[:40]  # Original case untuk display
-        ket = (k.get('keterangan', '') or '').strip()[:60]
-        eid = k.get('entry_id', '?')
-
-        for t in ng.split(','):
-            t = t.strip()
-            if t and len(t) > 1:
-                ngoko_idx[t].append((i, eid, ar_raw, ket, word_raw))
-        for t in kr.split(','):
-            t = t.strip()
-            if t and len(t) > 1:
-                krama_idx[t].append((i, eid, ar_raw, ket, word_raw))
-        for t in word.split(','):
-            t = t.strip()
-            if t and len(t) > 1:
-                word_idx[t].append((i, eid, ar_raw, ket, word_raw))
-        for t in ar.split(','):
-            t = t.strip()
-            if t and len(t) > 1:
-                arti_idx[t].append((i, eid, ar_raw, ket, word_raw))
-
-    # Find dupes (kata sama di field yang sama, beda entry)
-    dupes_ngoko = {t: v for t, v in ngoko_idx.items() if len(v) > 1}
-    dupes_krama = {t: v for t, v in krama_idx.items() if len(v) > 1}
-    dupes_word = {t: v for t, v in word_idx.items() if len(v) > 1}
-    dupes_arti = {t: v for t, v in arti_idx.items() if len(v) > 1}
-
-    # Cross-field helper: cari kata di idx1 yang juga ada di idx2 di entry beda
-    def find_cross(idx1, idx2):
-        cross = {}
-        for t in idx1:
-            if t in idx2:
-                e1 = idx1[t]
-                e2 = idx2[t]
-                has_cross = False
-                for a in e1:
-                    for b in e2:
-                        if a[0] != b[0]:
-                            has_cross = True
-                            break
-                    if has_cross:
-                        break
-                if has_cross:
-                    cross[t] = (e1, e2)
-        return cross
-
-    # All cross-field pairs (lintas definisi)
-    cross_ng_kr = find_cross(ngoko_idx, krama_idx)
-    cross_ng_ar = find_cross(ngoko_idx, arti_idx)
-    cross_kr_ar = find_cross(krama_idx, arti_idx)
-    cross_word_ng = find_cross(word_idx, ngoko_idx)
-    cross_word_kr = find_cross(word_idx, krama_idx)
-    cross_word_ar = find_cross(word_idx, arti_idx)
-
-    total_cross = (len(cross_ng_kr) + len(cross_ng_ar) + len(cross_kr_ar) +
-                   len(cross_word_ng) + len(cross_word_kr) + len(cross_word_ar))
-
-    print(f'  📊 Duplikat ngoko (kata sama di ngoko, beda entry): {len(dupes_ngoko):>5} tokens')
-    print(f'  📊 Duplikat krama (kata sama di krama, beda entry): {len(dupes_krama):>5} tokens')
-    print(f'  📊 Duplikat word  (kata sama di word, beda entry):   {len(dupes_word):>5} tokens')
-    print(f'  📊 Duplikat arti  (kata sama di arti, beda entry):  {len(dupes_arti):>5} tokens')
-    print()
-    print(f'  📊 Cross-field lintas definisi (total: {total_cross} tokens):')
-    print(f'     ngoko↔krama:  {len(cross_ng_kr):>5} tokens')
-    print(f'     ngoko↔arti:   {len(cross_ng_ar):>5} tokens')
-    print(f'     krama↔arti:   {len(cross_kr_ar):>5} tokens')
-    print(f'     word↔ngoko:   {len(cross_word_ng):>5} tokens (NETRAL duplikat di paired entry)')
-    print(f'     word↔krama:  {len(cross_word_kr):>5} tokens (NETRAL duplikat di paired entry)')
-    print(f'     word↔arti:   {len(cross_word_ar):>5} tokens (NETRAL duplikat di paired entry)')
-    print()
-
-    # Pilih kategori
-    cat_choices = [
-        f'1. Duplikat ngoko ({len(dupes_ngoko)} tokens)',
-        f'2. Duplikat krama ({len(dupes_krama)} tokens)',
-        f'3. Duplikat word ({len(dupes_word)} tokens)',
-        f'4. Duplikat arti ({len(dupes_arti)} tokens)',
-        f'5. Cross-field ngoko↔krama ({len(cross_ng_kr)} tokens)',
-        f'6. Cross-field ngoko↔arti ({len(cross_ng_ar)} tokens)',
-        f'7. Cross-field krama↔arti ({len(cross_kr_ar)} tokens)',
-        f'8. Cross-field word↔ngoko/krama/arti ({len(cross_word_ng)+len(cross_word_kr)+len(cross_word_ar)} tokens, NETRAL duplikat)',
+    # Pilih field untuk filter
+    field_choices = [
+        f'1. Semua field ({len(dupes)} duplikat)',
+        '2. Hanya word (lemma identik)',
+        '3. Hanya ngoko',
+        '4. Hanya krama',
+        '5. Hanya indo',
         '↩ Kembali',
     ]
-    cat_sel = questionary.select('Pilih kategori duplikat:', choices=cat_choices, default=cat_choices[0]).ask()
-    if not cat_sel or 'Kembali' in cat_sel:
+    sel = questionary.select('Filter:', choices=field_choices, default=field_choices[0]).ask()
+    if not sel or 'Kembali' in sel:
         return
 
-    # Tampilkan duplikat terpilih
-    if cat_sel.startswith('1.'):
-        dupes = dupes_ngoko
-        field_name = 'ngoko'
-    elif cat_sel.startswith('2.'):
-        dupes = dupes_krama
-        field_name = 'krama'
-    elif cat_sel.startswith('3.'):
-        dupes = dupes_word
-        field_name = 'word'
-    elif cat_sel.startswith('4.'):
-        dupes = dupes_arti
-        field_name = 'indo'
-    elif cat_sel.startswith('5.'):
-        _show_cross_field(data, cross_ng_kr, 'ngoko', 'krama')
-        return
-    elif cat_sel.startswith('6.'):
-        _show_cross_field(data, cross_ng_ar, 'ngoko', 'indo')
-        return
-    elif cat_sel.startswith('7.'):
-        _show_cross_field(data, cross_kr_ar, 'krama', 'indo')
-        return
-    elif cat_sel.startswith('8.'):
-        # NETRAL duplikat di paired entry — gabung 3 pasangan
-        print(f'\n  Cross-field word↔ngoko/krama/arti (NETRAL duplikat di paired entry)')
-        print(f'  NETRAL = field "word" di JSON lokal (kata belum terdefinisi ke ngoko/krama/arti)')
-        print(f'  Pasangan: word↔ngoko ({len(cross_word_ng)}), word↔krama ({len(cross_word_kr)}), word↔arti ({len(cross_word_ar)})')
-        print()
-        combined = {}
-        for token, (w_e, ng_e) in cross_word_ng.items():
-            combined.setdefault(token, []).extend([('word', x) for x in w_e] + [('ngoko', x) for x in ng_e])
-        for token, (w_e, kr_e) in cross_word_kr.items():
-            combined.setdefault(token, []).extend([('word', x) for x in w_e] + [('krama', x) for x in kr_e])
-        for token, (w_e, ar_e) in cross_word_ar.items():
-            combined.setdefault(token, []).extend([('word', x) for x in w_e] + [('indo', x) for x in ar_e])
-        sorted_comb = sorted(combined.items(), key=lambda x: len(set(e[1][0] for e in x[1])), reverse=True)
-        for token, occ in sorted_comb[:50]:
-            unique_entries = set(e[1][0] for e in occ)
-            print(f"\n  '{token}' muncul di {len(unique_entries)} entries:")
-            for field, (idx, eid, ar, ket, word_raw) in occ[:8]:
-                print(f"    {field:6} [{eid}] word={word_raw!r} arti={ar[:40]!r}")
-            if len(occ) > 8:
-                print(f"    ... +{len(occ) - 8} more")
-        print(f"\n  Total: {len(combined)} tokens")
-        print(f'  ⚠ JANGAN HAPUS otomatis. Baca konteks, edit manual.')
-        print(f'  → Ketik entry_id (angka di [..]) untuk edit langsung. Enter=kembali ke menu.')
-        _edit_by_eid_prompt(data)
-        return
+    filter_field = None
+    if sel.startswith('2'): filter_field = 'word'
+    elif sel.startswith('3'): filter_field = 'ngoko'
+    elif sel.startswith('4'): filter_field = 'krama'
+    elif sel.startswith('5'): filter_field = 'indo'
 
-    # Tampilkan duplikat (sorted by jumlah entries terbanyak)
-    sorted_dupes = sorted(dupes.items(), key=lambda x: len(x[1]), reverse=True)
+    # Tampilkan duplikat
+    sorted_dupes = sorted(dupes.items(), key=lambda x: len(set(eid for eid, _, _ in x[1])), reverse=True)
+    shown = 0
+    for kata, occ in sorted_dupes:
+        if filter_field:
+            occ = [o for o in occ if o[1] == filter_field]
+            if len(set(eid for eid, _, _ in occ)) <= 1:
+                continue
+        unique_entries = sorted(set(eid for eid, _, _ in occ))
+        print(f"\n  '{kata}' di {len(unique_entries)} entries:")
+        for eid, field, orig in occ[:8]:
+            w = next((x for x in words if x.get('entry_id') == eid), None)
+            if w:
+                print(f"    [{eid}] {field:6} word={w.get('word','')[:25]!r} ngoko={w.get('ngoko','')[:20]!r} krama={w.get('krama','')[:20]!r} indo={w.get('indo','')[:20]!r}")
+        if len(unique_entries) > 8:
+            print(f"    ... +{len(unique_entries) - 8} more")
+        shown += 1
+        if shown >= 50:
+            print(f"\n  ... +{len(dupes) - 50} more duplikat")
+            break
 
-    # Build list untuk browse
-    print(f'\n  Menampilkan {min(50, len(sorted_dupes))} duplikat {field_name} teratas (dari {len(sorted_dupes)} total):')
-    print()
+    print(f'\n  ⚠ Duplikat = kata IDENTIK lintas entry. Bukan sinonim.')
+    print(f'  → Ketik entry_id untuk edit. Enter=kembali.')
 
-    for token, entries in sorted_dupes[:50]:
-        print(f"\n  '{token}' muncul di {len(entries)} entries:")
-        for idx, eid, ar, ket, word_raw in entries[:8]:
-            print(f"    [{eid}] word={word_raw!r} arti={ar[:40]!r}")
-            if ket:
-                print(f"          ket={ket[:50]!r}")
-        if len(entries) > 8:
-            print(f"    ... +{len(entries) - 8} more")
-
-    print(f"\n  Total duplikat {field_name}: {len(sorted_dupes)} tokens")
-    print(f'  ⚠ JANGAN HAPUS otomatis. Baca konteks, edit manual.')
-    print(f'  → Ketik entry_id (angka di [..]) untuk edit langsung. Enter=kembali ke menu.')
-    _edit_by_eid_prompt(data)
+    # Edit by entry_id
+    while True:
+        ans = input('  entry_id (Enter=kembali): ').strip()
+        if not ans:
+            break
+        try:
+            eid = int(ans)
+        except ValueError:
+            print('  ⚑ Bukan angka.')
+            continue
+        idx = next((i for i, w in enumerate(words) if w.get('entry_id') == eid), -1)
+        if idx < 0:
+            print(f'  ⚑ entry_id #{eid} tidak ditemukan.')
+            continue
+        edit_entry(data, idx)
+        input('  Tekan Enter untuk lanjut (Enter kosong=kembali)...')
 
 
 def main_menu(data):
