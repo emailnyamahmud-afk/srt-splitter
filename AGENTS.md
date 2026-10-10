@@ -59,59 +59,52 @@ Kalau ada konflik antara dokumen, `PROJECT_RULES.md` menang.
 ⏳ Fase 4: mix-tui       → mp4-{lang}-final.mp4 (nunggu dub ready)
 ```
 
-## Kamus Jawa status (v2.7, 10 Okt 2026 — post-R-26 drop register + krama_inggil)
+## Kamus Jawa status (v4.1, 10 Okt 2026 — 3 source integrated: jv_wiktionary + mendeley + id_wiktionary)
 
 ```
-Total entries:           44.005 (20 field per entry, semua identik — drop register + krama_inggil)
-✅ PAIRED 3-field:        2.937  (6.67%)  ← ngoko+krama+arti lengkap
-🟡 NGOKO+ARTI:           1.766  (4.01%)  ← perlu krama
-⚠ NETRAL (word+arti):   39.230  (89.15%) ← arti=word (fallback), user tentukan ngoko/krama
+Total entries:           45.638 (20 field per entry, semua identik)
+Version:                 v4.1 (definisi indo → keterangan, indo = terjemahan saja)
+Size:                    34.25 MB
 
-Analisa arti (CRITICAL — statistik 'arti 100% filled' MENIPU, R-24):
-  arti total terisi:        44.002 (99.99%)
-  arti = word (fallback):  39.231 (89.15%) — BUKAN Indonesia, cuma copy word
-  arti Indonesia real:     4.771 (10.84%) — paired + ngoko+arti (valid)
-  → User verifikasi 1-1 via TUI. Fallback = alat marking NETRAL.
+3 source integrated (NO kamus draft sampah):
+  ✅ jv.wiktionary XML dump (parsed minimal) — 44.615 base
+  ✅ mendeley curated academic — 145 (44 merged, 101 new)
+  ✅ id.wiktionary XML dump (section Jawa) — 2.303 (1.363 merged, 940 new)
 
-Field terisi (20 field per entry, R-26 drop register + krama_inggil):
-  word:        39.231 (89.15%) — NETRAL unassigned
-  ngoko:        4.704 (10.69%)
-  krama:        3.006 (6.83%)
-  arti:        44.002 (99.99%) — lihat analisa di atas
-  aksara:      41.350 (93.97%)
-  keterangan:  42.924 (97.54%)
-  register:    DROPPED (R-26: 100% 'umum' tidak informatif)
-  krama_inggil: DROPPED (R-17: 0 entries terisi, sudah masuk krama)
-  kelas:         1.404 (3.20%) — kelas kata linguistik (t.a., t.k., t.s., dll)
+Source belum integrasi (phase berikutnya — sampah merge AI, perlu parse XML resmi):
+  🔜 dasanama — ~427 entries (kamus draft, sampah)
+  🔜 lampiran — ~2.151 entries (kamus draft, sampah)
+  🔜 angka — ~1.008 entries (kamus draft, sampah)
+  🔜 lemma — ~644 entries (kamus draft, sampah)
 
-Source flags:
-  is_lemma:    1.816 (4.13%)  is_mendeley:   814 (1.85%)
-  is_dasanama:   427 (0.97%)  is_angka:    1.008 (2.29%)
-  is_lampiran: 2.151 (4.89%)
+Field terisi:
+  word:       45.518 (99.7%) — lemma Jawa (NETRAL unassigned)
+  ngoko:         144 (0.3%) — dari mendeley
+  krama:       1.530 (3.4%) — dari jv_wiktionary {{ngoko|...}} + mendeley + id_wiktionary
+  indo:        1.963 (4.3%) — terjemahan Indonesia (mendeley + id_wiktionary)
+  keterangan: 45.542 (99.8%) — definisi Jawa (jv) + definisi ID (id_wiktionary) preserve
+  aksara:     44.585 (97.7%) — dari jv_wiktionary {{sirah|alt=...}}
+  kelas:          55 (0.1%) — kelas kata linguistik (t.a., t.k., t.s.)
 
-Duplikat (audit global 10 Okt 2026 — 3.275 tokens):
-  Same-field (877):
-    ngoko:  211   krama:  192   word:  61   arti:  413
-  Cross-field (2.398):
-    ngoko↔krama: 140   ngoko↔arti: 730   krama↔arti: 277
-    word↔ngoko:  581   word↔krama: 258   word↔arti: 412
-  → user bersihkan via TUI menu 'Deteksi Duplikat' (JANGAN HAPUS otomatis, R-18)
+Komposisi kelengkapan:
+  NETRAL (word, ngoko+krama kosong): 44.087 (96.6%)
+  PAIRED 3-field (ngoko+krama+indo):    141 (0.3%) — siap upload Supabase
+  indo only (no ngoko+krama):         1.622 (3.6%) — dari id_wiktionary
 
-Wiki markup cleaning (10 Okt 2026):
-  - 1.918 entries dibersihkan (960 wiki link, 628 template, 18 HTML, 311 whitespace)
-  - 0 data hilang (R-18 compliance)
-  - Hapus: [[...]] bracket, {{...}} template, <sup>/<br> tag
-  - Preserve: link text, teks data, aksara, diakritik Jawa
+Source breakdown:
+  jv only (XML dump):           43.256
+  jv + id_wiktionary:            2.238
+  jv + mendeley:                  137
+  jv + mendeley + id_wiktionary:     7
 
-DB Supabase (post-R-26 standardisasi):
-  Table `kamus` (10 kolom):
-    id (uuid, auto-gen), ngoko, aksara, krama, arti, keterangan,
-    sumber, status, created_at, updated_at
-  → register + krama_inggil DROPPED dari DB (R-26)
-  → user run SQL DROP COLUMN untuk standardisasi DB
+Multi-source (source_count > 1): 1.363
+Status: semua draft (user belum mark ready, R-12)
+Ejaan (diakritik é/è/ê): 9.785 (21.4%)
+Schema: 20 field, no register + no krama_inggil (R-26), arti → indo (rename)
 
-Build script: DISABLED (R-20) — parser tolol merusak data
-Audit script: scripts/audit-statistik-duplikat.py (jalan kapan saja, read-only)
+TUI: kamus-tui.py v10 — compatible dengan field indo (bukan arti)
+Upload: upload-supabase.py v3 — compatible dengan field indo (R-26)
+DB Supabase: 10 kolom (post-R-26, DROP register + krama_inggil)
 ```
 
 ## Marker status (konsisten di semua docs)
