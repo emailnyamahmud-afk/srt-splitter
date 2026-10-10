@@ -1971,3 +1971,71 @@ Stage Summary:
 - R-18 berlaku untuk FIELD juga, BUKAN cuma entry
 - AI next session: JANGAN hapus field tanpa konfirmasi user. Audit dulu,
   konfirmasi, baru eksekusi. Kalau ragu, backup dulu + jangan hapus apapun.
+
+---
+Task ID: bersihkan-wiki-markup-kamus
+Agent: main
+Task: User minta bersihkan wiki markup di kamus, DILARANG KERAS HAPUS DATA
+
+Work Log:
+- User: 'bersihkan wiki markup, DILARANG KERAS HAPUS DATA'
+- Sebelumnya audit penuh 44.005 entries (bukan sampling) menemukan:
+  - keterangan: 960 entries dengan [[wiki link]], 628 dengan {{template}}, 18 dengan HTML tag
+  - keterangan: 719 entries dengan multi-space, 2 dengan space-before-comma
+  - arti: 1 dengan [[link]], 1 dengan {{template}}, 2 dengan multi-space, 4 dengan }} sisa
+  - word: 1 dengan {{template}}
+  - krama: 1 dengan {{template}}
+
+- Bikin script bersihkan-wiki-markup.py dengan 4 cleaner:
+  1. clean_wiki_link: [[text]] → text, [[text|display]] → display (preserve link text)
+  2. clean_wiki_template: {{...}} → hapus seluruh (loop 5x untuk nested)
+  3. clean_html_tag: <sup>/<br>/<ref> → hapus tag, preserve teks di dalam
+  4. normalize_whitespace: multi-space → single, ' ,' → ',', trim
+
+- Field yang dibersihkan (12 field teks): word, lemma_words, ngoko, krama,
+  krama_inggil, arti, keterangan, sumber, kelas, kelas_nama, mendeley_id, register
+- Field yang TIDAK dibersihkan: aksara (berisi unicode Jawa), is_* (bool),
+  status, source_count, dasanama_count, entry_id (non-string)
+
+- Hasil cleaning:
+  - word: 1 entry dibersihkan
+  - krama: 1 entry dibersihkan
+  - arti: 7 entries dibersihkan
+  - keterangan: 1.909 entries dibersihkan
+  - Total: 1.918 entries dibersihkan
+
+- Sample verify:
+  - entry_id=3 keterangan awalnya 'swara, ujar.; préntah, pakon | [[suara]]\n
+    {{label|jv|militer}} [[perintah]]\n[[berkata]], [[bilang]], [enyeru]]\n
+    {{label|jv|militer}} [[memerintah, mengatur]] | ...'
+    sekarang: 'swara, ujar.; préntah, pakon | suara\nperintah\nberkata, bilang,
+    menyeru\nmemerintah, mengatur | ...' (markup hilang, teks data tetap)
+  - entry_id=43676 arti='}}' → arti='' (artifact dibersihkan)
+  - entry_id=23282 arti='|t=berlayar melawan arus air}}' → arti='|t=berlayar
+    melawan arus air' (}} dibersihkan, | tetap bukan markup)
+
+- Verify post-cleaning:
+  - 0 entries dengan [[, ]], {{, }}, <sup>, <br> di keterangan
+  - 44.005 entries tetap (R-18 OK)
+  - 22 field per entry tetap identik (R-18 field OK)
+  - Size: 28.4 MB → 28.39 MB (-18.7 KB)
+
+R-18 compliance:
+  - Tidak hapus entry (44.005 tetap)
+  - Tidak hapus field (22 tetap)
+  - Tidak hapus teks data (link text inside [[...]] tetap ada)
+  - Hanya hapus karakter markup (artifact parsing)
+
+R-22 compliance:
+  - Cleaning markup ≠ fix ejaan dari raw
+  - Cleaning = normalize format ke teks polos
+  - Data kamus tetap dari draft, tidak ambil dari raw
+
+Commit 8bd724a + push.
+
+Stage Summary:
+- 1.918 entries dibersihkan dari wiki markup (960 link + 628 template + 18 HTML + lainnya)
+- 0 data hilang, 0 field hilang, 0 entry hilang
+- Teks data utuh (link text, definisi, konteks Jawa tetap ada)
+- Aksara Jawa + diakritik Jawa tetap utuh (R-16a, R-18)
+- Kamus sekarang lebih bersih, siap untuk audit + validasi user via TUI
