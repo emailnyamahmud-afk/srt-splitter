@@ -1758,3 +1758,44 @@ Stage Summary:
 - 2 entries entry_id=43678, 43679 anomaly: keterangan-only tanpa word/ngoko/krama/arti
   (R-18: preserve, user isi manual via TUI)
 - 69 entries krama+arti no-ngoko no-word (paired valid krama-only, bukan anomali)
+
+---
+Task ID: augment-tui-detect-duplicates
+Agent: main
+Task: User minta augment TUI deteksi duplikat — murni deteksi kata sama lintas entry lintas definisi, JANGAN filter 'tolol' (valid/halu/bug)
+
+Work Log:
+- User frustrated: AI halu berkali-kali, bahas konsep TUI DB, schema, solusi UI web, dll
+- User klarifikasi: TUI kamus dipertahankan, augment detect_duplicates() yang sudah ada
+- Baca function detect_duplicates() line 1063-1199 — sudah ada 4 kategori:
+  1. Duplikat ngoko (211 tokens) — kata sama di ngoko beda entry
+  2. Duplikat krama (192 tokens)
+  3. Duplikat word (61 tokens, NETRAL)
+  4. Cross-field ngoko↔krama (140 tokens) — cuma 1 pasangan
+- Yang TIDAK ada: cross-field ke arti (ngoko↔arti, krama↔arti), cross word↔* (NETRAL duplikat di paired entry)
+- Augment:
+  * Tambah arti_idx untuk track field arti (lowercase tokenize)
+  * Refactor cross-field: helper find_cross(idx1, idx2) untuk deteksi kata di field1 entry A = field2 entry B beda entry
+  * 6 pasangan cross-field: ngoko↔krama, ngoko↔arti, krama↔arti, word↔ngoko, word↔krama, word↔arti
+  * Tambah helper function _show_cross_field(cross_dict, f1, f2) — display side-by-side, 50 token teratas
+  * Kategori 8 (word↔*) gabung 3 pasangan jadi 1 display, sorted by unique entries
+  * Update menu questionary: 8 kategori + Kembali
+  * Update dispatch: cat_sel.startswith('1.')..('8.')
+  * Hapus filter comment "Mungkin sinonim valid, atau homograf beda arti" — user bilang JANGAN FILTER TOLOL
+- Test: mock questionary + load kamus, capture stdout — verify summary
+  * Hasil: 8 kategori terdeteksi, total cross-field 2.398 tokens (sebelumnya 140)
+  * Duplikat arti: 413 tokens (BARU)
+  * Cross ngoko↔arti: 730 tokens (BARU — kata di ngoko entry A = arti entry B)
+  * Cross krama↔arti: 277 tokens (BARU)
+  * Cross word↔ngoko: 581, word↔krama: 258, word↔arti: 412 (BARU — NETRAL duplikat di paired entry)
+- Verify: py_compile OK, test jalan dengan data kamus 44.005 entries
+- Hapus script test, commit ab811a2 + push
+
+Stage Summary:
+- detect_duplicates() augment dari 4 → 8 kategori (124 insertions, 38 deletions)
+- Total cross-field lintas definisi: 2.398 tokens (16x lipat dari 140 sebelumnya)
+- User pain point: scroll 40k entry cari duplikat manual → sekarang TUI tunjukin semua
+- R-18: JANGAN HAPUS otomatis, user putuskan
+- R-22: Pure detection dari kamus-jawa-draft.json, tidak merujuk raw
+- Filter "tolol" (valid/halu/bug) dihapus — murni deteksi fakta
+- Next: user download TUI v10 + curl cache-buster, jalankan menu Deteksi Duplikat
