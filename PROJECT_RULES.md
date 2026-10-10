@@ -431,6 +431,85 @@ User 9 Okt 2026: "GERBANGE IN GERBANGE OUT. SAMPAH YG MASUK = SAMPAH YG KELUAR. 
   - Frequency analyzer pakai DB, bukan draft lokal
 - AI tidak pernah upload — user selalu putuskan
 
+### R-23 — Standarisasi ≠ HAPUS field. R-18 berlaku untuk FIELD juga.
+
+User 10 Okt 2026: "YG AKU MAU DISTANDARISASI JSON, BUKAN HAPUS DATA. TOLOL"
+
+AI sempat salah: hapus 13 field (register, krama_inggil, is_*, kelas, kelas_nama, lemma_words, mendeley_id, dasanama_count, source_count) dengan alasan "standarisasi 3-bahasa". Ini MERUSAK DATA.
+
+**Standarisasi PROPER** (R-23):
+- SEMUA entry punya struktur field identik
+- Entry yang belum punya field conditional diisi default value (`False` / `0` / `''`)
+- TIDAK ada field yang dihapus
+- TIDAK ada teks data yang dihapus
+- 22 field per entry, semua preserve
+
+Yang BOLEH di-bersihkan (bukan hapus data):
+- Wiki markup `[[...]]`, `{{...}}`, `<tag>` → hapus karakter markup, preserve teks
+- Whitespace normalize (multi-space → single, trim)
+- Karakter artifact (`}}` sisa template)
+
+Yang DILARANG (R-23 + R-18):
+- Hapus field karena "tidak relevan" tanpa konfirmasi user
+- Hapus entry karena "kosong" atau "duplikat"
+- Drop kolom di DB clean tanpa audit data hilang + konfirmasi user
+
+Audit sebelum hapus apapun:
+1. Cek berapa entries yang punya field itu terisi
+2. Cek apakah field itu redundant dengan field lain (mis. `kelas` 1:1 dengan `kelas_nama`)
+3. Konfirmasi user: "field X terisi di N entries, mau drop?"
+4. Backup dulu, baru eksekusi
+5. Verify post-action: 0 data hilang
+
+### R-24 — Statistik "arti 100% filled" MENIPU. Audit real Indonesia.
+
+User 10 Okt 2026: "BUKAN 100% FILLED MENIPU, TAPI HASIL TERJEMAHAN DAN ENGGA APA-APA, INILAH GUNANYA TUI UNTUK VERIFIKASI SATU-SATU."
+
+Audit kamus 10 Okt 2026:
+- arti total terisi: 44.002 (99.99%)
+- arti = word (fallback): 39.231 (89.15%) — BUKAN Indonesia, cuma copy word
+- arti Indonesia real: 4.771 (10.84%) — paired + ngoko+arti (valid)
+
+Insight:
+- Statistik "arti 100% filled" menipu karena 89.15% cuma fallback copy word
+- Fallback BUKAN bug — ini alat untuk marking NETRAL entries (entry dengan arti=word berarti belum ada terjemahan Indonesia sebenarnya)
+- User verifikasi 1-1 via TUI: lihat word + keterangan Jawa → tentukan arti Indonesia sebenarnya → replace fallback
+- AI TIDAK auto-replace fallback dengan "arti Indonesia AI tebakan" (R-22: GIGO, otak AI dilatih sampah internet)
+
+Workflow:
+1. AI audit statistik (count arti=word fallback vs arti Indonesia real)
+2. AI scan duplikat global (3.275 tokens: 877 same-field + 2.398 cross-field)
+3. User verifikasi 1-1 via TUI: baca keterangan, tentukan arti Indonesia
+4. Setelah 3-field lengkap → user mark status='ready' via menu
+5. Upload ke Supabase (R-12: user explicit 'y')
+
+### R-25 — detect_duplicates WAJIB tampilkan word NETRAL.
+
+User 10 Okt 2026: "KALAU WORD TIDAK BISA DIBACA DI DETECT DUPLIKAT, APA GUNANYA DETECT DUPLIKAT?"
+
+Detect_duplicates di kamus-tui.py harus tampilkan:
+- entry_id
+- word (NETRAL, kalau ada) — KRITIS, tanpa ini user tidak bisa putuskan merge/biarkan
+- arti (original case, 50 char)
+- keterangan (50 char)
+
+8 kategori duplikat (lintas entry + lintas field):
+1. Duplikat ngoko (same field, beda entry)
+2. Duplikat krama
+3. Duplikat word (NETRAL)
+4. Duplikat arti (Indonesia)
+5. Cross ngoko↔krama
+6. Cross ngoko↔arti
+7. Cross krama↔arti
+8. Cross word↔ngoko/krama/arti (NETRAL duplikat di paired entry)
+
+User bisa ketik entry_id langsung dari list → edit_entry jalan → save → kembali ke list. Tidak perlu balik menu utama + search ulang.
+
+JANGAN:
+- Display hanya entry_id + arti (word tidak tampil)
+- Filter "valid" / "halu" / "bug" — pure detection, user putuskan
+- Hapus duplikat otomatis (R-18: JANGAN HAPUS)
+
 ---
 
 ## Catatan untuk AI

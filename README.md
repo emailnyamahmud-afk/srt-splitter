@@ -196,22 +196,44 @@ Lihat [`scripts/tutor-python-lokal.md`](scripts/tutor-python-lokal.md) untuk det
 }
 ```
 
-### Stats (v2.27, post-merge + scan + fallback)
+### Stats (v2.6.1, post-standarisasi-22-field + wiki-markup-cleanup — 10 Okt 2026)
 
 ```
-Total entries:           44.004 (setelah merge 611 duplikat)
-✅ PAIRED 3-field:        2.936  (6.7%)  ← ngoko+krama+arti lengkap
-⚠ NETRAL (word+arti):   39.230  (89.2%)  ← arti=word (fallback), user tentukan ngoko/krama
-✅ Empty (R-18 tetap):        2  (0.0%)
+Total entries:           44.005 (22 field per entry, semua identik)
+✅ PAIRED 3-field:        2.937  (6.67%)  ← ngoko+krama+arti lengkap
+🟡 NGOKO+ARTI:           1.766  (4.01%)  ← perlu krama
+⚠ NETRAL (word+arti):   39.230  (89.15%) ← arti=word (fallback), user tentukan ngoko/krama
 
-Arti terisi:    44.002 (100%)  ← semua entries punya arti minimal (fallback=word)
-Ngoko terisi:   4.703 (10.7%)
-Krama terisi:   3.005 (6.8%)
-Keterangan:     42.925 (97.5%)  ← PETUNJUK konteks dari scrap
-Duplikat arti:      0  ← sudah merge
-Duplikat ngoko:   211 tokens  ← user bersihkan via TUI (menu Deteksi Duplikat)
-Duplikat krama:   192 tokens
-Cross-field:      140 tokens
+Analisa arti (CRITICAL — statistik 'arti 100% filled' MENIPU, R-24):
+  arti total terisi:        44.002 (99.99%)
+  arti = word (fallback):  39.231 (89.15%) — BUKAN Indonesia, cuma copy word
+  arti Indonesia real:     4.771 (10.84%) — paired + ngoko+arti (valid)
+  → User verifikasi 1-1 via TUI. Fallback = alat marking NETRAL.
+
+Field terisi:
+  word:        39.231 (89.15%)  ngoko:    4.704 (10.69%)
+  krama:        3.006 (6.83%)   arti:   44.002 (99.99%)
+  aksara:      41.350 (93.97%)  keterangan: 42.924 (97.54%)
+  register:    44.005 (100% — semua 'umum', label raw)
+  kelas:         1.404 (3.20% — kelas kata linguistik: t.a./t.k./t.s.)
+  krama_inggil:     0 (R-17: kosong by design)
+
+Source flags:
+  is_lemma: 1.816  is_mendeley: 814  is_dasanama: 427
+  is_angka: 1.008  is_lampiran: 2.151
+
+Duplikat (audit global 10 Okt 2026 — 3.275 tokens, R-25):
+  Same-field (877): ngoko 211 + krama 192 + word 61 + arti 413
+  Cross-field (2.398): ngoko↔krama 140 + ngoko↔arti 730 + krama↔arti 277
+                        + word↔ngoko 581 + word↔krama 258 + word↔arti 412
+  → user bersihkan via TUI menu 'Deteksi Duplikat' (8 kategori, word NETRAL tampil)
+  → JANGAN HAPUS otomatis (R-18)
+
+Wiki markup cleaning (10 Okt 2026):
+  1.918 entries dibersihkan (960 wiki link, 628 template, 18 HTML, 311 whitespace)
+  0 data hilang (R-18 + R-23 compliance)
+  Hapus: [[...]] bracket, {{...}} template, <sup>/<br> tag
+  Preserve: link text, teks data, aksara, diakritik Jawa
 
 Angka 1-1000 (contoh 3-pasangan terdefinisi):
   Coverage: 1000/1000 (100%) — ngoko+krama+arti semua terisi
@@ -219,7 +241,7 @@ Angka 1-1000 (contoh 3-pasangan terdefinisi):
   panca+ponco = sinonim Sanskrit, TETAP (R-18 jangan hapus)
 ```
 
-### Menu TUI (kamus-tui.py v9)
+### Menu TUI (kamus-tui.py v9 — 10 Okt 2026)
 
 ```
 📊 Statistik kamus
@@ -227,7 +249,7 @@ Angka 1-1000 (contoh 3-pasangan terdefinisi):
 ✅ Browse READY (status=ready, siap upload)
 📋 Browse DRAFT (belum di-edit user)
 ⚠ Filter: NETRAL (39.230 entri, word+arti, user tentukan ngoko/krama)
-🟢 Filter: LENGKAP 3-field (2.936 entri, siap review/upload)
+🟢 Filter: LENGKAP 3-field (2.937 entri, siap review/upload)
 🟡 Filter: NGOKO+KRAMA (perlu isi arti)
 ⚪ Filter: NGOKO SAJA (perlu isi krama+arti)
 🔵 Filter: NGOKO+ARTI (perlu isi krama)

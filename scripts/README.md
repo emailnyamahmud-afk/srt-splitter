@@ -49,8 +49,12 @@ Lihat [`tutor-mode-on-workflow.md`](tutor-mode-on-workflow.md) + [`tutor-demucs-
 
 | Script | Untuk Apa | Status |
 |---|---|---|
-| **`kamus-tui.py`** ⭐ | TUI edit kamus Jawa v2.6 (Phase 1-6 refactor, R-21 word field) | ✅ Utama |
+| **`kamus-tui.py`** ⭐ | TUI edit kamus Jawa v9 (22 field, 8 kategori duplikat, edit langsung dari list) | ✅ Utama |
 | **`upload-supabase.py`** | Upload entries approved ke Supabase (user-triggered only, R-12) | ✅ Utama |
+| **`audit-statistik-duplikat.py`** ⭐ | Audit statistik + scan duplikat global (read-only, 8 kategori, top 20 sample) | ✅ Audit |
+| **`bersihkan-wiki-markup.py`** | Bersihkan wiki markup `[[..]]`, `{{..}}`, `<tag>` (R-18 no data loss) | ✅ Maintenance |
+| `standarisasi-kamus.py` | Standarisasi v3.0 (HAPUS 13 field) — REVERTED, jangan pakai | ❌ REVERTED (R-23) |
+| `standarisasi-kamus-v2.py` | Standarisasi PROPER (22 field, no data loss) — sudah di-apply, aman | ✅ Maintenance |
 
 ### SQL Migrations (Supabase)
 
@@ -68,16 +72,17 @@ Lihat [`tutor-mode-on-workflow.md`](tutor-mode-on-workflow.md) + [`tutor-demucs-
 
 ---
 
-## Kamus Jawa Workflow (v2.6, post-R-22)
+## Kamus Jawa Workflow (v2.6.1, post-wiki-markup-cleanup — 10 Okt 2026)
 
 ```bash
 # Download (sekali saja) — R-22: hanya kamus-draft.json, raw dihapus
-curl -L -o kamus-jawa-draft.json \
-  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?v=26"
-curl -L -o kamus-tui.py \
-  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/kamus-tui.py?v=8"
-curl -L -o upload-supabase.py \
-  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py?v=2"
+# Cache-buster: t=<timestamp> supaya gak ambil dari cache CDN
+curl -L -H 'Cache-Control: no-cache' -o kamus-jawa-draft.json \
+  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?t=$(date +%s)"
+curl -L -H 'Cache-Control: no-cache' -o kamus-tui.py \
+  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/kamus-tui.py?t=$(date +%s)"
+curl -L -H 'Cache-Control: no-cache' -o upload-supabase.py \
+  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py?t=$(date +%s)"
 
 # Setup .env (sekali saja via TUI menu "🔑 Set Supabase .env")
 python3 kamus-tui.py
@@ -90,17 +95,20 @@ python3 kamus-tui.py
 # Menu "☁ Upload ke Supabase" → konfirmasi 'y' eksplisit → upload batch 500
 ```
 
-### Aturan kamus (R-12 sampai R-22)
+### Aturan kamus (R-12 sampai R-25)
 
 - **R-12**: User wajib validasi 1-1 sebelum upload Supabase (status='ready')
 - **R-16**: Raw files DIHAPUS dari repo (R-22 override)
 - **R-16a**: Ejaan Jawa (panduan teknis, AI tidak audit ejaan dari raw)
 - **R-17**: krama_inggil masuk field krama (sinonim comma)
-- **R-18**: JANGAN HAPUS entry kamus (kosong/aksara/keterangan-only tetap disimpan)
+- **R-18**: JANGAN HAPUS entry kamus (kosong/aksara/keterangan-only tetap disimpan). Berlaku juga untuk FIELD (R-23).
 - **R-19**: Parser AI tolol, raw = sampah
 - **R-20**: kamus-draft.json = rujukan tunggal, raw = DIHAPUS
 - **R-21**: field 'word' = netral, belum terdefinisi register
 - **R-22**: GIGO — AI tidak merujuk raw untuk audit/fix, bantu workflow saja
+- **R-23**: Standarisasi ≠ HAPUS field. R-18 berlaku untuk FIELD juga. Backup + audit dulu, baru eksekusi.
+- **R-24**: Statistik "arti 100% filled" MENIPU. Audit real Indonesia: 4.771 entries (10.84%) Indonesia real, 39.231 (89.15%) fallback=word.
+- **R-25**: detect_duplicates WAJIB tampilkan word NETRAL. 8 kategori lintas entry + lintas field, edit langsung dari list.
 
 ### User fallback (kata belum dikenali)
 
@@ -163,15 +171,55 @@ python3 scripts/mix-tui.py
 # Output: mp4-id-final.mp4 (video stream copy + SFX + dub, 0 DTS warnings)
 ```
 
-### `kamus-tui.py` ⭐ — Kamus Jawa Editor TUI v2.6
+### `kamus-tui.py` ⭐ — Kamus Jawa Editor TUI v9 (10 Okt 2026)
 
 ```bash
 python3 scripts/kamus-tui.py
-# Phase 1-6 refactor: helper _search_entries, _entry_label, filter NETRAL,
-# merge_2_entries terpisah, upload via upload-supabase.py, textwrap
+# 22 field per entry (standarisasi PROPER, R-23)
 # Statistik startup: Total + NETRAL + 3-field ready + Status ready
-# Menu: Search, Browse READY/DRAFT, Filter NETRAL/3-field/NGOKO+KRAMA/etc,
-#        Merge 2 entries, Mark READY bulk, Set Supabase .env, Upload
+# Menu utama (17 menu):
+#   - Statistik kamus (source tags, kelengkapan, register, status)
+#   - Search (cari kata di ngoko/krama/krama_inggil/arti)
+#   - Browse READY/DRAFT/NETRAL/LNGKAP/NGOKO+KRAMA/NGOKO SAJA/NGOKO+ARTI
+#   - Browse by source (lemma/mendeley/dasanama/angka)
+#   - Browse with krama mapping, BELUM ada arti
+#   - Merge 2 entries (search kata, preview, konfirmasi)
+#   - 🔍 Deteksi duplikat (8 kategori, R-25: word NETRAL tampil)
+#   - Mark READY/DRAFT bulk (search kata, tanpa edit)
+#   - Set Supabase .env (URL + anon key)
+#   - Upload ke Supabase (hanya status='ready')
+#
+# Deteksi duplikat — 8 kategori (lintas entry + lintas field):
+#   1. Duplikat ngoko (same field, beda entry)
+#   2. Duplikat krama
+#   3. Duplikat word (NETRAL)
+#   4. Duplikat arti (Indonesia)
+#   5. Cross ngoko↔krama
+#   6. Cross ngoko↔arti
+#   7. Cross krama↔arti
+#   8. Cross word↔ngoko/krama/arti (NETRAL duplikat di paired entry)
+#
+# User bisa ketik entry_id langsung dari list duplikat → edit_entry jalan
+# → save → kembali ke list (tidak perlu balik menu utama)
+```
+
+### `audit-statistik-duplikat.py` ⭐ — Audit Statistik + Scan Duplikat Global
+
+```bash
+python3 scripts/audit-statistik-duplikat.py
+# Output: statistik penuh + scan 3.275 duplikat (877 same-field + 2.398 cross-field)
+# Logika sama persis dengan detect_duplicates() di TUI
+# Top 20 + sample 5 per kategori
+# Read-only, tidak modifikasi kamus
+```
+
+### `bersihkan-wiki-markup.py` — Bersihkan Wiki Markup (R-18 no data loss)
+
+```bash
+python3 scripts/bersihkan-wiki-markup.py
+# Bersihkan: [[link]] → link, {{template}} → hapus, <tag> → hapus tag preserve teks
+# Normalize whitespace, trailing comma
+# Backup dulu, baru eksekusi. Verify 0 data hilang.
 ```
 
 ### `upload-supabase.py` ⭐ — Upload ke Supabase
@@ -201,5 +249,9 @@ python3 srt-frequency-analyzer.py ~/Dubbing/S1-jw.srt
 - **Multi-bahasa**: Mode ON untuk ID (sudah jalan), SRT editor untuk Jawa (nunggu code fix + kamus)
 - **Mode manual**: DaVinci Resolve (tarik file ke timeline, edit sendiri)
 - **Audio utuh 100%** — tidak ada potongan di TTS mode ON + Smart Fit (no truncate)
-- **Kamus Jawa** — v2.6 (post-R-22 raw dihapus), 45.021 entries, 5.803 paired + 39.216 NETRAL
+- **Kamus Jawa** — v2.6.1 (10 Okt 2026): 22 field standar, 44.005 entries, 2.937 paired + 39.230 NETRAL + 1.766 ngoko+arti
+- **Audit**: 3.275 duplikat terdeteksi (877 same-field + 2.398 cross-field)
+- **Arti real**: 4.771 entries (10.84%) Indonesia real, 39.231 (89.15%) fallback=word
 - R-22: SEMUA raw + parser script DIHAPUS. Hanya workflow script aktif.
+- R-23: Standarisasi ≠ hapus field. R-18 berlaku untuk FIELD juga.
+- R-25: detect_duplicates WAJIB tampilkan word NETRAL.
