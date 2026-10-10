@@ -57,30 +57,6 @@ KAMUS_PATH = Path.home() / 'Dubbing' / 'kamus-jawa-draft.json'
 # Default = kamus-jawa-draft.json (44.005 entries, semua sumber campur).
 # Opsi lain = subset PURE per sumber, lebih bersih, kerja bertahap.
 KAMUS_SOURCES = {
-    'draft': {
-        'path': Path.home() / 'Dubbing' / 'kamus-jawa-draft.json',
-        'label': 'kamus-jawa-draft.json (44.005 entries — semua sumber campur)',
-        'desc': 'Sumber utama NETRAL. Campur 5+ sumber (Wiktionary, Mendeley, Dasanama, Lampiran, Angka). Banyak sumber = banyak sampah. Untuk kerja komprehensif.',
-        'url': 'https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?t=CMD_TIMESTAMP',
-    },
-    'mendeley': {
-        'path': Path.home() / 'Dubbing' / 'kamus_mendeley.json',
-        'label': 'kamus_mendeley.json (145 entries — PURE mendeley, 100% paired 3-field)',
-        'desc': 'PURE mendeley dataset (curated academic, Faisal Rahutomo et al 2018). Paling terpercaya, sudah 100% ngoko+krama+arti. Kerja bertahap mulai dari sini.',
-        'url': 'https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus_mendeley.json?t=CMD_TIMESTAMP',
-    },
-    'jv_wiktionary_raw': {
-        'path': Path.home() / 'Dubbing' / 'kamus_jv_wiktionary_raw.json',
-        'label': 'kamus_jv_wiktionary_raw.json (44.615 entries — XML dump jv.wiktionary parsed minimal)',
-        'desc': 'Parsed dari XML dump resmi Wikimedia (jv.wiktionary.org). 1 lemma = 1 entry, TIDAK ADA merge sinonim AI. Paling bersih, akar dari sumber.',
-        'url': 'https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus_jv_wiktionary_raw.json?t=CMD_TIMESTAMP',
-    },
-    'jv_integrated_mendeley': {
-        'path': Path.home() / 'Dubbing' / 'kamus_jv_wiktionary_integrated_mendeley.json',
-        'label': 'kamus_jv_wiktionary_integrated_mendeley.json (44.716 entries — jv + mendeley integrated)',
-        'desc': 'jv.wiktionary XML dump + mendeley curated dataset, integrated. 1 konsep = 1 entry (no duplikat). Sinonim comma, arti dipisah | (Indonesia | Jawa). R-18: tidak hapus, hanya merge.',
-        'url': 'https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus_jv_wiktionary_integrated_mendeley.json?t=CMD_TIMESTAMP',
-    },
     'unified': {
         'path': Path.home() / 'Dubbing' / 'kamus_unified.json',
         'label': 'kamus_unified.json (46.929 entries — jv + mendeley + dasanama + lemma + lampiran + angka)',
