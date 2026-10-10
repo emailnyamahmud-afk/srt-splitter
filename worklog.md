@@ -1799,3 +1799,47 @@ Stage Summary:
 - R-22: Pure detection dari kamus-jawa-draft.json, tidak merujuk raw
 - Filter "tolol" (valid/halu/bug) dihapus — murni deteksi fakta
 - Next: user download TUI v10 + curl cache-buster, jalankan menu Deteksi Duplikat
+
+---
+Task ID: tui-deteksi-duplikat-edit-langsung
+Agent: main
+Task: User minta deteksi semua duplikat + edit langsung dari situ, tidak bolak-balik menu
+
+Work Log:
+- User frustrasi: AI halu, bahas konsep TUI DB, schema, web UI, dll
+- User keras: "BODOH, AKU MAU DETEKSI SEMUA DUPLIKAT. TOLOL, DAN EDIT ITU SAJA"
+- Baca code kamus-tui.py full (1.503 baris) + baca JSON sample konkret
+- Sample token 'kersa' = 5 entries di krama, arti beda (harap/panggang/mau/bila/kehendak)
+  → user harus baca keterangan Jawa untuk putuskan merge/biarkan
+- Pain point sebenarnya: detect_duplicates() augment 8 kategori sudah jalan, TAPI
+  display cuma tunjukin entry_id. User harus catat + balik menu utama + search
+  ulang untuk edit 1 entry. Untuk 2.398 token duplikat = 11.000+ round trip manual.
+- Augment:
+  1. Helper _entry_idx_by_eid(data, eid) — map entry_id ke index (handle post-merge shift)
+  2. Helper _edit_by_eid_prompt(data, prompt_text) — loop:
+     - User ketik entry_id (angka di [..] display)
+     - Cari index → panggil edit_entry(data, idx)
+     - Loop sampai Enter kosong (kembali ke list)
+  3. Integrasi ke 3 display block:
+     - Kategori 1-4 (duplikat sama-field): prompt di akhir list
+     - Kategori 5-7 (cross-field via _show_cross_field): prompt di akhir
+     - Kategori 8 (NETRAL cross-field): prompt di akhir
+- Display improvements:
+  - arti preview 30 → 50 char (lebih banyak konteks)
+  - entries shown 3 → 5 (cross-field) / 8 (sama-field + NETRAL)
+  - ket preview 60 → 40 char (kompak)
+  - Hapus comment 'via TUI' (sekarang langsung di sini)
+- Verify: py_compile OK, test kategori 1 (duplikat ngoko) → list 50 token teratas
+  muncul dengan entry_id di [..] → prompt muncul di akhir → ketik entry_id →
+  edit_entry jalan → save → balik ke prompt untuk edit entry lain
+- Commit e06933f + push
+
+Stage Summary:
+- detect_duplicates() sekarang interactive: list + edit langsung dari 1 prompt
+- User workflow: pilih kategori → scroll list → ketik entry_id → edit → save →
+  balik list (sekali scroll untuk 50 token teratas)
+- Tidak perlu catat entry_id + balik menu utama + search ulang
+- R-18 tetap: JANGAN HAPUS otomatis, user explicit edit 1 entry per request
+- R-22 tetap: pure detection dari kamus-jawa-draft.json
+- Untuk 2.398 duplikat: workflow linear, bukan 11.000+ round trip
+- Next: user download TUI v11 + jalankan menu "Deteksi duplikat"
