@@ -14,6 +14,16 @@ Workflow produksi (4 fase, bersih — sesuai v5 yt-dlp + edge-tts-tui):
                         → {prefix}-id-final.mp4 (stream copy, 3 menit)
                         → {prefix}-id-final-sub.mp4 (burn SRT, ~30 menit VideoToolbox M1)
 
+v3.3 fix: Justify=2 (center horizontal) untuk SEMUA alignment.
+  Bug: Alignment=5 (top) → text rata KIRI di libass default.
+  Fix: tambah Justify=2 di force_style → text rata TENGAH.
+
+v3.3 NEW: 4 opsi posisi di Step 4.7:
+  - Opsi A: Bawah Mandarin — Alignment=2, MarginV=20 (Indonesia di paling bawah)  ← DEFAULT
+  - Opsi D: Overlay atas Mandarin — Alignment=2, MarginV=60 (Indonesia di atas SRT Mandarin)
+  - Opsi B: Atas frame — Alignment=5, MarginV=50 (jauh dari Mandarin)
+  - Opsi C: Tengah video — Alignment=8, MarginV=0 (bisa nutup wajah)
+
 v3.2 NEW: posisi default top:50 (bukan 20) supaya subtitle Indonesia tidak
   menempel ke atas. Format posisi baru: 'top:NN' (custom MarginV).
 
@@ -406,28 +416,37 @@ def main():
         print()
 
         print(f'▶ Step 4.7/{total}: Pilih posisi SRT Indonesia')
-        # SRT Mandarin biasanya hard-burn di bottom video ori.
-        # Default Indonesia di top supaya tidak overlap.
-        # v3.2: MarginV default 50 (bukan 20) supaya tidak menempel ke atas
+        # v3.3: Opsi A (di bawah Mandarin) + Opsi D (overlay di atas Mandarin)
+        # Plus Justify=2 (center horizontal, fix bug rata kiri di Alignment=5)
+        # SRT Mandarin biasanya hard-burn di bottom video ori (1-2 line)
         pos_choice = questionary.select(
             'Posisi SRT Indonesia:',
             choices=[
-                'Top — tidak overlap SRT Mandarin, ada buffer di atas (REKOMENDASI v3.2)',
-                'Top menempel — dekat ke atas (MarginV=20, lama v3.1)',
-                'Middle — tengah video (cocok kalau video ori tidak ada SRT Mandarin)',
-                'Bottom — akan overlap dengan SRT Mandarin (jangan, kecuali video ori tidak ada SRT)',
+                'Opsi A: Bawah Mandarin — Indonesia di paling bawah (REKOMENDASI)',
+                'Opsi D: Overlay atas Mandarin — Indonesia langsung di atas SRT Mandarin (offset 60px)',
+                'Opsi B: Atas frame — Indonesia di atas, jauh dari Mandarin',
+                'Opsi C: Tengah video — Indonesia di middle frame (bisa nutup wajah)',
                 'Custom margin (input manual MarginV pixel)',
             ],
-            default='Top — tidak overlap SRT Mandarin, ada buffer di atas (REKOMENDASI v3.2)',
+            default='Opsi A: Bawah Mandarin — Indonesia di paling bawah (REKOMENDASI)',
         ).ask()
-        if 'Top menempel' in pos_choice:
-            srt_position = 'top:20'  # v3.1 behavior
-        elif 'Top —' in pos_choice or 'Top ' in pos_choice:
-            srt_position = 'top:50'  # v3.2 default — buffer space
-        elif 'Middle' in pos_choice:
+        if 'Opsi A' in pos_choice:
+            # Indonesia di paling bawah, SRT Mandarin di atasnya (di bottom video ori)
+            # Alignment=2 (bottom), MarginV=20 (menempel ke bawah)
+            # Risk: jika SRT Mandarin 2 line, Indonesia bisa overlap. Tapi video ori
+            # biasanya SRT Mandarin tidak terlalu ke bawah (ada margin built-in).
+            srt_position = 'bottom:20'
+        elif 'Opsi D' in pos_choice:
+            # Indonesia langsung di atas Mandarin (overlay, di bottom region tapi offset)
+            # Alignment=2 (bottom), MarginV=60 (turun lebih, di atas Mandarin)
+            srt_position = 'bottom:60'
+        elif 'Opsi B' in pos_choice:
+            # Indonesia di atas frame, jauh dari Mandarin
+            # Alignment=5 (top), MarginV=50 (buffer dari atas)
+            srt_position = 'top:50'
+        elif 'Opsi C' in pos_choice:
+            # Middle video
             srt_position = 'middle'
-        elif 'Bottom' in pos_choice:
-            srt_position = 'bottom'
         else:
             margin_v = questionary.text('MarginV (pixel, default 40):', default='40').ask()
             try:
@@ -551,21 +570,28 @@ def main():
         #   1 = bottom-left, 2 = bottom-center, 3 = bottom-right
         #   4 = top-left,    5 = top-center,    6 = top-right  ← TOP pakai 5 (BUKAN 8)
         #   7 = middle-left, 8 = middle-center, 9 = middle-right  ← MIDDLE pakai 8
-        # Bug v3.0: aku pakai Alignment=8 untuk top → aktual MIDDLE (salah)
+        # Bug v3.0: Alignment=8 untuk top → SALAH (aktual middle)
         # Fix v3.1: top → Alignment=5, middle → Alignment=8
-        # v3.2: posisi format 'top:NN' (MarginV custom), default top:50 (bukan 20)
+        # v3.2: format posisi 'top:NN' (custom MarginV)
+        # v3.3: format 'bottom:NN' + Justify=2 (fix bug rata kiri di Alignment=5)
+        #   Justify=0 (left), 1 (right), 2 (center). Default libass:
+        #   - Alignment=2 → center (default OK)
+        #   - Alignment=5 → LEFT (BUG, harus pakai Justify=2 untuk center)
         if srt_position.startswith('top:'):
             alignment = 5
             margin_v = int(srt_position.split(':')[1])
         elif srt_position == 'top':
-            alignment = 5  # legacy v3.1 (MarginV=20)
+            alignment = 5
             margin_v = 20
-        elif srt_position == 'middle':
-            alignment = 8
-            margin_v = 0  # center vertically
+        elif srt_position.startswith('bottom:'):
+            alignment = 2
+            margin_v = int(srt_position.split(':')[1])
         elif srt_position == 'bottom':
             alignment = 2
             margin_v = 20
+        elif srt_position == 'middle':
+            alignment = 8
+            margin_v = 0
         else:
             # custom:XXXX — user input margin pixel, default bottom alignment
             alignment = 2
@@ -578,6 +604,10 @@ def main():
         # FontName biarkan default (sans-serif), FontSize=18
         # Outline=2 (outline tebal), BorderStyle=1 (outline + shadow)
         # Shadow=1 (shadow 1 pixel)
+        # Justify=2 (center horizontal) — fix bug Alignment=5 rata kiri (v3.3)
+        #   Justify=0 (left), 1 (right), 2 (center)
+        #   Default libass: Alignment=2 → center OK, Alignment=5 → LEFT (bug)
+        #   Pakai Justify=2 untuk SEMUA alignment supaya text selalu center horizontal
         force_style = (
             f"Fontsize=18,"
             f"PrimaryColour=&H00FFFFFF,"  # putih (ASS BGR: &H00BBGGRR)
@@ -586,7 +616,8 @@ def main():
             f"Outline=2,"
             f"Shadow=1,"
             f"Alignment={alignment},"
-            f"MarginV={margin_v}"
+            f"MarginV={margin_v},"
+            f"Justify=2"  # v3.3 fix: rata tengah horizontal (fix rata kiri di Alignment=5)
         )
 
         # Filter: [0:v] + subtitles → [vout]
