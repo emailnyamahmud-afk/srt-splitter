@@ -2369,3 +2369,42 @@ Stage Summary:
 - Web app Vercel hanya dipakai untuk Jawa (SRT editor, per cue preview)
 - Estimasi mix S5 (2j 16m video): ~1-2 menit di M1 (video stream copy, audio encode saja)
 - Dokumentasi update: README.md, AGENTS.md, scripts/README.md
+
+---
+Task ID: mix-tui-v2.1-deadlock
+Agent: main
+Task: Investigasi mendalam mix-tui v2 + cross-verify GitHub + fix bug tersembunyi
+
+Work Log:
+- User diskusi filosofi workflow: SRT = ground truth, TTS ngikut SRT, mix = stream copy
+- Cross-verify GitHub: mix-tui.py v2 live (490 baris, commit 4d5137f)
+- Investigasi code: ditemukan 1 bug tersembunyi di run_ffmpeg_with_progress
+  - 'for line in proc.stderr' bisa deadlock kalau FFmpeg output > 64KB pipe buffer
+  - Untuk 2 jam video dengan sidechain compress, FFmpeg bisa kirim ribuan baris log
+  - Buffer penuh → FFmpeg block write → script hang (deadlock)
+- Fix: threading stderr reader + queue
+  - stderr_reader() thread: baca proc.stderr line-by-line, put ke queue
+  - main thread: get queue dengan timeout 0.1s, cek proc.poll() + queue.empty
+  - reader_done Event: signal EOF
+  - Exit loop kalau proc selesai + reader selesai + queue kosong
+- Test real FFmpeg mix 5 detik: ✓ jalan, exit 0, output 53 KB
+- Test edge case: MP4 uppercase (.MP4) → Path.stem handle ✓
+- Test edge case: empty line parse → None ✓
+- Test edge case: total_dur=0 → no div by zero ✓
+- Push: commit 152bd82
+
+Stage Summary:
+- mix-tui.py v2.1 live di GitHub (491 baris)
+- Bug deadlock tersembunyi teratasi sebelum user test
+- Filosofi workflow ditambah ke README.md: SRT = ground truth (bukan video)
+- Status user: TTS S5 masih jalan (update terakhir 2223/3866 ~57%)
+- Pipeline aman untuk user test mix nanti setelah TTS selesai
+- Semua komitmen hari ini (12 Okt 2026):
+  - 34a6149 edge-tts-tui v1 (initial)
+  - c9e049d perf: inline mix (RAM 5000 cue)
+  - dc7a838 docs: Fase 3a default edge-tts-tui
+  - 5c16b75 fix: 4 voice menu
+  - 66131ed fix: error message install
+  - 4d5137f fix: mix-tui v2 (8 bug)
+  - 79be46c docs: status pipeline + mix-tui audit
+  - 152bd82 fix: mix-tui v2.1 (threading deadlock)

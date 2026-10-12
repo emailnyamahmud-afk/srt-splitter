@@ -84,6 +84,31 @@ Workflow baru, project-based. Saat ini user masih klik per cue satu-satu untuk p
 
 ---
 
+## Filosofi Workflow: SRT = Ground Truth (bukan video)
+
+**Prinsip utama**: SRT dari YouTube (Indonesia) = timestamp identik dengan MP4 ori (Mandarin). Jadi:
+
+```
+SRT-id = timestamp identik MP4 ori
+   ↓
+TTS ngikut SRT → audio dub otomatis sync dengan MP4
+   ↓
+Mix: video stream copy (no re-encode) → 100% sync
+   ↓
+Tidak perlu repot coding video 2-4 jam durasi (render lama + bug DTS)
+```
+
+**Konsekuensi**:
+- TTS fit ke cue SRT (Smart Fit, dynamic speed)
+- Mix = video stream copy + audio encode saja (~1-2 menit untuk 2 jam video)
+- Edit manual (DaVinci) hanya untuk hard-burn subs, bukan untuk re-time
+- Edit SRT Jawa = pekerjaan terpisah (web app editor), tidak ganggu pipeline TTS-ID
+
+**Why this works**:
+- YouTube subtitle timed manual oleh komunitas → timestamp presisi (frame-accurate)
+- Edge TTS Indonesia natural ~ 60% dari cue dur → Smart Fit speedup cap 2.0x cukup
+- Untuk dialog padat (Mandarin → Indonesia), ada overlap cue → crossfade 150ms (tumpang tindih smooth, user accept)
+
 ## Workflow Dubbing Mandarin → Jawa (4 Fase, sumber terpisah)
 
 ```
