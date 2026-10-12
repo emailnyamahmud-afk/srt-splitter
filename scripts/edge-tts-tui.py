@@ -55,24 +55,75 @@ import struct
 from pathlib import Path
 from datetime import datetime, timedelta
 
+# Track missing deps untuk pesan error komprehensif
+_MISSING_DEPS = []
+
 try:
     import questionary
 except ImportError:
-    print('\n❌ pip3 install questionary')
-    sys.exit(1)
+    _MISSING_DEPS.append('questionary')
 
 try:
     import edge_tts
 except ImportError:
-    print('\n❌ pip3 install edge-tts')
-    sys.exit(1)
+    _MISSING_DEPS.append('edge-tts')
 
 try:
     import numpy as np
     HAS_NUMPY = True
 except ImportError:
     HAS_NUMPY = False
-    print('⚠ numpy tidak ada — pakai pure Python (lambat untuk audio >2 jam)')
+    if not _MISSING_DEPS:
+        # numpy opsional — warning saja, bukan fatal
+        print('⚠ numpy belum terinstall. Pakai pure Python (lambat untuk audio >2 jam).')
+        print('   Install recommended: pip3 install numpy')
+        print()
+    else:
+        # Kalau ada deps wajib yang missing, tampilkan numpy juga supaya user install sekali jalan
+        _MISSING_DEPS.append('numpy')
+
+if _MISSING_DEPS:
+    print()
+    print('═' * 64)
+    print('❌ Dependensi belum lengkap!')
+    print('═' * 64)
+    print()
+    print(f'   Missing: {", ".join(_MISSING_DEPS)}')
+    print()
+    print('   Install dengan:')
+    print()
+    print('   pip3 install ' + ' '.join(_MISSING_DEPS))
+    print()
+    print('   Atau install semua deps sekaligus:')
+    print()
+    print('   pip3 install edge-tts questionary numpy')
+    print()
+    print('   Kalau pip3 ditolak (Mac blocked), pakai --break-system-packages:')
+    print()
+    print('   pip3 install --break-system-packages edge-tts questionary numpy')
+    print()
+    print('   Verifikasi:')
+    print()
+    print('   python3 -c "import edge_tts, questionary, numpy; print(\'OK\')"')
+    print()
+    print('═' * 64)
+    sys.exit(1)
+
+# ffmpeg juga wajib (dipakai untuk decode MP3 → PCM)
+if not shutil.which('ffmpeg'):
+    print()
+    print('═' * 64)
+    print('❌ ffmpeg belum terinstall!')
+    print('═' * 64)
+    print()
+    print('   Install dengan Homebrew:')
+    print()
+    print('   brew install ffmpeg')
+    print()
+    print('   Verifikasi: ffmpeg -version')
+    print()
+    print('═' * 64)
+    sys.exit(1)
 
 
 # ============================================================
