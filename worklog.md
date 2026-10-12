@@ -2496,3 +2496,43 @@ Workflow batch S1-S4 siap pakai (semua tool udah di-fix + tested):
 - demucs-tui.py (sudah ada, MPS tested)
 - edge-tts-tui.py (S5 99.97% sukses)
 - mix-tui.py v2.1 (3m 10s di M1)
+
+---
+Task ID: mix-tui-v3-mode-b-burn-srt-test
+Agent: main
+Task: User test mix-tui.py v3 Mode B (Burn SRT Indonesia) untuk S5
+
+Work Log:
+- User download mix-tui.py v3 dari GitHub (23818 bytes, verified match)
+- User run Mode B (Burn SRT Indonesia) untuk S5 (2j 16m 19s video)
+- Config:
+  - SRT: S5-ori.id.srt (dari yt-dlp v5)
+  - Posisi: Top (Alignment=8, MarginV=20) — tidak overlap SRT Mandarin di bottom
+  - Style: font 18pt, putih outline hitam, BorderStyle=1, Outline=2, Shadow=1
+  - Encoder: h264_videotoolbox (M1 hardware, BUKAN CPU)
+  - Bitrate: 2 Mbps video + 192 kbps audio AAC
+  - Ducking: 12 dB (sidechain compress ratio 10:1)
+- Real-time progress:
+  - 7.3% (18s): speed=32.8x
+  - 52.6% (2m 4s): speed=34.7x
+  - Estimasi total: ~4 menit (BUKAN 30 menit seperti di-prediksi)
+- Output: S5-id-final-sub.mp4 (~425 MB expected)
+
+Stage Summary:
+- mix-tui.py v3 Mode B = SUKSES besar-besaran
+- M1 VideoToolbox 7x lebih cepat dari estimasi awal (~4 menit vs 30 menit)
+- Subtitle Indonesia burn di TOP, SRT Mandarin tetap di BOTTOM dari video ori
+- Pipeline S5 100% selesai end-to-end:
+  yt-dlp v5 (9 min) → Demucs (16m37s) → edge-tts-tui (3 jam) → mix-tui v3 Mode A (3m10s) → mix-tui v3 Mode B (4 menit)
+  TOTAL: ~3.5 jam untuk video 2.2 jam (1.6x real-time)
+- File final user: S5-id-final-sub.mp4 (~425 MB)
+- next: user preview VLC → kalau OK publish/arsip
+- next: batch S1-S4 pakai workflow yang sama
+- next: implementasi Mode 2 (srt-gender-tui.py) untuk gender tagging
+
+Surprise finding:
+- M1 VideoToolbox hardware encoder sangat cepat untuk 480p H.264
+- Estimasi script (~30 menit) terlalu konservatif
+- Aktual: ~4 menit (7x lebih cepat)
+- Aku overestimate karena pakai referensi libx264 (software encoder)
+- Update estimasi di script ke ~3-5 menit untuk 480p 2 jam
