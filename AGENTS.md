@@ -51,15 +51,45 @@ Setelah checklist selesai, AI siap kerja. Tidak perlu ulang di chat berikutnya d
 
 Kalau ada konflik antara dokumen, `PROJECT_RULES.md` menang.
 
-## Status pipeline (10 Okt 2026)
+## Status pipeline (12 Okt 2026, 21:00 WIB)
 
 ```
-✅ Fase 1: yt-dlp v5     → {name}.mp4 + {name}-audio.m4a + {name}.id.srt (M4A native, no konversi MP3)
-✅ Fase 2: Demucs        → no_vocals.mp3 (MP3 320 kbps, MPS acceleration)
-⏳ Fase 3a: TTS ID       → audio-id-dub.wav (web Mode ON, jalan)
-⏳ Fase 3b: TTS Jawa     → audio-jw-dub.wav (SRT editor, nunggu code fix)
-⏳ Fase 4: mix-tui       → mp4-{lang}-final.mp4 (nunggu dub ready)
+✅ Fase 1: yt-dlp v5     → S5-ori.mp4 (80 MB) + S5-ori-audio.m4a (126 MB) + S5-ori.id.srt (3866 cue, 2j 16m)
+✅ Fase 2: Demucs        → no_vocals.mp3 (312 MB, MP3 320, 16m37s di M1 MPS)
+▶ Fase 3a: edge-tts-tui.py (LOKAL — ganti web app Mode ON)
+   Status: 239/3866 cue (~6%), ETA ~4 jam, voice Ardi -10Hz, cap 2.0x
+   RAM: 749 MB buffer (4.7% dari 16 GB), Mac tidak panas (M1 + unified memory)
+   Cache: .cache/S5-ori.id-cue-*.mp3 (per-cue, resume support)
+   ⚠ Web app Mode ON 4x gagal di S5 → pindah ke edge-tts-tui.py lokal
+   ⚠ Vercel maxDuration 60s + Microsoft rate-limit + ZIP OOM → tidak bisa SRT 2 jam
+⏳ Fase 3b: TTS Jawa     → audio-jw-dub.wav (web app SRT editor, nunggu code fix)
+✅ Fase 4: mix-tui.py v2 → S5-ori-id-final.mp4 (audit fix 8 bug, siap dipakai setelah TTS done)
 ```
+
+### Catatan Fase 3a (edge-tts-tui.py lokal)
+- Web app Vercel Mode ON gagal 4x untuk S5 (SRT 2 jam, 3866 cue):
+  1. Vercel maxDuration 60s → request >60s killed
+  2. Microsoft Edge TTS rate-limit (429) setelah ribuan request cepat
+  3. Smart Fit = 2x request per cue → 3866 × 2 = 7732 request ke Vercel
+  4. ZIP building OOM (baseline 200 MB dari Supabase kamus + 700 MB ZIP peak)
+- Solution: pindah generate TTS ke lokal Mac pakai edge-tts Python
+  - WebSocket langsung ke Microsoft (no Vercel proxy)
+  - No rate-limit (per-IP, tidak per-function seperti Vercel)
+  - RAM ~750 MB untuk 5000 cue (pre-allocate buffer + inline mix)
+  - Per-cue cache → resume kalau crash
+- Status: jalan stabil 239/3866 (~4 jam total), no error
+
+### Audit mix-tui.py v2 (commit 4d5137f)
+8 bug di-fix:
+1. Default output otomatis dari prefix MP4 (S5-ori.mp4 → S5-ori-id-final.mp4)
+2. Header doc update: Fase 1 m4a native (bukan audio.wav), Fase 3a edge-tts-tui (bukan web app)
+3. Validasi input file exist + size > 0 sebelum eksekusi
+4. Warning prominent kalau dub dur < 90% MP4 dur
+5. Pesan akhir 4 opsi (preview/edit/upload/split)
+6. Progress bar FFmpeg real-time (%, time, size, speed, ETA)
+7. Hapus output partial kalau Ctrl+C (no corrupt file)
+8. Dependencies check + ffmpeg/ffprobe dengan pesan install jelas
+
 
 ## Kamus Jawa status (v5.3, 10 Okt 2026 — 3 source + merge sinonim jadi 1 entry)
 

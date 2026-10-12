@@ -2330,3 +2330,42 @@ Stage Summary:
 - Dependencies: pip3 install edge-tts questionary numpy + ffmpeg (sudah ada di macOS)
 - RAM: ~750 MB peak untuk 2 jam / 5000 cue (AMAN di Mac 16 GB)
 - Tidak ada rate-limit (edge-tts Python via WebSocket langsung ke Microsoft, no proxy)
+
+---
+Task ID: mix-tui-v2
+Agent: main
+Task: Audit + fix mix-tui.py sambil nunggu TTS generate S5
+
+Work Log:
+- User test edge-tts-tui.py S5 (3866 cue, 2j 16m 19s)
+- Status TTS saat audit: 239/3866 cue (~6%), ETA ~4 jam, voice Ardi -10Hz, cap 2.0x
+- Mac aman: M1 + 16GB unified, tidak panas, RAM ~750 MB (buffer 749 MB)
+- Audit mix-tui.py (320 baris) → 8 bug ditemukan:
+  1. Default output 'mp4-id-final.mp4' hardcoded, user harus ketik manual
+  2. Header doc Fase 1 sebut 'audio.wav' (outdated, v5 pakai m4a)
+  3. Header doc Fase 3a sebut 'web app Mode ON' (sudah pindah ke edge-tts-tui)
+  4. Tidak ada validasi file exist sebelum eksekusi
+  5. Warning dub < MP4 dur hanya info biasa (bukan prominent)
+  6. (sample rate — bukan bug, quality OK untuk preview)
+  7. Pesan akhir 'buka di VLC' tidak helpful
+  8. Tidak ada progress bar FFmpeg real-time
+- Fix all 8 bug (232 insertions, 62 deletions):
+  1. derive_default_output(mp4, lang): S5-ori.mp4 → S5-ori-id-final.mp4
+  2. Header doc update ke v5 (m4a native + edge-tts-tui lokal)
+  3. (otomatis teratasi di bug #2)
+  4. validate_input_file(path, label): cek exist + size > 0 + pesan jelas
+  5. Warning box + konfirmasi kalau dub < 90% MP4 dur
+  7. Pesan akhir 4 opsi: preview/edit/upload/split per episode
+  8. run_ffmpeg_with_progress(cmd, total_dur): parse stderr FFmpeg
+     Display inline: 35.2% | time=56m 15s / 2j 16m 19s | size=45.2 MB | speed=4.5x | elapsed=12m 30s | ETA=24m 10s
+- Bonus: hapus output partial kalau Ctrl+C (no corrupt file)
+- Bonus: dependencies check questionary + ffmpeg + ffprobe dengan pesan install jelas
+- Push ke GitHub: commit 4d5137f
+
+Stage Summary:
+- mix-tui.py v2 siap dipakai setelah TTS S5 selesai (~4 jam lagi)
+- Workflow sekarang 100% lokal end-to-end:
+  yt-dlp v5 → Demucs → edge-tts-tui.py → mix-tui.py v2 → final MP4
+- Web app Vercel hanya dipakai untuk Jawa (SRT editor, per cue preview)
+- Estimasi mix S5 (2j 16m video): ~1-2 menit di M1 (video stream copy, audio encode saja)
+- Dokumentasi update: README.md, AGENTS.md, scripts/README.md

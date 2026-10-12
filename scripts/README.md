@@ -44,7 +44,7 @@ Lihat [`tutor-mode-on-workflow.md`](tutor-mode-on-workflow.md) + [`tutor-demucs-
 | **`edge-tts-tui.py`** ⭐ | TUI Edge TTS lokal (Mode ON + Smart Fit, full durasi, ganti web app) | ✅ Utama |
 | **`yt-dlp-tui.py`** ⭐ | TUI Download YouTube v5 (resolusi 480/720/1080 + M4A native + SRT Indonesia) | ✅ Utama |
 | **`demucs-tui.py`** ⭐ | TUI Demucs SFX separation → no_vocals.mp3 (MP3 320, MPS) | ✅ Utama |
-| **`mix-tui.py`** ⭐ | TUI Mix MP4 + no_vocals + audio_dub (ducking sidechain) | ✅ Utama |
+| **`mix-tui.py`** ⭐ | TUI Mix MP4 + no_vocals + audio_dub v2 (auto-output, validasi, progress bar) | ✅ Utama |
 | **`srt-frequency-analyzer.py`** ⭐ | Analisis SRT → top 100 kata tak dikenal (pakai Supabase) | ✅ Utama |
 
 ### Kamus Workflow Scripts
@@ -201,12 +201,15 @@ python3 scripts/demucs-tui.py
 # Output: no_vocals.mp3 (SFX bersih, MP3 320 kbps, ~140 MB per 2 jam)
 ```
 
-### `mix-tui.py` ⭐ — Mix TUI
+### `mix-tui.py` ⭐ — Mix TUI v2 (commit 4d5137f)
 
 ```bash
 python3 scripts/mix-tui.py
 # 6 step: MP4 ori, no_vocals (mp3/wav/flac), audio dub, ducking, output, konfirmasi
-# Output: mp4-id-final.mp4 (video stream copy + SFX + dub, 0 DTS warnings)
+# Default output otomatis dari prefix MP4 (S5-ori.mp4 → S5-ori-id-final.mp4)
+# Validasi: file exist + size > 0 + warning kalau dub < 90% MP4 dur
+# Progress bar FFmpeg real-time: %, time, size, speed, ETA
+# Output: {prefix}-id-final.mp4 (video stream copy + SFX + dub, 0 DTS warnings)
 ```
 
 ### `kamus-tui.py` ⭐ — Kamus Jawa Editor TUI v9 (10 Okt 2026)
@@ -283,7 +286,7 @@ python3 srt-frequency-analyzer.py ~/Dubbing/S1-jw.srt
 
 ## Catatan
 
-- **Workflow utama**: yt-dlp (Fase 1) → demucs-tui.py (Fase 2) → web Mode ON (Fase 3a) → mix-tui.py (Fase 4)
+- **Workflow utama**: yt-dlp v5 (Fase 1) → demucs-tui.py (Fase 2) → edge-tts-tui.py (Fase 3a) → mix-tui.py v2 (Fase 4)
 - **Multi-bahasa**: Mode ON untuk ID (sudah jalan), SRT editor untuk Jawa (nunggu code fix + kamus)
 - **Mode manual**: DaVinci Resolve (tarik file ke timeline, edit sendiri)
 - **Audio utuh 100%** — tidak ada potongan di TTS mode ON + Smart Fit (no truncate)

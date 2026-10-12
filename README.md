@@ -75,7 +75,7 @@ Workflow baru, project-based. Saat ini user masih klik per cue satu-satu untuk p
 | **`edge-tts-tui.py`** ⭐ | TUI Edge TTS lokal (Mode ON + Smart Fit, ganti web app untuk SRT panjang) |
 | **`yt-dlp-tui.py`** ⭐ | TUI Download YouTube (v5: pilih resolusi 480/720/1080 + M4A native + SRT Indonesia) |
 | **`demucs-tui.py`** ⭐ | TUI Demucs SFX separation → no_vocals.mp3 (MP3 320 kbps, MPS acceleration) |
-| **`mix-tui.py`** ⭐ | TUI Mix MP4 + no_vocals + audio_dub (~7 detik, 0 DTS warnings, ducking sidechain) |
+| **`mix-tui.py`** ⭐ | TUI Mix MP4 + no_vocals + audio_dub v2 (auto-output, validasi, progress bar, ~1-2 menit untuk 2 jam video) |
 | **`kamus-tui.py`** ⭐ | TUI edit kamus Jawa v2.6 — Phase 1-6 refactor, filter NETRAL, R-21 word field |
 | **`upload-supabase.py`** | Upload entries approved ke Supabase (Phase 5, file terpisah, user-triggered only) |
 | **`srt-frequency-analyzer.py`** | Analisis SRT → top 100 kata tak dikenal (pakai Supabase sebagai ground of truth) |
@@ -105,9 +105,10 @@ Fase 3b: Web app — SRT editor (Bahasa Jawa, per cue) — NUNGGU CODE FIX
   Output: audio-jw-dub.wav
   Kamus Jawa di Supabase (progressif, 50 entries/minggu)
         ↓
-Fase 4: Mix SFX + Dub (mix-tui.py, Python lokal)
-  Input: mp4-ori.mp4 + no_vocals.mp3 + audio-id-dub.wav (atau audio-jw-dub.wav)
-  Output: mp4-{lang}-final.mp4 (video stream copy, 0 DTS warnings, 100% sync)
+Fase 4: Mix SFX + Dub (mix-tui.py v2, Python lokal)
+  Input: {name}.mp4 + no_vocals.mp3 + {prefix}-audio-id-dub.wav (atau audio-jw-dub.wav)
+  Output: {prefix}-id-final.mp4 (auto-detect dari prefix MP4, video stream copy, 0 DTS warnings)
+  v2: 8 bug fix (default output auto, validasi file, warning dub < 90% MP4, progress bar FFmpeg real-time)
         ↓
 Fase 5 (opsional): Edit final di DaVinci Resolve (manual)
 ```
