@@ -4,6 +4,8 @@
 // Stores:
 //   - cue-audio: key = `${projectId}:${cueIndex}`, value = { blob, sampleRate, durationSec, generatedAt, voice, text }
 //   - full-audio: key = projectId, value = { blob, sampleRate, durationSec, generatedAt, cueCount, voiceSummary }
+//   - part-audio: key = `${projectKey}:${partIndex}`, value = { blob, sampleRate, durationSec, generatedAt, voice, mode, smartFit, cap }
+//     (v2 — untuk Mode ON "Generate & Download ZIP" supaya tidak hilang saat ZIP gagal)
 //
 // Pakai IndexedDB (bukan localStorage) karena:
 // - localStorage limit 5-10MB, indexedDB bisa ratusan MB-GB
@@ -19,12 +21,17 @@
 //   - clearCueAudioForProject(projectId): Promise<void>
 //   - saveFullAudio(projectId, blob, meta): Promise<void>
 //   - getFullAudio(projectId): Promise<CachedFullAudio | null>
+//   - savePartAudio(projectKey, partIndex, blob, meta): Promise<void>   (Mode ON)
+//   - getPartAudio(projectKey, partIndex): Promise<CachedPartAudio | null>
+//   - listPartAudioForProject(projectKey): Promise<number[]>  (part indices)
+//   - clearPartAudioForProject(projectKey): Promise<void>
 //   - clearAll(): Promise<void>
 
 const DB_NAME = 'srt-splitter-audio'
-const DB_VERSION = 1
+const DB_VERSION = 2
 const STORE_CUE = 'cue-audio'
 const STORE_FULL = 'full-audio'
+const STORE_PART = 'part-audio'
 
 let _db: IDBDatabase | null = null
 
@@ -48,6 +55,10 @@ export function initAudioDb(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(STORE_FULL)) {
         db.createObjectStore(STORE_FULL, { keyPath: 'projectId' })
+      }
+      // v2: tambah store untuk Mode ON per-part caching
+      if (!db.objectStoreNames.contains(STORE_PART)) {
+        db.createObjectStore(STORE_PART, { keyPath: 'key' })
       }
     }
   })
@@ -238,11 +249,162 @@ export async function getFullAudio(projectId: string): Promise<CachedFullAudio |
 export async function clearAll(): Promise<void> {
   const db = await initAudioDb()
   return new Promise((resolve, reject) => {
-    const tx = db.transaction([STORE_CUE, STORE_FULL], 'readwrite')
+    const tx = db.transaction([STORE_CUE, STORE_FULL, STORE_PART], 'readwrite')
     tx.objectStore(STORE_CUE).clear()
     tx.objectStore(STORE_FULL).clear()
+    tx.objectStore(STORE_PART).clear()
     tx.onerror = () => reject(tx.error)
     tx.oncomplete = () => resolve()
+  })
+}
+
+// ============================================================
+// Mode ON per-part caching (v2)
+// Untuk "Generate & Download ZIP" di tts-panel.tsx — supaya audio
+// tidak hilang kalau ZIP building OOM atau tab crash.
+// projectKey = prefix (e.g. "S5-id") — 1 SRT file = 1 projectKey.
+// ============================================================
+
+export interface CachedPartAudio {
+  key: string                  // `${projectKey}:${partIndex}`
+  projectKey: string           // prefix
+  partIndex: number           // 1-based part index
+  blob: Blob                  // WAV blob
+  sampleRate: number
+  durationSec: number
+  generatedAt: number         // epoch ms
+  voice: string               // voice ID
+  mode: string                // 'on' | 'off'
+  smartFit: boolean
+  smartFitCap: number
+  totalParts: number          // untuk display "Part 3/12"
+}
+
+function partKey(projectKey: string, partIndex: number): string {
+  return `${projectKey}:${partIndex}`
+}
+
+export async function savePartAudio(
+  projectKey: string,
+  partIndex: number,
+  blob: Blob,
+  meta: {
+    sampleRate: number
+    durationSec: number
+    voice: string
+    mode: string
+    smartFit: boolean
+    smartFitCap: number
+    totalParts: number
+  },
+): Promise<void> {
+  const db = await initAudioDb()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_PART, 'readwrite')
+    const value: CachedPartAudio = {
+      key: partKey(projectKey, partIndex),
+      projectKey,
+      partIndex,
+      blob,
+      sampleRate: meta.sampleRate,
+      durationSec: meta.durationSec,
+      generatedAt: Date.now(),
+      voice: meta.voice,
+      mode: meta.mode,
+      smartFit: meta.smartFit,
+      smartFitCap: meta.smartFitCap,
+      totalParts: meta.totalParts,
+    }
+    const req = tx.objectStore(STORE_PART).put(value)
+    req.onerror = () => reject(req.error)
+    req.onsuccess = () => resolve()
+  })
+}
+
+export async function getPartAudio(
+  projectKey: string,
+  partIndex: number,
+): Promise<CachedPartAudio | null> {
+  const db = await initAudioDb()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_PART, 'readonly')
+    const req = tx.objectStore(STORE_PART).get(partKey(projectKey, partIndex))
+    req.onerror = () => reject(req.error)
+    req.onsuccess = () => resolve(req.result || null)
+  })
+}
+
+export async function listPartAudioForProject(projectKey: string): Promise<number[]> {
+  const db = await initAudioDb()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_PART, 'readonly')
+    const req = tx.objectStore(STORE_PART).openCursor()
+    const indices: number[] = []
+    req.onerror = () => reject(req.error)
+    req.onsuccess = () => {
+      const cursor = req.result
+      if (cursor) {
+        const value = cursor.value as CachedPartAudio
+        if (value.projectKey === projectKey) indices.push(value.partIndex)
+        cursor.continue()
+      } else {
+        resolve(indices.sort((a, b) => a - b))
+      }
+    }
+  })
+}
+
+export async function clearPartAudioForProject(projectKey: string): Promise<void> {
+  const db = await initAudioDb()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_PART, 'readwrite')
+    const store = tx.objectStore(STORE_PART)
+    const req = store.openCursor()
+    const keysToDelete: string[] = []
+    req.onerror = () => reject(req.error)
+    req.onsuccess = () => {
+      const cursor = req.result
+      if (cursor) {
+        const value = cursor.value as CachedPartAudio
+        if (value.projectKey === projectKey) keysToDelete.push(value.key)
+        cursor.continue()
+      } else {
+        let pending = keysToDelete.length
+        if (pending === 0) { resolve(); return }
+        keysToDelete.forEach(k => {
+          const delReq = store.delete(k)
+          delReq.onsuccess = () => {
+            pending--
+            if (pending === 0) resolve()
+          }
+          delReq.onerror = () => reject(delReq.error)
+        })
+      }
+    }
+  })
+}
+
+export async function getPartAudioCacheSize(projectKey: string): Promise<{ partCount: number; totalBytes: number }> {
+  const db = await initAudioDb()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_PART, 'readonly')
+    const req = tx.objectStore(STORE_PART).openCursor()
+    let partCount = 0
+    let totalBytes = 0
+    req.onerror = () => reject(req.error)
+    req.onsuccess = () => {
+      const cursor = req.result
+      if (cursor) {
+        const value = cursor.value as CachedPartAudio
+        if (value.projectKey === projectKey) {
+          partCount++
+          totalBytes += value.blob.size
+        }
+        cursor.continue()
+      } else {
+        resolve({ partCount, totalBytes })
+      }
+    }
   })
 }
 

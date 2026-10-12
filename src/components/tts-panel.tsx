@@ -22,6 +22,13 @@ import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import {
+  savePartAudio,
+  getPartAudio,
+  listPartAudioForProject,
+  clearPartAudioForProject,
+  getPartAudioCacheSize,
+} from '@/lib/audio-cache'
+import {
   narratePart,
   narrateDubbingMode,
   downloadBlob,
@@ -98,6 +105,26 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
   const [openaiDraft, setOpenaiDraft] = useState<string>('')
   const [openrouterDraft, setOpenrouterDraft] = useState<string>('')
   const [isTestingOpenAI, setIsTestingOpenAI] = useState<boolean>(false)
+
+  // === Per-part cache info (IndexedDB) — untuk Mode ON "Generate & Download ZIP" ===
+  const [partCacheInfo, setPartCacheInfo] = useState<{ count: number; totalMB: number } | null>(null)
+
+  const refreshPartCacheInfo = useCallback(async () => {
+    try {
+      const projectKey = prefix || 'default'
+      const { partCount, totalBytes } = await getPartAudioCacheSize(projectKey)
+      setPartCacheInfo({ count: partCount, totalMB: totalBytes / (1024 * 1024) })
+    } catch (e) {
+      console.warn('refreshPartCacheInfo failed:', e)
+      setPartCacheInfo(null)
+    }
+  }, [prefix])
+
+  // Init: load cache info on mount + when prefix changes
+  useEffect(() => {
+    refreshPartCacheInfo()
+  }, [refreshPartCacheInfo])
+
   const [isTestingOpenRouter, setIsTestingOpenRouter] = useState<boolean>(false)
 
   useEffect(() => {
@@ -300,16 +327,68 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
     }
     if (splitResult.parts.length === 0) return
 
+    // === Cek cache IndexedDB — tawaran resume kalau ada ===
+    const projectKey = prefix || 'default'
+    const cachedIndices: number[] = []
+    try {
+      const found = await listPartAudioForProject(projectKey)
+      if (found.length > 0) {
+        cachedIndices.push(...found)
+        const resume = window.confirm(
+          `Ditemukan ${found.length}/${splitResult.parts.length} part di cache browser.\n\n` +
+          `Mau resume? (Generate hanya part yang belum ada)\n\n` +
+          `OK = Resume (hemat waktu)\nCancel = Generate ulang semua (cache lama dihapus)`,
+        )
+        if (!resume) {
+          await clearPartAudioForProject(projectKey)
+          cachedIndices.length = 0
+        }
+      }
+    } catch (e) {
+      console.warn('Cache check failed, proceed without resume:', e)
+    }
+
     Object.values(audioCache).forEach((c) => c.previewUrl && revokePreviewUrl(c.previewUrl))
     setAudioCache({})
 
     setProgress({ stage: 'synthesizing', message: 'Mulai full narration…', percent: 0 })
     setLineProgress(null)
-    const tid = toast.loading(`Generating full audio (${splitResult.parts.length} parts)…`)
+    const totalParts = splitResult.parts.length
+    const tid = toast.loading(`Generating full audio (${totalParts} parts)…`)
+    const voice = provider === 'edge' ? edgeVoice : provider === 'kokoro' ? kokoroVoice : provider === 'openai' ? openaiVoice : openrouterVoice
+
     try {
       const results: { blob: Blob; durationSec: number; previewUrl: string }[] = []
-      const voice = provider === 'edge' ? edgeVoice : provider === 'kokoro' ? kokoroVoice : provider === 'openai' ? openaiVoice : openrouterVoice
-      for (let i = 0; i < splitResult.parts.length; i++) {
+      // Pre-load parts dari cache (kalau resume) supaya results[] terisi
+      for (let i = 0; i < totalParts; i++) {
+        const partIndex = i + 1
+        if (cachedIndices.includes(partIndex)) {
+          try {
+            const cached = await getPartAudio(projectKey, partIndex)
+            if (cached) {
+              results[i] = {
+                blob: cached.blob,
+                durationSec: cached.durationSec,
+                previewUrl: URL.createObjectURL(cached.blob),
+              }
+              setAudioCache((prev) => ({
+                ...prev,
+                [partIndex]: { blob: cached.blob, durationSec: cached.durationSec, previewUrl: results[i].previewUrl },
+              }))
+            }
+          } catch (e) {
+            console.warn(`Failed to load cached part ${partIndex}, will regenerate`, e)
+          }
+        }
+      }
+
+      // Generate parts yang belum ada di cache
+      for (let i = 0; i < totalParts; i++) {
+        if (results[i]) {
+          // Sudah dari cache — skip generation
+          toast.loading(`Part ${i + 1}/${totalParts} (cache)`, { id: tid })
+          continue
+        }
         setActivePart(i + 1)
         const result = await narratePart(splitResult.parts[i], {
           provider,
@@ -327,24 +406,67 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
           onLineProgress: (current, total, text) => setLineProgress({ current, total, text }),
           onStage: (p) => setProgress(p),
         })
-        results.push({ blob: result.blob, durationSec: result.durationSec, previewUrl: result.previewUrl })
+        results[i] = { blob: result.blob, durationSec: result.durationSec, previewUrl: result.previewUrl }
         setAudioCache((prev) => ({
           ...prev,
           [i + 1]: { blob: result.blob, durationSec: result.durationSec, previewUrl: result.previewUrl },
         }))
-        toast.loading(`Part ${i + 1}/${splitResult.parts.length} done`, { id: tid })
+
+        // === Save ke IndexedDB supaya tidak hilang kalau ZIP gagal ===
+        try {
+          await savePartAudio(projectKey, i + 1, result.blob, {
+            sampleRate: result.sampleRate,
+            durationSec: result.durationSec,
+            voice,
+            mode,
+            smartFit: respectTiming && onSmartFit,
+            smartFitCap: onSmartFitCap,
+            totalParts,
+          })
+        } catch (e) {
+          console.warn(`Failed to cache part ${i + 1} to IndexedDB`, e)
+        }
+
+        toast.loading(`Part ${i + 1}/${totalParts} done`, { id: tid })
       }
-      const zip = new JSZip()
+
+      // === Coba ZIP — kalau gagal, fallback download per-part ===
       let totalDuration = 0
-      for (let i = 0; i < results.length; i++) {
-        zip.file(`${prefix}-${String(i + 1).padStart(2, '0')}.wav`, await results[i].blob.arrayBuffer())
-        totalDuration += results[i].durationSec
+      for (let i = 0; i < results.length; i++) totalDuration += results[i].durationSec
+
+      try {
+        const zip = new JSZip()
+        for (let i = 0; i < results.length; i++) {
+          zip.file(`${prefix}-${String(i + 1).padStart(2, '0')}.wav`, await results[i].blob.arrayBuffer())
+        }
+        downloadBlob(`${prefix}-audio.zip`, await zip.generateAsync({ type: 'blob', compression: 'STORE' }))
+        toast.success(`Full narration (${formatDuration(totalDuration)}) — ZIP downloaded`, { id: tid })
+      } catch (zipErr) {
+        console.error('ZIP building failed, fallback to per-part download:', zipErr)
+        toast.error('ZIP gagal (mungkin OOM). Download per-part dari cache…', { id: tid })
+        // Fallback: download each part individually
+        for (let i = 0; i < results.length; i++) {
+          try {
+            downloadBlob(`${prefix}-${String(i + 1).padStart(2, '0')}.wav`, results[i].blob)
+          } catch (e) {
+            console.error(`Failed to download part ${i + 1}`, e)
+          }
+        }
+        toast.success(`${results.length} file WAV didownload (${formatDuration(totalDuration)})`, { id: tid })
       }
-      downloadBlob(`${prefix}-audio.zip`, await zip.generateAsync({ type: 'blob', compression: 'STORE' }))
-      toast.success(`Full narration (${formatDuration(totalDuration)}) — ZIP downloaded`, { id: tid })
+
+      // Refresh cache info di UI
+      refreshPartCacheInfo()
     } catch (e) {
       console.error(e)
       toast.error('Full narration gagal: ' + (e as Error).message, { id: tid })
+      // Bahkan kalau gagal, cek cache — mungkin beberapa part sudah tersimpan
+      try {
+        const cachedNow = await listPartAudioForProject(projectKey)
+        if (cachedNow.length > 0) {
+          toast.info(`${cachedNow.length} part tersimpan di cache. Reload halaman → resume.`, { duration: 8000 })
+        }
+      } catch {}
     } finally {
       setActivePart(null)
       setLineProgress(null)
@@ -361,6 +483,43 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
     },
     [audioCache, prefix],
   )
+
+  // === Download semua part dari IndexedDB cache (tanpa regenerate) ===
+  const downloadAllFromCache = useCallback(async () => {
+    const projectKey = prefix || 'default'
+    try {
+      const indices = await listPartAudioForProject(projectKey)
+      if (indices.length === 0) {
+        toast.error('Cache kosong. Generate dulu.')
+        return
+      }
+      const tid = toast.loading(`Download ${indices.length} part dari cache…`)
+      for (const idx of indices) {
+        const cached = await getPartAudio(projectKey, idx)
+        if (cached) {
+          downloadBlob(`${prefix}-${String(idx).padStart(2, '0')}.wav`, cached.blob)
+          // Kasih jeda kecil supaya browser tidak block multiple download
+          await new Promise(r => setTimeout(r, 250))
+        }
+      }
+      toast.success(`${indices.length} file WAV didownload dari cache`, { id: tid })
+    } catch (e) {
+      console.error(e)
+      toast.error('Gagal download dari cache: ' + (e as Error).message)
+    }
+  }, [prefix])
+
+  const clearPartCache = useCallback(async () => {
+    const projectKey = prefix || 'default'
+    if (!window.confirm(`Hapus semua ${partCacheInfo?.count ?? 0} part di cache untuk "${projectKey}"?`)) return
+    try {
+      await clearPartAudioForProject(projectKey)
+      await refreshPartCacheInfo()
+      toast.success('Cache dihapus')
+    } catch (e) {
+      toast.error('Gagal hapus cache: ' + (e as Error).message)
+    }
+  }, [prefix, partCacheInfo, refreshPartCacheInfo])
 
   const isSynthesizing = progress.stage === 'synthesizing' || progress.stage === 'stitching' || isDubbing
   const needsApiKey = provider !== 'edge' && provider !== 'kokoro'
@@ -783,11 +942,33 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
                   )}
                 </>
               ) : (
-                <Button onClick={generateAll} disabled={isSynthesizing} size="sm">
-                  {isSynthesizing ? <><Loader2 className="size-3.5 mr-1 animate-spin" /> Generating…</> : <><AudioLines className="size-3.5 mr-1" /> Generate & Download ZIP ({splitResult.parts.length} parts)</>}
-                </Button>
+                <>
+                  <Button onClick={generateAll} disabled={isSynthesizing} size="sm">
+                    {isSynthesizing ? <><Loader2 className="size-3.5 mr-1 animate-spin" /> Generating…</> : <><AudioLines className="size-3.5 mr-1" /> Generate & Download ZIP ({splitResult.parts.length} parts)</>}
+                  </Button>
+                  {partCacheInfo && partCacheInfo.count > 0 && (
+                    <Button onClick={downloadAllFromCache} size="sm" variant="outline" className="border-emerald-400 text-emerald-700 dark:text-emerald-300">
+                      <><Download className="size-3.5 mr-1" /> Download dari cache ({partCacheInfo.count} part, {partCacheInfo.totalMB.toFixed(1)} MB)</>
+                    </Button>
+                  )}
+                  {partCacheInfo && partCacheInfo.count > 0 && (
+                    <Button onClick={clearPartCache} size="sm" variant="ghost" className="text-muted-foreground">
+                      <XCircle className="size-3.5 mr-1" /> Clear cache
+                    </Button>
+                  )}
+                </>
               )}
             </div>
+
+            {/* Cache info banner — muncul kalau ada part di cache */}
+            {mode !== 'dubbing' && partCacheInfo && partCacheInfo.count > 0 && (
+              <div className="rounded-md border border-emerald-200 dark:border-emerald-800 p-2.5 bg-emerald-50/50 dark:bg-emerald-950/20 text-xs text-emerald-800 dark:text-emerald-400">
+                <CheckCircle2 className="size-3.5 inline mr-1.5" />
+                <strong>{partCacheInfo.count} part</strong> di cache browser ({partCacheInfo.totalMB.toFixed(1)} MB).
+                Klik "Generate & Download ZIP" → akan tawaran resume (hemat waktu kalau sudah pernah generate sebagian).
+                Klik "Download dari cache" → download semua part tanpa regenerate.
+              </div>
+            )}
 
             {/* Dubbing result info */}
             {mode === 'dubbing' && dubbingResult && (
