@@ -12,9 +12,9 @@ Raw files = sampah parsing AI tolol. Yang TINGGAL: kamus-jawa-draft.json (NETRAL
 brew install ffmpeg
 pip3 install demucs questionary numpy
 
-# Fase 1: Download dari YouTube
+# Fase 1: Download dari YouTube (v5)
 python3 scripts/yt-dlp-tui.py
-# → mp4-ori.mp4 + audio.wav
+# → {name}.mp4 + {name}-audio.m4a (native M4A, no konversi MP3) + {name}.id.srt
 
 # Fase 2: SFX separation (Demucs)
 python3 scripts/demucs-tui.py
@@ -40,7 +40,7 @@ Lihat [`tutor-mode-on-workflow.md`](tutor-mode-on-workflow.md) + [`tutor-demucs-
 
 | Script | Untuk Apa | Status |
 |---|---|---|
-| **`yt-dlp-tui.py`** ⭐ | TUI Download YouTube (pilih resolusi 480/720/1080) + audio terpisah | ✅ Utama |
+| **`yt-dlp-tui.py`** ⭐ | TUI Download YouTube v5 (resolusi 480/720/1080 + M4A native + SRT Indonesia) | ✅ Utama |
 | **`demucs-tui.py`** ⭐ | TUI Demucs SFX separation → no_vocals.mp3 (MP3 320, MPS) | ✅ Utama |
 | **`mix-tui.py`** ⭐ | TUI Mix MP4 + no_vocals + audio_dub (ducking sidechain) | ✅ Utama |
 | **`srt-frequency-analyzer.py`** ⭐ | Analisis SRT → top 100 kata tak dikenal (pakai Supabase) | ✅ Utama |
@@ -146,12 +146,13 @@ Kalau mau edit manual (laki + perempuan, cut scene, dll):
 
 ## Detail Per Script
 
-### `yt-dlp-tui.py` ⭐ — Download TUI
+### `yt-dlp-tui.py` ⭐ — Download TUI (v5)
 
 ```bash
 python3 scripts/yt-dlp-tui.py
-# Pilih: URL YouTube → resolusi (480/720/1080) → format H.264 + audio terpisah
-# Output: mp4-ori.mp4 (video) + audio.wav (untuk Demucs)
+# Pilih: URL YouTube → resolusi (480/720/1080) → nama custom → SRT Indonesia
+# Output: {name}.mp4 (video) + {name}-audio.m4a (audio native YouTube) + {name}.id.srt
+# v5: M4A native (skip konversi MP3, hemat ~15s + disk), subtitle parser JSON (count benar)
 ```
 
 ### `demucs-tui.py` ⭐ — SFX separation TUI

@@ -72,7 +72,7 @@ Workflow baru, project-based. Saat ini user masih klik per cue satu-satu untuk p
 
 | Script | Fungsi |
 |---|---|
-| **`yt-dlp-tui.py`** ⭐ | TUI Download YouTube (pilih resolusi 480/720/1080) + audio terpisah |
+| **`yt-dlp-tui.py`** ⭐ | TUI Download YouTube (v5: pilih resolusi 480/720/1080 + M4A native + SRT Indonesia) |
 | **`demucs-tui.py`** ⭐ | TUI Demucs SFX separation → no_vocals.mp3 (MP3 320 kbps, MPS acceleration) |
 | **`mix-tui.py`** ⭐ | TUI Mix MP4 + no_vocals + audio_dub (~7 detik, 0 DTS warnings, ducking sidechain) |
 | **`kamus-tui.py`** ⭐ | TUI edit kamus Jawa v2.6 — Phase 1-6 refactor, filter NETRAL, R-21 word field |
@@ -86,11 +86,12 @@ Workflow baru, project-based. Saat ini user masih klik per cue satu-satu untuk p
 ## Workflow Dubbing Mandarin → Jawa (4 Fase, sumber terpisah)
 
 ```
-Fase 1: Download dari YouTube (yt-dlp-tui.py, Python lokal)
-  Pilih resolusi (480/720/1080) → output: mp4-ori.mp4 + audio.wav (terpisah)
+Fase 1: Download dari YouTube (yt-dlp-tui.py v5, Python lokal)
+  Pilih resolusi (480/720/1080) → output: {name}.mp4 (video) + {name}-audio.m4a (audio native YouTube) + {name}.id.srt
+  v5: M4A native (skip konversi MP3, hemat ~15s + disk), subtitle parser dari JSON (count benar, bukan 950), hasil listing pakai glob(base_name) bukan 'file terbaru'
         ↓
 Fase 2: SFX Separation dengan Demucs (demucs-tui.py, Python lokal)
-  Input: audio.wav → Output: no_vocals.mp3 (SFX bersih, MP3 320 kbps)
+  Input: {name}-audio.m4a → Output: no_vocals.mp3 (SFX bersih, MP3 320 kbps)
         ↓
 Fase 3a: Web app — Mode ON (Bahasa Indonesia, cara cepat) — SUDAH JALAN
   Upload SRT ori → mode ON → Smart Fit (cap 2.0x) → pitch (-15Hz laki)

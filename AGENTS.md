@@ -54,7 +54,7 @@ Kalau ada konflik antara dokumen, `PROJECT_RULES.md` menang.
 ## Status pipeline (10 Okt 2026)
 
 ```
-✅ Fase 1: yt-dlp        → mp4-ori.mp4 + audio.wav (terpisah)
+✅ Fase 1: yt-dlp v5     → {name}.mp4 + {name}-audio.m4a + {name}.id.srt (M4A native, no konversi MP3)
 ✅ Fase 2: Demucs        → no_vocals.mp3 (MP3 320 kbps, MPS acceleration)
 ⏳ Fase 3a: TTS ID       → audio-id-dub.wav (web Mode ON, jalan)
 ⏳ Fase 3b: TTS Jawa     → audio-jw-dub.wav (SRT editor, nunggu code fix)

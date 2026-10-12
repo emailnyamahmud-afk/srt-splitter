@@ -2270,3 +2270,32 @@ Stage Summary:
 - Setelah phase selesai, user kasih tau → bikin phase berikutnya
 - Total rules: 27 (R-01 sampai R-27)
 - Phase 1 (mendeley PURE 145 entries) sudah ready, user bisa mulai kurasi kapan saja
+
+---
+Task ID: yt-dlp-v5
+Agent: main
+Task: Fix bug yt-dlp-tui.py v4 + update dokumentasi repo
+
+Work Log:
+- Audit log user: v4 masih konversi m4a → MP3 pakai ffmpeg (lambat + buang disk)
+- Audit log user: subtitle parser pakai --list-subs --print, count salah (tampil "950 bahasa" padahal asli 7)
+- Audit log user: hasil listing pakai "file terbaru" — bisa tampil file LAMA kalau download gagal
+- Fix: ganti --list-subs --print → --dump-json + parse JSON metadata (count benar)
+- Fix: hapus --extract-audio --audio-format mp3 (skip konversi ffmpeg, pakai m4a native)
+- Fix: hasil listing pakai glob(base_name) bukan "file terbaru" (exact match)
+- Fix: tambah --convert-subs srt supaya VTT di-convert eksplisit
+- Fix: dead code di line 127 (sub_choices[0] if id_subs else sub_choices[0])
+- Update header v4 → v5, "M4A terpisah"
+- Push ke GitHub: commit 07442cc
+- Verifikasi user: v5 berhasil — output .m4a 126.2 MB (bukan .mp3), subtitle "7 bahasa", [SubtitlesConvertor] jalan
+- Update README.md: tabel scripts + Fase 1 workflow (audio.wav → {name}-audio.m4a)
+- Update AGENTS.md: status pipeline Fase 1 (audio.wav → {name}-audio.m4a + SRT)
+- Update scripts/README.md: tabel workflow scripts + detail per script + Fase 1 example
+
+Stage Summary:
+- yt-dlp-tui.py v5 live di GitHub (commit 07442cc)
+- 3 file docs updated: README.md, AGENTS.md, scripts/README.md
+- Format output: {name}.mp4 + {name}-audio.m4a + {name}.id.srt
+- Skip konversi MP3 = hemat ~15s + disk + quality (Demucs/ffmpeg/whisper semua bisa baca m4a)
+- Subtitle count sekarang benar (7 bahasa, bukan 950) — parse JSON bukan line-by-line
+- Hasil listing exact match by base_name (tidak akan tampil file lama)
