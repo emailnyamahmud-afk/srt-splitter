@@ -91,12 +91,13 @@ TRIM_PADDING_MS = 30        # ms, padding setelah trim
 NORMALIZE_DBFS = -2.0      # peak normalize target (match web app)
 NOISE_FLOOR_DB = -50.0     # match web app
 
-# Edge TTS voices (match web app EDGE_VOICES)
+# Edge TTS voices — 4 pilihan (match web app EDGE_VOICES)
+# Format label: nama + bahasa + gender, urutan: Indonesia dulu (laki-perempuan), lalu Jawa
 EDGE_VOICES = [
-    ('id-ID-ArdiNeural',     '🇮🇩 Indonesia — Ardi (Laki-laki)'),
-    ('id-ID-GadisNeural',    '🇮🇩 Indonesia — Gadis (Perempuan)'),
-    ('jv-ID-DimasNeural',    '🇮🇩 Jawa — Dimas (Laki-laki)'),
-    ('jv-ID-SitiNeural',     '🇮🇩 Jawa — Siti (Perempuan)'),
+    ('id-ID-ArdiNeural',  'Ardi  — Indonesia, laki-laki'),
+    ('id-ID-GadisNeural', 'Gadis — Indonesia, perempuan'),
+    ('jv-ID-DimasNeural', 'Dimas — Jawa, laki-laki'),
+    ('jv-ID-SitiNeural',  'Siti  — Jawa, perempuan'),
 ]
 
 DEFAULT_VOICE = 'id-ID-ArdiNeural'
