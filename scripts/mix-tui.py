@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-mix-tui.py v2 — TUI interaktif untuk mix MP4 + no_vocal + audio_dub
+mix-tui.py v3 — TUI interaktif untuk mix MP4 + no_vocal + audio_dub + optional SRT burn
 
 Workflow produksi (4 fase, bersih — sesuai v5 yt-dlp + edge-tts-tui):
   Fase 1: yt-dlp v5      → {name}.mp4 (video) + {name}-audio.m4a (native) + {name}.id.srt
@@ -10,32 +10,38 @@ Workflow produksi (4 fase, bersih — sesuai v5 yt-dlp + edge-tts-tui):
                         → {prefix}-audio-id-dub.wav (Bahasa Indonesia, full durasi)
   Fase 3b: web app SRT editor (Bahasa Jawa, per cue — nunggu code fix)
                         → audio-jw-dub.wav
-  Fase 4: mix-tui.py v2 → MP4 + no_vocals.mp3 + audio_dub.wav → {prefix}-final.mp4
+  Fase 4: mix-tui.py v3 → MP4 + no_vocals.mp3 + audio_dub.wav + optional SRT burn
+                        → {prefix}-id-final.mp4 (stream copy, 3 menit)
+                        → {prefix}-id-final-sub.mp4 (burn SRT, ~30 menit VideoToolbox M1)
 
-Mix ini selalu pakai 3 input:
+v3 NEW: 2 mode mix (user pilih di step 4.5)
+  Mode A: Stream copy (CEPAT ~3 menit, no SRT burn)
+    - Video stream copy (no re-encode) → 100% sync, resolusi ori tetap
+    - Output: {prefix}-id-final.mp4 (~275 MB untuk 2 jam video)
+    - Cocok untuk: preview cepat, arsip, publish tanpa subtitle burn
+
+  Mode B: Burn SRT Indonesia (LAMBAT ~20-40 menit, VideoToolbox M1 hardware)
+    - Video re-encode pakai h264_videotoolbox (M1 GPU, BUKAN CPU)
+    - SRT Indonesia burn hard-sub ke video (font 18pt, putih outline hitam)
+    - Posisi default: TOP (tidak overlap SRT Mandarin di bottom video ori)
+    - Output: {prefix}-id-final-sub.mp4 (~400-500 MB untuk 2 jam video 480p)
+    - Cocok untuk: publish ke platform tanpa edit DaVinci
+    - Estimasi: 480p portrait 2 jam ~ 20-40 menit di M1 (VideoToolbox)
+
+Kenapa burn SRT lokal (bukan DaVinci):
+  - DaVinci minimum render 1080p → size GB-level, boros storage
+  - DaVinci re-encode semua track → lama
+  - mix-tui v3 mode B: tetap 480p, VideoToolbox hardware, hemat storage
+
+Mix ini selalu pakai 3 input wajib:
   1. MP4 ori (video, dari yt-dlp v5)
   2. no_vocals (SFX bersih dari Demucs — MP3 320 kbps, vokal ori sudah dibuang)
   3. audio_dub.wav (dialog hasil dubbing dari edge-tts-tui.py atau web app Jawa)
 
-Fitur v2:
-  - Default output otomatis dari prefix MP4 (mis. S5-ori.mp4 → S5-ori-id-final.mp4)
-  - Validasi semua input file exist sebelum eksekusi
-  - Warning prominent kalau dub dur < 90% MP4 dur (kemungkinan generate gagal)
-  - Progress bar FFmpeg real-time (size=, time=, bitrate=)
-  - Header doc update: Fase 3a = edge-tts-tui.py (bukan web app Mode ON)
+Optional input (Mode B only):
+  4. SRT Indonesia (dari yt-dlp v5, mis. S5-ori.id.srt)
 
 Output: MP4 durasi penuh. Setelah dub selesai, SFX tetap bermain (dub = hening).
-
-Mode manual (DaVinci Resolve):
-  1. Tarik mp4 ori ke timeline
-  2. Tarik no_vocals.mp3 ke timeline
-  3. Tarik wav dub (laki + perempuan) ke timeline
-  4. Edit manual: mana suara laki (Dimas), mana perempuan (Siti)
-
-Tips durasi:
-  - Full season (2.5 jam): MP4 full + SFX full + dub full → 1 output
-  - Pecah per episode (30 menit): split SRT dulu, generate per episode, mix per episode
-  - Mix durasi penuh: output = MP4 durasi (bukan dub durasi). Setelah dub selesai, SFX tetap bermain.
 
 Install: pip3 install questionary (di venv)
 Usage: python3 mix-tui.py (pilih file pakai arrow keys)
@@ -366,9 +372,64 @@ def main():
     print(f'  ✓ {ducking_db}dB')
     print()
 
+    # Step 4.5: Mode mix (NEW v3) — stream copy cepat vs burn SRT
+    print(f'▶ Step 4.5/{total}: Pilih mode mix')
+    mode_choice = questionary.select(
+        'Mode mix:',
+        choices=[
+            'Stream copy (CEPAT ~3 menit, no SRT burn) — REKOMENDASI default',
+            'Burn SRT Indonesia (LAMBAT ~30 menit, VideoToolbox M1 hardware)',
+        ],
+        default='Stream copy (CEPAT ~3 menit, no SRT burn) — REKOMENDASI default',
+    ).ask()
+    burn_srt = 'Burn SRT' in mode_choice
+    print(f'  ✓ {"Burn SRT (encode ulang video)" if burn_srt else "Stream copy (3 menit)"}')
+    print()
+
+    # Step 4.6: Kalau burn SRT, pilih SRT file + posisi
+    srt_path = None
+    srt_position = 'top'  # default top supaya tidak overlap SRT Mandarin
+    if burn_srt:
+        print(f'▶ Step 4.6/{total}: Pilih SRT Indonesia untuk burn')
+        srt_path = select_file('File SRT Indonesia (mis. S5-ori.id.srt):', ['srt'])
+        if not srt_path:
+            print('Batal.'); sys.exit(0)
+        validate_input_file(srt_path, 'SRT Indonesia')
+        print(f'  ✓ {srt_path}')
+        print()
+
+        print(f'▶ Step 4.7/{total}: Pilih posisi SRT Indonesia')
+        # SRT Mandarin biasanya hard-burn di bottom video ori.
+        # Default Indonesia di top supaya tidak overlap.
+        pos_choice = questionary.select(
+            'Posisi SRT Indonesia:',
+            choices=[
+                'Top — tidak overlap dengan SRT Mandarin di bottom (REKOMENDASI)',
+                'Bottom — akan overlap dengan SRT Mandarin (jangan, kecuali video ori tidak ada SRT)',
+                'Custom margin (input manual MarginV pixel)',
+            ],
+            default='Top — tidak overlap dengan SRT Mandarin di bottom (REKOMENDASI)',
+        ).ask()
+        if 'Top' in pos_choice:
+            srt_position = 'top'
+        elif 'Bottom' in pos_choice:
+            srt_position = 'bottom'
+        else:
+            margin_v = questionary.text('MarginV (pixel, default 40):', default='40').ask()
+            try:
+                srt_position = f'custom:{int(margin_v)}'
+            except ValueError:
+                srt_position = 'custom:40'
+        print(f'  ✓ {srt_position}')
+        print()
+
     # Step 5: Output — default derive dari MP4 prefix (Bug #1 fix)
     print(f'▶ Step 5/{total}: Pilih nama output MP4')
     default_output = derive_default_output(mp4, lang='id')
+    if burn_srt:
+        # Burn mode: suffix -sub supaya user tahu beda
+        base = Path(default_output).stem
+        default_output = f'{base}-sub.mp4'
     output = prompt_output(default_output)
     print(f'  ✓ {output}')
     print()
@@ -392,6 +453,10 @@ def main():
     print(f'║  Audio dub: {audio_dub[:46]:<46}║')
     print(f'║  Output   : {output[:46]:<46}║')
     print(f'║  Ducking  : {str(ducking_db) + " dB":<46}║')
+    mode_label = f'{"Burn SRT " + srt_position if burn_srt else "Stream copy"}'
+    print(f'║  Mode     : {mode_label[:46]:<46}║')
+    if burn_srt and srt_path:
+        print(f'║  SRT      : {os.path.basename(srt_path)[:46]:<46}║')
     print(f'║  MP4 dur  : {format_duration(mp4_dur):<46}║')
     print(f'║  SFX dur  : {format_duration(sfx_dur):<46}║')
     print(f'║  Dub dur  : {format_duration(dub_dur):<46}║')
@@ -432,23 +497,22 @@ def main():
     if not confirm:
         print('Batal.'); sys.exit(0)
 
-    # Build FFmpeg command
+    # === Build FFmpeg command (v3: 2 mode — stream copy or burn SRT) ===
     # Indeks input: 0=mp4 (video only), 1=sfx_wav, 2=audio_dub
     print('\n' + '═' * 64)
-    print('🚀 Mulai mix...')
+    print(f'🚀 Mulai mix... (mode: {"burn SRT" if burn_srt else "stream copy"})')
     print('═' * 64 + '\n')
 
+    # Audio filter (sama untuk kedua mode)
     if ducking_db <= 0:
-        # No ducking: additive mix (amix dengan normalize=0)
-        filter_complex = (
+        audio_filter = (
             '[1:a]volume=1[sfx];'
             '[2:a]volume=1[dub];'
             '[sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
         )
     else:
-        # Ducking: sidechain compression (no makeup gain, no -shortest)
         ratio = 10 if ducking_db >= 10 else 5
-        filter_complex = (
+        audio_filter = (
             f'[1:a]volume=1[sfx];'
             f'[2:a]volume=1,asplit=2[dub][sidechain];'
             f'[sfx][sidechain]sidechaincompress='
@@ -457,13 +521,65 @@ def main():
             f'[ducked_sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
         )
 
-    cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
-           '-filter_complex', filter_complex,
-           '-map', '0:v', '-map', '[aout]',
-           '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
-           '-movflags', '+faststart', output]
+    if not burn_srt:
+        # === MODE A: Stream copy (3 menit, no SRT) ===
+        filter_complex = audio_filter
+        cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
+               '-filter_complex', filter_complex,
+               '-map', '0:v', '-map', '[aout]',
+               '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
+               '-movflags', '+faststart', output]
+        print(f'Command: ffmpeg ... -c:v copy -c:a aac -b:a 192k {output}')
+    else:
+        # === MODE B: Burn SRT (re-encode video, VideoToolbox M1 hardware) ===
+        # Build subtitle filter dengan force_style untuk posisi + style
+        # ASS Alignment: 1=tl,2=tc,3=tr,4=ml,5=mc,6=mr,7=bl,8=bc,9=br
+        # Untuk Top center: Alignment=8, Bottom center: Alignment=2
+        if srt_position == 'top':
+            alignment = 8
+            margin_v = 20
+        elif srt_position == 'bottom':
+            alignment = 2
+            margin_v = 20
+        else:
+            # custom:XXXX
+            alignment = 2
+            margin_v = int(srt_position.split(':')[1]) if ':' in srt_position else 40
 
-    print(f'Command: ffmpeg -y -i [mp4] -i [sfx] -i [dub] -filter_complex ... -c:v copy -c:a aac -b:a 192k {output}')
+        # Escape path untuk filter subtitles (escape colon, backslash, dan single quote)
+        srt_escaped = srt_path.replace('\\', '\\\\').replace(':', '\\:').replace("'", "\\'")
+
+        # Style ASS: font 18, putih outline hitam, Alignment + MarginV
+        # FontName biarkan default (sans-serif), FontSize=18
+        # Outline=2 (outline tebal), BorderStyle=1 (outline + shadow)
+        # Shadow=1 (shadow 1 pixel)
+        force_style = (
+            f"Fontsize=18,"
+            f"PrimaryColour=&H00FFFFFF,"  # putih (ASS BGR: &H00BBGGRR)
+            f"OutlineColour=&H80000000,"  # hitam semi-transparan
+            f"BorderStyle=1,"
+            f"Outline=2,"
+            f"Shadow=1,"
+            f"Alignment={alignment},"
+            f"MarginV={margin_v}"
+        )
+
+        # Filter: [0:v] + subtitles → [vout]
+        # subtitles filter butuh file path (escape), force_style untuk styling
+        subtitle_filter = f"[0:v]subtitles='{srt_escaped}':force_style='{force_style}'[vout]"
+        filter_complex = audio_filter + ';' + subtitle_filter
+
+        cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
+               '-filter_complex', filter_complex,
+               '-map', '[vout]', '-map', '[aout]',
+               '-c:v', 'h264_videotoolbox', '-b:v', '2M',
+               '-c:a', 'aac', '-b:a', '192k',
+               '-movflags', '+faststart', output]
+        print(f'Command: ffmpeg ... -c:v h264_videotoolbox -b:v 2M -c:a aac -b:a 192k {output}')
+        print(f'  SRT path : {srt_path}')
+        print(f'  Posisi   : {srt_position} (Alignment={alignment}, MarginV={margin_v})')
+        print(f'  Style    : font 18pt, putih outline hitam, VideoToolbox M1 hardware')
+        print(f'  Estimasi : ~20-40 menit untuk 2 jam video (vs 3 menit stream copy)')
     print()
     print('Progress:')
     print()
