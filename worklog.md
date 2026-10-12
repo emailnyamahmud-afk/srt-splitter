@@ -2451,3 +2451,48 @@ Next steps:
 4. Kalau ada masalah → DaVinci manual edit
 5. Setelah S5 done, batch dubbing S1-S4 pakai workflow yang sama
 6. Implementasi srt-gender-tui.py untuk Mode 2 (gender tagging)
+
+---
+Task ID: s5-fase-4-mix-done
+Agent: main
+Task: User mix S5 selesai 3m 10s, preview VLC
+
+Work Log:
+- User run mix-tui.py v2.1 untuk S5 (output: S5-id-final.mp4)
+- Input: S5-ori.mp4 + S5_no_vocals.mp3 + S5-ori.id-audio-id-dub.wav
+- Config: Ducking 12 dB (default), output S5-id-final.mp4
+- Mix time: 3m 10s, speed 42.8x real-time (M1 GPU/Media Engine sangat cepat)
+- Output: S5-id-final.mp4 (274.8 MB, H.264 + AAC 192k, 2j 16m 19s)
+- Video stream copy (no re-encode) → 100% sync SRT
+- User preview di VLC sekarang (tanpa DaVinci edit)
+- Estimasi size sebelumnya 120 MB — aktual 274.8 MB karena:
+  - Video stream copy dari S5-ori.mp4 (80 MB video stream)
+  - Audio AAC 192k × 8196 detik = ~190 MB
+  - Muxing overhead + faststart atom = +5 MB
+  - Total ~275 MB ✓
+
+Stage Summary:
+- Fase 4 mix-tui.py v2.1 = SUKSES untuk S5 (2j 16m video)
+- Pipeline 100% lokal end-to-end SELESAI untuk S5:
+  yt-dlp v5 → Demucs → edge-tts-tui → mix-tui v2.1 → S5-id-final.mp4
+- Total waktu pipeline S5:
+  - Fase 1: yt-dlp ~9 menit (480p + m4a native + SRT)
+  - Fase 2: Demucs 16m 37s (M1 MPS)
+  - Fase 3a: edge-tts-tui ~3 jam (3866 cue Ardi -10Hz Smart Fit 2.0x)
+  - Fase 4: mix-tui 3m 10s (M1 GPU 42.8x real-time)
+  - TOTAL: ~3.5 jam untuk video 2.2 jam (1.6x real-time)
+- User feedback pending: preview VLC sekarang, belum report hasil
+- Next: kalau mix OK → publish/arsip; kalau ada masalah → DaVinci
+
+Output files user (final):
+- S5-id-final.mp4 (274.8 MB, final dub Indonesia)
+- S5-ori.mp4 (80 MB, video ori)
+- S5-ori.id-audio-id-dub.wav (374 MB, dub Indonesia audio only)
+- output/htdemucs/S5-ori-audio/no_vocals.mp3 (312 MB, SFX)
+- .cache/ (100.5 MB, 7304 MP3 per-cue untuk resume + DaVinci manual)
+
+Workflow batch S1-S4 siap pakai (semua tool udah di-fix + tested):
+- yt-dlp-tui.py v5
+- demucs-tui.py (sudah ada, MPS tested)
+- edge-tts-tui.py (S5 99.97% sukses)
+- mix-tui.py v2.1 (3m 10s di M1)

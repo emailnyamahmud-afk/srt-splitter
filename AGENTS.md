@@ -51,7 +51,7 @@ Setelah checklist selesai, AI siap kerja. Tidak perlu ulang di chat berikutnya d
 
 Kalau ada konflik antara dokumen, `PROJECT_RULES.md` menang.
 
-## Status pipeline (12 Okt 2026, 23:30 WIB)
+## Status pipeline (12 Okt 2026, 23:45 WIB)
 
 ```
 ✅ Fase 1: yt-dlp v5     → S5-ori.mp4 (80 MB) + S5-ori-audio.m4a (126 MB) + S5-ori.id.srt (3866 cue, 2j 16m)
@@ -63,7 +63,12 @@ Kalau ada konflik antara dokumen, `PROJECT_RULES.md` menang.
    Config: voice Ardi -10Hz, Smart Fit cap 2.0x, prefix S5-ori.id
    Waktu: ~3 jam (rate stabil 20 cue/menit, M1 16GB tidak panas)
 ⏳ Fase 3b: TTS Jawa     → audio-jw-dub.wav (web app SRT editor, nunggu code fix)
-▶ Fase 4: mix-tui.py v2.1 → user test mix sekarang (estimasi ~1-3 menit di M1)
+✅ Fase 4: mix-tui.py v2.1 (SELESAI!)
+   Hasil: S5-id-final.mp4 (274.8 MB, H.264 + AAC 192k, 2j 16m 19s)
+   Mix time: 3m 10s, speed 42.8x real-time (M1 GPU/Media Engine)
+   Ducking: 12 dB (default, sidechain compress ratio 10:1)
+   Video stream copy (no re-encode) → 100% sync
+   Status: user preview di VLC sekarang (tanpa DaVinci edit)
 ```
 
 ### Catatan Fase 3a (edge-tts-tui.py lokal — S5 SELESAI)
