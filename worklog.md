@@ -2536,3 +2536,47 @@ Surprise finding:
 - Aktual: ~4 menit (7x lebih cepat)
 - Aku overestimate karena pakai referensi libx264 (software encoder)
 - Update estimasi di script ke ~3-5 menit untuk 480p 2 jam
+
+---
+Task ID: mix-tui-v3-mode-b-done
+Agent: main
+Task: User mix-tui v3 Mode B selesai — size 2.1 GB, M1 tidak panas
+
+Work Log:
+- Mode B burn SRT selesai dalam 3m 53s (speed 35x M1 VideoToolbox)
+- Output: S5-id-final-sub.mp4 (2147.4 MB = 2.1 GB)
+- Mac tidak panas (hardware encoder, bukan CPU)
+- Aku salah estimasi size — aktual 5x lebih besar dari prediksi 425 MB
+
+Root cause salah estimasi:
+- Bitrate 2 Mbps × 8196 detik = ~2 GB video stream (sudah final, tidak ada kompresi tambahan)
+- Audio 192 kbps × 8196s = ~240 MB
+- Total ~2.3 GB raw → muxing → 2.1 GB
+- Aku sebelumnya kira ada kompresi 5x lagi setelah encode — SALAH
+
+Bug yang ditemukan:
+1. Progress bar 'size=0.0 MB' selama proses
+   - VideoToolbox tidak flush size ke stderr real-time
+   - Fix v3.1: query file size langsung dari filesystem tiap 0.5s
+2. Estimasi '20-40 menit' salah — aktual ~4 menit
+   - Update doc: ~3-5 menit untuk 480p 2 jam di M1
+3. Estimasi '400-500 MB' salah — aktual 2.1 GB
+   - Update doc: ~2.1 GB untuk 2 Mbps 480p 2 jam
+
+Trade-off size:
+- 2 Mbps (sekarang): 2.1 GB, quality bagus
+- 1 Mbps: ~1.1 GB, quality cukup (mungkin pixelated di scene complex)
+- 500 kbps: ~600 MB, quality turun
+
+Stage Summary:
+- Pipeline S5 100% SELESAI end-to-end
+- Output final user: S5-id-final-sub.mp4 (2.1 GB)
+- User akan preview di VLC
+- M1 VideoToolbox terbukti sangat cepat (35x real-time, tidak panas)
+- mix-tui v3 Mode B tested working
+
+Next:
+1. User preview VLC → cek SRT Indonesia posisi TOP
+2. Kalau perlu tuning (font size, posisi, bitrate), update mix-tui v3.1
+3. Kalau OK → batch S1-S4
+4. Implementasi Mode 2 (srt-gender-tui.py) untuk gender tagging

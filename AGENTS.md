@@ -63,12 +63,15 @@ Kalau ada konflik antara dokumen, `PROJECT_RULES.md` menang.
    Config: voice Ardi -10Hz, Smart Fit cap 2.0x, prefix S5-ori.id
    Waktu: ~3 jam (rate stabil 20 cue/menit, M1 16GB tidak panas)
 ⏳ Fase 3b: TTS Jawa     → audio-jw-dub.wav (web app SRT editor, nunggu code fix)
-✅ Fase 4: mix-tui.py v2.1 (SELESAI!)
-   Hasil: S5-id-final.mp4 (274.8 MB, H.264 + AAC 192k, 2j 16m 19s)
-   Mix time: 3m 10s, speed 42.8x real-time (M1 GPU/Media Engine)
-   Ducking: 12 dB (default, sidechain compress ratio 10:1)
-   Video stream copy (no re-encode) → 100% sync
-   Status: user preview di VLC sekarang (tanpa DaVinci edit)
+✅ Fase 4: mix-tui.py v3 (SELESAI — 2 mode tested)
+   Mode A: Stream copy (3m 10s, 275 MB, no SRT)
+     Output: S5-id-final.mp4
+     Video stream copy (no re-encode) → 100% sync
+   Mode B: Burn SRT Indonesia TOP (3m 53s, 2.1 GB, h264_videotoolbox M1)
+     Output: S5-id-final-sub.mp4
+     Speed: 35x real-time (M1 VideoToolbox hardware, tidak panas)
+     SRT: font 18pt putih outline hitam, Alignment=8 top
+   Status: user preview di VLC
 ```
 
 ### Catatan Fase 3a (edge-tts-tui.py lokal — S5 SELESAI)
