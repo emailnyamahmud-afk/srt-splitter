@@ -175,7 +175,7 @@ def main():
     # Download video (tanpa audio)
     print('▶ Download video (MP4, tanpa audio)...')
     cmd_video = [ytdlp, '-f', video_fmt, '-o', video_template,
-                 '--no-playlist', '--newline', '--no-merge-output-format', url]
+                 '--no-playlist', '--newline', url]
     try:
         subprocess.run(cmd_video)
     except KeyboardInterrupt:
@@ -184,7 +184,9 @@ def main():
 
     # Download audio (MP3, 128kbps)
     print('\n▶ Download audio (MP3 128kbps)...')
-    cmd_audio = [ytdlp, '-f', 'bestaudio/best', '-o', audio_template,
+    # YouTube tidak punya MP3 langsung. Source: m4a (AAC, ~60MB) atau webm (Opus, ~122MB)
+    # Prefer m4a (lebih kecil, download cepat), convert ke MP3 128kbps
+    cmd_audio = [ytdlp, '-f', 'bestaudio[ext=m4a]/bestaudio/best', '-o', audio_template,
                  '--no-playlist', '--newline',
                  '--extract-audio', '--audio-format', 'mp3', '--audio-quality', '128K',
                  url]
