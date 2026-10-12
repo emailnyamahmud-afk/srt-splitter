@@ -51,22 +51,22 @@ Setelah checklist selesai, AI siap kerja. Tidak perlu ulang di chat berikutnya d
 
 Kalau ada konflik antara dokumen, `PROJECT_RULES.md` menang.
 
-## Status pipeline (12 Okt 2026, 21:00 WIB)
+## Status pipeline (12 Okt 2026, 23:30 WIB)
 
 ```
 ✅ Fase 1: yt-dlp v5     → S5-ori.mp4 (80 MB) + S5-ori-audio.m4a (126 MB) + S5-ori.id.srt (3866 cue, 2j 16m)
 ✅ Fase 2: Demucs        → no_vocals.mp3 (312 MB, MP3 320, 16m37s di M1 MPS)
-▶ Fase 3a: edge-tts-tui.py (LOKAL — ganti web app Mode ON)
-   Status: 239/3866 cue (~6%), ETA ~4 jam, voice Ardi -10Hz, cap 2.0x
-   RAM: 749 MB buffer (4.7% dari 16 GB), Mac tidak panas (M1 + unified memory)
-   Cache: .cache/S5-ori.id-cue-*.mp3 (per-cue, resume support)
-   ⚠ Web app Mode ON 4x gagal di S5 → pindah ke edge-tts-tui.py lokal
-   ⚠ Vercel maxDuration 60s + Microsoft rate-limit + ZIP OOM → tidak bisa SRT 2 jam
+✅ Fase 3a: edge-tts-tui.py (LOKAL — 100% sukses!)
+   Hasil: S5-ori.id-audio-id-dub.wav (374.4 MB, WAV 24kHz mono 16-bit, 2j 16m 19s)
+   Stat: 3865/3866 cue OK (99.97%), 1 gagal (Pass 1 error, no nomor cue di log)
+   Cache: 7304 MP3 (100.5 MB) di ~/Dubbing/.cache/ — disimpan untuk resume + DaVinci manual
+   Config: voice Ardi -10Hz, Smart Fit cap 2.0x, prefix S5-ori.id
+   Waktu: ~3 jam (rate stabil 20 cue/menit, M1 16GB tidak panas)
 ⏳ Fase 3b: TTS Jawa     → audio-jw-dub.wav (web app SRT editor, nunggu code fix)
-✅ Fase 4: mix-tui.py v2 → S5-ori-id-final.mp4 (audit fix 8 bug, siap dipakai setelah TTS done)
+▶ Fase 4: mix-tui.py v2.1 → user test mix sekarang (estimasi ~1-3 menit di M1)
 ```
 
-### Catatan Fase 3a (edge-tts-tui.py lokal)
+### Catatan Fase 3a (edge-tts-tui.py lokal — S5 SELESAI)
 - Web app Vercel Mode ON gagal 4x untuk S5 (SRT 2 jam, 3866 cue):
   1. Vercel maxDuration 60s → request >60s killed
   2. Microsoft Edge TTS rate-limit (429) setelah ribuan request cepat
@@ -77,10 +77,47 @@ Kalau ada konflik antara dokumen, `PROJECT_RULES.md` menang.
   - No rate-limit (per-IP, tidak per-function seperti Vercel)
   - RAM ~750 MB untuk 5000 cue (pre-allocate buffer + inline mix)
   - Per-cue cache → resume kalau crash
-- Status: jalan stabil 239/3866 (~4 jam total), no error
+- Hasil: 3865/3866 OK (99.97%) dalam ~3 jam, no Vercel limit
+- Cache disimpan (No "Hapus cache?") untuk:
+  - Resume kalau perlu regen
+  - Mode manual DaVinci: drag MP3 per cue (nomor SRT) ke timeline
 
-### Audit mix-tui.py v2 (commit 4d5137f)
-8 bug di-fix:
+### Strategi 4-mode dubbing (user catatan 12 Okt 2026)
+
+```
+Mode 1: Manual DaVinci
+  - Cache per-cue MP3 (nomor SRT) drag manual ke timeline
+  - Pilih gender per cue (Ardi/Gadis) sesuai karakter dialog
+  - Edit fine-tune: SFX level per scene, crossfade, ducking manual
+
+Mode 2: TUI Gender Tag (NEXT — belum implementasi)
+  - TUI baru: srt-gender-tui.py
+  - Baca SRT → tag L/P per cue → save sidecar JSON
+  - edge-tts-tui.py baca sidecar → voice Ardi/Gadis per cue
+  - 1x generate = campuran gender otomatis
+
+Mode 3: Cepat (DEFAULT — sudah jalan)
+  - Default voice Ardi semua cue
+  - mix-tui.py → output final ~2 menit
+  - Tanpa DaVinci, langsung publish
+
+Mode 4: Edit SRT Jawa (LONG-TERM — web app)
+  - Web app SRT editor (per cue preview, multi-project)
+  - Tag gender + bahasa Jawa (ngoko/krama)
+  - Nunggu kamus clean (40k+ entries di JSON, Supabase grow 50/minggu)
+```
+
+### Status implementasi 4 mode
+
+| Mode | Status | Tool |
+|------|--------|------|
+| 1 (Manual DaVinci) | ✅ Bisa sekarang | Cache MP3 per cue + DaVinci |
+| 2 (Gender Tag TUI) | ⏳ TODO — spesifikasi draft | srt-gender-tui.py (belum ada) |
+| 3 (Cepat) | ✅ Jalan (S5 test) | edge-tui.py + mix-tui.py v2.1 |
+| 4 (Web Jawa) | ⏳ Nunggu code fix | srt-splitter.vercel.app (SRT editor) |
+
+### Audit mix-tui.py v2.1 (commit 152bd82)
+9 bug di-fix (8 bug awal + 1 bug tersembunyi deadlock):
 1. Default output otomatis dari prefix MP4 (S5-ori.mp4 → S5-ori-id-final.mp4)
 2. Header doc update: Fase 1 m4a native (bukan audio.wav), Fase 3a edge-tts-tui (bukan web app)
 3. Validasi input file exist + size > 0 sebelum eksekusi
@@ -89,6 +126,7 @@ Kalau ada konflik antara dokumen, `PROJECT_RULES.md` menang.
 6. Progress bar FFmpeg real-time (%, time, size, speed, ETA)
 7. Hapus output partial kalau Ctrl+C (no corrupt file)
 8. Dependencies check + ffmpeg/ffprobe dengan pesan install jelas
+9. Threading stderr reader — hindari deadlock kalau FFmpeg output > 64KB pipe buffer
 
 
 ## Kamus Jawa status (v5.3, 10 Okt 2026 — 3 source + merge sinonim jadi 1 entry)

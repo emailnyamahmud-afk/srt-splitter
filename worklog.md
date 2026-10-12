@@ -2408,3 +2408,46 @@ Stage Summary:
   - 4d5137f fix: mix-tui v2 (8 bug)
   - 79be46c docs: status pipeline + mix-tui audit
   - 152bd82 fix: mix-tui v2.1 (threading deadlock)
+
+---
+Task ID: s5-fase-3a-done
+Agent: main
+Task: User TTS S5 selesai 100%, user mulai mix, update dokumentasi
+
+Work Log:
+- User test edge-tts-tui.py untuk S5 (3866 cue, 2j 16m 19s)
+- Hasil: 3865/3866 OK (99.97% sukses rate), 1 gagal (Pass 1 error)
+- Waktu: ~3 jam total (rate stabil 20 cue/menit, M1 16GB tidak panas)
+- Output: S5-ori.id-audio-id-dub.wav (374.4 MB, WAV 24kHz mono 16-bit)
+- Cache: 7304 MP3 (100.5 MB) di ~/Dubbing/.cache/ — disimpan (No "Hapus?")
+- User feedback: "Hasil dub-id = 100% sempurna"
+- User mulai test mix-tui.py v2.1 (estimasi ~1-3 menit)
+- User catat strategi 4-mode dubbing:
+  1. Manual DaVinci (cache per-cue MP3 drag manual, pilih gender per cue)
+  2. TUI Gender Tag (TODO: srt-gender-tui.py — baca SRT, tag L/P, save sidecar JSON)
+  3. Cepat default (sudah jalan — Ardi semua, mix-tui, langsung publish)
+  4. Edit SRT Jawa (long-term web app editor + kamus clean)
+
+Stage Summary:
+- Fase 3a edge-tts-tui.py = SUKSES untuk SRT 2 jam 3866 cue
+- Web app Mode ON resmi pensiun untuk SRT panjang (>30 menit)
+- Pipeline 100% lokal end-to-end: yt-dlp v5 → Demucs → edge-tts-tui → mix-tui v2.1
+- Cache MP3 disimpan untuk Mode 1 (DaVinci manual)
+- Mode 2 (Gender Tag TUI) = next TODO setelah user selesai test mix S5
+- Mode 3 (Cepat) sudah jalan, user test mix sekarang
+- Mode 4 (Jawa web app) masih nunggu code fix + kamus grow 50/minggu
+
+Output files user:
+- S5-ori.mp4 (80 MB, video)
+- S5-ori.id.srt (3866 cue)
+- S5-ori.id-audio-id-dub.wav (374 MB, dub Indonesia)
+- output/htdemucs/S5-ori-audio/no_vocals.mp3 (312 MB, SFX)
+- ~/Dubbing/.cache/ (100.5 MB, per-cue MP3 untuk resume + DaVinci manual)
+
+Next steps:
+1. User test mix-tui.py v2.1 → S5-ori-id-final.mp4
+2. Preview di QuickTime/VLC → cek sync, level, ducking
+3. Kalau OK → publish/arsip
+4. Kalau ada masalah → DaVinci manual edit
+5. Setelah S5 done, batch dubbing S1-S4 pakai workflow yang sama
+6. Implementasi srt-gender-tui.py untuk Mode 2 (gender tagging)
