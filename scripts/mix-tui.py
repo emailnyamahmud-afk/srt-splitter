@@ -229,7 +229,14 @@ def parse_ffmpeg_progress(line: str, total_dur: float):
 
 
 def run_ffmpeg_with_progress(cmd, total_dur: float):
-    """Jalankan FFmpeg dengan stderr parsing untuk progress bar real-time."""
+    """
+    Jalankan FFmpeg dengan stderr parsing untuk progress bar real-time.
+    Pakai threading untuk baca stderr line-by-line — hindari deadlock
+    yang bisa terjadi kalau FFmpeg output > 64KB pipe buffer (Mac default).
+    """
+    import threading
+    import queue
+
     proc = subprocess.Popen(
         cmd,
         stderr=subprocess.PIPE,
@@ -237,9 +244,34 @@ def run_ffmpeg_with_progress(cmd, total_dur: float):
         universal_newlines=True,
         bufsize=1,
     )
+
+    # Thread pembaca stderr → queue (avoid deadlock)
+    line_queue: queue.Queue = queue.Queue()
+    reader_done = threading.Event()
+
+    def stderr_reader():
+        try:
+            for line in proc.stderr:
+                line_queue.put(line)
+        finally:
+            reader_done.set()
+
+    reader_thread = threading.Thread(target=stderr_reader, daemon=True)
+    reader_thread.start()
+
     last_print = 0
     start_time = time.time()
-    for line in proc.stderr:
+
+    # Loop baca queue sampai FFmpeg selesai + queue kosong
+    while True:
+        try:
+            line = line_queue.get(timeout=0.1)
+        except queue.Empty:
+            # Cek apakah FFmpeg sudah selesai + reader selesai + queue kosong
+            if proc.poll() is not None and reader_done.is_set() and line_queue.empty():
+                break
+            continue
+
         progress = parse_ffmpeg_progress(line, total_dur)
         if progress and (time.time() - last_print) > 0.5:
             elapsed = time.time() - start_time
@@ -257,7 +289,9 @@ def run_ffmpeg_with_progress(cmd, total_dur: float):
             )
             sys.stdout.flush()
             last_print = time.time()
+
     proc.wait()
+    reader_thread.join(timeout=2)
     sys.stdout.write('\n')
     sys.stdout.flush()
     return proc.returncode
