@@ -430,29 +430,33 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
         toast.loading(`Part ${i + 1}/${totalParts} done`, { id: tid })
       }
 
-      // === Coba ZIP — kalau gagal, fallback download per-part ===
+      // === Download per-part (NO ZIP — hindari OOM) ===
+      // ZIP building JSZip memuat semua blob ke RAM (~700MB peak untuk 4 part × 86MB)
+      // → OOM. Skip ZIP, langsung download per-part. Browser bisa handle multiple
+      // downloads dengan jeda 250ms.
       let totalDuration = 0
       for (let i = 0; i < results.length; i++) totalDuration += results[i].durationSec
 
-      try {
-        const zip = new JSZip()
-        for (let i = 0; i < results.length; i++) {
-          zip.file(`${prefix}-${String(i + 1).padStart(2, '0')}.wav`, await results[i].blob.arrayBuffer())
+      const downloadTid = toast.loading(`Download ${results.length} WAV files…`)
+      let downloadOk = 0
+      let downloadFail = 0
+      for (let i = 0; i < results.length; i++) {
+        try {
+          downloadBlob(`${prefix}-${String(i + 1).padStart(2, '0')}.wav`, results[i].blob)
+          downloadOk++
+          // Jeda 300ms supaya browser tidak block multiple downloads
+          await new Promise(r => setTimeout(r, 300))
+        } catch (e) {
+          console.error(`Failed to download part ${i + 1}`, e)
+          downloadFail++
         }
-        downloadBlob(`${prefix}-audio.zip`, await zip.generateAsync({ type: 'blob', compression: 'STORE' }))
-        toast.success(`Full narration (${formatDuration(totalDuration)}) — ZIP downloaded`, { id: tid })
-      } catch (zipErr) {
-        console.error('ZIP building failed, fallback to per-part download:', zipErr)
-        toast.error('ZIP gagal (mungkin OOM). Download per-part dari cache…', { id: tid })
-        // Fallback: download each part individually
-        for (let i = 0; i < results.length; i++) {
-          try {
-            downloadBlob(`${prefix}-${String(i + 1).padStart(2, '0')}.wav`, results[i].blob)
-          } catch (e) {
-            console.error(`Failed to download part ${i + 1}`, e)
-          }
-        }
-        toast.success(`${results.length} file WAV didownload (${formatDuration(totalDuration)})`, { id: tid })
+      }
+      if (downloadOk === results.length) {
+        toast.success(`${downloadOk} WAV didownload (${formatDuration(totalDuration)})`, { id: downloadTid })
+      } else if (downloadOk > 0) {
+        toast.warning(`${downloadOk}/${results.length} didownload. ${downloadFail} gagal — coba "Download dari cache" untuk retry.`, { id: downloadTid })
+      } else {
+        toast.error('Gagal download. Coba "Download dari cache" (audio sudah tersimpan).', { id: downloadTid })
       }
 
       // Refresh cache info di UI
@@ -944,7 +948,7 @@ export function TtsPanel({ splitResult, prefix }: TtsPanelProps) {
               ) : (
                 <>
                   <Button onClick={generateAll} disabled={isSynthesizing} size="sm">
-                    {isSynthesizing ? <><Loader2 className="size-3.5 mr-1 animate-spin" /> Generating…</> : <><AudioLines className="size-3.5 mr-1" /> Generate & Download ZIP ({splitResult.parts.length} parts)</>}
+                    {isSynthesizing ? <><Loader2 className="size-3.5 mr-1 animate-spin" /> Generating…</> : <><AudioLines className="size-3.5 mr-1" /> Generate & Download ({splitResult.parts.length} WAV)</>}
                   </Button>
                   {partCacheInfo && partCacheInfo.count > 0 && (
                     <Button onClick={downloadAllFromCache} size="sm" variant="outline" className="border-emerald-400 text-emerald-700 dark:text-emerald-300">
