@@ -1,42 +1,28 @@
 #!/usr/bin/env python3
 """
-mix-tui.py — TUI interaktif untuk mix MP4 + no_vocal + audio_dub
+mix-tui.py v2 — TUI interaktif untuk mix MP4 + no_vocal + audio_dub
 
-Workflow produksi (3 fase, bersih):
-  Fase 1: yt-dlp         → download MP4 (video) + audio.wav (terpisah)
-  Fase 2: demucs-tui.py  → split audio.wav → no_vocals.mp3 (MP3 320, SFX bersih)
-                           + vocals.wav (auto-hapus, tidak dipakai)
-  Fase 3: mix-tui.py    → MP4 + no_vocals.mp3 + audio_dub.wav → mp4-id-final.mp4
+Workflow produksi (4 fase, bersih — sesuai v5 yt-dlp + edge-tts-tui):
+  Fase 1: yt-dlp v5      → {name}.mp4 (video) + {name}-audio.m4a (native) + {name}.id.srt
+  Fase 2: demucs-tui.py  → split {name}-audio.m4a → no_vocals.mp3 (MP3 320, SFX bersih)
+                          + vocals.mp3 (auto-hapus, tidak dipakai)
+  Fase 3a: edge-tts-tui.py (LOKAL — ganti web app Mode ON)
+                        → {prefix}-audio-id-dub.wav (Bahasa Indonesia, full durasi)
+  Fase 3b: web app SRT editor (Bahasa Jawa, per cue — nunggu code fix)
+                        → audio-jw-dub.wav
+  Fase 4: mix-tui.py v2 → MP4 + no_vocals.mp3 + audio_dub.wav → {prefix}-final.mp4
 
 Mix ini selalu pakai 3 input:
-  1. MP4 ori (video, dari yt-dlp)
+  1. MP4 ori (video, dari yt-dlp v5)
   2. no_vocals (SFX bersih dari Demucs — MP3 320 kbps, vokal ori sudah dibuang)
-  3. audio_dub.wav (dialog hasil dubbing dari web app — lihat sumber di bawah)
+  3. audio_dub.wav (dialog hasil dubbing dari edge-tts-tui.py atau web app Jawa)
 
-Sumber audio_dub (web app Dubbing, 2 mode):
-  ┌──────────────────────────────────────────────────────────────────┐
-  │ Mode ON (lama)  → Bahasa Indonesia, cara cepat                  │
-  │   - Generate full durasi langsung (1 klik, selesai)              │
-  │   - Default voice: Dimas (laki-laki) untuk semua cue             │
-  │   - Output: audio-id-dub.wav                                     │
-  │   - Status: SUDAH JALAN                                          │
-  ├──────────────────────────────────────────────────────────────────┤
-  │ SRT editor      → Bahasa Jawa, per cue (masa depan)              │
-  │   - User saat ini harus klik per cue satu-satu                   │
-  │   - TODO: default voice Dimas untuk semua cue otomatis,          │
-  │     suara Siti (perempuan) tetap manual via klik                  │
-  │   - Output: audio-jw-dub.wav                                     │
-  │   - Status: code perlu dibereskan (web app side), bukan di sini  │
-  │   - Kamus Jawa di Supabase, semakin hari semakin lengkap         │
-  └──────────────────────────────────────────────────────────────────┘
-
-Multi-bahasa output (rencana masa depan):
-  Setelah audio-jw-dub.wav ready, ada 3 opsi:
-    A. Multi-track MP4  — 1 file, switch audio di player (DVD-style)
-                          cocok untuk arsip & VLC playback
-    B. File terpisah    — 2 MP4 independent (mp4-id-final + mp4-jw-final)
-                          cocok untuk upload TikTok/IG per bahasa
-    C. Hybrid           — 1 MP4 (default ID) + sidecar wav Jawa
+Fitur v2:
+  - Default output otomatis dari prefix MP4 (mis. S5-ori.mp4 → S5-ori-id-final.mp4)
+  - Validasi semua input file exist sebelum eksekusi
+  - Warning prominent kalau dub dur < 90% MP4 dur (kemungkinan generate gagal)
+  - Progress bar FFmpeg real-time (size=, time=, bitrate=)
+  - Header doc update: Fase 3a = edge-tts-tui.py (bukan web app Mode ON)
 
 Output: MP4 durasi penuh. Setelah dub selesai, SFX tetap bermain (dub = hening).
 
@@ -57,16 +43,31 @@ Usage: python3 mix-tui.py (pilih file pakai arrow keys)
 
 import os
 import sys
+import re
 import glob
 import subprocess
+import time
 from pathlib import Path
 
 try:
     import questionary
 except ImportError:
-    print('\n❌ Library "questionary" belum terinstall.')
-    print('   Install dengan: pip3 install questionary')
     print()
+    print('═' * 64)
+    print('❌ Dependensi belum lengkap!')
+    print('═' * 64)
+    print()
+    print('   Missing: questionary')
+    print()
+    print('   Install dengan:')
+    print()
+    print('   pip3 install questionary')
+    print()
+    print('   Kalau Mac block, pakai:')
+    print()
+    print('   pip3 install --break-system-packages questionary')
+    print()
+    print('═' * 64)
     sys.exit(1)
 
 
@@ -77,8 +78,8 @@ def clear_screen():
 def print_banner():
     clear_screen()
     print('╔' + '═' * 64 + '╗')
-    print('║  🎬 Mix MP4 + No-Vocal SFX + Audio Dub (TUI Mode)' + ' ' * 13 + '║')
-    print('║  Workflow bersih: yt-dlp → Demucs → mix → final MP4' + ' ' * 11 + '║')
+    print('║  🎬 Mix MP4 + No-Vocal SFX + Audio Dub v2 (TUI)' + ' ' * 13 + '║')
+    print('║  yt-dlp v5 → Demucs → edge-tts-tui → mix → final' + ' ' * 12 + '║')
     print('╚' + '═' * 64 + '╝')
     print()
 
@@ -115,7 +116,17 @@ def find_ffmpeg():
     for loc in ['/usr/local/bin/ffmpeg', '/usr/bin/ffmpeg', '/opt/homebrew/bin/ffmpeg']:
         if os.path.isfile(loc):
             return loc
-    raise FileNotFoundError('ffmpeg tidak ditemukan di PATH. Install: brew install ffmpeg')
+    print()
+    print('═' * 64)
+    print('❌ ffmpeg belum terinstall!')
+    print('═' * 64)
+    print()
+    print('   Install dengan Homebrew:')
+    print()
+    print('   brew install ffmpeg')
+    print()
+    print('═' * 64)
+    sys.exit(1)
 
 
 def find_ffprobe():
@@ -126,10 +137,16 @@ def find_ffprobe():
     for loc in ['/usr/local/bin/ffprobe', '/usr/bin/ffprobe', '/opt/homebrew/bin/ffprobe']:
         if os.path.isfile(loc):
             return loc
-    raise FileNotFoundError('ffprobe tidak ditemukan di PATH.')
+    print()
+    print('═' * 64)
+    print('❌ ffprobe belum terinstall! Install: brew install ffmpeg')
+    print('═' * 64)
+    sys.exit(1)
 
 
 def get_duration(ffprobe, path):
+    if not os.path.isfile(path):
+        return 0
     result = subprocess.run([
         ffprobe, '-v', 'error', '-show_entries', 'format=duration',
         '-of', 'default=noprint_wrappers=1:nokey=1', path,
@@ -138,6 +155,112 @@ def get_duration(ffprobe, path):
         return float(result.stdout.strip())
     except Exception:
         return 0
+
+
+def validate_input_file(path, label):
+    """Cek file exist + size > 0. Kalau tidak, exit dengan pesan jelas."""
+    if not path or not path.strip():
+        print(f'\n❌ File {label} tidak dipilih.')
+        sys.exit(1)
+    if not os.path.isfile(path):
+        print(f'\n❌ File {label} tidak ditemukan: {path}')
+        print(f'   Cek path dan pastikan file ada di folder.')
+        sys.exit(1)
+    size = os.path.getsize(path)
+    if size == 0:
+        print(f'\n❌ File {label} kosong (0 bytes): {path}')
+        print(f'   Mungkin generate gagal. Coba generate ulang.')
+        sys.exit(1)
+    return True
+
+
+def derive_default_output(mp4_path, lang='id'):
+    """
+    Derive default output filename dari MP4 input.
+    Mis. S5-ori.mp4 → S5-ori-id-final.mp4
+    """
+    base = Path(mp4_path).stem
+    # Hapus suffix -ori kalau ada (sesuai konvensi yt-dlp v5)
+    if base.endswith('-ori'):
+        base = base[:-4]
+    return f'{base}-{lang}-final.mp4'
+
+
+def format_duration(seconds: float) -> str:
+    """Format seconds → HH:MM:SS untuk display."""
+    if seconds < 0:
+        return '0s'
+    h = int(seconds // 3600)
+    m = int((seconds % 3600) // 60)
+    s = int(seconds % 60)
+    if h > 0:
+        return f'{h}j {m}m {s}s'
+    if m > 0:
+        return f'{m}m {s}s'
+    return f'{s}s'
+
+
+def parse_ffmpeg_progress(line: str, total_dur: float):
+    """
+    Parse FFmpeg stderr line untuk extract progress.
+    Format: 'size=   102kB time=00:01:23.45 bitrate= 100.2kbits/s speed=2.5x'
+    Returns: dict {time_sec, percent, size_kb, speed} atau None.
+    """
+    # Cari time= pattern
+    m = re.search(r'time=(\d+):(\d+):(\d+(?:\.\d+)?)', line)
+    if not m:
+        return None
+    h, mi, s = m.groups()
+    time_sec = int(h) * 3600 + int(mi) * 60 + float(s)
+
+    size_m = re.search(r'size=\s*(\d+)kB', line)
+    size_kb = int(size_m.group(1)) if size_m else 0
+
+    speed_m = re.search(r'speed=\s*([\d.]+)x', line)
+    speed = float(speed_m.group(1)) if speed_m else 0
+
+    percent = (time_sec / total_dur * 100) if total_dur > 0 else 0
+    return {
+        'time_sec': time_sec,
+        'percent': min(percent, 100),
+        'size_kb': size_kb,
+        'speed': speed,
+    }
+
+
+def run_ffmpeg_with_progress(cmd, total_dur: float):
+    """Jalankan FFmpeg dengan stderr parsing untuk progress bar real-time."""
+    proc = subprocess.Popen(
+        cmd,
+        stderr=subprocess.PIPE,
+        stdout=subprocess.DEVNULL,
+        universal_newlines=True,
+        bufsize=1,
+    )
+    last_print = 0
+    start_time = time.time()
+    for line in proc.stderr:
+        progress = parse_ffmpeg_progress(line, total_dur)
+        if progress and (time.time() - last_print) > 0.5:
+            elapsed = time.time() - start_time
+            elapsed_fmt = format_duration(elapsed)
+            eta = (total_dur - progress['time_sec']) / max(0.1, progress['speed']) if progress['speed'] > 0 else 0
+            eta_fmt = format_duration(eta) if eta > 0 else '?'
+            size_mb = progress['size_kb'] / 1024
+            # Print inline (carriage return supaya tidak numpuk baris)
+            sys.stdout.write(
+                f'\r  {progress["percent"]:5.1f}% | '
+                f'time={format_duration(progress["time_sec"]):>8} / {format_duration(total_dur):>8} | '
+                f'size={size_mb:6.1f} MB | '
+                f'speed={progress["speed"]:.1f}x | '
+                f'elapsed={elapsed_fmt} | ETA={eta_fmt}'
+            )
+            sys.stdout.flush()
+            last_print = time.time()
+    proc.wait()
+    sys.stdout.write('\n')
+    sys.stdout.flush()
+    return proc.returncode
 
 
 def prompt_ducking():
@@ -154,7 +277,7 @@ def prompt_ducking():
     return int(ducking_choice.split(' dB')[0])
 
 
-def prompt_output(default_output='mp4-id-final.mp4'):
+def prompt_output(default_output):
     """Prompt output filename, return string."""
     output = questionary.text('Output MP4:', default=default_output).ask()
     return output or default_output
@@ -163,7 +286,7 @@ def prompt_output(default_output='mp4-id-final.mp4'):
 def main():
     print_banner()
 
-    print('📋 Mode: Mix cepat (TUI) — MP4 + SFX no-vocal + dub dengan ducking')
+    print('📋 Mode: Mix cepat (TUI v2) — MP4 + SFX no-vocal + dub dengan ducking')
     print('   Mode manual (DaVinci): tarik file ke timeline, edit sendiri')
     print()
     print('   Navigasi: ↑↓ arrow keys, Enter konfirmasi, q batal')
@@ -173,17 +296,15 @@ def main():
 
     # Step 1: MP4 ori (video)
     print(f'▶ Step 1/{total}: Pilih file MP4 ori (video)')
-    mp4 = select_file('MP4 ori (mis. mp4-ori-full.mp4):', ['mp4'])
+    mp4 = select_file('MP4 ori (mis. S5-ori.mp4 dari yt-dlp v5):', ['mp4'])
     if not mp4:
         print('Batal.'); sys.exit(0)
     print(f'  ✓ {mp4}')
     print()
 
     # Step 2: no_vocals (SFX bersih dari Demucs)
-    # Demucs output MP3 320 kbps (hemat space ~10x dibanding WAV).
-    # Backward-compatible: baca MP3 (output demucs-tui.py baru) atau WAV (lama).
     print(f'▶ Step 2/{total}: Pilih file SFX bersih (no_vocals.mp3 / .wav)')
-    sfx_wav = select_file('SFX bersih (no_vocals):', ['mp3', 'wav', 'flac'])
+    sfx_wav = select_file('SFX bersih (no_vocals dari demucs-tui):', ['mp3', 'wav', 'flac'])
     if not sfx_wav:
         print('Batal.'); sys.exit(0)
     print(f'  ✓ {sfx_wav}')
@@ -191,10 +312,18 @@ def main():
 
     # Step 3: Audio dub
     print(f'▶ Step 3/{total}: Pilih file audio dub WAV')
-    audio_dub = select_file('Audio dub (mis. audio-id-dub.wav, audio-jw-dub.wav):', ['wav'])
+    audio_dub = select_file('Audio dub (mis. S5-ori.id-audio-id-dub.wav):', ['wav'])
     if not audio_dub:
         print('Batal.'); sys.exit(0)
     print(f'  ✓ {audio_dub}')
+    print()
+
+    # === Validasi semua input file exist (Bug #4 fix) ===
+    print('▶ Validasi input file...')
+    validate_input_file(mp4, 'MP4 ori')
+    validate_input_file(sfx_wav, 'SFX no_vocals')
+    validate_input_file(audio_dub, 'Audio dub')
+    print('  ✓ Semua file valid')
     print()
 
     # Step 4: Ducking
@@ -203,9 +332,10 @@ def main():
     print(f'  ✓ {ducking_db}dB')
     print()
 
-    # Step 5: Output
+    # Step 5: Output — default derive dari MP4 prefix (Bug #1 fix)
     print(f'▶ Step 5/{total}: Pilih nama output MP4')
-    output = prompt_output()
+    default_output = derive_default_output(mp4, lang='id')
+    output = prompt_output(default_output)
     print(f'  ✓ {output}')
     print()
 
@@ -228,16 +358,40 @@ def main():
     print(f'║  Audio dub: {audio_dub[:46]:<46}║')
     print(f'║  Output   : {output[:46]:<46}║')
     print(f'║  Ducking  : {str(ducking_db) + " dB":<46}║')
-    print(f'║  MP4 dur  : {mp4_dur:.1f}s' + ' ' * (46 - len(f'{mp4_dur:.1f}s')) + '║')
-    print(f'║  SFX dur  : {sfx_dur:.1f}s' + ' ' * (46 - len(f'{sfx_dur:.1f}s')) + '║')
-    print(f'║  Dub dur  : {dub_dur:.1f}s' + ' ' * (46 - len(f'{dub_dur:.1f}s')) + '║')
+    print(f'║  MP4 dur  : {format_duration(mp4_dur):<46}║')
+    print(f'║  SFX dur  : {format_duration(sfx_dur):<46}║')
+    print(f'║  Dub dur  : {format_duration(dub_dur):<46}║')
     print('╚' + '═' * 64 + '╝')
     print()
 
-    if dub_dur < mp4_dur - 1:
-        print(f'  ℹ Audio dub ({dub_dur:.1f}s) lebih pendek dari MP4 ({mp4_dur:.1f}s).')
-        print(f'    Setelah dub selesai, hanya SFX yang bermain (dub = hening).')
-        print(f'    Output = MP4 durasi penuh ({mp4_dur:.1f}s).')
+    # === Bug #5 fix: warning prominent kalau dub < 90% MP4 dur ===
+    if mp4_dur > 0 and dub_dur > 0:
+        ratio = dub_dur / mp4_dur
+        if ratio < 0.9:
+            print('═' * 64)
+            print('⚠  WARNING: Audio dub lebih pendek dari MP4!')
+            print('═' * 64)
+            print(f'  MP4 dur : {format_duration(mp4_dur)}')
+            print(f'  Dub dur : {format_duration(dub_dur)} ({ratio*100:.1f}% dari MP4)')
+            print(f'  Setelah dub selesai (di {format_duration(dub_dur)}),')
+            print(f'  hanya SFX yang bermain sampai MP4 selesai.')
+            print()
+            print(f'  Kemungkinan sebab:')
+            print(f'   - Generate TTS gagal di tengah (cek .cache/ untuk resume)')
+            print(f'   - SRT hanya sampai {format_duration(dub_dur)} (bukan masalah)')
+            print()
+            if not questionary.confirm('Tetap lanjut mix?', default=False).ask():
+                print('Batal. Cek file dub dulu.'); sys.exit(0)
+            print()
+        elif ratio < 1.0:
+            print(f'  ℹ Audio dub ({format_duration(dub_dur)}) sedikit lebih pendek dari MP4 ({format_duration(mp4_dur)}).')
+            print(f'    Setelah dub selesai, hanya SFX yang bermain.')
+            print()
+    elif mp4_dur > 0 and dub_dur == 0:
+        print(f'  ⚠ Audio dur 0 — mungkin file corrupt atau ffprobe gagal baca.')
+        print()
+        if not questionary.confirm('Tetap lanjut mix?', default=False).ask():
+            sys.exit(0)
         print()
 
     confirm = questionary.confirm('Lanjut eksekusi?', default=True).ask()
@@ -275,14 +429,23 @@ def main():
            '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
            '-movflags', '+faststart', output]
 
-    print(f'Command: {" ".join(cmd[:5])} ...')
+    print(f'Command: ffmpeg -y -i [mp4] -i [sfx] -i [dub] -filter_complex ... -c:v copy -c:a aac -b:a 192k {output}')
+    print()
+    print('Progress:')
     print()
 
     try:
-        result = subprocess.run(cmd)
-        exit_code = result.returncode
+        # Bug #8 fix: progress bar real-time
+        exit_code = run_ffmpeg_with_progress(cmd, mp4_dur)
     except KeyboardInterrupt:
         print('\n\n⏹ Dibatalkan user.')
+        # Hapus output partial
+        if os.path.isfile(output):
+            try:
+                os.unlink(output)
+                print(f'Partial output dihapus: {output}')
+            except OSError:
+                pass
         sys.exit(130)
 
     print()
@@ -293,15 +456,22 @@ def main():
         print('✅ SELESAI!')
         print(f'   Output: {output}')
         print(f'   Size: {out_size:.1f} MB')
-        print(f'   Duration: {out_dur:.1f}s')
+        print(f'   Duration: {format_duration(out_dur)}')
         print()
         print('🎬 Langkah berikutnya:')
-        print('   Mode cepat (TUI): selesai → buka di VLC')
-        print('   Mode manual (DaVinci): tarik mp4 ori + SFX + dub ke timeline')
+        print(f'   1. Preview: open {output} di QuickTime / VLC')
+        print(f'   2. Kalau perlu edit (sfx level, dub per cue): DaVinci Resolve')
+        print(f'   3. Upload: langsung publish ke platform (TikTok/IG/YouTube)')
+        print(f'   4. Split per episode (opsional): ffmpeg -ss 0 -t 1800 -c copy ep01.mp4')
         print('═' * 64)
     else:
         print('═' * 64)
         print(f'❌ GAGAL dengan exit code {exit_code}')
+        print()
+        print('Cek error message di atas. Umumnya:')
+        print('  - "No such file" → file input hilang atau path salah')
+        print('  - "Invalid data found" → file corrupt, coba re-generate')
+        print('  - "Cannot allocate memory" → audio terlalu panjang, split dulu')
         print('═' * 64)
 
     sys.exit(exit_code)
