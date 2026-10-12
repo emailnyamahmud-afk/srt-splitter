@@ -432,59 +432,47 @@ def smart_fit_cue(
 # Stitch — port dari src/lib/tts.ts narrateEntries
 # ============================================================
 
-def stitch_audio(segments, total_duration_sec: float):
+def mix_into_buffer(all_audio, audio, position: int, fade_out_end: int = None, fade_in_start: int = None, fade_len: int = 0):
     """
-    Stitch segments ke buffer dengan crossfade 150ms.
-    segments = [{position, audio, cue_start, cue_end}, ...]
-    Returns: Float32Array (full buffer)
+    Mix ADD audio ke all_audio pada position, dengan optional fade.
+    Inline mix — tidak simpan audio di array terpisah (RAM efficient untuk 5000 cue).
+
+    fade_out_end: kalau di-set (samples, position-end dalam koordinat all_audio),
+                  apply fade out dari fade_out_start_sample sampai sini di koordinat audio lokal.
+    fade_in_start: kalau di-set (samples, position dalam koordinat all_audio),
+                   apply fade in dari sini sampai fade_len samples di audio lokal.
     """
-    total_samples = int(total_duration_sec * OUTPUT_SAMPLE_RATE)
-    if HAS_NUMPY:
-        all_audio = np.zeros(total_samples, dtype=np.float32)
-    else:
-        all_audio = [0.0] * total_samples
-
-    crossfade_samples = int(OUTPUT_SAMPLE_RATE * CROSSFADE_MS / 1000)
-
-    for i, seg in enumerate(segments):
-        audio = seg['audio']
-        position = seg['position']          # in samples
-        cue_end_samples = int(seg['cue_end'] * OUTPUT_SAMPLE_RATE)  # convert sec → samples
-
-        # Cek overlap dengan segmen next
-        next_seg = segments[i + 1] if i + 1 < len(segments) else None
-        if next_seg:
-            next_position = next_seg['position']  # samples
-            overlap_start = cue_end_samples      # cue end = next cue start (samples)
-            overlap_end = min(position + len(audio), next_position + 100)  # samples
-            if overlap_end > overlap_start and position + len(audio) > overlap_start:
-                # Fade out region: dari overlap_start sampai overlap_end (di koordinat audio lokal)
-                fade_start = overlap_start - position
-                fade_end = min(len(audio), overlap_end - position)
-                if fade_end > fade_start and fade_start >= 0:
-                    apply_fade_out(audio, int(fade_start), int(fade_end))
-                # Fade in next: 0 sampai fade region length
-                next_audio = next_seg['audio']
-                fade_in_start = 0
-                fade_in_end = min(len(next_audio), max(0, fade_end - fade_start))
-                if fade_in_end > fade_in_start:
-                    apply_fade_in(next_audio, int(fade_in_start), int(fade_in_end))
-
-        # Mix ADD (bukan overwrite) — match web app mixAudioInto
-        end_pos = position + len(audio)
-        if end_pos > len(all_audio):
-            # Extend buffer kalau overflow (rare, tapi jaga-jaga)
-            if HAS_NUMPY:
-                extra = np.zeros(end_pos - len(all_audio), dtype=np.float32)
-                all_audio = np.concatenate([all_audio, extra])
-            else:
-                all_audio.extend([0.0] * (end_pos - len(all_audio)))
+    end_pos = position + len(audio)
+    # Extend buffer kalau overflow
+    if end_pos > len(all_audio):
         if HAS_NUMPY:
-            all_audio[position:end_pos] += audio
+            extra = np.zeros(end_pos - len(all_audio), dtype=np.float32)
+            all_audio = np.concatenate([all_audio, extra])
         else:
-            for j, v in enumerate(audio):
-                all_audio[position + j] += v
+            all_audio.extend([0.0] * (end_pos - len(all_audio)))
 
+    # Fade in head (kalau audio ini overlap dengan prev)
+    if fade_in_start is not None and fade_len > 0:
+        # fade_in_start di koordinat all_audio, position adalah audio start
+        # audio[0:fade_len] di-fade in
+        local_fade_end = min(len(audio), fade_len)
+        if local_fade_end > 0:
+            apply_fade_in(audio, 0, int(local_fade_end))
+
+    # Fade out tail (kalau audio ini overlap dengan next)
+    if fade_out_end is not None:
+        # fade_out_end di koordinat all_audio
+        # fade out dari (fade_out_end - position) ke len(audio)
+        local_fade_start = fade_out_end - position
+        if local_fade_start < len(audio) and local_fade_start >= 0:
+            apply_fade_out(audio, int(local_fade_start), int(len(audio)))
+
+    # Mix ADD
+    if HAS_NUMPY:
+        all_audio[position:end_pos] += audio
+    else:
+        for j, v in enumerate(audio):
+            all_audio[position + j] += v
     return all_audio
 
 
@@ -713,28 +701,58 @@ def main():
         print('Batal.')
         sys.exit(0)
 
-    # === Generate per cue ===
+    # === Generate per cue + mix inline (RAM efficient untuk 5000 cue) ===
     print('\n' + '═' * 64)
-    print('🚀 Mulai generate TTS...')
+    print('🚀 Mulai generate TTS + mix inline...')
     print('═' * 64 + '\n')
 
     cache_dir = os.path.join(output_dir, '.cache')
     os.makedirs(cache_dir, exist_ok=True)
 
-    segments = []
+    # Pre-allocate buffer (1 WAV utuh, full durasi)
+    total_samples = int(total_dur * OUTPUT_SAMPLE_RATE)
+    if HAS_NUMPY:
+        all_audio = np.zeros(total_samples, dtype=np.float32)
+    else:
+        all_audio = [0.0] * total_samples
+    print(f'  Buffer pre-allocate: {total_samples} samples = {total_dur/3600:.1f} jam = {total_samples * 4 / 1024 / 1024:.0f} MB')
+    print()
+
     success_count = 0
     fail_count = 0
     first_error = ''
     start_time = time.time()
+    crossfade_samples = int(OUTPUT_SAMPLE_RATE * CROSSFADE_MS / 1000)
 
     for i, entry in enumerate(entries):
         cue_idx = i + 1
         text = normalize_tts_text(' '.join(entry['textLines']))
         cue_dur = entry['end'] - entry['start']
+        position = int(entry['start'] * OUTPUT_SAMPLE_RATE)
+        cue_end_samples = int(entry['end'] * OUTPUT_SAMPLE_RATE)
+
+        # Cek overlap dengan prev (untuk fade in head)
+        prev_entry = entries[i - 1] if i > 0 else None
+        fade_in_start = None
+        fade_len = 0
+        if prev_entry:
+            prev_end_samples = int(prev_entry['end'] * OUTPUT_SAMPLE_RATE)
+            if position < prev_end_samples:
+                # Prev audio extends past this cue start → fade in head
+                fade_in_start = position
+                fade_len = min(crossfade_samples, prev_end_samples - position)
+
+        # Cek overlap dengan next (untuk fade out tail) — kita belum tahu panjang audio next
+        # Tapi kita tahu next cue start. Kalau audio kita extends past next start → fade out tail
+        next_entry = entries[i + 1] if i + 1 < len(entries) else None
+        fade_out_end = None
+        if next_entry:
+            next_start_samples = int(next_entry['start'] * OUTPUT_SAMPLE_RATE)
+            # fade_out_end = next cue start (di koordinat all_audio)
+            # Nanti di mix_into_buffer, fade out dari (next_start - position) ke len(audio)
 
         if not text:
-            # Empty cue — skip (cursor tetap di cue.end)
-            print(f'  [{cue_idx}/{len(entries)}] empty — skip')
+            # Empty cue — skip (buffer tetap kosong di region ini)
             continue
 
         # Cache path
@@ -742,57 +760,60 @@ def main():
         cache_path = os.path.join(cache_dir, f'{prefix}-cue-{cue_idx:04d}-{cache_key}.mp3')
 
         # Cek cache: kalau ada + valid → skip generate
+        cached_audio = None
         if os.path.isfile(cache_path) and os.path.getsize(cache_path) > 0:
-            # Validasi: text sama? (cek hash di nama file)
             try:
                 audio1 = decode_mp3_to_pcm(cache_path, OUTPUT_SAMPLE_RATE)
                 natural_audio = trim_silence_asymmetric(audio1, OUTPUT_SAMPLE_RATE)
                 natural_dur = len(natural_audio) / OUTPUT_SAMPLE_RATE
                 need = natural_dur / max(0.001, cue_dur)
                 if not smart_fit or need <= 1.0:
-                    # Cache valid, pakai natural
-                    final_audio = peak_normalize(natural_audio)
-                    success_count += 1
-                    elapsed = time.time() - start_time
-                    eta = (elapsed / max(1, success_count + fail_count)) * (len(entries) - cue_idx)
-                    print(f'  [{cue_idx}/{len(entries)}] cache ✓ | {text[:40]:<40} | ETA {format_duration(eta)}')
-                    segments.append({
-                        'position': int(entry['start'] * OUTPUT_SAMPLE_RATE),
-                        'audio': final_audio,
-                        'cue_start': entry['start'],
-                        'cue_end': entry['end'],
-                    })
-                    continue
+                    cached_audio = peak_normalize(natural_audio)
+                    final_audio = cached_audio
             except Exception as e:
-                print(f'  ⚠ Cache corrupt, regenerate: {e}')
+                print(f'  ⚠ Cache corrupt cue {cue_idx}, regenerate: {e}')
 
-        # Generate
-        try:
-            if smart_fit:
-                final_audio = smart_fit_cue(text, cue_dur, voice, pitch, cap, cache_path, cache_key)
-            else:
-                if not (os.path.isfile(cache_path) and os.path.getsize(cache_path) > 0):
-                    if not generate_cue_tts(text, voice, '+0%', pitch, cache_path):
-                        raise RuntimeError('Edge TTS gagal')
-                audio1 = decode_mp3_to_pcm(cache_path, OUTPUT_SAMPLE_RATE)
-                natural_audio = trim_silence_asymmetric(audio1, OUTPUT_SAMPLE_RATE)
-                final_audio = peak_normalize(natural_audio)
+        if cached_audio is None:
+            # Generate
+            try:
+                if smart_fit:
+                    final_audio = smart_fit_cue(text, cue_dur, voice, pitch, cap, cache_path, cache_key)
+                else:
+                    if not (os.path.isfile(cache_path) and os.path.getsize(cache_path) > 0):
+                        if not generate_cue_tts(text, voice, '+0%', pitch, cache_path):
+                            raise RuntimeError('Edge TTS gagal')
+                    audio1 = decode_mp3_to_pcm(cache_path, OUTPUT_SAMPLE_RATE)
+                    natural_audio = trim_silence_asymmetric(audio1, OUTPUT_SAMPLE_RATE)
+                    final_audio = peak_normalize(natural_audio)
+            except Exception as e:
+                fail_count += 1
+                if not first_error:
+                    first_error = str(e)
+                print(f'  [{cue_idx}/{len(entries)}] ❌ {text[:30]:<30} | {e}')
+                continue
 
-            segments.append({
-                'position': int(entry['start'] * OUTPUT_SAMPLE_RATE),
-                'audio': final_audio,
-                'cue_start': entry['start'],
-                'cue_end': entry['end'],
-            })
-            success_count += 1
-            elapsed = time.time() - start_time
-            eta = (elapsed / max(1, success_count + fail_count)) * (len(entries) - cue_idx)
-            print(f'  [{cue_idx}/{len(entries)}] ✓ {text[:40]:<40} | ETA {format_duration(eta)}')
-        except Exception as e:
-            fail_count += 1
-            if not first_error:
-                first_error = str(e)
-            print(f'  [{cue_idx}/{len(entries)}] ❌ {text[:30]:<30} | {e}')
+        # Cek apakah audio extends past next cue start → set fade_out_end
+        if next_entry and position + len(final_audio) > next_start_samples:
+            fade_out_end = next_start_samples
+
+        # Mix inline ke buffer (tidak simpan di segments array)
+        all_audio = mix_into_buffer(
+            all_audio, final_audio, position,
+            fade_out_end=fade_out_end,
+            fade_in_start=fade_in_start,
+            fade_len=fade_len,
+        )
+
+        success_count += 1
+        elapsed = time.time() - start_time
+        eta = (elapsed / max(1, success_count + fail_count)) * (len(entries) - cue_idx)
+        status = 'cache' if cached_audio is not None else '✓'
+        print(f'  [{cue_idx}/{len(entries)}] {status} {text[:40]:<40} | ETA {format_duration(eta)}')
+
+        # Free memory
+        del final_audio
+        if cached_audio is not None:
+            del cached_audio
 
     print()
     print('═' * 64)
@@ -805,16 +826,15 @@ def main():
         print('❌ Semua cue gagal. Cek error di atas.')
         sys.exit(1)
 
-    # === Stitch + encode WAV ===
-    print('▶ Stitch audio + encode WAV...')
-    print(f'  Total segments: {len(segments)}')
+    # === Encode WAV ===
+    print('▶ Encode WAV...')
     print(f'  Buffer durasi: {format_duration(total_dur)}')
-    print(f'  Estimasi RAM: ~{(total_dur * OUTPUT_SAMPLE_RATE * 4 / 1024 / 1024):.0f} MB (float32)')
+    print(f'  RAM buffer: ~{len(all_audio) * 4 / 1024 / 1024:.0f} MB (float32)')
     print()
 
-    all_audio = stitch_audio(segments, total_dur)
     output_wav = os.path.join(output_dir, f'{prefix}-audio-id-dub.wav')
     encode_wav(all_audio, OUTPUT_SAMPLE_RATE, output_wav)
+    del all_audio  # free RAM
 
     file_size_mb = os.path.getsize(output_wav) / 1024 / 1024
     print(f'  ✓ Output: {output_wav}')
@@ -823,17 +843,18 @@ def main():
     print()
 
     # Cleanup cache (opsional)
-    if questionary.confirm(f'Hapus cache ({len(segments)} MP3, ~{sum(os.path.getsize(os.path.join(cache_dir, f)) for f in os.listdir(cache_dir) if f.startswith(prefix)) // 1024 // 1024} MB)?', default=False).ask():
-        for f in os.listdir(cache_dir):
-            if f.startswith(prefix):
-                os.unlink(os.path.join(cache_dir, f))
+    cache_files = [f for f in os.listdir(cache_dir) if f.startswith(prefix)]
+    cache_size_mb = sum(os.path.getsize(os.path.join(cache_dir, f)) for f in cache_files) / 1024 / 1024
+    if cache_files and questionary.confirm(f'Hapus cache ({len(cache_files)} MP3, {cache_size_mb:.1f} MB)?', default=False).ask():
+        for f in cache_files:
+            os.unlink(os.path.join(cache_dir, f))
         try:
             os.rmdir(cache_dir)
         except OSError:
             pass
         print('  ✓ Cache dihapus')
     else:
-        print(f'  Cache disimpan: {cache_dir}')
+        print(f'  Cache disimpan: {cache_dir} ({cache_size_mb:.1f} MB)')
         print(f'  Kalau generate ulang SRT sama → cache dipakai (resume)')
 
     print()
