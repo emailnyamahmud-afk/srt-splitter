@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-yt-dlp-tui.py v4 — TUI download YouTube dengan pilihan resolusi + output terpisah + SRT
+yt-dlp-tui.py v5 — TUI download YouTube: video + audio + SRT
 
 Pilihan resolusi: 480p, 720p, 1080p, best
-Output: 2 file = MP4 (video only) + MP3 (audio only, 128kbps)
-SRT: list subtitle tersedia, user pilih SRT Indonesia (atau skip kalau tidak ada)
+Output: 2 file = MP4 (video only) + M4A (audio only, native YouTube)
+SRT: list subtitle dari JSON metadata, user pilih Indonesia / lain / skip
 
 Install: pip3 install yt-dlp questionary
 Usage: python3 yt-dlp-tui.py
@@ -41,35 +41,38 @@ def sanitize_filename(name):
 
 
 def list_subtitles(ytdlp, url):
-    """List subtitle tersedia di YouTube. Return list of (lang_code, lang_name)."""
+    """Ambil daftar subtitle dari YouTube via --dump-json. Return [(code, name), ...]."""
     print('\n▶ Cek subtitle tersedia...')
-    cmd = [ytdlp, '--list-subs', '--print', '%(subtitles)s', url]
+    cmd = [ytdlp, '--dump-json', '--no-playlist', '--skip-download', url]
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-        # Parse output — cari baris dengan format "lang_code  lang_name  ext"
-        subs = []
-        for line in result.stdout.split('\n'):
-            line = line.strip()
-            if not line or line.startswith('Language') or line.startswith('['):
-                continue
-            # Format: "id  Indonesian  vtt, ttml" atau "id  Indonesian  vtt"
-            parts = line.split()
-            if len(parts) >= 2:
-                lang_code = parts[0]
-                lang_name = parts[1]
-                # Skip auto-generated marker
-                if lang_code and lang_name:
-                    subs.append((lang_code, lang_name))
-        return subs
+        if result.returncode != 0 or not result.stdout.strip():
+            return []
+        data = json.loads(result.stdout.splitlines()[0])
     except Exception:
         return []
+
+    # Hitung bahasa unik dari subtitles + automatic_captions
+    seen = {}
+    for key in ('subtitles', 'automatic_captions'):
+        for lang_code, tracks in data.get(key, {}).items():
+            if lang_code and lang_code not in seen:
+                # Ambil nama bahasa dari track pertama jika ada, fallback ke code
+                name = lang_code
+                if tracks and isinstance(tracks, list):
+                    ext = tracks[0].get('ext', '') if isinstance(tracks[0], dict) else ''
+                    # Coba ambil name dari data track (kalau ada 'name' field)
+                    track_name = tracks[0].get('name', '') if isinstance(tracks[0], dict) else ''
+                    name = track_name or lang_code
+                seen[lang_code] = name
+    return list(seen.items())
 
 
 def main():
     os.system('clear' if os.name != 'nt' else 'cls')
     print('╔' + '═' * 64 + '╗')
-    print('║  📺 YouTube Downloader v4 (TUI)' + ' ' * 30 + '║')
-    print('║  Resolusi + MP4 + MP3 terpisah + SRT Indonesia' + ' ' * 13 + '║')
+    print('║  📺 YouTube Downloader v5 (TUI)' + ' ' * 31 + '║')
+    print('║  Resolusi + MP4 + M4A terpisah + SRT Indonesia' + ' ' * 14 + '║')
     print('╚' + '═' * 64 + '╝')
     print()
 
@@ -109,27 +112,27 @@ def main():
         custom_name = None
 
     # Step 5: SRT Indonesia
-    print('\n▶ Cek subtitle tersedia di YouTube...')
     subs = list_subtitles(ytdlp, url)
 
     srt_choice = 'Skip (download SRT dari eksternal)'
     if subs:
-        # Cari Indonesia
+        # Cari Indonesia (kode: id, in, ind)
         id_subs = [s for s in subs if s[0].lower() in ('id', 'in', 'ind')]
         sub_choices = []
         if id_subs:
             sub_choices.append(f'Download SRT Indonesia ({id_subs[0][0]})')
         sub_choices.append('Skip (download SRT dari eksternal)')
         sub_choices.append('Pilih subtitle lain:')
+        # Default: Indonesia kalau ada, kalau tidak skip
+        default_idx = 0 if id_subs else 1
         srt_choice = questionary.select(
             f'Subtitle tersedia ({len(subs)} bahasa):',
             choices=sub_choices,
-            default=sub_choices[0] if id_subs else sub_choices[0]
+            default=sub_choices[default_idx]
         ).ask()
 
         if 'Pilih subtitle lain' in srt_choice:
-            # List semua subtitle
-            all_sub_choices = [f'{code} — {name}' for code, name in subs]
+            all_sub_choices = [f'{code} — {name}' for code, name in sorted(subs)]
             all_sub_choices.append('Skip')
             sel = questionary.select('Pilih subtitle:', choices=all_sub_choices).ask()
             if sel and 'Skip' not in sel:
@@ -159,7 +162,7 @@ def main():
     print('║  📋 Ringkasan:' + ' ' * 49 + '║')
     print('╠' + '═' * 64 + '╣')
     print(f'║  Resolusi: {res[:48]:<48}║')
-    print(f'║  Output  : MP4 (video) + MP3 (audio) terpisah' + ' ' * 9 + '║')
+    print('║  Output  : MP4 (video) + M4A (audio) terpisah' + ' ' * 8 + '║')
     print(f'║  SRT     : {srt_choice[:48]:<48}║')
     print(f'║  URL     : {url[:48]:<48}║')
     print(f'║  Dir     : {output_dir[:48]:<48}║')
@@ -172,7 +175,7 @@ def main():
     print('🚀 Download...')
     print('═' * 64 + '\n')
 
-    # Download video (tanpa audio)
+    # Download video (MP4, tanpa audio)
     print('▶ Download video (MP4, tanpa audio)...')
     cmd_video = [ytdlp, '-f', video_fmt, '-o', video_template,
                  '--no-playlist', '--newline', url]
@@ -182,14 +185,13 @@ def main():
         print('\n⏹ Dibatalkan.')
         sys.exit(130)
 
-    # Download audio (MP3, 128kbps)
-    print('\n▶ Download audio (MP3 128kbps)...')
-    # YouTube tidak punya MP3 langsung. Source: m4a (AAC, ~60MB) atau webm (Opus, ~122MB)
-    # Prefer m4a (lebih kecil, download cepat), convert ke MP3 128kbps
-    cmd_audio = [ytdlp, '-f', 'bestaudio[ext=m4a]/bestaudio/best', '-o', audio_template,
-                 '--no-playlist', '--newline',
-                 '--extract-audio', '--audio-format', 'mp3', '--audio-quality', '128K',
-                 url]
+    # Download audio (M4A native, tanpa konversi)
+    # YouTube sudah punya m4a (AAC) — skip konversi MP3 (hemat waktu + disk + quality)
+    # Demucs, ffmpeg, whisper, dll semua bisa baca m4a langsung
+    print('\n▶ Download audio (M4A native)...')
+    cmd_audio = [ytdlp, '-f', 'bestaudio[ext=m4a]/bestaudio/best',
+                 '-o', audio_template,
+                 '--no-playlist', '--newline', url]
     try:
         subprocess.run(cmd_audio)
     except KeyboardInterrupt:
@@ -198,7 +200,6 @@ def main():
 
     # Download SRT kalau dipilih
     if 'Skip' not in srt_choice and 'eksternal' not in srt_choice.lower():
-        # Extract lang code
         srt_lang = None
         if 'Indonesia' in srt_choice:
             srt_lang = 'id'
@@ -209,7 +210,8 @@ def main():
             print(f'\n▶ Download SRT ({srt_lang})...')
             srt_template = os.path.join(output_dir, f'{base_name}.%(ext)s')
             cmd_srt = [ytdlp, '--write-sub', '--sub-lang', srt_lang,
-                       '--sub-format', 'srt', '--skip-download',
+                       '--sub-format', 'srt', '--convert-subs', 'srt',
+                       '--skip-download',
                        '-o', srt_template,
                        '--no-playlist', url]
             try:
@@ -220,23 +222,48 @@ def main():
                 print(f'\n⚠ Gagal download SRT: {e}')
                 print('   Download SRT dari eksternal (mis. subscene.com, opensubtitles.org)')
 
-    # Hasil
+    # Hasil — pakai base_name spesifik (bukan "file terbaru"), supaya tidak salah tampil
     print('\n' + '═' * 64)
     print('✅ SELESAI!\n')
-    mp4_files = sorted(Path(output_dir).glob('*.mp4'), key=os.path.getmtime, reverse=True)
-    mp3_files = sorted(Path(output_dir).glob('*.mp3'), key=os.path.getmtime, reverse=True)
-    srt_files = sorted(Path(output_dir).glob('*.srt'), key=os.path.getmtime, reverse=True)
 
-    if mp4_files:
-        size_mb = mp4_files[0].stat().st_size / 1024 / 1024
-        print(f'📁 Video: {mp4_files[0].name} ({size_mb:.1f} MB)')
-    if mp3_files:
-        size_mb = mp3_files[0].stat().st_size / 1024 / 1024
-        print(f'📁 Audio: {mp3_files[0].name} ({size_mb:.1f} MB)')
-    if srt_files:
-        print(f'📁 SRT:   {srt_files[0].name}')
+    # Cari file berdasarkan base_name yang dipakai. Kalau custom_name None, kita tidak
+    # tahu judul asli — fallback ke "file terbaru" tapi filter ekstensi.
+    found_video = found_audio = found_srt = None
+    if custom_name:
+        # Filter exact match by base_name
+        v_match = list(Path(output_dir).glob(f'{custom_name}.mp4'))
+        a_match = list(Path(output_dir).glob(f'{custom_name}-audio.m4a')) + \
+                  list(Path(output_dir).glob(f'{custom_name}-audio.mp4')) + \
+                  list(Path(output_dir).glob(f'{custom_name}-audio.webm'))
+        s_match = list(Path(output_dir).glob(f'{custom_name}*.srt'))
+        if v_match: found_video = max(v_match, key=os.path.getmtime)
+        if a_match: found_audio = max(a_match, key=os.path.getmtime)
+        if s_match: found_srt = max(s_match, key=os.path.getmtime)
+    else:
+        # Fallback: file terbaru per ekstensi
+        mp4 = sorted(Path(output_dir).glob('*.mp4'), key=os.path.getmtime, reverse=True)
+        aud = sorted(list(Path(output_dir).glob('*.m4a')) + list(Path(output_dir).glob('*.mp3')),
+                     key=os.path.getmtime, reverse=True)
+        srt = sorted(Path(output_dir).glob('*.srt'), key=os.path.getmtime, reverse=True)
+        if mp4: found_video = mp4[0]
+        if aud: found_audio = aud[0]
+        if srt: found_srt = srt[0]
 
-    if not srt_files:
+    if found_video:
+        size_mb = found_video.stat().st_size / 1024 / 1024
+        print(f'📁 Video: {found_video.name} ({size_mb:.1f} MB)')
+    else:
+        print('⚠ Video tidak ditemukan. Cek log yt-dlp di atas.')
+
+    if found_audio:
+        size_mb = found_audio.stat().st_size / 1024 / 1024
+        print(f'📁 Audio: {found_audio.name} ({size_mb:.1f} MB)')
+    else:
+        print('⚠ Audio tidak ditemukan. Cek log yt-dlp di atas.')
+
+    if found_srt:
+        print(f'📁 SRT:   {found_srt.name}')
+    else:
         print('\n⚠ SRT belum ada. Download dari eksternal:')
         print('   - https://subscene.com')
         print('   - https://www.opensubtitles.org')
