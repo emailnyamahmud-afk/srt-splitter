@@ -63,15 +63,29 @@ Kalau ada konflik antara dokumen, `PROJECT_RULES.md` menang.
    Config: voice Ardi -10Hz, Smart Fit cap 2.0x, prefix S5-ori.id
    Waktu: ~3 jam (rate stabil 20 cue/menit, M1 16GB tidak panas)
 ⏳ Fase 3b: TTS Jawa     → audio-jw-dub.wav (web app SRT editor, nunggu code fix)
-✅ Fase 4: mix-tui.py v3 (SELESAI — 2 mode tested)
+✅ Fase 4: mix-tui.py v3.3 (SELESAI — 2 mode + 4 opsi posisi tested)
    Mode A: Stream copy (3m 10s, 275 MB, no SRT)
      Output: S5-id-final.mp4
      Video stream copy (no re-encode) → 100% sync
-   Mode B: Burn SRT Indonesia TOP (3m 53s, 2.1 GB, h264_videotoolbox M1)
-     Output: S5-id-final-sub.mp4
+   Mode B: Burn SRT Indonesia (3m 53s, 2.25 GB, h264_videotoolbox M1)
+     Output: S5-id-final-sub-A.mp4 (Opsi A tested, verified user)
      Speed: 35x real-time (M1 VideoToolbox hardware, tidak panas)
-     SRT: font 18pt putih outline hitam, Alignment=8 top
-   Status: user preview di VLC
+     SRT: font 18pt putih outline hitam, Alignment=2 bottom, MarginV=20, Justify=2 center
+     Layout verified VLM: Indonesia bottom + CENTER, Mandarin atas (stacked properly, no overlap)
+   Status: ✅ user confirm 'opsi A sudah sesuai yg user mau'
+
+### Analisis size 2.25 GB (Mode B)
+- Bitrate config: -b:v 2M (FIX, tidak peduli resolusi input)
+- Hitungan: 2 Mbps video × 8196s + 192k audio × 8196s = ~2.25 GB
+- Resolusi input (480p/720p/1080p) TIDAK ngaruh ke size output
+- Yang ngaruh: bitrate output × durasi
+
+### Trade-off resolusi vs bitrate (untuk v3.4)
+- 480p @ 2 Mbps → 2.25 GB, quality BAGUS (pixel density cukup)
+- 1080p @ 2 Mbps → 2.25 GB, quality BURUK (6.75x lebih pixel, bitrate sama)
+- 1080p @ 5 Mbps → ~5.6 GB, quality bagus (recommended untuk 1080p)
+- CRF mode (-crf 23) → size fleksibel, quality fix (libx264 default balance)
+- Mode A stream copy: < 300 MB (480p 80 MB video + 190 MB audio)
 ```
 
 ### Catatan Fase 3a (edge-tts-tui.py lokal — S5 SELESAI)

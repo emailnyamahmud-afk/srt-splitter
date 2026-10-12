@@ -2580,3 +2580,60 @@ Next:
 2. Kalau perlu tuning (font size, posisi, bitrate), update mix-tui v3.1
 3. Kalau OK → batch S1-S4
 4. Implementasi Mode 2 (srt-gender-tui.py) untuk gender tagging
+
+---
+Task ID: mix-tui-v3.3-opsi-A-done
+Agent: main
+Task: User test Opsi A bottom:20 + Justify=2 — SUKSES, investigasi size 2.25GB
+
+Work Log:
+- User run mix-tui v3.3 Opsi A untuk S5 (bottom:20, Justify=2)
+- Screenshot verified VLM:
+  - Indonesian subtitle: BOTTOM, horizontally CENTERED (Justify=2 fix works)
+  - Mandarin subtitle: above Indonesia (stacked properly)
+  - Text: 'Mereka hanya ingin mengujimu' (Indonesia) + '他们只是想试试你' (Mandarin)
+  - NO overlap, both CENTER aligned ✓
+- User confirm: 'opsi A sudah sesuai yg user mau'
+- Output: S5-id-final-sub-A.mp4 (~2.25 GB)
+
+User question: kenapa size 2.25GB? Apakah 1080p akan sama?
+Investigasi:
+- mix-tui v3.3 Mode B pakai -b:v 2M (bitrate FIX, tidak peduli resolusi input)
+- Hitungan: 2 Mbps video × 8196s + 192k audio × 8196s = ~2.25 GB
+- Resolusi input (480p/720p/1080p) TIDAK ngaruh ke size output
+- Yang ngaruh: bitrate output (2M fix) + durasi
+
+Jawaban ke user:
+- YA, 1080p dengan -b:v 2M akan sama persis 2.25 GB
+- TAPI quality 1080p @ 2Mbps akan BURUK (pixelated/blocky)
+  - 480p @ 2Mbps = quality bagus (pixel density cukup)
+  - 1080p @ 2Mbps = quality buruk (6.75x lebih banyak pixel, bitrate sama)
+- Untuk 1080p quality bagus, butuh bitrate 5-10 Mbps → size 5-11 GB
+
+User insight: 'kalau pake 480p hasil 2GB, pake 1080p juga 2GB, mending 1080p'
+- BENAR untuk size, TAPI quality 1080p @ 2Mbps akan jelek
+- Alternatif: pakai CRF mode (quality fix, size fleksibel)
+  - -crf 23 (default libx264): balance, ~600 MB-2 GB untuk 480p
+  - -crf 18: high quality, ~2-4 GB untuk 480p
+- Atau: pakai -b:v 5M untuk 1080p (size 5.6 GB, quality bagus)
+
+Saran untuk v3.4:
+- Tambah opsi bitrate di Step 4.5 (Mode B):
+  - 480p: 2 Mbps (default, size ~2.25 GB, quality bagus)
+  - 720p: 3 Mbps (size ~3.4 GB, quality bagus)
+  - 1080p: 5 Mbps (size ~5.6 GB, quality bagus)
+  - Custom: input manual
+- Atau pakai CRF mode (quality fix, size fleksibel):
+  - -crf 23 (default, balance)
+  - -crf 18 (high quality)
+  - -crf 28 (small size, quality turun)
+
+Note: mode cepat (stream copy, no SRT burn) tetap < 300 MB karena video stream copy
+dari source (480p 80 MB + audio 190 MB = ~275 MB). Tidak re-encode.
+
+Stage Summary:
+- Pipeline S5 100% selesai end-to-end, layout Opsi A sesuai user mau
+- mix-tui v3.3 verified working (Justify=2 fix + 4 opsi posisi)
+- Size 2.25 GB explained (bitrate 2 Mbps fix × durasi 8196s)
+- Trade-off 480p vs 1080p vs CRF mode terdokumentasi
+- Next: diskusi user pilih resolusi 1080p untuk source berikutnya + opsi bitrate/CRF di v3.4
