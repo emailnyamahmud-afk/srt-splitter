@@ -358,10 +358,17 @@ def main():
         print('   1. Web app: mode ON + Smart Fit → generate audio-id-dub.wav')
         print('   2. Python mix (TUI):')
         if use_two_stems and no_vocals.exists():
+            # Derive sibling MP4: kalau input "S5-ori-audio.m4a" → sarankan "S5-ori.mp4"
+            input_path = Path(input_file)
+            base = input_path.stem
+            if base.endswith('-audio'):
+                mp4_name = base[:-6] + '.mp4'
+            else:
+                mp4_name = base + '.mp4'
             print(f'      python3 mix-tui.py')
-            print(f'        → MP4: {input_file}')
-            print(f'        → SFX: {no_vocals}')
-            print(f'        → Dub: audio-id-dub.wav')
+            print(f'        → MP4: {mp4_name}  (video dari yt-dlp)')
+            print(f'        → SFX: {no_vocals.name}  ({no_vocals.parent}/)')
+            print(f'        → Dub: audio-id-dub.wav  (dari web app)')
             print(f'        → Output: mp4-id-final.mp4')
         print('═' * 64)
     else:
