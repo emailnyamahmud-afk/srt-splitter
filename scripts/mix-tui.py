@@ -405,6 +405,7 @@ def main():
             'Posisi SRT Indonesia:',
             choices=[
                 'Top — tidak overlap dengan SRT Mandarin di bottom (REKOMENDASI)',
+                'Middle — tengah video (cocok kalau SRT Mandarin tidak ada)',
                 'Bottom — akan overlap dengan SRT Mandarin (jangan, kecuali video ori tidak ada SRT)',
                 'Custom margin (input manual MarginV pixel)',
             ],
@@ -412,6 +413,8 @@ def main():
         ).ask()
         if 'Top' in pos_choice:
             srt_position = 'top'
+        elif 'Middle' in pos_choice:
+            srt_position = 'middle'
         elif 'Bottom' in pos_choice:
             srt_position = 'bottom'
         else:
@@ -533,16 +536,23 @@ def main():
     else:
         # === MODE B: Burn SRT (re-encode video, VideoToolbox M1 hardware) ===
         # Build subtitle filter dengan force_style untuk posisi + style
-        # ASS Alignment: 1=tl,2=tc,3=tr,4=ml,5=mc,6=mr,7=bl,8=bc,9=br
-        # Untuk Top center: Alignment=8, Bottom center: Alignment=2
+        # ASS Alignment (libass/ffmpeg spec, verified 13 Okt 2026):
+        #   1 = bottom-left, 2 = bottom-center, 3 = bottom-right
+        #   4 = top-left,    5 = top-center,    6 = top-right  ← TOP pakai 5 (BUKAN 8)
+        #   7 = middle-left, 8 = middle-center, 9 = middle-right  ← MIDDLE pakai 8
+        # Bug v3.0: aku pakai Alignment=8 untuk top → aktual MIDDLE (salah)
+        # Fix v3.1: top → Alignment=5, middle → Alignment=8
         if srt_position == 'top':
-            alignment = 8
+            alignment = 5  # top-center (CORRECTED, sebelumnya 8 = middle)
+            margin_v = 20
+        elif srt_position == 'middle':
+            alignment = 8  # middle-center (CORRECTED)
             margin_v = 20
         elif srt_position == 'bottom':
-            alignment = 2
+            alignment = 2  # bottom-center
             margin_v = 20
         else:
-            # custom:XXXX
+            # custom:XXXX — user input margin pixel, default bottom alignment
             alignment = 2
             margin_v = int(srt_position.split(':')[1]) if ':' in srt_position else 40
 
