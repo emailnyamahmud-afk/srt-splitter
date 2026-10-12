@@ -14,19 +14,26 @@ Workflow produksi (4 fase, bersih — sesuai v5 yt-dlp + edge-tts-tui):
                         → {prefix}-id-final.mp4 (stream copy, 3 menit)
                         → {prefix}-id-final-sub.mp4 (burn SRT, ~30 menit VideoToolbox M1)
 
+v3.2 NEW: posisi default top:50 (bukan 20) supaya subtitle Indonesia tidak
+  menempel ke atas. Format posisi baru: 'top:NN' (custom MarginV).
+
+v3.1 fix: Alignment ASS spec yang benar:
+  - top = Alignment=5 (sebelumnya 8 = middle, SALAH)
+  - middle = Alignment=8
+  - bottom = Alignment=2
+
 v3 NEW: 2 mode mix (user pilih di step 4.5)
   Mode A: Stream copy (CEPAT ~3 menit, no SRT burn)
     - Video stream copy (no re-encode) → 100% sync, resolusi ori tetap
     - Output: {prefix}-id-final.mp4 (~275 MB untuk 2 jam video)
     - Cocok untuk: preview cepat, arsip, publish tanpa subtitle burn
 
-  Mode B: Burn SRT Indonesia (LAMBAT ~20-40 menit, VideoToolbox M1 hardware)
+  Mode B: Burn SRT Indonesia (LAMBAT ~3-5 menit di M1 VideoToolbox, BUKAN 30 menit)
     - Video re-encode pakai h264_videotoolbox (M1 GPU, BUKAN CPU)
     - SRT Indonesia burn hard-sub ke video (font 18pt, putih outline hitam)
-    - Posisi default: TOP (tidak overlap SRT Mandarin di bottom video ori)
-    - Output: {prefix}-id-final-sub.mp4 (~400-500 MB untuk 2 jam video 480p)
+    - Posisi default: TOP + MarginV=50 (tidak overlap SRT Mandarin di bottom)
+    - Output: {prefix}-id-final-sub.mp4 (~2.1 GB untuk 2 jam video 480p @ 2 Mbps)
     - Cocok untuk: publish ke platform tanpa edit DaVinci
-    - Estimasi: 480p portrait 2 jam ~ 20-40 menit di M1 (VideoToolbox)
 
 Kenapa burn SRT lokal (bukan DaVinci):
   - DaVinci minimum render 1080p → size GB-level, boros storage
@@ -401,18 +408,22 @@ def main():
         print(f'▶ Step 4.7/{total}: Pilih posisi SRT Indonesia')
         # SRT Mandarin biasanya hard-burn di bottom video ori.
         # Default Indonesia di top supaya tidak overlap.
+        # v3.2: MarginV default 50 (bukan 20) supaya tidak menempel ke atas
         pos_choice = questionary.select(
             'Posisi SRT Indonesia:',
             choices=[
-                'Top — tidak overlap dengan SRT Mandarin di bottom (REKOMENDASI)',
-                'Middle — tengah video (cocok kalau SRT Mandarin tidak ada)',
+                'Top — tidak overlap SRT Mandarin, ada buffer di atas (REKOMENDASI v3.2)',
+                'Top menempel — dekat ke atas (MarginV=20, lama v3.1)',
+                'Middle — tengah video (cocok kalau video ori tidak ada SRT Mandarin)',
                 'Bottom — akan overlap dengan SRT Mandarin (jangan, kecuali video ori tidak ada SRT)',
                 'Custom margin (input manual MarginV pixel)',
             ],
-            default='Top — tidak overlap dengan SRT Mandarin di bottom (REKOMENDASI)',
+            default='Top — tidak overlap SRT Mandarin, ada buffer di atas (REKOMENDASI v3.2)',
         ).ask()
-        if 'Top' in pos_choice:
-            srt_position = 'top'
+        if 'Top menempel' in pos_choice:
+            srt_position = 'top:20'  # v3.1 behavior
+        elif 'Top —' in pos_choice or 'Top ' in pos_choice:
+            srt_position = 'top:50'  # v3.2 default — buffer space
         elif 'Middle' in pos_choice:
             srt_position = 'middle'
         elif 'Bottom' in pos_choice:
@@ -542,14 +553,18 @@ def main():
         #   7 = middle-left, 8 = middle-center, 9 = middle-right  ← MIDDLE pakai 8
         # Bug v3.0: aku pakai Alignment=8 untuk top → aktual MIDDLE (salah)
         # Fix v3.1: top → Alignment=5, middle → Alignment=8
-        if srt_position == 'top':
-            alignment = 5  # top-center (CORRECTED, sebelumnya 8 = middle)
+        # v3.2: posisi format 'top:NN' (MarginV custom), default top:50 (bukan 20)
+        if srt_position.startswith('top:'):
+            alignment = 5
+            margin_v = int(srt_position.split(':')[1])
+        elif srt_position == 'top':
+            alignment = 5  # legacy v3.1 (MarginV=20)
             margin_v = 20
         elif srt_position == 'middle':
-            alignment = 8  # middle-center (CORRECTED)
-            margin_v = 20
+            alignment = 8
+            margin_v = 0  # center vertically
         elif srt_position == 'bottom':
-            alignment = 2  # bottom-center
+            alignment = 2
             margin_v = 20
         else:
             # custom:XXXX — user input margin pixel, default bottom alignment
