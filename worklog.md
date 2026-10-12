@@ -2637,3 +2637,40 @@ Stage Summary:
 - Size 2.25 GB explained (bitrate 2 Mbps fix × durasi 8196s)
 - Trade-off 480p vs 1080p vs CRF mode terdokumentasi
 - Next: diskusi user pilih resolusi 1080p untuk source berikutnya + opsi bitrate/CRF di v3.4
+
+---
+Task ID: s5-end-to-end-done
+Agent: main
+Task: Milestone — Pipeline end-to-end dub-ID 100% lokal selesai
+
+13 Okt 2026, 02:36 WIB. User istirahat setelah 7+ jam di depan komputer.
+
+Pencapaian hari ini (12-13 Okt 2026):
+- Pipeline 100% lokal end-to-end untuk drama Mandarin → Indonesia:
+  yt-dlp v5 → Demucs → edge-tts-tui → mix-tui v3.3 → final MP4 dengan SRT burn
+- Semua sync, tidak kalah dengan studio besar
+- Modal: AI gratis di z.ai sandbox + MacBook M1 16GB kelas konsumen
+- Workflow tested dengan S5 (2 jam 16 menit video, 3866 cue)
+
+Output final S5:
+- S5-id-final.mp4 (275 MB, stream copy, preview)
+- S5-id-final-sub-A.mp4 (2.25 GB, burn SRT Opsi A bottom, publish)
+- Indonesia di bawah, Mandarin di atas, keduanya CENTER (Justify=2)
+- Quality bagus, 480p source @ 2 Mbps (pixel density cukup)
+
+Next (esok):
+- Edit SRT Jawa di web app (per cue preview, multi-project, nunggu code fix)
+- Kamus Jawa 40k+ entries terkurasi manual (ngoko/krama baku)
+- Target: dub Jawa jadi satu-satunya di Indonesia drama China dub Jawa
+  dengan kosakata baku (kamus kurasi, bukan Google Translate yang tidak paham krama/ngoko)
+
+User pegang workflow 4-mode:
+1. Manual DaVinci (cache per-cue drag manual)
+2. Gender Tag TUI (TODO srt-gender-tui.py)
+3. Cepat default (Ardi semua, mix-tui) ← TESTED HARI INI
+4. Web Jawa editor (long-term, nunggu kamus clean)
+
+Stage Summary:
+- Pipeline ID dub 100% working end-to-end
+- 500+ commits sejak 2-3 minggu lalu, semua di-push AI dari sandbox
+- User istirahat, lanjut besok untuk edit SRT Jawa
