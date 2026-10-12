@@ -2299,3 +2299,34 @@ Stage Summary:
 - Skip konversi MP3 = hemat ~15s + disk + quality (Demucs/ffmpeg/whisper semua bisa baca m4a)
 - Subtitle count sekarang benar (7 bahasa, bukan 950) — parse JSON bukan line-by-line
 - Hasil listing exact match by base_name (tidak akan tampil file lama)
+
+---
+Task ID: edge-tts-tui-v1
+Agent: main
+Task: Buat edge-tts-tui.py lokal — ganti web app Mode ON yang gagal 4x untuk SRT 2 jam
+
+Work Log:
+- User test web app Mode ON 4x gagal untuk S5 (2 jam, 3000-5000 cue)
+- Investigasi: Vercel maxDuration 60s + Microsoft Edge TTS rate-limit (429)
+  + Smart Fit 2x request per cue = 3000 request → Vercel Hobby quota hit
+- Web app ZIP building OOM juga (sudah fix sebelumnya, tapi bukan root cause)
+- Buat edge-tts-tui.py: 100% lokal di Mac pakai edge-tts Python (WebSocket langsung ke Microsoft, no Vercel proxy)
+- Port algoritma Mode ON + Smart Fit dari src/lib/tts.ts narrateEntries
+- Test: 5 cue dummy → 15s WAV, peak 0.79, valid
+- Optimasi RAM untuk 5000 cue:
+  - Pre-allocate buffer 700 MB (float32, 2 jam @ 24kHz)
+  - Mix inline: tiap cue selesai → langsung mix ADD ke buffer (no segments array)
+  - Free memory tiap cue (del final_audio)
+  - Peak RAM: ~750 MB (buffer + 1 cue sementara)
+- Crossfade inline: cek overlap prev/next saat proses cue
+- Per-cue cache di .cache/{prefix}-cue-{NNN}-{hash}.mp3 (resume support)
+- Push ke GitHub: commit 34a6149 (v1) + c9e049d (v1.1 inline mix)
+- Update README.md + scripts/README.md: edge-tts-tui jadi Fase 3a utama
+
+Stage Summary:
+- Web app Mode ON tidak dipakai lagi untuk SRT panjang (> 30 menit)
+- edge-tts-tui.py jadi default Fase 3a (Bahasa Indonesia)
+- Web app masih dipakai untuk Jawa (SRT editor, per cue preview)
+- Dependencies: pip3 install edge-tts questionary numpy + ffmpeg (sudah ada di macOS)
+- RAM: ~750 MB peak untuk 2 jam / 5000 cue (AMAN di Mac 16 GB)
+- Tidak ada rate-limit (edge-tts Python via WebSocket langsung ke Microsoft, no proxy)

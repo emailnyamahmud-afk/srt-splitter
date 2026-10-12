@@ -20,9 +20,10 @@ python3 scripts/yt-dlp-tui.py
 python3 scripts/demucs-tui.py
 # → no_vocals.mp3 (MP3 320 kbps)
 
-# Fase 3a: Web app Mode ON (Indonesia) — SUDAH JALAN
-# https://srt-splitter.vercel.app/
-# → audio-id-dub.wav
+# Fase 3a: TTS Indonesia via edge-tts-tui.py (LOKAL — ganti web app Mode ON)
+python3 scripts/edge-tts-tui.py
+# → {prefix}-audio-id-dub.wav (full durasi, 1 file utuh)
+# Kenapa lokal: web app Vercel rate-limit + OOM untuk SRT 2 jam 3000-5000 cue
 
 # Fase 3b: Web app SRT editor (Jawa) — NUNGGU CODE FIX
 # → audio-jw-dub.wav
@@ -40,6 +41,7 @@ Lihat [`tutor-mode-on-workflow.md`](tutor-mode-on-workflow.md) + [`tutor-demucs-
 
 | Script | Untuk Apa | Status |
 |---|---|---|
+| **`edge-tts-tui.py`** ⭐ | TUI Edge TTS lokal (Mode ON + Smart Fit, full durasi, ganti web app) | ✅ Utama |
 | **`yt-dlp-tui.py`** ⭐ | TUI Download YouTube v5 (resolusi 480/720/1080 + M4A native + SRT Indonesia) | ✅ Utama |
 | **`demucs-tui.py`** ⭐ | TUI Demucs SFX separation → no_vocals.mp3 (MP3 320, MPS) | ✅ Utama |
 | **`mix-tui.py`** ⭐ | TUI Mix MP4 + no_vocals + audio_dub (ducking sidechain) | ✅ Utama |
@@ -145,6 +147,41 @@ Kalau mau edit manual (laki + perempuan, cut scene, dll):
 ---
 
 ## Detail Per Script
+
+### `edge-tts-tui.py` ⭐ — Edge TTS Lokal (ganti web app Mode ON)
+
+```bash
+python3 scripts/edge-tts-tui.py
+# Step 1: pilih SRT Indonesia (dari yt-dlp, mis. S5-ori.id.srt)
+# Step 2: output dir (default sama dengan SRT)
+# Step 3: voice → Ardi (laki) / Gadis (perempuan) / Dimas (Jawa laki) / Siti (Jawa perempuan)
+# Step 4: pitch → -10Hz (laki) / +10Hz (perempuan) / +0Hz (natural)
+# Step 5: Smart Fit cap → 2.0x (default, voicertool cap)
+# Step 6: prefix (default: nama SRT tanpa extension)
+# Output: {prefix}-audio-id-dub.wav (WAV 24kHz mono 16-bit, full durasi 1 file utuh)
+# Cache: .cache/{prefix}-cue-{NNN}-{hash}.mp3 (per-cue, resume support)
+```
+
+**Kenapa lokal (bukan web app)?**
+- Web app Vercel maxDuration 60s, rate-limit setelah ribuan request
+- Microsoft Edge TTS rate-limit (429 Too Many Requests) untuk request cepat berturut
+- Web app ZIP building OOM untuk SRT > 30 menit
+- Lokal: tidak ada limit, tidak ada rate-limit, tidak ada ZIP
+
+**RAM untuk 5000 cue (2 jam):**
+- Buffer: 700 MB (float32, pre-allocate sekali)
+- Per cue: 200 KB (sementara, free setelah mix)
+- Peak: ~750 MB — AMAN di Mac 16 GB
+
+**Logika (Mode ON + Smart Fit, port dari web app):**
+1. Per cue: generate natural TTS (rate +0%)
+2. Asymmetric trim silence (head -30dB, tail -30dB)
+3. Compute need = naturalDur / cueDur
+4. Kalau need > 1.0 → re-generate dengan rate = min(need, cap)*100%
+   - Pitch preserved (Edge TTS server-side rate)
+5. Peak normalize -2 dBFS
+6. Mix ADD ke buffer pada cue.start (inline, no segments array)
+7. Crossfade 150ms kalau overlap dengan cue next
 
 ### `yt-dlp-tui.py` ⭐ — Download TUI (v5)
 

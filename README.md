@@ -72,6 +72,7 @@ Workflow baru, project-based. Saat ini user masih klik per cue satu-satu untuk p
 
 | Script | Fungsi |
 |---|---|
+| **`edge-tts-tui.py`** ⭐ | TUI Edge TTS lokal (Mode ON + Smart Fit, ganti web app untuk SRT panjang) |
 | **`yt-dlp-tui.py`** ⭐ | TUI Download YouTube (v5: pilih resolusi 480/720/1080 + M4A native + SRT Indonesia) |
 | **`demucs-tui.py`** ⭐ | TUI Demucs SFX separation → no_vocals.mp3 (MP3 320 kbps, MPS acceleration) |
 | **`mix-tui.py`** ⭐ | TUI Mix MP4 + no_vocals + audio_dub (~7 detik, 0 DTS warnings, ducking sidechain) |
@@ -93,9 +94,10 @@ Fase 1: Download dari YouTube (yt-dlp-tui.py v5, Python lokal)
 Fase 2: SFX Separation dengan Demucs (demucs-tui.py, Python lokal)
   Input: {name}-audio.m4a → Output: no_vocals.mp3 (SFX bersih, MP3 320 kbps)
         ↓
-Fase 3a: Web app — Mode ON (Bahasa Indonesia, cara cepat) — SUDAH JALAN
-  Upload SRT ori → mode ON → Smart Fit (cap 2.0x) → pitch (-15Hz laki)
-  Default voice: Dimas untuk semua cue → audio-id-dub.wav (dialog, 100% sync)
+Fase 3a: TTS Indonesia via edge-tts-tui.py (LOKAL — ganti web app Mode ON)
+  Input: {name}.id.srt → Smart Fit (cap 2.0x) → pitch (-10Hz laki) → voice Ardi
+  Output: {prefix}-audio-id-dub.wav (full durasi 1 file utuh, 24kHz mono 16-bit)
+  v3: 100% lokal di Mac, no Vercel limit, no Microsoft rate-limit. RAM ~750 MB untuk 5000 cue.
         ↓
 Fase 3b: Web app — SRT editor (Bahasa Jawa, per cue) — NUNGGU CODE FIX
   + Project Baru → upload SRT ID + SRT Jawa → simpan ke Supabase
