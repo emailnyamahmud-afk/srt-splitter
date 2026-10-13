@@ -102,7 +102,7 @@ export function KamusEditorPanel() {
                         <span className="text-sm">{entry.krama || '(kosong)'}</span>
                       </div>
                       <div className="text-xs text-muted-foreground mt-0.5">
-                        {entry.arti || '(tidak ada arti Indonesia)'}
+                        {entry.indo || '(tidak ada terjemahan Indonesia)'}
                       </div>
                       {entry.keterangan && (
                         <div className="text-[10px] text-muted-foreground/70 italic mt-1 line-clamp-2">
@@ -134,7 +134,7 @@ export function KamusEditorPanel() {
 
         {/* Info */}
         <p className="text-xs text-muted-foreground">
-          <strong>Cara pakai:</strong> Search kata → lihat entry (ngoko + krama + arti).
+          <strong>Cara pakai:</strong> Search kata → lihat entry (ngoko + krama + indo).
           Untuk edit/add entry: pakai <code>kamus-tui.py</code> di MacBook → upload ke Supabase.
           Web app cuma baca kamus, tidak edit. Edit langsung di DB Supabase juga bisa
           (validasi level 2 kalau ada keanehan terjemahan).

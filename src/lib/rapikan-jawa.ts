@@ -60,9 +60,10 @@ export async function loadKamusJawa(): Promise<KamusJawa | null> {
     if (!client) return null  // client tidak bisa dibuat → skip
 
     // Load SEMUA kamus dari Supabase — R-26: no krama_inggil, no register
+    // DB kolom = "indo" (BUKAN "arti" — renamed via migration v4)
     const { data, error } = await client
       .from('kamus')
-      .select('ngoko, aksara, krama, arti, keterangan, sumber')
+      .select('ngoko, aksara, krama, indo, keterangan, sumber')
       .order('ngoko', { ascending: true })
 
     if (error) {
@@ -74,11 +75,11 @@ export async function loadKamusJawa(): Promise<KamusJawa | null> {
     // R-22: DB kosong (data.length === 0) → return kamus valid dengan words=[]
     // Sehingga isWordInKamus return false untuk semua kata → semua jadi unknown.
     // Jangan return null (yang artinya "skip check, semua known").
-    const mappedWords = (data || []).map((d: { ngoko: string; aksara: string; krama: string; arti: string; keterangan: string; sumber: string }) => ({
+    const mappedWords = (data || []).map((d: { ngoko: string; aksara: string; krama: string; indo: string; keterangan: string; sumber: string }) => ({
       ngoko: d.ngoko || '',
       aksara: d.aksara || '',
       krama: d.krama || '',
-      id: d.arti || '',  // Supabase 'arti' → interface 'id'
+      id: d.indo || '',  // Supabase 'indo' → interface 'id' (kompatibilitas web app)
       keterangan: d.keterangan || '',
       sumber: d.sumber || '',
     }))

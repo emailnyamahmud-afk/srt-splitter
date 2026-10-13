@@ -99,13 +99,14 @@ def collect_ready_entries(data):
             continue
 
         # Build row (hanya kolom yang ada di DB, R-26: no register, no krama_inggil)
-        # DB kolom = "arti" (BUKAN "indo") — verified 13 Okt 2026
+        # DB kolom = "indo" (BUKAN "arti") — renamed via migration v4
+        # Alasan: "arti" diisi AI dengan keterangan (halu), rename ke "indo" supaya jelas
         sumber = (entry.get("sumber") or "kamus-jawa-draft.json (R-22)").strip()
         row = {
             "ngoko": ngoko,
             "aksara": entry.get("aksara", ""),
             "krama": krama,
-            "arti": arti,           # DB kolom = "arti" (BUKAN "indo")
+            "indo": arti,           # DB kolom = "indo" (renamed dari "arti" via migration v4)
             "keterangan": entry.get("keterangan", ""),
             "sumber": sumber,
             "status": "ready",        # DB status (mirror dari draft)
