@@ -2770,3 +2770,34 @@ Stage Summary:
 - User audit manual di TUI, satu per satu
 - AI kerjakan tugas lain (NETRAL batch infill) sambil user audit
 - Catat permanen: R-29 compliance — duplikat audit = manusia, bukan AI
+
+---
+Task ID: srt-editor-web-fix + kamus-tui-duplikat-fix
+Agent: main
+Task: Fix SRT editor web app + fix kamus-tui detect_duplicates
+
+Work Log:
+- SRT editor web app (commit c9a7b49):
+  1. Default voice Dimas otomatis untuk SEMUA cue saat buat project baru
+  2. Default voice Dimas saat load existing project (fallback kalau voice kosong)
+  3. Hapus krama_inggil dari CueRegister type (R-26: hanya 'ngoko' | 'krama' | '')
+  4. Hapus krama_inggil dari getRegisterLabel, getRegisterColor
+  5. Build OK
+
+- Kamus-tui detect_duplicates (commit a9e4c21):
+  1. Cek SEMUA field: word, ngoko, krama, indo (tokenize comma)
+  2. Tambah opsi 6: Lintas field (kata muncul di field BEDA di entry BEDA)
+  3. Tampilkan field tempat kata muncul: 'field: word, ngoko'
+  4. Tampilkan ngoko/krama/indo untuk context
+  5. Hint: merge sinonim (comma) vs hapus duplikat (kata identik)
+  6. Count per field di menu pilihan
+
+- User audit duplikat manual di TUI:
+  - AI tidak bisa bedakan sinonim vs kata identik di bahasa Jawa
+  - User kerjakan manual satu per satu
+  - Catat permanen: R-29 compliance — duplikat audit = manusia
+
+Stage Summary:
+- SRT editor web: default voice Dimas + hapus krama_inggil — siap pakai
+- Kamus-tui: detect_duplicates cek semua field + lintas field — siap audit manual
+- User lanjut nanti (istirahat)
