@@ -1486,15 +1486,16 @@ def audit_flags_menu(data):
         input('\n  Tekan Enter untuk kembali...')
         return
 
-    # Detail per flag code
+    # Detail per flag code — ambil tier dari compute_entry_flags (single source of truth)
+    # Build map code → tier dari compute_entry_flags supaya konsisten
+    code_to_tier = {}
+    for w in words:
+        for code, tier, _ in compute_entry_flags(w):
+            if code not in code_to_tier:
+                code_to_tier[code] = tier
     print('  Detail per flag:')
     for code, count in sorted(flag_counts.items(), key=lambda x: -x[1]):
-        tier = 'HIGH'
-        if code in ('INDO_MULTI_SEMI', 'INDO_END_COLON', 'INDO_QUOTED', 'LONG_FIELD',
-                   'WORD_LONG', 'WORD_DIGIT'):
-            tier = 'MEDIUM'
-        elif code in ('DIGIT_IN_FIELD',):
-            tier = 'LOW'
+        tier = code_to_tier.get(code, 'HIGH')
         icon = '🔴' if tier == 'HIGH' else ('🟡' if tier == 'MEDIUM' else '🟢')
         print(f'    {icon} {code:20} {count:5} entri')
     print()
