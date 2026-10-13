@@ -188,7 +188,7 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
       text: jawaParsed[i].textLines.join('\n'),
       text_id: idE.textLines.join('\n'),
       register: '',
-      voice: '',
+      voice: 'dimas',  // Default voice Dimas untuk semua cue
     }))
 
     setAutoSaveStatus('saving')
@@ -205,7 +205,12 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
     setIdEntries(idParsed)
     setJawaEntries(jawaParsed)
     setRegisters({})
-    setVoices({})
+    // Default voice Dimas untuk SEMUA cue (user bisa override per cue)
+    const defaultVoices: Record<number, string> = {}
+    for (let i = 0; i < minCues; i++) {
+      defaultVoices[i] = 'dimas'
+    }
+    setVoices(defaultVoices)
     const newCueIdMap: Record<number, string> = {}
     result.cues.forEach((c, i) => { newCueIdMap[i] = c.id })
     setCueIdMap(newCueIdMap)
@@ -250,7 +255,8 @@ export function DualSrtEditor({ prefix }: DualSrtEditorProps) {
     const newCueIdMap: Record<number, string> = {}
     result.cues.forEach((c, i) => {
       if (c.register) newRegisters[i] = c.register as CueRegister
-      if (c.voice) newVoices[i] = c.voice
+      // Default voice Dimas kalau cue belum punya voice
+      newVoices[i] = c.voice || 'dimas'
       newCueIdMap[i] = c.id
     })
 

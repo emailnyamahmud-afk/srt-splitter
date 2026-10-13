@@ -268,8 +268,9 @@ export function stripAksenFromEntries(entries: { textLines: string[] }[]): numbe
 /**
  * Register per-cue: ngoko, krama, atau kosong (belum ditentukan)
  * User toggle manual di UI, disimpan di metadata SRT (custom field)
+ * R-26: krama_inggil tidak lagi sebagai register terpisah — krama_inggil jadi sinonim di kolom krama
  */
-export type CueRegister = 'ngoko' | 'krama' | 'krama_inggil' | ''
+export type CueRegister = 'ngoko' | 'krama' | ''
 
 /**
  * Get register label untuk display
@@ -278,7 +279,6 @@ export function getRegisterLabel(register: CueRegister): string {
   switch (register) {
     case 'ngoko': return 'Ngoko'
     case 'krama': return 'Krama'
-    case 'krama_inggil': return 'Krama Inggil'
     default: return '—'
   }
 }
@@ -290,7 +290,6 @@ export function getRegisterColor(register: CueRegister): string {
   switch (register) {
     case 'ngoko': return 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
     case 'krama': return 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-    case 'krama_inggil': return 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'
     default: return 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
   }
 }
