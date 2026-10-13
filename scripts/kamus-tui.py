@@ -1157,19 +1157,9 @@ def detect_duplicates(data):
     elif sel.startswith('5'): filter_field = 'indo'
     elif sel.startswith('6'): cross_field = True
 
-    # Tampilkan duplikat
-    # Sort: non-indo duplikat (PERLU AUDIT) pertama, indo-only (SINONIM) terakhir
-    def sort_key(item):
-        kata, occ = item
-        fields = set(f for _, f in occ)
-        is_indo_only = (fields == {'indo'})
-        entry_count = len(set(eid for eid, _, _ in occ))
-        return (is_indo_only, -entry_count)  # indo-only di akhir
-
-    sorted_dupes = sorted(dupes.items(), key=sort_key)
+    # Tampilkan duplikat — semua, tanpa label, tanpa filter
+    sorted_dupes = sorted(dupes.items(), key=lambda x: len(set(eid for eid, _, _ in x[1])), reverse=True)
     shown = 0
-    audit_count = 0
-    sinonim_count = 0
     for kata, occ in sorted_dupes:
         if filter_field:
             occ_filtered = [o for o in occ if o[1] == filter_field]
@@ -1183,13 +1173,7 @@ def detect_duplicates(data):
 
         unique_entries = sorted(set(eid for eid, _, _ in occ))
         fields_in_dup = sorted(set(f for _, f, _ in occ))
-        is_indo_only = (set(fields_in_dup) == {'indo'})
-        label = 'SINONIM' if is_indo_only else '⚠ PERLU AUDIT'
-        if is_indo_only:
-            sinonim_count += 1
-        else:
-            audit_count += 1
-        print(f"\n  [{label}] '{kata}' di {len(unique_entries)} entries, field: {', '.join(fields_in_dup)}:")
+        print(f"\n  '{kata}' di {len(unique_entries)} entries, field: {', '.join(fields_in_dup)}:")
         for eid, field, orig in occ[:8]:
             w = next((x for x in words if x.get('entry_id') == eid), None)
             if w:
@@ -1198,17 +1182,13 @@ def detect_duplicates(data):
             print(f"    ... +{len(unique_entries) - 8} more")
         shown += 1
         if shown >= 50:
-            remaining = len(dupes) - 50
-            print(f"\n  ... +{remaining} more ({remaining - (len(dupes) - audit_count - sinonim_count)} PERLU AUDIT, sisa SINONIM)")
+            print(f"\n  ... +{len(dupes) - 50} more duplikat")
             break
 
-    print(f'\n  📊 Ringkasan: {audit_count} PERLU AUDIT, {sinonim_count} SINONIM (indo-only, normal)')
-    print(f'\n  ⚠ PERLU AUDIT = kata muncul di word/ngoko/krama di 2+ entries → merge atau hapus')
-    print(f'  ✅ SINONIM = kata muncul hanya di indo di 2+ entries → normal, tidak perlu action')
-
-    print(f'\n  ⚠ Duplikat = kata IDENTIK lintas entry. Bukan sinonim.')
+    print(f'\n  ⚠ Duplikat = kata identik lintas entry. Bukan sinonim.')
     print(f'  → Merge sinonim: tambah kata sebagai comma di field (ngoko/krama/indo).')
     print(f'  → Hapus duplikat: hapus entry yang identik, pertahankan yang paling lengkap.')
+    print(f'  → User putuskan. AI tidak bisa bedakan sinonim vs identik di bahasa Jawa.')
     print(f'  → Ketik entry_id untuk edit. Enter=kembali.')
 
     # Edit by entry_id
