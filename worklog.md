@@ -2842,3 +2842,27 @@ Stage Summary:
 - 58 duplikat terdeteksi dari 43.630 entries
 - User audit manual di TUI
 - Prinsip 1 entry = 1 konsep tercatat permanen
+
+---
+Task ID: kamus-gigo-truth
+Agent: main
+Task: User konfirmasi — GIGO, AI parsing dari data sampah = hasil sampah
+
+User statement:
+"AI gak akan bisa bantu selama ai pake metode parsing.
+padahal source = data mentah yg label masih berantakan
+ai memparsing dari data sampah. mau sampai kiamatpun hasil akan selalu sampah.
+garbage in garbage out"
+
+Fakta:
+- jv.wiktionary = data mentah, label berantakan
+- AI parsing dari data sampah → indo AI halu, duplikat, tidak akurat
+- 1.395 entries "lengkap" → user baca manual → kebanyakan salah
+- AI tidak bisa perbaiki karena sumber sudah sampah dari awal
+
+Kesimpulan PERMANEN:
+- Kamus Jawa TIDAK bisa di-isi oleh AI dari parsing wiktionary
+- Hanya manusia native Jawa yang bisa isi dengan benar
+- Workflow: user baca keterangan Jawa → user isi ngoko/krama/indo manual
+- AI hanya bantu workflow (TUI, upload), bukan isi data
+- R-22 compliance: GIGO — AI tidak merujuk raw untuk audit/fix
