@@ -1418,6 +1418,93 @@ def compute_entry_flags(entry):
     return flags
 
 
+def build_cross_entry_index(words):
+    """Build index lintas-entry untuk deteksi duplikat & sinonim.
+
+    Return dict per field: {field: {token_lower: set of entry_ids}}
+
+    Token split by comma. Hanya token >1 char yang di-index.
+    """
+    from collections import defaultdict
+    idx = {
+        'word':  defaultdict(set),
+        'ngoko': defaultdict(set),
+        'krama': defaultdict(set),
+        'indo':  defaultdict(set),
+    }
+    for w in words:
+        eid = w.get('entry_id')
+        if eid is None: continue
+        for field in idx:
+            val = (w.get(field) or '').strip()
+            if not val: continue
+            for tok in val.split(','):
+                tok = tok.strip().lower()
+                if tok and len(tok) > 1:
+                    idx[field][tok].add(eid)
+    return idx
+
+
+def compute_cross_entry_flags(entry, cross_idx):
+    """Flag lintas-entry (butuh cross_idx dari build_cross_entry_index).
+
+    Return list of (flag_code, tier, msg).
+
+    Logika sama dengan merge-milstrike (cross-reference):
+    - DUP_TOKEN_*: token di word/ngoko/krama muncul di 2+ entries → duplikat
+    - SINONIM_INDO: indo identik dengan entry lain → sinonim potensial (merge word dengan koma)
+
+    User requirement: 'kata sama = replace, kata beda + sama arti = sinonim = koma'
+    """
+    flags = []
+    eid = entry.get('entry_id')
+
+    # ===== 🔴 HIGH (wajib audit) =====
+    # DUP_TOKEN_*: token di field X muncul di 2+ entries
+    # Berarti ada entries lain dengan kata identik → harus merge (koma) atau delete salah satu
+    for field in ['word', 'ngoko', 'krama']:
+        val = (entry.get(field) or '').strip()
+        if not val: continue
+        seen_tokens = set()
+        for tok in val.split(','):
+            tok = tok.strip().lower()
+            if not tok or len(tok) <= 1 or tok in seen_tokens: continue
+            seen_tokens.add(tok)
+            eids = cross_idx[field].get(tok, set())
+            if len(eids) > 1:
+                others = sorted(eids - {eid})[:3]
+                others_str = ','.join(str(o) for o in others)
+                flags.append((f'DUP_TOKEN_{field.upper()}', 'HIGH',
+                              f'token "{tok}" di {field} juga di entry #{others_str}'))
+                break  # 1 flag per field cukup
+
+    # ===== 🟡 MEDIUM (perlu cek) =====
+    # SINONIM_INDO: indo identik dengan entry lain (case insensitive)
+    # Berarti entries lain = sinonim potensial → bisa merge word/ngoko/krama dengan koma
+    indo = (entry.get('indo') or '').strip()
+    if indo and len(indo) > 1:
+        indo_lower = indo.lower()
+        eids = cross_idx['indo'].get(indo_lower, set())
+        if len(eids) > 1:
+            others = sorted(eids - {eid})[:3]
+            others_str = ','.join(str(o) for o in others)
+            flags.append(('SINONIM_INDO', 'MEDIUM',
+                          f'indo "{indo[:40]}" juga di entry #{others_str} (sinonim potensial — merge dengan koma)'))
+
+    return flags
+
+
+def compute_all_flags(entry, cross_idx=None):
+    """Combine per-entry flags + cross-entry flags (kalau cross_idx di-supply).
+
+    Helper untuk audit_flags_menu + browse_list_with_flags.
+    """
+    flags = compute_entry_flags(entry)
+    if cross_idx is not None:
+        flags.extend(compute_cross_entry_flags(entry, cross_idx))
+    return flags
+
+
 def is_paired_entry(entry):
     """Entry 'paired' = sudah ada minimal ngoko+indo (terjemahan sudah diketahui).
 
@@ -1447,11 +1534,13 @@ def audit_flags_menu(data):
     TIDAK ada auto-fix. User pilih tier → browse list → edit_entry.
 
     R-30 fix: SCAN SEMUA entries (paired + netral). Netral juga data, perlu diaudit.
-    Tag [P]/[N] di browse label supaya user tahu context.
+    R-31: Cross-entry audit (logika sama dengan merge-milstrike):
+      - DUP_TOKEN_*: token di word/ngoko/krama muncul di 2+ entries → duplikat lintas entry
+      - SINONIM_INDO: indo identik dengan entry lain → sinonim potensial (merge word dengan koma)
 
     Tier:
-      🔴 HIGH  — wajib audit (parser leak, ngoko==krama, indo definisi panjang)
-      🟡 MEDIUM — perlu cek (multi-`;`, diakhiri `:`, diapit kutip, field panjang)
+      🔴 HIGH  — wajib audit (parser leak, ngoko==krama, indo definisi panjang, dup_token lintas entry)
+      🟡 MEDIUM — perlu cek (multi-`;`, diakhiri `:`, diapit kutip, field panjang, sinonim_indo)
       🟢 LOW   — sanity (digit di field kata)
     """
     os.system('clear' if os.name != 'nt' else 'cls')
@@ -1461,12 +1550,22 @@ def audit_flags_menu(data):
     print()
     words = data['words']
 
-    # Compute flags untuk SEMUA entries (R-30 fix: netral juga data)
+    # R-31: Build cross-entry index sekali (untuk dup_token + sinonim_indo detection)
+    print('  Build cross-entry index (untuk deteksi duplikat & sinonim lintas entry)...')
+    cross_idx = build_cross_entry_index(words)
+    n_dup_word  = sum(1 for t, eids in cross_idx['word'].items()  if len(eids) > 1)
+    n_dup_ngoko = sum(1 for t, eids in cross_idx['ngoko'].items() if len(eids) > 1)
+    n_dup_krama = sum(1 for t, eids in cross_idx['krama'].items() if len(eids) > 1)
+    n_dup_indo  = sum(1 for t, eids in cross_idx['indo'].items()  if len(eids) > 1)
+    print(f'  Token duplikat lintas entry: word={n_dup_word} ngoko={n_dup_ngoko} krama={n_dup_krama} indo={n_dup_indo}')
+    print()
+
+    # Compute flags untuk SEMUA entries (per-entry + cross-entry)
     print('  Hitung flag untuk semua entries...')
     flagged = {'HIGH': [], 'MEDIUM': [], 'LOW': []}
     flag_counts = {}
     for idx, w in enumerate(words):
-        fl = compute_entry_flags(w)
+        fl = compute_all_flags(w, cross_idx)
         if fl:
             tiers = set(t for _, t, _ in fl)
             for t in tiers:
@@ -1486,11 +1585,10 @@ def audit_flags_menu(data):
         input('\n  Tekan Enter untuk kembali...')
         return
 
-    # Detail per flag code — ambil tier dari compute_entry_flags (single source of truth)
-    # Build map code → tier dari compute_entry_flags supaya konsisten
+    # Detail per flag code — ambil tier dari compute_all_flags (single source of truth)
     code_to_tier = {}
     for w in words:
-        for code, tier, _ in compute_entry_flags(w):
+        for code, tier, _ in compute_all_flags(w, cross_idx):
             if code not in code_to_tier:
                 code_to_tier[code] = tier
     print('  Detail per flag:')
@@ -1530,14 +1628,18 @@ def audit_flags_menu(data):
         entries_with_idx = [(i, w) for i, w, _ in all_flagged]
         title = f'📊 SEMUA FLAGGED ({len(entries_with_idx)} entri, sort by #flag)'
 
-    browse_list_with_flags(data, entries_with_idx, title)
+    browse_list_with_flags(data, entries_with_idx, title, cross_idx=cross_idx)
 
 
-def browse_list_with_flags(data, entries_with_idx, title):
+def browse_list_with_flags(data, entries_with_idx, title, cross_idx=None):
     """Browse list dengan info flag di label (khusus audit menu).
 
     Sama seperti browse_list, tapi label tambahkan flag info:
-      [#123] 🔴2 INDO_LONG_DEF, SRC_LEAK | ngoko=...
+      [P] [#123] 🔴2 INDO_LONG_DEF, SRC_LEAK | ngoko=...
+
+    Args:
+      cross_idx: optional, dari build_cross_entry_index. Kalau None, hanya compute_entry_flags.
+                 Kalau supplied, pakai compute_all_flags (per-entry + cross-entry).
     """
     total = len(entries_with_idx)
     if total == 0:
@@ -1564,7 +1666,7 @@ def browse_list_with_flags(data, entries_with_idx, title):
         choices = []
         for orig_idx, entry in page:
             eid = entry.get('entry_id', orig_idx + 1)
-            fl = compute_entry_flags(entry)
+            fl = compute_all_flags(entry, cross_idx) if cross_idx is not None else compute_entry_flags(entry)
             n_high = sum(1 for _, t, _ in fl if t == 'HIGH')
             n_med  = sum(1 for _, t, _ in fl if t == 'MEDIUM')
             n_low  = sum(1 for _, t, _ in fl if t == 'LOW')
