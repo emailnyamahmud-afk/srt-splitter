@@ -981,6 +981,134 @@ def merge_2_entries(data):
     input('  Tekan Enter...')
 
 
+def add_new_entry(data):
+    """Tambah entry baru via TUI — workflow SRT editor.
+
+    Skenario: user kerja di SRT editor web app, nemu kata Jawa baru yg belum ada di kamus.
+    Daripada edit JSON manual, user buka TUI → menu ini → input ngoko+krama+indo → save.
+
+    Setelah save:
+    - entry_id auto-generate (max + 1, akan re-number saat save_kamus)
+    - word = '' (paired, R-21)
+    - status = 'draft' (R-12: user harus explicit mark ready)
+    - sumber = 'user_input' (tracking)
+    - keterangan = '' (user bisa isi via edit_entry nanti)
+
+    Defensive checks:
+    - Cek duplikat dengan existing entries (warn user, tapi tetap allow save)
+    - Validate: minimal ngoko ATAU krama + indo harus terisi (paired requirement)
+    """
+    os.system('clear' if os.name != 'nt' else 'cls')
+    print('╔' + '═' * 60 + '╗')
+    print('║  ➕ Tambah Entry Baru (workflow SRT editor)' + ' ' * 10 + '║')
+    print('╚' + '═' * 60 + '╝')
+    print()
+    print('  Skenario: nemu kata baru di SRT editor, masukin ke kamus.')
+    print('  Isi minimal ngoko ATAU krama + indo (paired requirement).')
+    print('  word otomatis kosong (paired, R-21).')
+    print('  status = draft (user harus mark READY via menu).')
+    print()
+
+    # Input fields
+    ngoko = questionary.text('  ngoko (Enter=skip):', default='').ask()
+    if ngoko is None: return
+    ngoko = ngoko.strip()
+
+    krama = questionary.text('  krama (Enter=skip):', default='').ask()
+    if krama is None: return
+    krama = krama.strip()
+
+    indo = questionary.text('  indo (WAJIB):', default='').ask()
+    if indo is None: return
+    indo = indo.strip()
+
+    keterangan = questionary.text('  keterangan (opsional):', default='').ask()
+    if keterangan is None: return
+    keterangan = keterangan.strip()
+
+    # Validate: minimal paired requirement
+    if not indo:
+        print('\n  ⚑ indo WAJIB. Entry baru harus punya terjemahan Indonesia.')
+        input('  Tekan Enter...')
+        return
+    if not ngoko and not krama:
+        print('\n  ⚑ Minimal ngoko ATAU krama harus diisi.')
+        print('    Kalau belum tahu ngoko/krama, isi word via edit setelah save.')
+        input('  Tekan Enter...')
+        return
+
+    # Duplikat check (warn, tetap allow save)
+    print('\n  Cek duplikat di entries existing...')
+    words = data['words']
+    potential_dupes = []
+    new_tokens = []
+    for val in [ngoko, krama]:
+        if val:
+            for tok in val.split(','):
+                tok = tok.strip()
+                if tok:
+                    new_tokens.append(tok.lower())
+    for w in words:
+        for field in ['ngoko', 'krama', 'indo', 'word']:
+            val = (w.get(field) or '').strip()
+            if not val: continue
+            for tok in val.split(','):
+                tok = tok.strip().lower()
+                if tok in new_tokens:
+                    potential_dupes.append((w.get('entry_id', '?'), field, tok, w))
+                    break  # 1 field match per entry cukup
+
+    if potential_dupes:
+        print(f'\n  ⚠ Ditemukan {len(potential_dupes)} entry mungkin duplikat:')
+        for eid, field, tok, w in potential_dupes[:5]:
+            print(f'    [{eid}] field={field} match={tok!r}')
+            print(f'      word={w.get("word","")[:20]!r} ngoko={w.get("ngoko","")[:20]!r} krama={w.get("krama","")[:20]!r} indo={w.get("indo","")[:20]!r}')
+        if len(potential_dupes) > 5:
+            print(f'    ... +{len(potential_dupes) - 5} more')
+        print()
+        print('  ⚠ Tetap save? Kalau duplikat, lebih baik edit entry existing.')
+        cont = questionary.confirm('  Tetap save entry baru?', default=False).ask()
+        if not cont:
+            print('\n  ⏹ Dibatalkan. Cek entry existing via menu Search.')
+            input('  Tekan Enter...')
+            return
+
+    # Generate entry_id (max + 1, akan re-number saat save)
+    max_eid = max((w.get('entry_id', 0) for w in words), default=0)
+    new_entry = {
+        'entry_id': max_eid + 1,
+        'word': '',  # R-21: paired, word kosong
+        'ngoko': ngoko,
+        'krama': krama,
+        'indo': indo,
+        'keterangan': keterangan,
+        'aksara': '',
+        'sumber': 'user_input',
+        'is_lemma': False,
+        'is_mendeley': False,
+        'is_dasanama': False,
+        'is_angka': False,
+        'is_lampiran': False,
+        'kelas': '',
+        'kelas_nama': '',
+        'lemma_words': '',
+        'mendeley_id': '',
+        'dasanama_count': 0,
+        'source_count': 1,
+        'status': 'draft',  # R-12: user harus explicit mark ready
+    }
+    data['words'].append(new_entry)
+    save_kamus(data)
+
+    print(f'\n  ✅ Entry baru disimpan!')
+    print(f'  entry_id (sementara): #{max_eid + 1} (akan re-number saat save)')
+    print(f'  ngoko={ngoko!r}')
+    print(f'  krama={krama!r}')
+    print(f'  indo={indo!r}')
+    print(f'  status=draft. Mark READY via menu ⚡ Mark READY/DRAFT bulk.')
+    input('\n  Tekan Enter...')
+
+
 def edit_env_file():
     """Buka/edit file .env di ~/Dubbing/ untuk set Supabase credentials.
     Kalau belum ada, buat template otomatis.
@@ -1076,6 +1204,8 @@ def detect_duplicates(data):
 
     Duplikat: kata yang sama (case-insensitive) muncul di 2+ entries.
     Sinonim (beda kata di 1 entry) = BUKAN duplikat.
+
+    R-30: Scope filter — default 'Hanya paired' (skip 41k+ netral entries).
     """
     from collections import defaultdict
     words = data['words']
@@ -1085,10 +1215,34 @@ def detect_duplicates(data):
     print('╚' + '═' * 60 + '╝')
     print()
 
+    # R-30: Pilih scope dulu
+    n_paired = sum(1 for w in words if is_paired_entry(w))
+    n_total = len(words)
+    print(f'  📊 Total entries: {n_total:,}')
+    print(f'  📌 Paired (indo + ngoko/krama): {n_paired:,}')
+    print(f'  ⚠ Netral/belum paired: {n_total - n_paired:,}')
+    print()
+    scope_choices = [
+        f'📌 Hanya paired ({n_paired} entri) — RECOMMENDED, fokus duplikat',
+        f'📊 Semua entries ({n_total} entri) — debug, lambat',
+        '↩ Kembali',
+    ]
+    sel_scope = questionary.select('Scope:', choices=scope_choices, default=scope_choices[0]).ask()
+    if not sel_scope or 'Kembali' in sel_scope:
+        return
+
+    scope_paired_only = 'Hanya paired' in sel_scope
+    scope_label = 'paired' if scope_paired_only else 'semua'
+
     # Index: lowercase kata → list of (entry_id, field, word)
     # Cari di field word, ngoko, krama, indo (tokenize comma)
+    # R-30: skip netral entries kalau scope_paired_only
     index = defaultdict(list)
+    skipped = 0
     for w in words:
+        if scope_paired_only and not is_paired_entry(w):
+            skipped += 1
+            continue
         eid = w.get('entry_id', '?')
         word = (w.get('word') or '').strip()
         if word and len(word) > 1:
@@ -1101,6 +1255,7 @@ def detect_duplicates(data):
                     if tok and len(tok) > 1:
                         index[tok.lower()].append((eid, field, tok))
 
+    print(f'\n  Scope: {scope_label} | Skipped: {skipped:,} netral entries')
     # Filter: hanya yang muncul di 2+ entries
     # Group by entry_id dulu — kalau kata muncul 2x di 1 entry = sinonim, bukan duplikat
     dupes = {}
@@ -1109,11 +1264,12 @@ def detect_duplicates(data):
         if len(unique_entries) > 1:
             dupes[kata] = occ
 
-    print(f'  Total kata unik di kamus: {len(index):,}')
+    print(f'  Total kata unik di scope: {len(index):,}')
     print(f'  Duplikat (kata identik lintas entry): {len(dupes):,}')
     print()
 
     if not dupes:
+        print(f'  ✅ Tidak ada duplikat di scope "{scope_label}".')
         input('  Tekan Enter untuk kembali...')
         return
 
@@ -1145,7 +1301,7 @@ def detect_duplicates(data):
             if len(set(eid for eid, _, _ in occ)) <= 1:
                 continue
         unique_entries = sorted(set(eid for eid, _, _ in occ))
-        print(f"\n  '{kata}' di {len(unique_entries)} entries:")
+        print(f"\n  '{kata}' di {len(unique_entries)} entries [{scope_label}]:")
         for eid, field, orig in occ[:8]:
             w = next((x for x in words if x.get('entry_id') == eid), None)
             if w:
@@ -1265,10 +1421,38 @@ def compute_entry_flags(entry):
     return flags
 
 
+def is_paired_entry(entry):
+    """Entry 'paired' = sudah ada minimal ngoko+indo (terjemahan sudah diketahui).
+
+    Return True kalau entry sudah punya pasangan terjemahan (siap audit).
+    Skip entries NETRAL (word terisi, ngoko+krama kosong, indo kosong/tdk lengkap).
+
+    Definisi 'paired':
+      - ngoko+krama+indo terisi (LENGKAP), ATAU
+      - ngoko+indo terisi (walau krama kosong, terjemahan sudah ada), ATAU
+      - krama+indo terisi (walau ngoko kosong, terjemahan sudah ada)
+
+    Bukan paired:
+      - word + indo (NETRAL — indo belum tentu terjemahan word, bisa label wiktionary)
+      - word only (NETRAL murni, belum diketahui)
+      - ngoko only / krama only (belum ada terjemahan)
+    """
+    ngoko = (entry.get('ngoko') or '').strip()
+    krama = (entry.get('krama') or '').strip()
+    indo = (entry.get('indo') or '').strip()
+    # Harus ada terjemahan (indo) + minimal 1 kata Jawa (ngoko ATAU krama)
+    return bool(indo) and (bool(ngoko) or bool(krama))
+
+
 def audit_flags_menu(data):
     """Menu audit: tampilkan entries dengan flag suspicious. User audit manual.
 
-    TIDAK ada auto-fix. User pilih tier → browse list → edit_entry.
+    TIDAK ada auto-fix. User pilih scope → tier → browse list → edit_entry.
+
+    SCOPE (R-30: fokus audit hanya entry paired):
+      📌 Default = Hanya paired (entry sudah ada terjemahan indo + ngoko/krama)
+         → 1.445 entries dari 43.630. Skip 41k+ netral (sampah parsing).
+      📊 Optional = Semua entries (debug/heuristic check)
 
     Tier:
       🔴 HIGH  — wajib audit (parser leak, ngoko==krama, indo definisi panjang)
@@ -1280,16 +1464,35 @@ def audit_flags_menu(data):
     print('║  🔍 Audit Flags (heuristic, NO auto-fix)' + ' ' * 16 + '║')
     print('╚' + '═' * 60 + '╝')
     print()
-    print('  Hitung flag untuk semua entries...')
     words = data['words']
 
-    # Compute flags untuk semua entries
+    # SCOPE selection — R-30: default paired only
+    n_paired = sum(1 for w in words if is_paired_entry(w))
+    n_total = len(words)
+    print(f'  📊 Total entries: {n_total:,}')
+    print(f'  📌 Paired (indo + ngoko/krama): {n_paired:,}')
+    print(f'  ⚠ Netral/belum paired: {n_total - n_paired:,} (skip audit)')
+    print()
+    scope_choices = [
+        f'📌 Hanya paired ({n_paired} entri) — RECOMMENDED, fokus audit',
+        f'📊 Semua entries ({n_total} entri) — debug, lambat',
+        '↩ Kembali',
+    ]
+    sel_scope = questionary.select('Scope audit:', choices=scope_choices, default=scope_choices[0]).ask()
+    if not sel_scope or 'Kembali' in sel_scope:
+        return
+
+    scope_paired_only = 'Hanya paired' in sel_scope
+
+    # Compute flags untuk entries di scope
+    print(f'\n  Hitung flag untuk {"paired" if scope_paired_only else "semua"} entries...')
     flagged = {'HIGH': [], 'MEDIUM': [], 'LOW': []}
     flag_counts = {}
     for idx, w in enumerate(words):
+        if scope_paired_only and not is_paired_entry(w):
+            continue
         fl = compute_entry_flags(w)
         if fl:
-            # Hitung per tier
             tiers = set(t for _, t, _ in fl)
             for t in tiers:
                 flagged[t].append((idx, w, [f for f in fl if f[1] == t]))
@@ -1297,7 +1500,8 @@ def audit_flags_menu(data):
                 flag_counts[code] = flag_counts.get(code, 0) + 1
 
     total_flagged = sum(len(v) for v in flagged.values())
-    print(f'\r  Total entries: {len(words):,} | Flagged: {total_flagged:,}' + ' ' * 20)
+    scope_label = 'paired' if scope_paired_only else 'semua'
+    print(f'\r  Scope: {scope_label} | Flagged: {total_flagged:,}' + ' ' * 20)
     print(f'  🔴 HIGH (wajib audit):   {len(flagged["HIGH"]):,}')
     print(f'  🟡 MEDIUM (perlu cek):    {len(flagged["MEDIUM"]):,}')
     print(f'  🟢 LOW (sanity):         {len(flagged["LOW"]):,}')
@@ -1311,7 +1515,6 @@ def audit_flags_menu(data):
     # Detail per flag code
     print('  Detail per flag:')
     for code, count in sorted(flag_counts.items(), key=lambda x: -x[1]):
-        # Tentukan tier dari code
         tier = 'HIGH'
         if code in ('INDO_MULTI_SEMI', 'INDO_END_COLON', 'INDO_QUOTED', 'LONG_FIELD'):
             tier = 'MEDIUM'
@@ -1335,25 +1538,22 @@ def audit_flags_menu(data):
 
     if 'HIGH' in sel:
         entries_with_idx = [(i, w) for i, w, _ in flagged['HIGH']]
-        title = f'🔴 AUDIT HIGH ({len(entries_with_idx)} entri, wajib audit manual)'
+        title = f'🔴 AUDIT HIGH [{scope_label}] ({len(entries_with_idx)} entri, wajib audit manual)'
     elif 'MEDIUM' in sel:
         entries_with_idx = [(i, w) for i, w, _ in flagged['MEDIUM']]
-        title = f'🟡 AUDIT MEDIUM ({len(entries_with_idx)} entri, perlu cek)'
+        title = f'🟡 AUDIT MEDIUM [{scope_label}] ({len(entries_with_idx)} entri, perlu cek)'
     elif 'LOW' in sel:
         entries_with_idx = [(i, w) for i, w, _ in flagged['LOW']]
-        title = f'🟢 AUDIT LOW ({len(entries_with_idx)} entri, sanity)'
+        title = f'🟢 AUDIT LOW [{scope_label}] ({len(entries_with_idx)} entri, sanity)'
     else:
-        # Semua flagged, sort by #flag descending
         all_flagged = []
         for tier_list in flagged.values():
             for i, w, fl in tier_list:
                 all_flagged.append((i, w, fl))
         all_flagged.sort(key=lambda x: -len(x[2]))
         entries_with_idx = [(i, w) for i, w, _ in all_flagged]
-        title = f'📊 SEMUA FLAGGED ({len(entries_with_idx)} entri, sort by #flag)'
+        title = f'📊 SEMUA FLAGGED [{scope_label}] ({len(entries_with_idx)} entri, sort by #flag)'
 
-    # Pakai browse_list existing — user bisa edit per entry
-    # Pre-render flag info di label supaya user tahu kenapa di-flag
     browse_list_with_flags(data, entries_with_idx, title)
 
 
@@ -1495,8 +1695,9 @@ def main_menu(data):
             '⭐ Browse entries dengan krama mapping (auto-filled, butuh arti)',
             '📝 Browse entries BELUM ada arti (Indonesia)',
             '🔗 Merge 2 entries (search kata)',
-            '🔍 Deteksi duplikat (JANGAN HAPUS, user putuskan)',
-            '🚩 Audit Flags (🔴HIGH/🟡MEDIUM/🟢LOW — heuristic, NO auto-fix)',
+            '➕ Tambah Entry Baru (workflow SRT editor — nemu kata baru)',
+            '🔍 Deteksi duplikat (paired-only RECOMMENDED, JANGAN HAPUS)',
+            '🚩 Audit Flags (paired-only RECOMMENDED, NO auto-fix)',
             '⚡ Mark READY/DRAFT bulk (search kata, tanpa edit)',
             '🔑 Set Supabase .env (URL + anon key)',
             '☁  Upload ke Supabase (hanya yang READY)',
@@ -1565,6 +1766,8 @@ def main_menu(data):
         elif 'Merge 2 entries' in selected:
             # Phase 4: extract ke fungsi merge_2_entries() (line 785-984)
             merge_2_entries(data)
+        elif 'Tambah Entry Baru' in selected:
+            add_new_entry(data)
         elif 'Deteksi duplikat' in selected:
             detect_duplicates(data)
         elif 'Audit Flags' in selected:
