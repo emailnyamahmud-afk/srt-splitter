@@ -1072,18 +1072,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 
 
 def detect_duplicates(data):
-    """Deteksi duplikat = kata IDENTIK lintas entry DAN lintas field.
+    """Deteksi duplikat = kata IDENTIK lintas entry. Bukan sinonim.
 
-    R-28: Duplikat = kata IDENTIK lintas entry. Bukan sinonim.
-    R-29: Duplikat = kata IDENTIK lintas entry. Bukan sinonim, bukan token sama di field beda.
-
-    Cek di SEMUA field: word, ngoko, krama, indo
-    Tokenize comma di ngoko/krama/indo (sinonim dalam 1 entry = bukan duplikat).
-
-    Tampilkan:
-    - Kata yang identik muncul di 2+ entries (lintas field)
-    - Group by kata → tampilkan semua entries + field tempat kata muncul
-    - User putuskan: merge sinonim (comma) atau hapus duplikat (kata identik)
+    Duplikat: kata yang sama (case-insensitive) muncul di 2+ entries.
+    Sinonim (beda kata di 1 entry) = BUKAN duplikat.
     """
     from collections import defaultdict
     words = data['words']
@@ -1093,13 +1085,15 @@ def detect_duplicates(data):
     print('╚' + '═' * 60 + '╝')
     print()
 
-    # Index: lowercase kata → list of (entry_id, field, original_word)
-    # Cek di field word, ngoko, krama, indo (tokenize comma di SEMUA field)
+    # Index: lowercase kata → list of (entry_id, field, word)
+    # Cari di field word, ngoko, krama, indo (tokenize comma)
     index = defaultdict(list)
     for w in words:
         eid = w.get('entry_id', '?')
-        # SEMUA field di-tokenize comma, termasuk word
-        for field in ['word', 'ngoko', 'krama', 'indo']:
+        word = (w.get('word') or '').strip()
+        if word and len(word) > 1:
+            index[word.lower()].append((eid, 'word', word))
+        for field in ['ngoko', 'krama', 'indo']:
             val = (w.get(field) or '').strip()
             if val:
                 for tok in val.split(','):
@@ -1107,8 +1101,8 @@ def detect_duplicates(data):
                     if tok and len(tok) > 1:
                         index[tok.lower()].append((eid, field, tok))
 
-    # Filter: hanya yang muncul di 2+ DIFFERENT entries
-    # Kalau kata muncul 2x di 1 entry (sinonim comma) = BUKAN duplikat
+    # Filter: hanya yang muncul di 2+ entries
+    # Group by entry_id dulu — kalau kata muncul 2x di 1 entry = sinonim, bukan duplikat
     dupes = {}
     for kata, occ in index.items():
         unique_entries = set(eid for eid, _, _ in occ)
@@ -1120,25 +1114,16 @@ def detect_duplicates(data):
     print()
 
     if not dupes:
-        print('  ✅ Tidak ada duplikat.')
         input('  Tekan Enter untuk kembali...')
         return
 
     # Pilih field untuk filter
-    # Hitung duplikat per field
-    counts = {'word': 0, 'ngoko': 0, 'krama': 0, 'indo': 0}
-    for kata, occ in dupes.items():
-        fields_in_dup = set(f for _, f, _ in occ)
-        for f in fields_in_dup:
-            counts[f] = counts.get(f, 0) + 1
-
     field_choices = [
         f'1. Semua field ({len(dupes)} duplikat)',
-        f'2. Hanya word ({counts.get("word",0)} duplikat)',
-        f'3. Hanya ngoko ({counts.get("ngoko",0)} duplikat)',
-        f'4. Hanya krama ({counts.get("krama",0)} duplikat)',
-        f'5. Hanya indo ({counts.get("indo",0)} duplikat)',
-        f'6. Lintas field (kata muncul di field BEDA di entry BEDA)',
+        '2. Hanya word (lemma identik)',
+        '3. Hanya ngoko',
+        '4. Hanya krama',
+        '5. Hanya indo',
         '↩ Kembali',
     ]
     sel = questionary.select('Filter:', choices=field_choices, default=field_choices[0]).ask()
@@ -1146,34 +1131,25 @@ def detect_duplicates(data):
         return
 
     filter_field = None
-    cross_field = False
     if sel.startswith('2'): filter_field = 'word'
     elif sel.startswith('3'): filter_field = 'ngoko'
     elif sel.startswith('4'): filter_field = 'krama'
     elif sel.startswith('5'): filter_field = 'indo'
-    elif sel.startswith('6'): cross_field = True
 
-    # Tampilkan duplikat — semua, tanpa label, tanpa filter
+    # Tampilkan duplikat
     sorted_dupes = sorted(dupes.items(), key=lambda x: len(set(eid for eid, _, _ in x[1])), reverse=True)
     shown = 0
     for kata, occ in sorted_dupes:
         if filter_field:
-            occ_filtered = [o for o in occ if o[1] == filter_field]
-            if len(set(eid for eid, _, _ in occ_filtered)) <= 1:
+            occ = [o for o in occ if o[1] == filter_field]
+            if len(set(eid for eid, _, _ in occ)) <= 1:
                 continue
-            occ = occ_filtered
-        if cross_field:
-            fields_in_dup = set(f for _, f, _ in occ)
-            if len(fields_in_dup) <= 1:
-                continue
-
         unique_entries = sorted(set(eid for eid, _, _ in occ))
-        fields_in_dup = sorted(set(f for _, f, _ in occ))
-        print(f"\n  '{kata}' di {len(unique_entries)} entries, field: {', '.join(fields_in_dup)}:")
+        print(f"\n  '{kata}' di {len(unique_entries)} entries:")
         for eid, field, orig in occ[:8]:
             w = next((x for x in words if x.get('entry_id') == eid), None)
             if w:
-                print(f"    [{eid}] {field:6} ngoko={w.get('ngoko','')[:25]!r} krama={w.get('krama','')[:25]!r} indo={w.get('indo','')[:30]!r} word={w.get('word','')[:15]!r}")
+                print(f"    [{eid}] {field:6} word={w.get('word','')[:25]!r} ngoko={w.get('ngoko','')[:20]!r} krama={w.get('krama','')[:20]!r} indo={w.get('indo','')[:20]!r}")
         if len(unique_entries) > 8:
             print(f"    ... +{len(unique_entries) - 8} more")
         shown += 1
@@ -1181,10 +1157,7 @@ def detect_duplicates(data):
             print(f"\n  ... +{len(dupes) - 50} more duplikat")
             break
 
-    print(f'\n  ⚠ Duplikat = kata identik lintas entry. Bukan sinonim.')
-    print(f'  → Merge sinonim: tambah kata sebagai comma di field (ngoko/krama/indo).')
-    print(f'  → Hapus duplikat: hapus entry yang identik, pertahankan yang paling lengkap.')
-    print(f'  → User putuskan. AI tidak bisa bedakan sinonim vs identik di bahasa Jawa.')
+    print(f'\n  ⚠ Duplikat = kata IDENTIK lintas entry. Bukan sinonim.')
     print(f'  → Ketik entry_id untuk edit. Enter=kembali.')
 
     # Edit by entry_id
@@ -1205,6 +1178,274 @@ def detect_duplicates(data):
         input('  Tekan Enter untuk lanjut (Enter kosong=kembali)...')
 
 
+def compute_entry_flags(entry):
+    """Heuristic flag audit — TIDAK auto-fix, hanya tandai entry mencurigakan.
+
+    Return list of (flag_code, tier, msg).
+    tier: 'HIGH' (🔴 wajib audit), 'MEDIUM' (🟡 perlu cek), 'LOW' (🟢 sanity).
+
+    Berdasarkan analisa data kamus_unified_draft.json 43.630 entries:
+    - Source jv.wiktionary punya format `lemma; definisi:` → sering leak ke field indo
+    - AI infill batch 1-22 kadang isi definisi panjang, bukan terjemahan kata
+    - Beberapa entry ngoko == krama (auto-copy suspect)
+    - Karakter parser leak: `|`, `====`, `#`, `t=`, `kateg`, `mbledhos`
+    """
+    import re
+    flags = []
+    word = (entry.get('word') or '').strip()
+    ngoko = (entry.get('ngoko') or '').strip()
+    krama = (entry.get('krama') or '').strip()
+    indo = (entry.get('indo') or '').strip()
+    keterangan = (entry.get('keterangan') or '').strip()
+
+    # ===== 🔴 HIGH (wajib audit) =====
+
+    # SRC_LEAK: parser leak karakter wiktionary mentah
+    src_leak_pattern = re.compile(r'[|====#]|t=|kateg|wuu|mbledhos|\{\{|\}\}')
+    for field_name, val in [('indo', indo), ('ngoko', ngoko), ('krama', krama)]:
+        if val and src_leak_pattern.search(val):
+            flags.append(('SRC_LEAK', 'HIGH', f'field {field_name} ada parser leak wiktionary'))
+            break  # 1 flag per kategori sudah cukup
+
+    # WORD_LEAK_INDO: indo match `^word; ...` atau `word; ...:` (lemma wiktionary)
+    # Contoh: word='abab' indo='abab; hawa mulut:' → label wiktionary mentah
+    if word and indo:
+        indo_first = indo.split(';')[0].strip().lower()
+        if indo_first == word.lower() and (';' in indo or ':' in indo):
+            flags.append(('WORD_LEAK_INDO', 'HIGH', f'indo = "word; definisi:" (label wiktionary mentah)'))
+
+    # NGOKO_EQ_KRAMA: ngoko == krama (auto-copy suspect, harus beda register)
+    if ngoko and krama and ngoko.lower() == krama.lower():
+        flags.append(('NGOKO_EQ_KRAMA', 'HIGH', f'ngoko == krama = "{ngoko}" (suspect auto-copy)'))
+
+    # INDO_LONG_DEF: indo panjang atau multi-token berlebih (kemungkinan kalimat definisi)
+    if indo:
+        if len(indo) > 30:
+            flags.append(('INDO_LONG_DEF', 'HIGH', f'indo >30 char (kemungkinan kalimat definisi)'))
+        else:
+            # Hitung token (pisah koma)
+            n_tok = len([t for t in indo.split(',') if t.strip()])
+            if n_tok > 5:
+                flags.append(('INDO_LONG_DEF', 'HIGH', f'indo {n_tok} token (suspect halu sinonim panjang)'))
+
+    # ===== 🟡 MEDIUM (perlu cek) =====
+
+    # INDO_MULTI_SEMI: indo mengandung `;` ≥2 (kemungkinan multi-arti perlu dirapikan)
+    if indo.count(';') >= 2:
+        flags.append(('INDO_MULTI_SEMI', 'MEDIUM', f'indo ada {indo.count(";")} titik-koma (multi-arti?)'))
+
+    # INDO_END_COLON: indo diakhiri `:` (format label wiktionary)
+    if indo.endswith(':') or indo.rstrip().endswith(':'):
+        flags.append(('INDO_END_COLON', 'MEDIUM', f'indo diakhiri ":" (label wiktionary format)'))
+
+    # INDO_QUOTED: indo diapit tanda kutip/kurung (label leak)
+    if (indo.startswith('"') and indo.endswith('"')) or \
+       (indo.startswith("'") and indo.endswith("'")) or \
+       (indo.startswith('(') and indo.endswith(')')):
+        flags.append(('INDO_QUOTED', 'MEDIUM', f'indo diapit tanda/kurung (suspect label)'))
+
+    # LONG_FIELD: ngoko atau krama sangat panjang (suspect kalimat, bukan kata)
+    for field_name, val in [('ngoko', ngoko), ('krama', krama)]:
+        if val and len(val) > 25:
+            flags.append(('LONG_FIELD', 'MEDIUM', f'{field_name} >25 char: "{val[:40]}..."'))
+            break
+
+    # ===== 🟢 LOW (sanity check) =====
+
+    # DIGIT_IN_FIELD: ngoko/krama ada digit (entry_id leak atau angka janggal)
+    for field_name, val in [('ngoko', ngoko), ('krama', krama)]:
+        if val and re.search(r'\d', val):
+            # Exception: kata jawa bisa punya digit (mis. "sasi 12") — flag saja
+            flags.append(('DIGIT_IN_FIELD', 'LOW', f'{field_name} ada digit: "{val[:30]}"'))
+            break
+
+    # WORD_NO_PAIR: word terisi, ngoko+krama kosong, indo kosong (entry NETRAL perlu pasangan)
+    # Bukan masalah — ini workflow normal. SKIP flag.
+
+    return flags
+
+
+def audit_flags_menu(data):
+    """Menu audit: tampilkan entries dengan flag suspicious. User audit manual.
+
+    TIDAK ada auto-fix. User pilih tier → browse list → edit_entry.
+
+    Tier:
+      🔴 HIGH  — wajib audit (parser leak, ngoko==krama, indo definisi panjang)
+      🟡 MEDIUM — perlu cek (multi-`;`, diakhiri `:`, diapit kutip, field panjang)
+      🟢 LOW   — sanity (digit di field kata)
+    """
+    os.system('clear' if os.name != 'nt' else 'cls')
+    print('╔' + '═' * 60 + '╗')
+    print('║  🔍 Audit Flags (heuristic, NO auto-fix)' + ' ' * 16 + '║')
+    print('╚' + '═' * 60 + '╝')
+    print()
+    print('  Hitung flag untuk semua entries...')
+    words = data['words']
+
+    # Compute flags untuk semua entries
+    flagged = {'HIGH': [], 'MEDIUM': [], 'LOW': []}
+    flag_counts = {}
+    for idx, w in enumerate(words):
+        fl = compute_entry_flags(w)
+        if fl:
+            # Hitung per tier
+            tiers = set(t for _, t, _ in fl)
+            for t in tiers:
+                flagged[t].append((idx, w, [f for f in fl if f[1] == t]))
+            for code, tier, _ in fl:
+                flag_counts[code] = flag_counts.get(code, 0) + 1
+
+    total_flagged = sum(len(v) for v in flagged.values())
+    print(f'\r  Total entries: {len(words):,} | Flagged: {total_flagged:,}' + ' ' * 20)
+    print(f'  🔴 HIGH (wajib audit):   {len(flagged["HIGH"]):,}')
+    print(f'  🟡 MEDIUM (perlu cek):    {len(flagged["MEDIUM"]):,}')
+    print(f'  🟢 LOW (sanity):         {len(flagged["LOW"]):,}')
+    print()
+
+    if not total_flagged:
+        print('  ✅ Tidak ada entry ter-flag. Kamus clean menurut heuristic.')
+        input('\n  Tekan Enter untuk kembali...')
+        return
+
+    # Detail per flag code
+    print('  Detail per flag:')
+    for code, count in sorted(flag_counts.items(), key=lambda x: -x[1]):
+        # Tentukan tier dari code
+        tier = 'HIGH'
+        if code in ('INDO_MULTI_SEMI', 'INDO_END_COLON', 'INDO_QUOTED', 'LONG_FIELD'):
+            tier = 'MEDIUM'
+        elif code in ('DIGIT_IN_FIELD',):
+            tier = 'LOW'
+        icon = '🔴' if tier == 'HIGH' else ('🟡' if tier == 'MEDIUM' else '🟢')
+        print(f'    {icon} {code:20} {count:5} entri')
+    print()
+
+    # Pilih tier
+    tier_choices = [
+        f'🔴 HIGH ({len(flagged["HIGH"])} entri, wajib audit)',
+        f'🟡 MEDIUM ({len(flagged["MEDIUM"])} entri, perlu cek)',
+        f'🟢 LOW ({len(flagged["LOW"])} entri, sanity)',
+        '📊 Semua flagged (sort by #flag)',
+        '↩ Kembali',
+    ]
+    sel = questionary.select('Browse:', choices=tier_choices, default=tier_choices[0]).ask()
+    if not sel or 'Kembali' in sel:
+        return
+
+    if 'HIGH' in sel:
+        entries_with_idx = [(i, w) for i, w, _ in flagged['HIGH']]
+        title = f'🔴 AUDIT HIGH ({len(entries_with_idx)} entri, wajib audit manual)'
+    elif 'MEDIUM' in sel:
+        entries_with_idx = [(i, w) for i, w, _ in flagged['MEDIUM']]
+        title = f'🟡 AUDIT MEDIUM ({len(entries_with_idx)} entri, perlu cek)'
+    elif 'LOW' in sel:
+        entries_with_idx = [(i, w) for i, w, _ in flagged['LOW']]
+        title = f'🟢 AUDIT LOW ({len(entries_with_idx)} entri, sanity)'
+    else:
+        # Semua flagged, sort by #flag descending
+        all_flagged = []
+        for tier_list in flagged.values():
+            for i, w, fl in tier_list:
+                all_flagged.append((i, w, fl))
+        all_flagged.sort(key=lambda x: -len(x[2]))
+        entries_with_idx = [(i, w) for i, w, _ in all_flagged]
+        title = f'📊 SEMUA FLAGGED ({len(entries_with_idx)} entri, sort by #flag)'
+
+    # Pakai browse_list existing — user bisa edit per entry
+    # Pre-render flag info di label supaya user tahu kenapa di-flag
+    browse_list_with_flags(data, entries_with_idx, title)
+
+
+def browse_list_with_flags(data, entries_with_idx, title):
+    """Browse list dengan info flag di label (khusus audit menu).
+
+    Sama seperti browse_list, tapi label tambahkan flag info:
+      [#123] 🔴2 INDO_LONG_DEF, SRC_LEAK | ngoko=...
+    """
+    total = len(entries_with_idx)
+    if total == 0:
+        print(f'\n  Tidak ada entri untuk "{title}"')
+        input('\n  Tekan Enter...')
+        return
+
+    page_size = 15  # Lebih sedikit per page karena label lebih panjang
+    current_page = 0
+
+    while True:
+        start = current_page * page_size
+        end = min(start + page_size, total)
+        page = entries_with_idx[start:end]
+
+        os.system('clear' if os.name != 'nt' else 'cls')
+        print('╔' + '═' * 80 + '╗')
+        print(f'║  {title[:78]}' + ' ' * max(0, 78 - len(title)) + '║')
+        print(f'║  {total} entri | Hal {current_page + 1}/{(total + page_size - 1) // page_size}' + ' ' * max(0, 50 - len(str(total)) - len(str(current_page + 1)) - len(str((total + page_size - 1) // page_size))) + '║')
+        print('╚' + '═' * 80 + '╝')
+        print()
+
+        label_to_idx = {}
+        choices = []
+        for orig_idx, entry in page:
+            eid = entry.get('entry_id', orig_idx + 1)
+            fl = compute_entry_flags(entry)
+            n_high = sum(1 for _, t, _ in fl if t == 'HIGH')
+            n_med  = sum(1 for _, t, _ in fl if t == 'MEDIUM')
+            n_low  = sum(1 for _, t, _ in fl if t == 'LOW')
+            tier_icon = '🔴' if n_high else ('🟡' if n_med else '🟢')
+            # Ambil flag codes singkat (top 2)
+            codes = [c for c, _, _ in fl[:2]]
+            codes_str = ','.join(codes) if codes else '-'
+            # Field preview
+            word = (entry.get('word') or '').strip()
+            ngoko = (entry.get('ngoko') or '').strip()
+            krama = (entry.get('krama') or '').strip()
+            indo = (entry.get('indo') or '').strip()
+            # Build label: [#123] 🔴2 INDO_LONG_DEF | ngoko=... krama=... indo=...
+            preview_parts = []
+            if word: preview_parts.append(f'word={word[:15]}')
+            if ngoko: preview_parts.append(f'ngoko={ngoko[:15]}')
+            if krama: preview_parts.append(f'krama={krama[:15]}')
+            if indo: preview_parts.append(f'indo={indo[:20]}')
+            preview = ' '.join(preview_parts)[:60]
+            count_str = f'{n_high}H' if n_high else (f'{n_med}M' if n_med else f'{n_low}L')
+            label = f'[#{eid}] {tier_icon}{count_str} {codes_str:30} | {preview}'
+            label_to_idx[label] = orig_idx
+            choices.append(label)
+
+        # Navigation
+        nav = []
+        if current_page > 0:
+            nav.append('◀ Halaman sebelumnya')
+        if end < total:
+            nav.append('▶ Halaman berikutnya')
+        nav.append('↩ Kembali ke menu utama')
+
+        choices.extend(nav)
+
+        selected = questionary.select(
+            f'Pilih entri (🔴HIGH/🟡MED/🟢LOW, count H/M/L):',
+            choices=choices,
+            default=choices[0],
+        ).ask()
+
+        if not selected or 'Kembali ke menu' in selected:
+            return
+
+        if 'sebelumnya' in selected:
+            current_page = max(0, current_page - 1)
+            continue
+
+        if 'berikutnya' in selected:
+            current_page += 1
+            continue
+
+        # Edit entry terpilih
+        match_idx = label_to_idx.get(selected)
+        if match_idx is not None:
+            edit_entry(data, match_idx)
+
+
 def main_menu(data):
     """Main menu — user pilih menu dengan arrow keys"""
     while True:
@@ -1219,7 +1460,7 @@ def main_menu(data):
         supabase_ok = bool(os.environ.get('NEXT_PUBLIC_SUPABASE_URL') and os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY'))
 
         print('╔' + '═' * 60 + '╗')
-        print('║  📖 Kamus Jawa Editor (TUI v9)' + ' ' * 28 + '║')
+        print('║  📖 Kamus Jawa Editor (TUI v10)' + ' ' * 27 + '║')
         print('║  Tab/panah untuk navigasi, Enter untuk pilih' + ' ' * 11 + '║')
         print('╚' + '═' * 60 + '╝')
         print()
@@ -1255,6 +1496,7 @@ def main_menu(data):
             '📝 Browse entries BELUM ada arti (Indonesia)',
             '🔗 Merge 2 entries (search kata)',
             '🔍 Deteksi duplikat (JANGAN HAPUS, user putuskan)',
+            '🚩 Audit Flags (🔴HIGH/🟡MEDIUM/🟢LOW — heuristic, NO auto-fix)',
             '⚡ Mark READY/DRAFT bulk (search kata, tanpa edit)',
             '🔑 Set Supabase .env (URL + anon key)',
             '☁  Upload ke Supabase (hanya yang READY)',
@@ -1325,6 +1567,8 @@ def main_menu(data):
             merge_2_entries(data)
         elif 'Deteksi duplikat' in selected:
             detect_duplicates(data)
+        elif 'Audit Flags' in selected:
+            audit_flags_menu(data)
         elif 'Set Supabase' in selected:
             edit_env_file()
         elif 'Switch source JSON' in selected:
