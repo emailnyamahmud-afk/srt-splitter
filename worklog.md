@@ -2801,3 +2801,44 @@ Stage Summary:
 - SRT editor web: default voice Dimas + hapus krama_inggil — siap pakai
 - Kamus-tui: detect_duplicates cek semua field + lintas field — siap audit manual
 - User lanjut nanti (istirahat)
+
+---
+Task ID: kamus-duplikat-final
+Agent: main
+Task: Fix detect_duplicates — tokenize SEMUA field + catat prinsip kamus user
+
+Prinsip kamus user (PERMANEN):
+- 1 entry = 1 konsep = semua sinonim dalam 1 entry dengan comma
+- TIDAK ADA sinonim beda entry
+- indo: saya,aku,gue,gua → web baca kata pertama "saya" → translate ke ngoko "nyong"
+- ngoko: nyong,aku,amba,inyong → web baca "aku" → translate ke krama "kula"
+- krama: kula,dalem,kawula,abdi → web baca "abdi" → translate ke ngoko "nyong"
+- Jika ada 2 entry dengan kata yang sama = DUPLIKAT → merge jadi 1 entry
+
+Fix detect_duplicates:
+1. Tokenize comma di SEMUA field: word, ngoko, krama, indo
+   - Sebelumnya word field TIDAK di-tokenize → 40k NETRAL tidak terdeteksi
+   - Sekarang SEMUA 43.630 entries di-index
+2. Hapus label SINONIM/PERLU AUDIT (user: "kata siapa indo only normal?")
+3. Tampilkan semua duplikat apa adanya, user putuskan
+4. Tampilkan word field di output (sebelumnya tidak ada)
+
+Hasil: 58 duplikat dari 48.994 kata unik di 43.630 entries
+- word: 7 duplikat
+- ngoko: 1
+- krama: 1
+- indo: 117 (multi-field count)
+
+Workflow user:
+1. TUI deteksi duplikat (semua kata, semua field)
+2. User copas entry_id ke note
+3. User edit — merge jadi 1 entry (comma sinonim)
+4. User putuskan mana identik (hapus) vs sinonim (merge)
+
+AI TIDAK BISA audit duplikat — bahasa Jawa butuh native speaker.
+
+Stage Summary:
+- detect_duplicates: cek SEMUA field (word, ngoko, krama, indo), tokenize comma
+- 58 duplikat terdeteksi dari 43.630 entries
+- User audit manual di TUI
+- Prinsip 1 entry = 1 konsep tercatat permanen
