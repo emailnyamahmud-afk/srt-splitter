@@ -1072,10 +1072,18 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 
 
 def detect_duplicates(data):
-    """Deteksi duplikat = kata IDENTIK lintas entry. Bukan sinonim.
+    """Deteksi duplikat = kata IDENTIK lintas entry DAN lintas field.
 
-    Duplikat: kata yang sama (case-insensitive) muncul di 2+ entries.
-    Sinonim (beda kata di 1 entry) = BUKAN duplikat.
+    R-28: Duplikat = kata IDENTIK lintas entry. Bukan sinonim.
+    R-29: Duplikat = kata IDENTIK lintas entry. Bukan sinonim, bukan token sama di field beda.
+
+    Cek di SEMUA field: word, ngoko, krama, indo
+    Tokenize comma di ngoko/krama/indo (sinonim dalam 1 entry = bukan duplikat).
+
+    Tampilkan:
+    - Kata yang identik muncul di 2+ entries (lintas field)
+    - Group by kata → tampilkan semua entries + field tempat kata muncul
+    - User putuskan: merge sinonim (comma) atau hapus duplikat (kata identik)
     """
     from collections import defaultdict
     words = data['words']
@@ -1085,14 +1093,16 @@ def detect_duplicates(data):
     print('╚' + '═' * 60 + '╝')
     print()
 
-    # Index: lowercase kata → list of (entry_id, field, word)
-    # Cari di field word, ngoko, krama, indo (tokenize comma)
+    # Index: lowercase kata → list of (entry_id, field, original_word)
+    # Cek di field word, ngoko, krama, indo (tokenize comma)
     index = defaultdict(list)
     for w in words:
         eid = w.get('entry_id', '?')
+        # word field
         word = (w.get('word') or '').strip()
         if word and len(word) > 1:
             index[word.lower()].append((eid, 'word', word))
+        # ngoko, krama, indo — tokenize comma
         for field in ['ngoko', 'krama', 'indo']:
             val = (w.get(field) or '').strip()
             if val:
@@ -1101,8 +1111,8 @@ def detect_duplicates(data):
                     if tok and len(tok) > 1:
                         index[tok.lower()].append((eid, field, tok))
 
-    # Filter: hanya yang muncul di 2+ entries
-    # Group by entry_id dulu — kalau kata muncul 2x di 1 entry = sinonim, bukan duplikat
+    # Filter: hanya yang muncul di 2+ DIFFERENT entries
+    # Kalau kata muncul 2x di 1 entry (sinonim comma) = BUKAN duplikat
     dupes = {}
     for kata, occ in index.items():
         unique_entries = set(eid for eid, _, _ in occ)
@@ -1114,16 +1124,25 @@ def detect_duplicates(data):
     print()
 
     if not dupes:
+        print('  ✅ Tidak ada duplikat.')
         input('  Tekan Enter untuk kembali...')
         return
 
     # Pilih field untuk filter
+    # Hitung duplikat per field
+    counts = {'word': 0, 'ngoko': 0, 'krama': 0, 'indo': 0}
+    for kata, occ in dupes.items():
+        fields_in_dup = set(f for _, f, _ in occ)
+        for f in fields_in_dup:
+            counts[f] = counts.get(f, 0) + 1
+
     field_choices = [
         f'1. Semua field ({len(dupes)} duplikat)',
-        '2. Hanya word (lemma identik)',
-        '3. Hanya ngoko',
-        '4. Hanya krama',
-        '5. Hanya indo',
+        f'2. Hanya word ({counts.get("word",0)} duplikat)',
+        f'3. Hanya ngoko ({counts.get("ngoko",0)} duplikat)',
+        f'4. Hanya krama ({counts.get("krama",0)} duplikat)',
+        f'5. Hanya indo ({counts.get("indo",0)} duplikat)',
+        f'6. Lintas field (kata muncul di field BEDA di entry BEDA)',
         '↩ Kembali',
     ]
     sel = questionary.select('Filter:', choices=field_choices, default=field_choices[0]).ask()
@@ -1131,25 +1150,35 @@ def detect_duplicates(data):
         return
 
     filter_field = None
+    cross_field = False
     if sel.startswith('2'): filter_field = 'word'
     elif sel.startswith('3'): filter_field = 'ngoko'
     elif sel.startswith('4'): filter_field = 'krama'
     elif sel.startswith('5'): filter_field = 'indo'
+    elif sel.startswith('6'): cross_field = True
 
     # Tampilkan duplikat
     sorted_dupes = sorted(dupes.items(), key=lambda x: len(set(eid for eid, _, _ in x[1])), reverse=True)
     shown = 0
     for kata, occ in sorted_dupes:
         if filter_field:
-            occ = [o for o in occ if o[1] == filter_field]
-            if len(set(eid for eid, _, _ in occ)) <= 1:
+            occ_filtered = [o for o in occ if o[1] == filter_field]
+            if len(set(eid for eid, _, _ in occ_filtered)) <= 1:
                 continue
+            occ = occ_filtered
+        if cross_field:
+            # Hanya tampilkan kalau kata muncul di 2+ field berbeda
+            fields_in_dup = set(f for _, f, _ in occ)
+            if len(fields_in_dup) <= 1:
+                continue
+
         unique_entries = sorted(set(eid for eid, _, _ in occ))
-        print(f"\n  '{kata}' di {len(unique_entries)} entries:")
+        fields_in_dup = sorted(set(f for _, f, _ in occ))
+        print(f"\n  '{kata}' di {len(unique_entries)} entries, field: {', '.join(fields_in_dup)}:")
         for eid, field, orig in occ[:8]:
             w = next((x for x in words if x.get('entry_id') == eid), None)
             if w:
-                print(f"    [{eid}] {field:6} word={w.get('word','')[:25]!r} ngoko={w.get('ngoko','')[:20]!r} krama={w.get('krama','')[:20]!r} indo={w.get('indo','')[:20]!r}")
+                print(f"    [{eid}] {field:6} ngoko={w.get('ngoko','')[:25]!r} krama={w.get('krama','')[:25]!r} indo={w.get('indo','')[:30]!r}")
         if len(unique_entries) > 8:
             print(f"    ... +{len(unique_entries) - 8} more")
         shown += 1
@@ -1158,6 +1187,8 @@ def detect_duplicates(data):
             break
 
     print(f'\n  ⚠ Duplikat = kata IDENTIK lintas entry. Bukan sinonim.')
+    print(f'  → Merge sinonim: tambah kata sebagai comma di field (ngoko/krama/indo).')
+    print(f'  → Hapus duplikat: hapus entry yang identik, pertahankan yang paling lengkap.')
     print(f'  → Ketik entry_id untuk edit. Enter=kembali.')
 
     # Edit by entry_id
