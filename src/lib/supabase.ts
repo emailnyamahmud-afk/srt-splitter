@@ -585,11 +585,9 @@ export interface KamusEntry {
   id: string
   ngoko: string          // kata ngoko + alias (dipisah koma)
   aksara: string         // aksara Jawa
-  krama: string          // kata krama + alias
-  krama_inggil: string   // krama inggil (opsional, kosong kalau tidak ada)
+  krama: string          // kata krama + krama_inggil sebagai sinonim (comma-separated, R-26)
   arti: string           // terjemahan Indonesia
   keterangan: string     // definisi JAWA dari XML (bantu user isi arti)
-  register: string      // 'ngoko'|'krama'|'krama_inggil'|'kawi'|'umum'
   sumber: string         // sumber data (mis. jv.wiktionary.org)
   status: string         // 'draft' (belum diedit) | 'ready' (siap upload) | 'clean' (sudah fix)
   created_at: string

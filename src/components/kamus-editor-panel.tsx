@@ -100,11 +100,6 @@ export function KamusEditorPanel() {
                         <span className="font-mono font-bold text-sm">{entry.ngoko}</span>
                         <span className="text-muted-foreground">→</span>
                         <span className="text-sm">{entry.krama || '(kosong)'}</span>
-                        {entry.krama_inggil && (
-                          <Badge variant="outline" className="text-[10px] bg-purple-50 dark:bg-purple-950/30">
-                            ki: {entry.krama_inggil}
-                          </Badge>
-                        )}
                       </div>
                       <div className="text-xs text-muted-foreground mt-0.5">
                         {entry.arti || '(tidak ada arti Indonesia)'}

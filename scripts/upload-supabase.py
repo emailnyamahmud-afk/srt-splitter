@@ -99,12 +99,13 @@ def collect_ready_entries(data):
             continue
 
         # Build row (hanya kolom yang ada di DB, R-26: no register, no krama_inggil)
+        # DB kolom = "arti" (BUKAN "indo") — verified 13 Okt 2026
         sumber = (entry.get("sumber") or "kamus-jawa-draft.json (R-22)").strip()
         row = {
             "ngoko": ngoko,
             "aksara": entry.get("aksara", ""),
             "krama": krama,
-            "indo": arti,
+            "arti": arti,           # DB kolom = "arti" (BUKAN "indo")
             "keterangan": entry.get("keterangan", ""),
             "sumber": sumber,
             "status": "ready",        # DB status (mirror dari draft)
