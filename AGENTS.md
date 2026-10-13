@@ -150,6 +150,52 @@ Mode 4: Edit SRT Jawa (LONG-TERM — web app)
 8. Dependencies check + ffmpeg/ffprobe dengan pesan install jelas
 9. Threading stderr reader — hindari deadlock kalau FFmpeg output > 64KB pipe buffer
 
+## ⚠ Sandbox Z.ai tidak permanen — repo GitHub = source of truth
+
+Sandbox z.ai (tempat AI hidup di cloud) **bisa reset sewaktu-waktu**. File lokal bisa hilang.
+Repo GitHub = backup utama + sinkronisasi sesi.
+
+**Kalau sandbox reset, AI sesi baru wajib**:
+```bash
+git clone https://github.com/emailnyamahmud-afk/srt-splitter.git
+cd srt-splitter
+git log --oneline -20          # lihat progress terakhir
+tail -100 worklog.md           # baca konteks task terakhir
+cat AGENTS.md | head -200      # baca status pipeline
+```
+
+**Token GitHub** (PAT): disimpan di git remote URL atau `/home/z/.git-credentials`.
+Kalau hilang, user kasih PAT baru: `github_pat_11CCW2LPI0...` (lihat chat history).
+
+## 📖 Workflow: Kamus AI Infill Indo (active task)
+
+**Tujuan**: Isi field `indo` (terjemahan Indonesia) untuk 1073 entries ngoko+krama
+dari kamus_unified.json (sumber jv.wiktionary, otoritatif). User orang Jawa native,
+akan validasi di TUI.
+
+**Script**: `/home/z/my-project/scripts/draft-infill-indo.py`
+- Baca keterangan (bahasa Jawa) → terjemah ke Indonesia
+- Output: `public/kamus_unified_draft.json` (draft, terpisah dari original)
+
+**Aturan infill (user explicit)**:
+- Dilarang halu. Kalau tidak yakin → tulis catatan di keterangan `# AI ragu: ...`
+- Dilarang terburu-buru. Baca pelan-pelan, pakai pengetahuan akar kata + serapan
+- Format indo: sederhana, TANPA kurung konteks. Sinonim pakai koma, multi-arti pakai ;
+- Akar kata: Sansekerta (prayoga, sagara), Belanda (pasar), Arab (dosa, kékah),
+  Jawa kuno (késa, linggih, jatos, dhaut)
+- Morfologi: pa-an = tempat, pe-an = proses, -i = transitif
+- Multi-arti ambigu (homonim) → tulis semua kandidat dengan ;
+
+**Status progres** (update tiap batch):
+| Batch | Entries | Total | Commit |
+|-------|---------|-------|--------|
+| 1 | 1-20 | 20 | bdc7d3e |
+| 2 | 21-70 | 70 | bdc7d3e |
+| 3 | 71-120 | 120 | bdc7d3e |
+| 4 | 121-170 | 170 | ce89401 |
+| 5+ | 171-1073 | 903 sisa | TODO |
+
+**Entries AI ragu** (perlu user verifikasi ekstra) — lihat commit message per batch.
 
 ## Kamus Jawa status (v5.3, 10 Okt 2026 — 3 source + merge sinonim jadi 1 entry)
 
