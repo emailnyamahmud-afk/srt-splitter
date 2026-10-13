@@ -1421,28 +1421,33 @@ def compute_entry_flags(entry):
 def build_cross_entry_index(words):
     """Build index lintas-entry untuk deteksi duplikat & sinonim.
 
-    Return dict per field: {field: {token_lower: set of entry_ids}}
+    R-28/R-29: Duplikat = kata IDENTIK muncul di 2+ entries, di FIELD APA PUN (lintas field).
+    Bukan per-field. Definisi user: "TIDAK ADA SINONIM BEDA ENTRY" — kalau kata sama di entry beda = duplikat.
+
+    Return:
+      all_idx: {token_lower: set of (entry_id, field)} — index gabungan SEMUA field
+      indo_idx: {indo_lower: set of entry_ids} — khusus untuk SINONIM_INDO detection
 
     Token split by comma. Hanya token >1 char yang di-index.
     """
     from collections import defaultdict
-    idx = {
-        'word':  defaultdict(set),
-        'ngoko': defaultdict(set),
-        'krama': defaultdict(set),
-        'indo':  defaultdict(set),
-    }
+    all_idx = defaultdict(set)  # token → set of (eid, field)
+    indo_idx = defaultdict(set)  # indo (lower) → set of eids (untuk SINONIM_INDO)
     for w in words:
         eid = w.get('entry_id')
         if eid is None: continue
-        for field in idx:
+        for field in ['word', 'ngoko', 'krama', 'indo']:
             val = (w.get(field) or '').strip()
             if not val: continue
             for tok in val.split(','):
                 tok = tok.strip().lower()
                 if tok and len(tok) > 1:
-                    idx[field][tok].add(eid)
-    return idx
+                    all_idx[tok].add((eid, field))
+        # Indo index pakai value utuh (bukan per-token), untuk SINONIM_INDO
+        indo = (w.get('indo') or '').strip()
+        if indo and len(indo) > 1:
+            indo_idx[indo.lower()].add(eid)
+    return all_idx, indo_idx
 
 
 def compute_cross_entry_flags(entry, cross_idx):
@@ -1450,33 +1455,46 @@ def compute_cross_entry_flags(entry, cross_idx):
 
     Return list of (flag_code, tier, msg).
 
-    Logika sama dengan merge-milstrike (cross-reference):
-    - DUP_TOKEN_*: token di word/ngoko/krama muncul di 2+ entries → duplikat
-    - SINONIM_INDO: indo identik dengan entry lain → sinonim potensial (merge word dengan koma)
+    Logika sama dengan merge-milstrike + R-28/R-29:
+    - DUP_TOKEN (HIGH): token di SEMUA field (word/ngoko/krama/indo) muncul di 2+ entries LINTAS FIELD
+      (kata identik di entry beda = duplikat, BUKAN sinonim beda entry)
+    - SINONIM_INDO (MEDIUM): indo identik dengan entry lain → sinonim potensial (merge word dengan koma)
 
     User requirement: 'kata sama = replace, kata beda + sama arti = sinonim = koma'
+    R-28: Duplikat = kata IDENTIK lintas entry. Bukan sinonim.
+    R-29: TIDAK ADA SINONIM BEDA ENTRY — kalau kata sama di entry beda = duplikat.
     """
     flags = []
     eid = entry.get('entry_id')
+    # cross_idx is tuple (all_idx, indo_idx)
+    all_idx, indo_idx = cross_idx
 
     # ===== 🔴 HIGH (wajib audit) =====
-    # DUP_TOKEN_*: token di field X muncul di 2+ entries
-    # Berarti ada entries lain dengan kata identik → harus merge (koma) atau delete salah satu
-    for field in ['word', 'ngoko', 'krama']:
+    # DUP_TOKEN: token di SEMUA field (word/ngoko/krama/indo) muncul di 2+ entries LINTAS FIELD
+    # Cek semua field, bukan per-field
+    seen_tokens = set()
+    for field in ['word', 'ngoko', 'krama', 'indo']:
         val = (entry.get(field) or '').strip()
         if not val: continue
-        seen_tokens = set()
         for tok in val.split(','):
-            tok = tok.strip().lower()
-            if not tok or len(tok) <= 1 or tok in seen_tokens: continue
-            seen_tokens.add(tok)
-            eids = cross_idx[field].get(tok, set())
-            if len(eids) > 1:
-                others = sorted(eids - {eid})[:3]
+            tok_lower = tok.strip().lower()
+            if not tok_lower or len(tok_lower) <= 1 or tok_lower in seen_tokens: continue
+            seen_tokens.add(tok_lower)
+            locations = all_idx.get(tok_lower, set())
+            # Group by eid untuk hitung berapa entry beda
+            unique_eids = set(loc_eid for loc_eid, _ in locations)
+            if len(unique_eids) > 1:
+                others = sorted(unique_eids - {eid})[:3]
                 others_str = ','.join(str(o) for o in others)
-                flags.append((f'DUP_TOKEN_{field.upper()}', 'HIGH',
-                              f'token "{tok}" di {field} juga di entry #{others_str}'))
-                break  # 1 flag per field cukup
+                # Hitung field-field yg contain token ini di entry lain
+                other_fields = set()
+                for loc_eid, loc_field in locations:
+                    if loc_eid != eid:
+                        other_fields.add(loc_field)
+                fields_str = ','.join(sorted(other_fields))
+                flags.append(('DUP_TOKEN', 'HIGH',
+                              f'token "{tok_lower}" di {field} juga di entry #{others_str} (di field: {fields_str})'))
+                break  # 1 DUP_TOKEN per entry cukup
 
     # ===== 🟡 MEDIUM (perlu cek) =====
     # SINONIM_INDO: indo identik dengan entry lain (case insensitive)
@@ -1484,7 +1502,7 @@ def compute_cross_entry_flags(entry, cross_idx):
     indo = (entry.get('indo') or '').strip()
     if indo and len(indo) > 1:
         indo_lower = indo.lower()
-        eids = cross_idx['indo'].get(indo_lower, set())
+        eids = indo_idx.get(indo_lower, set())
         if len(eids) > 1:
             others = sorted(eids - {eid})[:3]
             others_str = ','.join(str(o) for o in others)
@@ -1551,13 +1569,13 @@ def audit_flags_menu(data):
     words = data['words']
 
     # R-31: Build cross-entry index sekali (untuk dup_token + sinonim_indo detection)
-    print('  Build cross-entry index (untuk deteksi duplikat & sinonim lintas entry)...')
+    print('  Build cross-entry index (1 index gabungan SEMUA field — logika R-28/R-29)...')
     cross_idx = build_cross_entry_index(words)
-    n_dup_word  = sum(1 for t, eids in cross_idx['word'].items()  if len(eids) > 1)
-    n_dup_ngoko = sum(1 for t, eids in cross_idx['ngoko'].items() if len(eids) > 1)
-    n_dup_krama = sum(1 for t, eids in cross_idx['krama'].items() if len(eids) > 1)
-    n_dup_indo  = sum(1 for t, eids in cross_idx['indo'].items()  if len(eids) > 1)
-    print(f'  Token duplikat lintas entry: word={n_dup_word} ngoko={n_dup_ngoko} krama={n_dup_krama} indo={n_dup_indo}')
+    all_idx, indo_idx = cross_idx
+    n_dup_tokens = sum(1 for tok, locs in all_idx.items() if len(set(eid for eid,_ in locs)) > 1)
+    n_sinonim_indo = sum(1 for indo, eids in indo_idx.items() if len(eids) > 1)
+    print(f'  Token duplikat lintas entry (lintas field): {n_dup_tokens}')
+    print(f'  Indo duplikat (sinonim potensial): {n_sinonim_indo}')
     print()
 
     # Compute flags untuk SEMUA entries (per-entry + cross-entry)
@@ -1740,7 +1758,7 @@ def main_menu(data):
         supabase_ok = bool(os.environ.get('NEXT_PUBLIC_SUPABASE_URL') and os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY'))
 
         print('╔' + '═' * 60 + '╗')
-        print('║  📖 Kamus Jawa Editor (TUI v13)' + ' ' * 24 + '║')
+        print('║  📖 Kamus Jawa Editor (TUI v13.1)' + ' ' * 24 + '║')
         print('║  Tab/panah untuk navigasi, Enter untuk pilih' + ' ' * 11 + '║')
         print('╚' + '═' * 60 + '╝')
         print()
@@ -1907,7 +1925,7 @@ def upload_to_supabase():
 def main():
     os.system('clear' if os.name != 'nt' else 'cls')
     print('╔' + '═' * 60 + '╗')
-    print('║  📖 Kamus Jawa Editor (TUI v13)' + ' ' * 24 + '║')
+    print('║  📖 Kamus Jawa Editor (TUI v13.1)' + ' ' * 24 + '║')
     print('║  Menu pre-built — arrow keys, no jq needed' + ' ' * 17 + '║')
     print('╚' + '═' * 60 + '╝')
     print()
