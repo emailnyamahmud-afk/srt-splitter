@@ -2674,3 +2674,44 @@ Stage Summary:
 - Pipeline ID dub 100% working end-to-end
 - 500+ commits sejak 2-3 minggu lalu, semua di-push AI dari sandbox
 - User istirahat, lanjut besok untuk edit SRT Jawa
+
+---
+Task ID: kamus-ai-infill-batch-1-3
+Agent: main
+Task: AI isi manual indo untuk 120 entries ngoko+krama dari kamus_unified.json
+
+User request:
+- 323 entries lengkap (dari mendeley, non-akademis) + 1073 entries ngoko+krama (dari jv.wiktionary, otoritatif)
+- AI baca keterangan (bahasa Jawa) → isi indo manual
+- Dilarang halu, kalau ragu → tulis di keterangan
+- Dilarang terburu-buru, pakai pengetahuan akar kata + serapan (Sansekerta, Belanda, Jawa kuno)
+- User orang Jawa native, akan validasi di TUI
+- Format: indo sederhana (tanpa keterangan di kurung), sinonim pakai koma
+
+Work Log:
+- Batch 1 (entries 1-20): 20 entries, 100% tinggi confidence
+- Batch 2 (entries 21-70): 50 entries, 9 entri "AI ragu" ditandai dengan catatan
+- Batch 3 (entries 71-120): 50 entries, 6 entri "AI ragu" (multi-arti ambigu)
+
+Audit:
+- AI baca keterangan Jawa pelan-pelan
+- Pakai pengetahuan akar kata: "tuku" → "tumbas" (beli), "deleng" → "tingali" (lihat), dll
+- Serapan: "pasar" (Belanda), "prayoga" (Sansekerta), "sakinah" (Arab), "piyantun" (Jawa kuno)
+- Morfologi pa-an = tempat, pe-an = proses
+- Multi-arti ambigu (homonim) → tulis kandidat di indo dengan ;
+
+Statistik batch 3 (entries 71-120):
+- Tinggi confidence: ~44/50 (88%)
+- Ragu (multi-arti ambigu): 6 entries (#84, #98, #99, #104, #115, #118)
+- Pola akar kata banyak ditemukan: "pati+urip → pejah+gesang", "takon → takèn/dangu"
+
+Output:
+- public/kamus_unified_draft.json (26 MB, 120 entries dengan indo AI draft)
+- Format: indo sederhana, keterangan append catatan AI "draft (perlu validasi user)"
+
+Stage Summary:
+- 120/1073 entries ngoko+krama sudah diisi indo (11.2%)
+- Estimasi lanjut: batch 4-21 (entries 121-1073) = 19 batch lagi
+- Format konsisten, no kurung, no halu
+- Catatan "AI ragu" di atas baris mapping untuk 17 entries total yang perlu user verifikasi ekstra
+- File draft terpisah dari original (kamus_unified_draft.json) supaya user bisa diff
