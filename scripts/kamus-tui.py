@@ -1094,16 +1094,12 @@ def detect_duplicates(data):
     print()
 
     # Index: lowercase kata → list of (entry_id, field, original_word)
-    # Cek di field word, ngoko, krama, indo (tokenize comma)
+    # Cek di field word, ngoko, krama, indo (tokenize comma di SEMUA field)
     index = defaultdict(list)
     for w in words:
         eid = w.get('entry_id', '?')
-        # word field
-        word = (w.get('word') or '').strip()
-        if word and len(word) > 1:
-            index[word.lower()].append((eid, 'word', word))
-        # ngoko, krama, indo — tokenize comma
-        for field in ['ngoko', 'krama', 'indo']:
+        # SEMUA field di-tokenize comma, termasuk word
+        for field in ['word', 'ngoko', 'krama', 'indo']:
             val = (w.get(field) or '').strip()
             if val:
                 for tok in val.split(','):
