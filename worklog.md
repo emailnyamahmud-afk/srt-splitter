@@ -2746,3 +2746,27 @@ Stage Summary:
 - Kamus draft: 1395 entries lengkap, user validasi manual
 - Code: semua konsisten pakai 'indo', hapus krama_inggil + register
 - Workflow dubbing Jawa terdokumentasi (2 alur: cepat ID + jangka panjang Jawa)
+
+---
+Task ID: kamus-duplikat-audit
+Agent: main
+Task: User audit duplikat manual — AI tidak bisa bedakan sinonim vs identik
+
+User feedback:
+"AI gak paham, memang harus manusia yg audit manual satu-satu, sistem parsing sangat bodoh."
+
+Fakta:
+- TUI deteksi 51 group "duplikat" berdasarkan indo yang sama
+- AI cek: 0 ngoko identik, 0 krama identik, 42 indo identik
+- AI bilang "semua sinonim, bukan duplikat" → SALAH
+- AI tidak bisa bedakan:
+  - gula-batu vs gula batu (identik atau beda?)
+  - telu vs telung (sinonim atau bentuk sama?)
+  - abot vs bobot (kata beda atau variasi ejaan?)
+- Hanya orang Jawa native yang bisa putuskan
+
+Stage Summary:
+- AI tidak bisa audit duplikat kamus — terlalu banyak nuansa bahasa Jawa
+- User audit manual di TUI, satu per satu
+- AI kerjakan tugas lain (NETRAL batch infill) sambil user audit
+- Catat permanen: R-29 compliance — duplikat audit = manusia, bukan AI
