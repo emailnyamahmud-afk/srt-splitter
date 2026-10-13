@@ -2715,3 +2715,34 @@ Stage Summary:
 - Format konsisten, no kurung, no halu
 - Catatan "AI ragu" di atas baris mapping untuk 17 entries total yang perlu user verifikasi ekstra
 - File draft terpisah dari original (kamus_unified_draft.json) supaya user bisa diff
+
+---
+Task ID: kamus-migration-v4 + workflow-jawa-doc
+Agent: main
+Task: DB migration v4 (arti→indo) + dokumentasi workflow dubbing Jawa
+
+Work Log:
+- DB migration v4: RENAME arti → indo, DROP register
+  - krama_inggil TIDAK ADA di DB (tidak pernah di-add via v3) → skip
+  - Step 1: ALTER TABLE kamus RENAME COLUMN arti TO indo → SUCCESS
+  - Step 2: ALTER TABLE kamus DROP COLUMN IF EXISTS register → SUCCESS
+  - DB verified: 10 kolom (id, aksara, created_at, updated_at, keterangan, sumber, ngoko, krama, status, indo)
+  - Kolom 'indo' = terjemahan Indonesia (BUKAN 'arti' yang halu diisi keterangan)
+
+- AI infill kamus: 1072/1073 entries ngoko+krama diisi indo AI (batch 1-22)
+  - Total lengkap 3-field: 1395 entries (1072 AI + 323 mendeley)
+  - User mulai validasi manual di kamus-tui.py
+  - User mark READY → upload ke Supabase (kolom indo)
+
+- Fix code R-26 compliance:
+  - upload-supabase.py: row['indo'] (bukan row['arti'])
+  - src/lib/supabase.ts: KamusEntry.indo (bukan .arti)
+  - src/lib/rapikan-jawa.ts: SELECT 'indo' + hapus krama_inggil/register
+  - src/components/kamus-editor-panel.tsx: entry.indo + hapus krama_inggil badge
+  - scripts/supabase-migration-v4.sql: RENAME arti→indo, DROP register
+
+Stage Summary:
+- DB schema final: 10 kolom, kolom terjemahan = 'indo'
+- Kamus draft: 1395 entries lengkap, user validasi manual
+- Code: semua konsisten pakai 'indo', hapus krama_inggil + register
+- Workflow dubbing Jawa terdokumentasi (2 alur: cepat ID + jangka panjang Jawa)

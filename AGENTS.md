@@ -51,41 +51,62 @@ Setelah checklist selesai, AI siap kerja. Tidak perlu ulang di chat berikutnya d
 
 Kalau ada konflik antara dokumen, `PROJECT_RULES.md` menang.
 
-## Status pipeline (12 Okt 2026, 23:45 WIB)
+## Status pipeline (13 Okt 2026, 05:00 WIB)
 
 ```
-✅ Fase 1: yt-dlp v5     → S5-ori.mp4 (80 MB) + S5-ori-audio.m4a (126 MB) + S5-ori.id.srt (3866 cue, 2j 16m)
-✅ Fase 2: Demucs        → no_vocals.mp3 (312 MB, MP3 320, 16m37s di M1 MPS)
-✅ Fase 3a: edge-tts-tui.py (LOKAL — 100% sukses!)
-   Hasil: S5-ori.id-audio-id-dub.wav (374.4 MB, WAV 24kHz mono 16-bit, 2j 16m 19s)
-   Stat: 3865/3866 cue OK (99.97%), 1 gagal (Pass 1 error, no nomor cue di log)
-   Cache: 7304 MP3 (100.5 MB) di ~/Dubbing/.cache/ — disimpan untuk resume + DaVinci manual
-   Config: voice Ardi -10Hz, Smart Fit cap 2.0x, prefix S5-ori.id
-   Waktu: ~3 jam (rate stabil 20 cue/menit, M1 16GB tidak panas)
-⏳ Fase 3b: TTS Jawa     → audio-jw-dub.wav (web app SRT editor, nunggu code fix)
-✅ Fase 4: mix-tui.py v3.3 (SELESAI — 2 mode + 4 opsi posisi tested)
-   Mode A: Stream copy (3m 10s, 275 MB, no SRT)
-     Output: S5-id-final.mp4
-     Video stream copy (no re-encode) → 100% sync
-   Mode B: Burn SRT Indonesia (3m 53s, 2.25 GB, h264_videotoolbox M1)
-     Output: S5-id-final-sub-A.mp4 (Opsi A tested, verified user)
-     Speed: 35x real-time (M1 VideoToolbox hardware, tidak panas)
-     SRT: font 18pt putih outline hitam, Alignment=2 bottom, MarginV=20, Justify=2 center
-     Layout verified VLM: Indonesia bottom + CENTER, Mandarin atas (stacked properly, no overlap)
-   Status: ✅ user confirm 'opsi A sudah sesuai yg user mau'
+✅ Fase 1: yt-dlp v5     → download mp4 + m4a + srt-id
+✅ Fase 2: Demucs        → no_vocals.mp3 (SFX bersih)
+✅ Fase 3a: edge-tts-tui → audio-id-dub.wav (dub Indonesia, lokal M1)
+✅ Fase 3b: TTS Jawa     → audio-jw-dub.wav (PERLU: SRT Jawa dari web editor)
+✅ Fase 4: mix-tui v3.3  → mp4-id-final.mp4 (Mode A stream copy + Mode B burn SRT)
+```
 
-### Analisis size 2.25 GB (Mode B)
-- Bitrate config: -b:v 2M (FIX, tidak peduli resolusi input)
-- Hitungan: 2 Mbps video × 8196s + 192k audio × 8196s = ~2.25 GB
-- Resolusi input (480p/720p/1080p) TIDAK ngaruh ke size output
-- Yang ngaruh: bitrate output × durasi
+### Workflow Dubbing — 2 Alur
 
-### Trade-off resolusi vs bitrate (untuk v3.4)
-- 480p @ 2 Mbps → 2.25 GB, quality BAGUS (pixel density cukup)
-- 1080p @ 2 Mbps → 2.25 GB, quality BURUK (6.75x lebih pixel, bitrate sama)
-- 1080p @ 5 Mbps → ~5.6 GB, quality bagus (recommended untuk 1080p)
-- CRF mode (-crf 23) → size fleksibel, quality fix (libx264 default balance)
-- Mode A stream copy: < 300 MB (480p 80 MB video + 190 MB audio)
+#### Alur Cepat: Dubbing Indonesia (SUDAH JALAN end-to-end)
+
+```
+1. yt-dlp-tui.py     → mp4 ori + m4a ori + srt-id
+2. demucs-tui.py     → no_vocals.mp3 (pisah vocal, hapus vocal)
+3. edge-tts-tui.py   → audio-id-dub.wav (generate TTS dari srt-id, voice Ardi)
+4. mix-tui.py v3.3   → mp4-id-final.mp4 (mix mp4 + no_vocals + dub)
+   Mode A: stream copy (3 menit, no SRT burn)
+   Mode B: burn SRT Indonesia (4 menit, VideoToolbox M1)
+```
+
+#### Alur Jangka Panjang: Dubbing Jawa (PERLU kamus + web editor)
+
+```
+1. yt-dlp-tui.py     → mp4 ori + m4a ori + srt-id
+2. demucs-tui.py     → no_vocals.mp3 (pisah vocal, hapus vocal)
+3. Web app SRT editor → upload srt-id → translate ke Jawa → download srt-jawa
+   (user edit per cue: mana ngoko, mana krama, sesuai konteks drama)
+   (fitur: detect kata belum dikenal kamus → user add ke JSON → upload ke DB)
+4. edge-tts-tui.py   → audio-jw-dub.wav (generate TTS dari srt-jawa, voice Dimas/Siti)
+5. mix-tui.py v3.3   → mp4-jw-final.mp4 (mix mp4 + no_vocals + dub Jawa)
+```
+
+### Kamus Jawa Status (13 Okt 2026)
+
+```
+DB Supabase: table 'kamus' (10 kolom: id, ngoko, aksara, krama, indo, keterangan, sumber, status, created_at, updated_at)
+  - Kolom 'indo' = terjemahan Indonesia (BUKAN 'arti' — renamed via migration v4)
+  - Kolom 'krama' = krama + krama_inggil sebagai sinonim (comma-separated, R-26)
+  - TIDAK ada kolom 'krama_inggil' (R-26: DROPPED)
+  - TIDAK ada kolom 'register' (R-26: 1 entry = multi bahasa, tidak relevan)
+
+Kamus draft: kamus_unified_draft.json (1072 entries ngoko+krama+indo AI infill)
+  - Total lengkap 3-field: 1395 entries (1072 AI + 323 mendeley)
+  - User sedang validasi manual di kamus-tui.py
+  - Setelah validasi → mark READY → upload ke Supabase
+  - AI infill: batch 1-22 selesai (commit 2e23820), 99.9% coverage
+  - Format indo: sederhana, tidak ada kurung, sinonim pakai koma
+
+Kamus tumbuh natural via:
+  1. User edit SRT Jawa di web app
+  2. Fitur 'Top 100 unknown words' di SRT editor detect kata belum dikenal
+  3. User add kata ke JSON via kamus-tui.py → mark READY → upload ke DB
+  4. SRT editor reload kamus dari DB → kata baru dikenal
 ```
 
 ### Catatan Fase 3a (edge-tts-tui.py lokal — S5 SELESAI)
