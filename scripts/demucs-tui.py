@@ -262,10 +262,10 @@ def main():
     segment_choice = questionary.select(
         'Segment size:',
         choices=[
-            '3.9 detik (RAM aman, 2x lebih lambat) — REKOMENDASI 16GB',
-            '7.8 detik (default, RAM spike di 100%)',
+            '4 detik (RAM aman, 2x lebih lambat) — REKOMENDASI 16GB',
+            '8 detik (default, RAM spike di 100%)',
         ],
-        default='3.9 detik (RAM aman, 2x lebih lambat) — REKOMENDASI 16GB',
+        default='4 detik (RAM aman, 2x lebih lambat) — REKOMENDASI 16GB',
     ).ask()
     segment_size = segment_choice.split(' ')[0]
     print(f'  ✓ segment={segment_size}')
