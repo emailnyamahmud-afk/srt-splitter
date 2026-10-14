@@ -587,11 +587,11 @@ def print_banner():
     print()
 
 
-def find_srt_files(cwd):
-    """Cari file SRT di cwd."""
+def find_srt_files(search_dir):
+    """Cari file SRT di directory."""
     files = []
     for ext in ('srt', 'SRT'):
-        for f in Path(cwd).glob(f'*.{ext}'):
+        for f in Path(search_dir).glob(f'*.{ext}'):
             files.append(f.name)
     files.sort()
     return files
@@ -614,23 +614,27 @@ def main():
     print('   Navigasi: ↑↓ arrow keys, Enter konfirmasi, Ctrl+C batal')
     print()
 
-    # Step 1: Pilih SRT
+    # Step 1: Pilih SRT (default: HDD/input/)
     print('▶ Step 1/6: Pilih SRT')
-    cwd = os.getcwd()
-    srt_files = find_srt_files(cwd)
+    from config import INPUT_DIR, TTS_DIR, ensure_hdd
+    if ensure_hdd():
+        default_srt_dir = str(INPUT_DIR)
+    else:
+        default_srt_dir = os.getcwd()
+    srt_files = find_srt_files(default_srt_dir)
     if srt_files:
         srt_choice = questionary.select(
-            f'File SRT (ditemukan {len(srt_files)} di {cwd}):',
+            f'File SRT (ditemukan {len(srt_files)} di {default_srt_dir}):',
             choices=srt_files + ['[Ketik path manual]'],
             default=srt_files[0],
         ).ask()
         if srt_choice == '[Ketik path manual]':
             srt_path = questionary.text('Path SRT:').ask()
         else:
-            srt_path = srt_choice
+            srt_path = os.path.join(default_srt_dir, srt_choice)
     else:
         srt_path = questionary.text(
-            f'Tidak ada SRT di {cwd}. Ketik path lengkap:',
+            f'Tidak ada SRT di {default_srt_dir}. Ketik path lengkap:',
             default='',
         ).ask()
     if not srt_path or not os.path.isfile(srt_path):
@@ -639,14 +643,18 @@ def main():
     print(f'  ✓ {srt_path}')
     print()
 
-    # Step 2: Output dir
+    # Step 2: Output dir (default: HDD/tts/)
     print('▶ Step 2/6: Pilih output directory')
+    if ensure_hdd():
+        default_out = str(TTS_DIR)
+    else:
+        default_out = os.path.dirname(os.path.abspath(srt_path))
     output_dir = questionary.text(
-        'Output directory (default: sama dengan SRT):',
-        default=os.path.dirname(os.path.abspath(srt_path)),
+        'Output directory:',
+        default=default_out,
     ).ask()
     if not output_dir:
-        output_dir = os.path.dirname(os.path.abspath(srt_path))
+        output_dir = default_out
     os.makedirs(output_dir, exist_ok=True)
     print(f'  ✓ {output_dir}')
     print()

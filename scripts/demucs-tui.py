@@ -80,30 +80,35 @@ def clear_screen():
 def print_banner():
     clear_screen()
     print('╔' + '═' * 64 + '╗')
-    print('║  🎵 Demucs SFX Separator (TUI Mode)' + ' ' * 25 + '║')
+    print('║  🎵 Demucs SFX Separator (TUI Mode v2)' + ' ' * 25 + '║')
     print('║  Output MP3 320kbps | vocals ori auto-hapus' + ' ' * 18 + '║')
     print('╚' + '═' * 64 + '╝')
     print()
 
 
-def find_files_in_cwd(extensions):
-    """Cari file dengan extension tertentu di current working dir."""
+def find_files_in_dir(search_dir, extensions):
+    """Cari file dengan extension tertentu di directory."""
     files = []
-    cwd = os.getcwd()
     for ext in extensions:
-        for f in glob.glob(os.path.join(cwd, f'*.{ext}')):
+        for f in glob.glob(os.path.join(search_dir, f'*.{ext}')):
             files.append(os.path.basename(f))
-        for f in glob.glob(os.path.join(cwd, f'*.{ext.upper()}')):
+        for f in glob.glob(os.path.join(search_dir, f'*.{ext.upper()}')):
             files.append(os.path.basename(f))
     files.sort()
     return files
 
 
-def select_file(prompt, extensions, default=None):
+def select_file(prompt, extensions, search_dir=None, default=None):
     """Pilih file pakai questionary select (arrow keys)."""
-    available = find_files_in_cwd(extensions)
+    from config import INPUT_DIR, ensure_hdd
+    if search_dir is None:
+        if ensure_hdd():
+            search_dir = str(INPUT_DIR)
+        else:
+            search_dir = os.getcwd()
+    available = find_files_in_dir(search_dir, extensions)
     if not available:
-        print(f'  ℹ Tidak ada file {" / ".join(extensions)} di folder ini.')
+        print(f'  ℹ Tidak ada file {" / ".join(extensions)} di {search_dir}')
         path = questionary.text(
             f'{prompt} (ketik path lengkap):',
             default=default or '',
@@ -117,7 +122,8 @@ def select_file(prompt, extensions, default=None):
     ).ask()
     if selected == '[Ketik path manual]':
         return questionary.text(f'{prompt} (ketik path lengkap):', default=default or '').ask()
-    return selected
+    # Return full path
+    return os.path.join(search_dir, selected)
 
 
 def check_demucs():
@@ -186,14 +192,16 @@ def main():
     print(f'  ✓ {input_file}')
     print()
 
-    # Step 2: Pilih output directory
+    # Step 2: Pilih output directory (default: HDD/demucs/)
     print('▶ Step 2/6: Pilih output directory')
+    from config import DEMUCS_DIR, ensure_hdd
+    default_out = str(DEMUCS_DIR) if ensure_hdd() else './output'
     output_dir = questionary.text(
-        'Output directory (default: ./output):',
-        default='./output',
+        'Output directory:',
+        default=default_out,
     ).ask()
     if not output_dir:
-        output_dir = './output'
+        output_dir = default_out
     print(f'  ✓ {output_dir}')
     print()
 

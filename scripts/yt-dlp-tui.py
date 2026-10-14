@@ -97,10 +97,12 @@ def main():
         'Best quality (auto, bisa AV1/VP9)',
     ], default='480p (file kecil, cepat, aman untuk Demucs)').ask()
 
-    # Step 3: Output dir
-    output_dir = questionary.text('Output dir:', default=os.path.expanduser('~/Dubbing')).ask()
+    # Step 3: Output dir (default: HDD)
+    from config import INPUT_DIR, ensure_hdd
+    default_dir = str(INPUT_DIR) if ensure_hdd() else os.path.expanduser('~/Dubbing')
+    output_dir = questionary.text('Output dir:', default=default_dir).ask()
     if not output_dir:
-        output_dir = os.path.expanduser('~/Dubbing')
+        output_dir = default_dir
     output_dir = os.path.expanduser(output_dir)
     os.makedirs(output_dir, exist_ok=True)
 

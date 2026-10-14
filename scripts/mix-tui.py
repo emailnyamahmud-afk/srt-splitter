@@ -107,20 +107,26 @@ def print_banner():
     print()
 
 
-def find_files_in_cwd(extensions):
+def find_files_in_dir(search_dir, extensions):
     files = []
-    cwd = os.getcwd()
     for ext in extensions:
-        for f in glob.glob(os.path.join(cwd, f'*.{ext}')):
+        for f in glob.glob(os.path.join(search_dir, f'*.{ext}')):
             files.append(os.path.basename(f))
-        for f in glob.glob(os.path.join(cwd, f'*.{ext.upper()}')):
+        for f in glob.glob(os.path.join(search_dir, f'*.{ext.upper()}')):
             files.append(os.path.basename(f))
     files.sort()
     return list(dict.fromkeys(files))  # deduplicate
 
 
-def select_file(prompt, extensions, default=None):
-    available = find_files_in_cwd(extensions)
+def select_file(prompt, extensions, search_dir=None, default=None):
+    from config import INPUT_DIR, DEMUCS_DIR, TTS_DIR, ensure_hdd
+    if search_dir is None:
+        # Default: cari di HDD subfolder yg relevan
+        if ensure_hdd():
+            search_dir = str(INPUT_DIR)
+        else:
+            search_dir = os.getcwd()
+    available = find_files_in_dir(search_dir, extensions)
     if not available:
         path = questionary.text(f'{prompt} (ketik path lengkap):', default=default or '').ask()
         return path
@@ -128,7 +134,7 @@ def select_file(prompt, extensions, default=None):
     selected = questionary.select(prompt, choices=choices, default=available[0]).ask()
     if selected == '[Ketik path manual]':
         return questionary.text(f'{prompt} (ketik path lengkap):', default=default or '').ask()
-    return selected
+    return os.path.join(search_dir, selected)
 
 
 def find_ffmpeg():
@@ -351,25 +357,26 @@ def main():
 
     total = 6
 
-    # Step 1: MP4 ori (video)
+    # Step 1: MP4 ori (video) — cari di HDD/input/
     print(f'▶ Step 1/{total}: Pilih file MP4 ori (video)')
-    mp4 = select_file('MP4 ori (mis. S5-ori.mp4 dari yt-dlp v5):', ['mp4'])
+    from config import INPUT_DIR, DEMUCS_DIR, TTS_DIR, MIX_DIR, ensure_hdd
+    mp4 = select_file('MP4 ori (mis. S5-ori.mp4):', ['mp4'], search_dir=str(INPUT_DIR) if ensure_hdd() else None)
     if not mp4:
         print('Batal.'); sys.exit(0)
     print(f'  ✓ {mp4}')
     print()
 
-    # Step 2: no_vocals (SFX bersih dari Demucs)
+    # Step 2: no_vocals (SFX bersih dari Demucs) — cari di HDD/demucs/
     print(f'▶ Step 2/{total}: Pilih file SFX bersih (no_vocals.mp3 / .wav)')
-    sfx_wav = select_file('SFX bersih (no_vocals dari demucs-tui):', ['mp3', 'wav', 'flac'])
+    sfx_wav = select_file('SFX bersih (no_vocals):', ['mp3', 'wav', 'flac'], search_dir=str(DEMUCS_DIR) if ensure_hdd() else None)
     if not sfx_wav:
         print('Batal.'); sys.exit(0)
     print(f'  ✓ {sfx_wav}')
     print()
 
-    # Step 3: Audio dub
+    # Step 3: Audio dub — cari di HDD/tts/
     print(f'▶ Step 3/{total}: Pilih file audio dub WAV')
-    audio_dub = select_file('Audio dub (mis. S5-ori.id-audio-id-dub.wav):', ['wav'])
+    audio_dub = select_file('Audio dub (mis. S5-ori.id-audio-id-dub.wav):', ['wav'], search_dir=str(TTS_DIR) if ensure_hdd() else None)
     if not audio_dub:
         print('Batal.'); sys.exit(0)
     print(f'  ✓ {audio_dub}')
@@ -408,7 +415,7 @@ def main():
     srt_position = 'top'  # default top supaya tidak overlap SRT Mandarin
     if burn_srt:
         print(f'▶ Step 4.6/{total}: Pilih SRT Indonesia untuk burn')
-        srt_path = select_file('File SRT Indonesia (mis. S5-ori.id.srt):', ['srt'])
+        srt_path = select_file('File SRT Indonesia (mis. S5-ori.id.srt):', ['srt'], search_dir=str(INPUT_DIR) if ensure_hdd() else None)
         if not srt_path:
             print('Batal.'); sys.exit(0)
         validate_input_file(srt_path, 'SRT Indonesia')

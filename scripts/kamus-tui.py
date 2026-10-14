@@ -57,28 +57,20 @@ KAMUS_PATH = Path.home() / 'Dubbing' / 'kamus-jawa-draft.json'
 # Default = kamus-jawa-draft.json (44.005 entries, semua sumber campur).
 # Opsi lain = subset PURE per sumber, lebih bersih, kerja bertahap.
 KAMUS_SOURCES = {
-    'bersih': {
-        'path': Path.home() / 'Dubbing' / 'kamus_bersih.json',
-        'label': 'kamus_bersih.json (12.759 entries — INDO jangkar, 0 duplikat)',
-        'desc': 'Kamus BERSIH — INDO jangkar, 1 konsep 1 entry, 0 duplikat. Source: sastra-jawa + milstrike + existing LENGKAP + jv.wiktionary. Penulisan baku jv.wiktionary.',
-        'url': 'https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus_bersih.json?t=CMD_TIMESTAMP',
-    },
-    'unified': {
-        'path': Path.home() / 'Dubbing' / 'kamus_unified.json',
-        'label': 'kamus_unified.json (46.929 entries — jv + mendeley + dasanama + lemma + lampiran + angka)',
-        'desc': 'Kamus UTAMA — jv.wiktionary XML + mendeley + dasanama PURE + lemma PURE + lampiran PURE + angka PURE. 1 konsep = 1 entry. Skip kamus draft merged (sampah AI). Source paling lengkap + bersih.',
-        'url': 'https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus_unified.json?t=CMD_TIMESTAMP',
+    'jv': {
+        'path': Path.home() / 'Dubbing' / 'jv.wiktionary.json',
+        'label': 'jv.wiktionary.json (44.585 entries — SOURCE OF TRUTH)',
+        'desc': 'Kamus Jawa dari jv.wiktionary XML dump (parser BENAR). 44.585 entries, 99% definisi Jawa, 2.397 dgn register template, 8.618 dgn indo.',
+        'url': 'https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/jv.wiktionary.json?t=CMD_TIMESTAMP',
     },
 }
 
-# Default source: 'bersih' (kamus BERSIH — INDO jangkar, 0 duplikat).
-CURRENT_SOURCE = 'bersih'
+# Default source: 'jv' (jv.wiktionary.json — SOURCE OF TRUTH).
+CURRENT_SOURCE = 'jv'
 
-# .env file di ~/Dubbing/ — user simpan Supabase URL + anon key di sini
-# Format .env:
-#   NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-#   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx...
-ENV_FILE = Path.home() / 'Dubbing' / '.env'
+# .env file di /Volumes/HDD/Dubbing/ — user simpan Supabase URL + anon key di sini
+from config import ENV_FILE
+ENV_FILE_PATH = ENV_FILE
 
 
 def load_env_file():
@@ -1843,7 +1835,7 @@ def main_menu(data):
         supabase_ok = bool(os.environ.get('NEXT_PUBLIC_SUPABASE_URL') and os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY'))
 
         print('╔' + '═' * 60 + '╗')
-        print('║  📖 Kamus Jawa Editor (TUI v15)' + ' ' * 24 + '║')
+        print('║  📖 Kamus Jawa Editor (TUI v16)' + ' ' * 24 + '║')
         print('║  Tab/panah untuk navigasi, Enter untuk pilih' + ' ' * 11 + '║')
         print('╚' + '═' * 60 + '╝')
         print()
@@ -2010,7 +2002,7 @@ def upload_to_supabase():
 def main():
     os.system('clear' if os.name != 'nt' else 'cls')
     print('╔' + '═' * 60 + '╗')
-    print('║  📖 Kamus Jawa Editor (TUI v15)' + ' ' * 24 + '║')
+    print('║  📖 Kamus Jawa Editor (TUI v16)' + ' ' * 24 + '║')
     print('║  Menu pre-built — arrow keys, no jq needed' + ' ' * 17 + '║')
     print('╚' + '═' * 60 + '╝')
     print()
