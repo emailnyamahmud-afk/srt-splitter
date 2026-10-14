@@ -80,8 +80,8 @@ def clear_screen():
 def print_banner():
     clear_screen()
     print('╔' + '═' * 64 + '╗')
-    print('║  🎵 Demucs SFX Separator (TUI Mode v2)' + ' ' * 25 + '║')
-    print('║  Output MP3 320kbps | vocals ori auto-hapus' + ' ' * 18 + '║')
+    print('║  🎵 Demucs SFX Separator (TUI v2)' + ' ' * 25 + '║')
+    print('║  WAV → ffmpeg MP3 320kbps | RAM aman segment' + ' ' * 18 + '║')
     print('╚' + '═' * 64 + '╝')
     print()
 
@@ -177,7 +177,7 @@ def main():
     print()
 
     print('📋 Step-by-step, ikuti petunjuk di layar.')
-    print('   Navigasi: ↑↓ arrow keys, Enter konfirmasi, q batal')
+    print('   Navigasi: ↑↓ arrow keys, Enter konfirmasi, Ctrl+C batal')
     print()
 
     # Step 1: Pilih file audio/video
@@ -339,6 +339,7 @@ def main():
         model_output_dir = Path(output_dir) / model_name / base_name
         if use_two_stems:
             no_vocals_wav = model_output_dir / 'no_vocals.wav'
+            no_vocals_mp3 = model_output_dir / 'no_vocals.mp3'  # define early, avoid NameError
             vocals_wav = model_output_dir / 'vocals.wav'
             
             # Auto-hapus vocals.wav (tidak dipakai untuk dubbing)
@@ -355,7 +356,7 @@ def main():
                 print(f'📁 WAV output: {no_vocals_wav} ({wav_size:.1f} MB)')
                 
                 # Convert WAV → MP3 pakai ffmpeg (streaming, RAM kecil)
-                no_vocals_mp3 = model_output_dir / 'no_vocals.mp3'
+                # no_vocals_mp3 sudah didefinisikan di atas
                 print()
                 print('🔄 Convert WAV → MP3 320kbps (ffmpeg streaming)...')
                 ffmpeg_bin = shutil.which('ffmpeg')
