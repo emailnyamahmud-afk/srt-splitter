@@ -1,48 +1,48 @@
 #!/usr/bin/env python3
 """
-merge-milstrike.py v2 — Merge kamus milstrike_jv_id.json ke kamus_unified_draft.json
+merge-milstrike.py v3 — Merge kamus milstrike_jv_id.json ke kamus_unified.json
++ Standarisasi baku jv wiktionary
++ Auto-merge SEMUA duplikat lintas entry (1 KONSEP 1 ENTRY, hasil 0 duplikat)
 
-User requirement: "jika ada kata di milstrike = auto masuk ke ngoko-indo-krama,
-jika kata sama = replace, jika kata beda tapi sama arti = sinonim = ditulis dengan koma."
+User: 'parsing simpel saja:
+  jika ada kata identik = merge,
+  kalau sinonim = tulis koma, entah itu di ngoko, indo, krama.
+  sehingga hasil apapun engga ada duplikat.
+  Alasan apapun engga ada duplikat. karena sudah sinonim.
+  jangan ada data yg dihapus, jika identik merge/rewrite itu wajar,
+  jika konsep sama? tinggal masuk sinonim.'
 
-Source milstrike_jv_id.json (1.836 entries, format {kata_jawa: indo_translation}):
-  - Quality SANGAT BERSIH — terjemahan singkat 1-3 kata, bukan definisi panjang
-  - Cross-reference lebih pintar dari AI parsing mentah
+Strategy v3:
+1. STANDARISASI baku: milstrike jv_key → baku jv wiktionary
+   - Build baku index dari word field kamus (sudah baku dari jv wiktionary raw)
+   - Untuk tiap milstrike jv_key, cari match (case-insensitive + diacritic-insensitive)
+   - Match single → replace dengan baku (mis. 'ampek' → 'ampèk')
+   - Multi baku → ambil yg paling sering muncul di word field
+   - No match → tetap apa adanya
 
-Strategy v2 (cross-reference per field):
-  1. Build index per FIELD: word, ngoko, krama, indo (lowercase token)
-  2. Untuk tiap milstrike (key, value):
-     a. Tokenize key (split ',' dan ';')
-     b. Match token di field word/ngoko/krama
-     c. Action per match:
-        - Match + indo KOSONG → FILL indo dengan milstrike value
-        - Match + indo terisi + WORD_LEAK pattern (indo='word;definisi:')
-          → REPLACE indo (milstrike lebih bersih)
-        - Match + indo terisi OK → SKIP
-     d. No match di word/ngoko/krama:
-        - Cek value match di indo index (exact, lowercase)
-          - Match → SINONIM: tambah key milstrike ke word field entry existing dengan koma
-          - No match → ADD new entry
+2. MERGE milstrike ke kamus_unified:
+   - Phase 1: jv_key baku match di SEMUA field existing (word/ngoko/krama)
+     - indo kosong → FILL indo dengan milstrike value
+     - indo word_leak pattern → REPLACE (auto, milstrike lebih bersih)
+     - indo OK → SKIP
+   - Phase 2: milstrike value match indo existing → SINONIM
+     - Tambah jv_key baku ke word field (NETRAL, manusia tentukan register nanti)
+   - Phase 3: tidak match → ADD new entry (word=jv_key baku, indo=value)
 
-  3. Sinonim logic:
-     - Key milstrike BEDA dari word/ngoko/krama existing
-     - Tapi indo value SAMA dengan indo entry existing
-     - → Key milstrike adalah variasi/spelling alternatif (sinonim lemma)
-     - → Tambah ke word field entry existing dengan koma (R-21: word=NETRAL aman)
-     - → Cek duplikat: kalau key sudah ada di word, skip
+3. AUTO-MERGE SEMUA DUPLIKAT:
+   - Build 1 index gabungan SEMUA field (word+ngoko+krama+indo)
+   - Untuk tiap token di 2+ entries → merge otomatis (rewrite ke entry pertama)
+   - 1 konsep 1 entry, multi sinonim dengan koma
+   - Tidak ada data dihapus, hanya entry duplikat yg di-merge ke entry primary
 
-Safety:
-  - Backup kamus ke .bak.<timestamp> sebelum merge
-  - Auto-REPLACE hanya untuk word_leak pattern (label wiktionary mentah)
-  - Tidak auto-replace indo yang sudah OK
-  - R-12 compliance: status='draft' setelah merge
-  - Dry-run mode default (--apply untuk eksekusi)
+R-29: TIDAK ADA SINONIM BEDA ENTRY — kalau kata sama di entry beda = duplikat → merge.
+R-34: 1 KONSEP 1 ENTRY, sinonim dengan koma.
+R-36: Tidak ada data dihapus. Identik → merge/rewrite. Konsep sama → sinonim.
 
 Usage:
-  python3 merge-milstrike.py                    # dry-run, print report
-  python3 merge-milstrike.py --apply            # eksekusi merge
-  python3 merge-milstrike.py --milstrike path
-  python3 merge-milstrike.py --kamus path
+  python3 merge-milstrike.py                    # dry-run
+  python3 merge-milstrike.py --apply            # eksekusi merge + auto-merge duplikat
+  python3 merge-milstrike.py --apply --skip-auto-merge  # skip auto-merge duplikat
 """
 
 import os
@@ -50,8 +50,9 @@ import sys
 import json
 import argparse
 import datetime
+import unicodedata
 from pathlib import Path
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 
 def load_json(path):
@@ -64,10 +65,14 @@ def save_json(path, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
+def strip_diacritics(s):
+    """Normalize + hapus diacritics (é→e, ê→e, è→e, etc)."""
+    nf = unicodedata.normalize('NFKD', s)
+    return ''.join(c for c in nf if not unicodedata.combining(c)).lower()
+
+
 def tokenize_key(key):
-    """Tokenize key milstrike (sinonim: 'awakmu, sampean, koe' = kamu).
-    Pisah by ',' dan ';'.
-    """
+    """Tokenize key milstrike (sinonim: 'awakmu, sampean, koe' = kamu)."""
     tokens = []
     for sep in [',', ';']:
         if sep in key:
@@ -84,14 +89,66 @@ def tokenize_field(value):
     """Tokenize field value (pisah by comma)."""
     if not value:
         return []
-    return [t.strip().lower() for t in value.split(',') if t.strip() and len(t.strip()) > 1]
+    return [t.strip().lower() for t in value.split(',') if t.strip()]
+
+
+def build_baku_index(words):
+    """Build baku index dari word field kamus.
+    Return:
+      baku_idx: {stripped: Counter of baku forms}  (untuk voting multi-baku)
+    """
+    baku_idx = defaultdict(Counter)
+    for w in words:
+        word = (w.get('word') or '').strip()
+        if not word: continue
+        for tok in word.split(','):
+            tok = tok.strip()
+            if tok and len(tok) > 1:
+                stripped = strip_diacritics(tok)
+                baku_idx[stripped][tok] += 1
+    return baku_idx
+
+
+def standardize_token(token, baku_idx):
+    """Standarisasi 1 token ke baku jv wiktionary.
+    Return (baku_form, status) dimana status = 'match'|'multi'|'no_match'.
+    """
+    if not token or len(token) <= 1:
+        return token, 'no_match'
+    stripped = strip_diacritics(token)
+    baku_counter = baku_idx.get(stripped)
+    if not baku_counter:
+        return token, 'no_match'
+    if len(baku_counter) == 1:
+        baku = next(iter(baku_counter))
+        return baku, 'match'
+    # Multi baku — voting (ambil yg paling sering muncul di word field)
+    baku = baku_counter.most_common(1)[0][0]
+    return baku, 'multi'
+
+
+def standardize_key(key, baku_idx):
+    """Standarisasi milstrike key (bisa multi-token) ke baku jv wiktionary."""
+    tokens = tokenize_key(key)
+    baku_tokens = []
+    n_match = n_multi = n_no = 0
+    for tok in tokens:
+        baku, status = standardize_token(tok, baku_idx)
+        baku_tokens.append(baku)
+        if status == 'match': n_match += 1
+        elif status == 'multi': n_multi += 1
+        else: n_no += 1
+    # Rejoin dengan separator original (kalau ada comma/semicolon)
+    if ',' in key:
+        return ', '.join(baku_tokens), n_match, n_multi, n_no
+    elif ';' in key:
+        return '; '.join(baku_tokens), n_match, n_multi, n_no
+    else:
+        return baku_tokens[0] if baku_tokens else key, n_match, n_multi, n_no
 
 
 def build_field_index(words):
-    """Build index per field (lowercase token → list of entry_id).
-
-    Index: word, ngoko, krama, indo — supaya bisa cross-reference per field.
-    """
+    """Build index per field (lowercase token → list of entry_ids)."""
     idx = {
         'word':  defaultdict(list),
         'ngoko': defaultdict(list),
@@ -112,9 +169,7 @@ def build_field_index(words):
 
 
 def is_word_leak_indo(entry, milstrike_value):
-    """Cek apakah existing indo = 'word; definisi:' (label wiktionary mentah).
-    Kalau iya, milstrike_value bisa replace jadi lebih bersih.
-    """
+    """Cek apakah existing indo = 'word; definisi:' (label wiktionary mentah)."""
     word = (entry.get('word') or '').strip().lower()
     indo = (entry.get('indo') or '').strip()
     if not word or not indo:
@@ -123,27 +178,145 @@ def is_word_leak_indo(entry, milstrike_value):
     return indo_first == word and (';' in indo or ':' in indo)
 
 
-def add_sinonim_to_word(entry, new_token):
-    """Tambah new_token ke field word entry dengan koma (sinonim lemma).
+def add_sinonim_to_field(entry, new_token, target_field):
+    """Tambah new_token ke field (word/ngoko/krama) dengan koma (sinonim).
     Cek duplikat dulu. Return True kalau ditambah.
     """
-    word = (entry.get('word') or '').strip()
-    existing_tokens = [t.strip().lower() for t in word.split(',') if t.strip()]
+    existing = (entry.get(target_field) or '').strip()
+    existing_tokens = [t.strip().lower() for t in existing.split(',') if t.strip()]
     if new_token.lower() in existing_tokens:
-        return False  # Sudah ada, skip
-    new_word = f'{word}, {new_token}' if word else new_token
-    entry['word'] = new_word
+        return False
+    new_val = f'{existing}, {new_token}' if existing else new_token
+    entry[target_field] = new_val
     return True
 
 
+def merge_with_comma(a, b):
+    """Gabung 2 string field dengan koma, dedupe case-insensitive."""
+    if not a: return b
+    if not b: return a
+    tokens = [t.strip() for t in a.split(',') if t.strip()]
+    existing_lower = set(t.lower() for t in tokens)
+    for tok in b.split(','):
+        tok = tok.strip()
+        if tok and tok.lower() not in existing_lower:
+            tokens.append(tok)
+            existing_lower.add(tok.lower())
+    return ', '.join(tokens)
+
+
+def build_all_idx(words):
+    """Build 1 index gabungan SEMUA field (lintas field, lintas entry).
+    Return {token_lower: set of (eid, field)}.
+    """
+    all_idx = defaultdict(set)
+    for w in words:
+        eid = w.get('entry_id')
+        if eid is None: continue
+        for field in ['word', 'ngoko', 'krama', 'indo']:
+            val = (w.get(field) or '').strip()
+            if not val: continue
+            for tok in val.split(','):
+                tok = tok.strip().lower()
+                if tok:
+                    all_idx[tok].add((eid, field))
+    return all_idx
+
+
+def auto_merge_all_duplicates(data, baku_idx):
+    """Auto-merge SEMUA duplikat lintas entry (1 KONSEP 1 ENTRY).
+
+    Strategy:
+    - Build 1 index gabungan SEMUA field
+    - Untuk tiap token di 2+ entries:
+      - Merge entries ke 1 primary (ambil entry_id paling kecil)
+      - Gabung word/ngoko/krama/indo dengan koma
+      - Combine aksara + keterangan + sumber
+      - Delete entries secondary
+      - Re-number entry_id
+
+    R-29: TIDAK ADA SINONIM BEDA ENTRY — kalau kata sama di entry beda = duplikat → merge.
+    R-34: 1 KONSEP 1 ENTRY, sinonim dengan koma.
+    R-36: Tidak ada data dihapus, hanya entry duplikat di-merge.
+
+    Return: jumlah merge yg dilakukan.
+    """
+    words = data['words']
+    n_merges = 0
+
+    while True:
+        all_idx = build_all_idx(words)
+        # Cari token di 2+ entries
+        dupes = {tok: locs for tok, locs in all_idx.items()
+                 if len(set(eid for eid, _ in locs)) > 1}
+        if not dupes:
+            break
+
+        # Ambil duplikat pertama (token dgn #entries terbanyak)
+        sorted_dupes = sorted(dupes.items(),
+                              key=lambda x: len(set(eid for eid, _ in x[1])),
+                              reverse=True)
+        tok, locations = sorted_dupes[0]
+        unique_eids = sorted(set(eid for eid, _ in locations))
+        if len(unique_eids) < 2:
+            break
+
+        # Primary = entry_id terkecil
+        primary_eid = unique_eids[0]
+        primary_idx = next(i for i, w in enumerate(words) if w.get('entry_id') == primary_eid)
+        primary = words[primary_idx]
+
+        # Merge SEMUA secondary ke primary
+        for sec_eid in unique_eids[1:]:
+            sec_idx = next(i for i, w in enumerate(words) if w.get('entry_id') == sec_eid)
+            secondary = words[sec_idx]
+
+            # Gabung SEMUA field dengan koma
+            primary['word'] = merge_with_comma(primary.get('word', ''), secondary.get('word', ''))
+            primary['ngoko'] = merge_with_comma(primary.get('ngoko', ''), secondary.get('ngoko', ''))
+            primary['krama'] = merge_with_comma(primary.get('krama', ''), secondary.get('krama', ''))
+            primary['indo'] = merge_with_comma(primary.get('indo', ''), secondary.get('indo', ''))
+
+            # Combine aksara
+            a1 = (primary.get('aksara') or '').strip()
+            a2 = (secondary.get('aksara') or '').strip()
+            if a2 and a2 not in a1:
+                primary['aksara'] = merge_with_comma(a1, a2)
+
+            # Combine keterangan
+            k1 = (primary.get('keterangan') or '').strip()
+            k2 = (secondary.get('keterangan') or '').strip()
+            if k2 and k2 not in k1:
+                primary['keterangan'] = f'{k1} | {k2}'.strip(' |') if k1 else k2
+
+            # Sumber
+            s1 = (primary.get('sumber') or '').strip()
+            s2 = (secondary.get('sumber') or '').strip()
+            if s2 and s2 not in s1:
+                primary['sumber'] = f'{s1} + merge #{sec_eid}' if s1 else f'merge #{sec_eid}'
+
+            # R-12: status='draft' setelah merge
+            primary['status'] = 'draft'
+
+            # Delete secondary
+            del words[sec_idx]
+            n_merges += 1
+
+        # Re-number entry_id
+        for i, w in enumerate(words, 1):
+            w['entry_id'] = i
+
+    return n_merges
+
+
 def main():
-    parser = argparse.ArgumentParser(description='Merge milstrike_jv_id.json ke kamus')
+    parser = argparse.ArgumentParser(description='Merge milstrike + auto-merge duplikat')
     parser.add_argument('--apply', action='store_true',
                         help='Eksekusi merge (default: dry-run)')
-    parser.add_argument('--milstrike', default=None,
-                        help='Path ke milstrike_jv_id.json')
-    parser.add_argument('--kamus', default=None,
-                        help='Path ke kamus_unified_draft.json')
+    parser.add_argument('--skip-auto-merge', action='store_true',
+                        help='Skip auto-merge duplikat setelah merge milstrike')
+    parser.add_argument('--milstrike', default=None)
+    parser.add_argument('--kamus', default=None)
     args = parser.parse_args()
 
     # Cari milstrike file
@@ -159,9 +332,6 @@ def main():
             break
     if not milstrike_path:
         print('❌ milstrike_jv_id.json tidak ditemukan.')
-        print('   Cari di:')
-        for p in milstrike_paths:
-            if p: print(f'     {p}')
         sys.exit(1)
 
     # Cari kamus file
@@ -192,36 +362,57 @@ def main():
     print(f'📊 Kamus entries:     {len(words):,}')
     print()
 
-    print('Bangun index per field (word, ngoko, krama, indo)...')
-    idx = build_field_index(words)
-    for f in ['word', 'ngoko', 'krama', 'indo']:
-        print(f'  {f:6}: {len(idx[f]):,} token unik')
+    # ============ STEP 1: STANDARISASI BAKU ============
+    print('═' * 60)
+    print('  STEP 1: STANDARISASI milstrike jv_key ke baku jv wiktionary')
+    print('═' * 60)
+    baku_idx = build_baku_index(words)
+    print(f'  Total baku variants di kamus word field: {sum(len(v) for v in baku_idx.values()):,}')
+
+    # Standarisasi tiap milstrike key
+    ms_baku = {}  # key_baku → value
+    n_match = n_multi = n_no = 0
+    samples_standar = []
+    for key, value in ms.items():
+        baku_key, m, mu, no = standardize_key(key, baku_idx)
+        n_match += m
+        n_multi += mu
+        n_no += no
+        ms_baku[baku_key] = value
+        if (m > 0 or mu > 0) and len(samples_standar) < 10:
+            if key != baku_key:
+                samples_standar.append((key, baku_key))
+
+    print(f'  Match baku (single): {n_match:,}')
+    print(f'  Multi baku (voting):  {n_multi:,}')
+    print(f'  No match (tetap):    {n_no:,}')
+    print()
+    print('  Sample standarisasi:')
+    for orig, baku in samples_standar:
+        print(f"    {orig!r} → {baku!r}")
     print()
 
-    # Action tracking
-    fill_count = 0
-    replace_count = 0  # auto-replace word_leak
-    skip_count = 0
-    sinonim_count = 0  # key beda + indo sama → tambah ke word
-    add_count = 0
+    # ============ STEP 2: MERGE milstrike ke kamus ============
+    print('═' * 60)
+    print('  STEP 2: MERGE milstrike (baku) ke kamus_unified')
+    print('═' * 60)
+    idx = build_field_index(words)
+    eid_to_entry = {w.get('entry_id'): w for w in words}
 
+    fill_count = replace_count = skip_count = sinonim_count = add_count = 0
     fill_actions = []
     replace_actions = []
-    skip_actions = []
     sinonim_actions = []
     add_actions = []
 
-    # Build lookup: entry_id → entry (speed up)
-    eid_to_entry = {w.get('entry_id'): w for w in words}
-
-    for key, value in ms.items():
+    for key_baku, value in ms_baku.items():
         value = (value or '').strip()
         if not value:
             continue
-        key_tokens = tokenize_key(key)
+        key_tokens = tokenize_key(key_baku)
 
-        # Phase 1: Match di word/ngoko/krama (case insensitive)
-        matched_entries = {}  # eid → set of fields yg match
+        # Phase 1: Match di word/ngoko/krama
+        matched_entries = {}
         for tok in key_tokens:
             tl = tok.lower()
             for field in ['word', 'ngoko', 'krama']:
@@ -231,110 +422,63 @@ def main():
                         matched_entries[eid].add(field)
 
         if matched_entries:
-            # Sort by entry_id (ambil pertama untuk action)
             sorted_eids = sorted(matched_entries.keys())
-            action_done = False
             for eid in sorted_eids:
                 entry = eid_to_entry.get(eid)
                 if not entry:
                     continue
                 indo_existing = (entry.get('indo') or '').strip()
                 if not indo_existing:
-                    # Indo KOSONG → FILL
-                    fill_actions.append((eid, key, value))
+                    fill_actions.append((eid, key_baku, value))
                     fill_count += 1
-                    action_done = True
                     break
                 elif is_word_leak_indo(entry, value):
-                    # Indo existing = label wiktionary → REPLACE
-                    replace_actions.append((eid, key, value, indo_existing))
+                    replace_actions.append((eid, key_baku, value, indo_existing))
                     replace_count += 1
-                    action_done = True
                     break
                 else:
-                    # Indo existing OK → SKIP (log untuk audit)
-                    skip_actions.append((eid, key, value, indo_existing))
                     skip_count += 1
-                    action_done = True
                     break
-            if action_done:
-                continue
+            continue
 
-        # Phase 2: No match di word/ngoko/krama → cek SINONIM by indo
+        # Phase 2: SINONIM by indo match
         value_lower = value.lower()
         if value_lower in idx['indo']:
-            # Indo match → SINONIM candidate
-            # Cari entry existing dengan indo SAMA, tambah key milstrike ke word
             for eid in idx['indo'][value_lower]:
                 entry = eid_to_entry.get(eid)
                 if not entry:
                     continue
-                # Tambah key milstrike ke word (sinonim lemma)
-                # Ambil token pertama dari key (kalau multi-token, user bisa edit nanti)
                 primary_key = key_tokens[0]
-                added = add_sinonim_to_word(entry, primary_key)
+                # Default target = word (NETRAL, manusia tentukan register nanti)
+                added = add_sinonim_to_field(entry, primary_key, 'word')
                 if added:
-                    sinonim_actions.append((eid, key, value, entry.get('word', '')))
+                    sinonim_actions.append((eid, key_baku, value))
                     sinonim_count += 1
                 else:
-                    # Sudah ada di word → skip
-                    skip_actions.append((eid, key, value, '(sudah ada di word)'))
                     skip_count += 1
-                action_done = True
                 break
-            if action_done:
-                continue
+            continue
 
-        # Phase 3: No match sama sekali → ADD new entry
-        add_actions.append((key, value))
+        # Phase 3: ADD new entry
+        add_actions.append((key_baku, value))
         add_count += 1
 
-    print('═══════════════════════════════════════════════════════════════')
-    print('  📊 RINGKASAN MERGE v2 (cross-reference per field)')
-    print('═══════════════════════════════════════════════════════════════')
-    print(f'  ✅ FILL indo kosong (auto):                    {fill_count:5,}')
-    print(f'  🔄 REPLACE word_leak pattern (auto, milstrike lebih bersih): {replace_count:5,}')
-    print(f'  🔗 SINONIM (key beda, indo sama → tambah ke word): {sinonim_count:5,}')
-    print(f'  ⏭ SKIP indo existing OK (audit manual optional): {skip_count:5,}')
-    print(f'  ➕ ADD new entry (no match sama sekali):        {add_count:5,}')
-    print(f'  ────────────────────────────────────────────────')
-    print(f'  Total processed: {fill_count + replace_count + sinonim_count + skip_count + add_count:,}')
+    print(f'  ✅ FILL indo kosong (NETRAL→paired):     {fill_count:5,}')
+    print(f'  🔄 REPLACE word_leak (auto, milstrike lebih bersih): {replace_count:5,}')
+    print(f'  🔗 SINONIM (key beda, indo sama → koma di word): {sinonim_count:5,}')
+    print(f'  ⏭ SKIP indo existing OK:                {skip_count:5,}')
+    print(f'  ➕ ADD new entry (no match):            {add_count:5,}')
     print()
 
-    # Sample FILL
-    print('── Sample FILL (auto-isi indo kosong) ──')
-    for eid, key, value in fill_actions[:8]:
-        entry = eid_to_entry.get(eid, {})
-        print(f"  #{eid} word={entry.get('word','')[:20]!r} ngoko={entry.get('ngoko','')[:15]!r} krama={entry.get('krama','')[:15]!r} → indo={value!r}")
-    if len(fill_actions) > 8:
-        print(f'  ... +{len(fill_actions) - 8} more')
-    print()
-
-    # Sample REPLACE
-    print('── Sample REPLACE (auto-replace word_leak pattern) ──')
-    for eid, key, value, existing in replace_actions[:10]:
-        print(f"  #{eid} key={key!r}")
-        print(f"    existing indo: {existing[:60]!r}")
-        print(f"    milstrike    : {value[:60]!r}")
-    if len(replace_actions) > 10:
-        print(f'  ... +{len(replace_actions) - 10} more')
-    print()
-
-    # Sample SINONIM
-    print('── Sample SINONIM (key beda + indo sama → tambah ke word) ──')
-    for eid, key, value, new_word in sinonim_actions[:10]:
-        print(f"  #{eid} milstrike[{key!r}={value!r}]")
-        print(f"    word baru: {new_word[:80]!r}")
-    if len(sinonim_actions) > 10:
-        print(f'  ... +{len(sinonim_actions) - 10} more')
-    print()
-
-    # Sample ADD
-    print('── Sample ADD new entry (no match sama sekali) ──')
-    for key, value in add_actions[:8]:
-        print(f"  word={key!r} → indo={value!r}")
-    if len(add_actions) > 8:
-        print(f'  ... +{len(add_actions) - 8} more')
+    # ============ STEP 3: AUTO-MERGE SEMUA DUPLIKAT ============
+    print('═' * 60)
+    print('  STEP 3: AUTO-MERGE SEMUA duplikat lintas entry')
+    print('═' * 60)
+    # Preview duplikat sekarang (TANPA apply merge milstrike dulu — estimasi)
+    all_idx_pre = build_all_idx(words)
+    dupes_pre = {tok: locs for tok, locs in all_idx_pre.items()
+                 if len(set(eid for eid, _ in locs)) > 1}
+    print(f'  Duplikat saat ini (pre-merge milstrike): {len(dupes_pre):,} token')
     print()
 
     if not args.apply:
@@ -343,60 +487,51 @@ def main():
         return
 
     # ===== APPLY =====
-    print('═══════════════════════════════════════════════════════════════')
+    print('═' * 60)
     print('  🚀 APPLY MERGE')
-    print('═══════════════════════════════════════════════════════════════')
+    print('═' * 60)
 
     # Backup
     backup_path = kamus_path.with_suffix('.json.bak.' + datetime.datetime.now().strftime('%Y%m%d_%H%M%S'))
     save_json(backup_path, kamus)
-    print(f'  ✅ Backup kamus: {backup_path}')
+    print(f'  ✅ Backup: {backup_path}')
 
     # Apply FILL
-    print(f'  Apply FILL ({fill_count} entries)...')
+    print(f'  Apply FILL ({fill_count})...')
     for eid, key, value in fill_actions:
         entry = eid_to_entry.get(eid)
-        if not entry:
-            continue
+        if not entry: continue
         entry['indo'] = value
         entry['status'] = 'draft'
         sumber = (entry.get('sumber') or '').strip()
         if 'milstrike' not in sumber:
             entry['sumber'] = (sumber + ' + milstrike').strip(' +') if sumber else 'milstrike'
-    print(f'  ✅ FILL done')
 
-    # Apply REPLACE (auto word_leak)
-    print(f'  Apply REPLACE ({replace_count} entries, word_leak → milstrike)...')
-    for eid, key, value, existing in replace_actions:
+    # Apply REPLACE
+    print(f'  Apply REPLACE ({replace_count})...')
+    for eid, key, value, _ in replace_actions:
         entry = eid_to_entry.get(eid)
-        if not entry:
-            continue
+        if not entry: continue
         entry['indo'] = value
         entry['status'] = 'draft'
         sumber = (entry.get('sumber') or '').strip()
         if 'milstrike' not in sumber:
             entry['sumber'] = (sumber + ' + milstrike').strip(' +') if sumber else 'milstrike'
-    print(f'  ✅ REPLACE done')
 
-    # Apply SINONIM (tambah key ke word field existing)
-    print(f'  Apply SINONIM ({sinonim_count} entries)...')
-    # Re-run add_sinonim karena sebelumnya dry-run sudah modify entry in-memory
-    for eid, key, value, _ in sinonim_actions:
+    # Apply SINONIM
+    print(f'  Apply SINONIM ({sinonim_count})...')
+    for eid, key, value in sinonim_actions:
         entry = eid_to_entry.get(eid)
-        if not entry:
-            continue
-        # Tambah sumber milstrike
-        sumber = (entry.get('sumber') or '').strip()
-        if 'milstrike' not in sumber:
-            entry['sumber'] = (sumber + ' + milstrike').strip(' +') if sumber else 'milstrike'
-        # word sudah di-modify di phase 2 (dry-run) — tapi karena tidak save, harus apply lagi
+        if not entry: continue
         primary_key = tokenize_key(key)[0]
-        add_sinonim_to_word(entry, primary_key)
+        add_sinonim_to_field(entry, primary_key, 'word')
         entry['status'] = 'draft'
-    print(f'  ✅ SINONIM done')
+        sumber = (entry.get('sumber') or '').strip()
+        if 'milstrike' not in sumber:
+            entry['sumber'] = (sumber + ' + milstrike').strip(' +') if sumber else 'milstrike'
 
-    # Apply ADD (new entries)
-    print(f'  Apply ADD ({add_count} new entries)...')
+    # Apply ADD
+    print(f'  Apply ADD ({add_count})...')
     max_eid = max((w.get('entry_id', 0) for w in words), default=0)
     for key, value in add_actions:
         max_eid += 1
@@ -423,41 +558,38 @@ def main():
             'status': 'draft',
         }
         words.append(new_entry)
-    print(f'  ✅ ADD done')
 
-    # Save
     save_json(kamus_path, kamus)
-    print(f'  ✅ Kamus saved: {kamus_path}')
+    print(f'  ✅ Saved (post-milstrike): {kamus_path}')
+    print(f'  Total entries: {len(words):,} (sebelum: 43.630, +{add_count})')
+    print()
 
-    # Report
-    report_path = kamus_path.parent / 'merge-milstrike-report.txt'
-    with open(report_path, 'w', encoding='utf-8') as f:
-        f.write('Merge Milstrike Report v2 (cross-reference per field)\n')
-        f.write(f'Date: {datetime.datetime.now().isoformat()}\n')
-        f.write(f'Milstrike: {milstrike_path}\n')
-        f.write(f'Kamus:     {kamus_path}\n\n')
-        f.write(f'FILL auto (indo kosong di-isi): {fill_count}\n')
-        f.write(f'REPLACE auto (word_leak pattern, milstrike lebih bersih): {replace_count}\n')
-        f.write(f'SINONIM (key beda + indo sama → tambah ke word): {sinonim_count}\n')
-        f.write(f'SKIP (indo existing OK): {skip_count}\n')
-        f.write(f'ADD new entry: {add_count}\n\n')
-        f.write('═══════════════════════════════════════════════════════════════\n')
-        f.write('SKIP entries (indo existing OK, audit manual optional) — 15 sample:\n')
-        for eid, key, value, existing in skip_actions[:15]:
-            entry = eid_to_entry.get(eid, {})
-            f.write(f'#{eid} word={entry.get("word","")!r} ngoko={entry.get("ngoko","")!r} krama={entry.get("krama","")!r}\n')
-            f.write(f'  existing indo: {existing!r}\n')
-            f.write(f'  milstrike    : {value!r}\n\n')
-    print(f'  📄 Report: {report_path}')
+    # Step 3: Auto-merge SEMUA duplikat
+    if not args.skip_auto_merge:
+        print(f'  Auto-merge SEMUA duplikat...')
+        # Reload kamus
+        kamus = load_json(kamus_path)
+        n_merges = auto_merge_all_duplicates(kamus, baku_idx)
+        save_json(kamus_path, kamus)
+        print(f'  ✅ Auto-merge done: {n_merges} entries di-merge ke primary')
+        print(f'  Total entries: {len(kamus["words"]):,} (setelah auto-merge)')
+
+        # Final check: masih ada duplikat?
+        all_idx_post = build_all_idx(kamus['words'])
+        dupes_post = {tok: locs for tok, locs in all_idx_post.items()
+                      if len(set(eid for eid, _ in locs)) > 1}
+        print(f'  Duplikat tersisa: {len(dupes_post):,}  (target: 0)')
+        if dupes_post:
+            print(f'  ⚠ Masih ada duplikat — mungkin edge case (multi-token, etc). Cek manual via kamus-tui.')
+    else:
+        print(f'  Skip auto-merge (--skip-auto-merge)')
 
     print()
-    print('═══════════════════════════════════════════════════════════════')
+    print('═' * 60)
     print(f'  ✅ MERGE SELESAI')
     print(f'  FILL: {fill_count} | REPLACE: {replace_count} | SINONIM: {sinonim_count} | ADD: {add_count}')
-    print(f'  Total kamus: {len(words):,} (sebelum: {len(words) - add_count:,})')
     print(f'  Backup: {backup_path}')
-    print(f'  Report: {report_path}')
-    print('═══════════════════════════════════════════════════════════════')
+    print('═' * 60)
 
 
 if __name__ == '__main__':
