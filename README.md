@@ -1,493 +1,85 @@
 # SRT Splitter + Dubbing Jawa
 
-Aplikasi web untuk split SRT, translate subtitle, dan **dubbing Mandarin → Jawa** dengan audio natural. 100% di browser, gratis. Workflow lengkap sampai mix video dengan FFmpeg.
+Aplikasi web + Python TUI untuk dubbing Mandarin→Jawa end-to-end.
 
 **Live:** https://srt-splitter.vercel.app/
-**Source:** https://github.com/emailnyamahmud-afk/srt-splitter
 
-> **🤖 Untuk AI agent:** Baca [`AGENTS.md`](AGENTS.md) + [`PROJECT_RULES.md`](PROJECT_RULES.md) di awal setiap session. Berisi status pipeline + 21 aturan project-specific (R-01 sampai R-21: workflow, docs, marker, ejaan Jawa, netral data, no-delete).
-
-> **📖 Visi Project:** Bukan cuma dubbing Mandarin → Jawa. Ini prototype untuk **digitalisasi bahasa daerah Indonesia di era AI** (700 bahasa, 169 terancam punah). Lihat [`docs/PROJECT_VISION.md`](docs/PROJECT_VISION.md) untuk konteks lengkap + roadmap 2 tahun.
-
----
-
-## Fitur Utama
-
-### Web App (https://srt-splitter.vercel.app/)
-
-Aplikasi web punya **2 mode dubbing** sesuai bahasa target:
-
-#### Mode ON — Bahasa Indonesia (cara cepat, SUDAH JALAN) ✅
-
-Workflow lama, khusus dub Indonesia. Generate full durasi 1 klik, default voice Dimas untuk semua cue.
-
-| Fitur | Deskripsi |
-|---|---|
-| **TTS Mode ON + Smart Fit** | Per-cue dynamic TTS speed (cap 2.0x, pitch preserved), 100% sync SRT ori |
-| **TTS Pitch Control** | -10Hz laki (lebih bas), +10Hz perempuan (lebih tinggi) |
-| **TTS Mode OFF** | Natural sequential, speed 1.0x-2.0x |
-| **Default voice** | Dimas (laki-laki) untuk semua cue (auto) |
-| **Output** | `audio-id-dub.wav` (1 klik generate full durasi) |
-| **Status** | ✅ SUDAH JALAN — siap pakai untuk pipeline mix-tui.py |
-
-#### Editor SRT Jawa — Bahasa Jawa (per cue, masa depan) ⏳
-
-Workflow baru, project-based. Saat ini user masih klik per cue satu-satu untuk preview + generate.
-
-| Fitur | Deskripsi |
-|---|---|
-| **Project-based workflow** | "+ Project Baru" → upload 2 SRT (ID + Jawa), simpan ke Supabase |
-| **Multi-project** | S1 (unfinished), S2 (unfinished), tutup S2, buka S1, lanjut kapan saja |
-| **Auto-save 1.5s** | Edit cue → simpan ke Supabase otomatis (debounced) |
-| **Per-cue Preview** | "▶ Preview" → generate TTS 1 cue, play inline di browser |
-| **Browser cache (IndexedDB)** | Audio tersimpan di browser, survive reload, no re-gen untuk cue yang sama |
-| **Generate Full** | Pakai cache kalau valid (hemat API call) + auto-download WAV |
-| **Bidirectional alias** | Source apapun (aku/inyong/kula/dalem/saya/gue/ane) → convert ke ngoko/krama utama |
-| **Arti (Indonesia) alias** | "saya" → klik Ngoko → "nyong", klik Krama → "kula" (asalkan "saya" ada di arti alias) |
-| **Per-cue voice** | Dimas/Siti (Jawa) — assign per cue |
-| **Auto-strip aksen TTS** | é/è/ê → e otomatis saat TTS (SRT final tetap utuh dengan aksen) |
-| **⚠ Top 100 Unknown Words** | Panel amber: list top 100 kata tak dikenal kamus + frequency + Copy all |
-| **Badge per cue "N tak dikenal"** | Visual cue: cue mana yang perlu review (amber border) |
-| **Output** | `audio-jw-dub.wav` |
-| **Status** | ⏳ Code perlu dibereskan: default voice Dimas otomatis untuk semua cue |
-| **Kamus Jawa** | Di Supabase, progressif (50 entries/minggu), target 10.000 entries 3-pasangan terverifikasi |
-
-#### Split / Translate (SEKUNDER — utility)
-
-| Fitur | Deskripsi |
-|---|---|
-| **Split SRT** | By durasi (5m-5jam) atau by karakter (max 5000) |
-| **Translate** | EN→ID, ID→Jawa, Jawa→ID (gratis Google Translate atau premium OpenAI) |
-
-#### Kamus Jawa Viewer (READ-ONLY) ⚠
-
-| Fitur | Deskripsi |
-|---|---|
-| **Display kamus dari Supabase** | Search → lihat entry (word + ngoko + krama + arti + keterangan) |
-| **Status badge** | ✓ approved (clean/ready) / draft (belum di-edit user) |
-| **READ-ONLY** | Web app TIDAK edit kamus — editing via TUI lokal (kamus-tui.py) + upload ke Supabase |
-| **Validasi level 2** | User edit langsung di Supabase Table Editor kalau ada keanehan |
-
-### Python Scripts (lokal, untuk produksi final)
-
-| Script | Fungsi |
-|---|---|
-| **`edge-tts-tui.py`** ⭐ | TUI Edge TTS lokal (Mode ON + Smart Fit, ganti web app untuk SRT panjang) |
-| **`yt-dlp-tui.py`** ⭐ | TUI Download YouTube (v5: pilih resolusi 480/720/1080 + M4A native + SRT Indonesia) |
-| **`demucs-tui.py`** ⭐ | TUI Demucs SFX separation → no_vocals.mp3 (MP3 320 kbps, MPS acceleration) |
-| **`mix-tui.py`** ⭐ | TUI Mix MP4 + no_vocals + audio_dub v2 (auto-output, validasi, progress bar, ~1-2 menit untuk 2 jam video) |
-| **`kamus-tui.py`** ⭐ | TUI edit kamus Jawa v2.6 — Phase 1-6 refactor, filter NETRAL, R-21 word field |
-| **`upload-supabase.py`** | Upload entries approved ke Supabase (Phase 5, file terpisah, user-triggered only) |
-| **`srt-frequency-analyzer.py`** | Analisis SRT → top 100 kata tak dikenal (pakai Supabase sebagai ground of truth) |
-| **`supabase-migration-v2.sql`** | SQL: srt_projects + srt_cues (Editor SRT Jawa) |
-| **`supabase-migration-v3.sql`** | SQL: kamus krama_inggil + register |
-
----
-
-## Filosofi Workflow: SRT = Ground Truth (bukan video)
-
-**Prinsip utama**: SRT dari YouTube (Indonesia) = timestamp identik dengan MP4 ori (Mandarin). Jadi:
+## Pipeline
 
 ```
-SRT-id = timestamp identik MP4 ori
-   ↓
-TTS ngikut SRT → audio dub otomatis sync dengan MP4
-   ↓
-Mix: video stream copy (no re-encode) → 100% sync
-   ↓
-Tidak perlu repot coding video 2-4 jam durasi (render lama + bug DTS)
+yt-dlp → Demucs → edge-tts → SRT editor (web) → mix-tui
+                                          ↑
+                                     kamus-tui
+                                          ↑
+                                  jv.wiktionary.json
+                                          ↑
+                                  Supabase (verified)
 ```
 
-**Konsekuensi**:
-- TTS fit ke cue SRT (Smart Fit, dynamic speed)
-- Mix = video stream copy + audio encode saja (~1-2 menit untuk 2 jam video)
-- Edit manual (DaVinci) hanya untuk hard-burn subs, bukan untuk re-time
-- Edit SRT Jawa = pekerjaan terpisah (web app editor), tidak ganggu pipeline TTS-ID
+## Komponen
 
-**Why this works**:
-- YouTube subtitle timed manual oleh komunitas → timestamp presisi (frame-accurate)
-- Edge TTS Indonesia natural ~ 60% dari cue dur → Smart Fit speedup cap 2.0x cukup
-- Untuk dialog padat (Mandarin → Indonesia), ada overlap cue → crossfade 150ms (tumpang tindih smooth, user accept)
+### 1. yt-dlp-tui.py — Download video/audio
+- M4A native (skip MP3 conversion)
+- Subtitle JSON parser
+- 4 voice choices
+- Output: ~/Dubbing/
 
-## Workflow Dubbing Mandarin → Jawa (4 Fase, sumber terpisah)
+### 2. demucs-tui.py — Vocal separation
+- M1 MPS acceleration (16m untuk 2 jam audio)
+- Auto-hapus vocals.mp3
+- Output: no_vocals.wav (instrumental)
 
-```
-Fase 1: Download dari YouTube (yt-dlp-tui.py v5, Python lokal)
-  Pilih resolusi (480/720/1080) → output: {name}.mp4 (video) + {name}-audio.m4a (audio native YouTube) + {name}.id.srt
-  v5: M4A native (skip konversi MP3, hemat ~15s + disk), subtitle parser dari JSON (count benar, bukan 950), hasil listing pakai glob(base_name) bukan 'file terbaru'
-        ↓
-Fase 2: SFX Separation dengan Demucs (demucs-tui.py, Python lokal)
-  Input: {name}-audio.m4a → Output: no_vocals.mp3 (SFX bersih, MP3 320 kbps)
-        ↓
-Fase 3a: TTS Indonesia via edge-tts-tui.py (LOKAL — ganti web app Mode ON)
-  Input: {name}.id.srt → Smart Fit (cap 2.0x) → pitch (-10Hz laki) → voice Ardi
-  Output: {prefix}-audio-id-dub.wav (full durasi 1 file utuh, 24kHz mono 16-bit)
-  v3: 100% lokal di Mac, no Vercel limit, no Microsoft rate-limit. RAM ~750 MB untuk 5000 cue.
-        ↓
-Fase 3b: Web app — SRT editor (Bahasa Jawa, per cue) — NUNGGU CODE FIX
-  + Project Baru → upload SRT ID + SRT Jawa → simpan ke Supabase
-  Edit cue (text/voice/ngoko/krama) → Preview per cue → Generate Full
-  Output: audio-jw-dub.wav
-  Kamus Jawa di Supabase (progressif, 50 entries/minggu)
-        ↓
-Fase 4: Mix SFX + Dub (mix-tui.py v2, Python lokal)
-  Input: {name}.mp4 + no_vocals.mp3 + {prefix}-audio-id-dub.wav (atau audio-jw-dub.wav)
-  Output: {prefix}-id-final.mp4 (auto-detect dari prefix MP4, video stream copy, 0 DTS warnings)
-  v2: 8 bug fix (default output auto, validasi file, warning dub < 90% MP4, progress bar FFmpeg real-time)
-        ↓
-Fase 5 (opsional): Edit final di DaVinci Resolve (manual)
-```
+### 3. edge-tts-tui.py — TTS generation (100% lokal)
+- Edge TTS Python WebSocket (bukan browser)
+- Smart Fit algorithm (speedup+slowdown)
+- Inline mix (RAM efficient untuk 5000+ cues)
+- Output: dub-id.wav + subs-id.srt
 
----
+### 4. SRT editor (web app)
+- Split SRT per cue
+- Translate Mandarin→Jawa (kamus lookup)
+- Add new entries to kamus via kamus-tui
+- Build: Next.js + Vercel
 
-## Setup
+### 5. mix-tui.py — Final mix
+- Mode A: stream copy (3 menit, no SRT burn)
+- Mode B: burn SRT (4 menit, M1 VideoToolbox 35x)
+- 4 position options (Opsi A/B/C/D)
+- Output: final MP4
 
-### 1. Supabase (untuk Editor SRT Jawa project-based)
+## Kamus
 
-1. Daftar [supabase.com](https://supabase.com) (free, no credit card)
-2. Create project → dapat Project URL + anon key
-3. Set Vercel env vars:
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx
-   ```
-4. Run SQL migrations di Supabase SQL Editor:
-   - `scripts/supabase-migration-v2.sql` (srt_projects + srt_cues untuk Editor)
-   - `scripts/supabase-migration-v3.sql` (kamus: krama_inggil + register)
+### jv.wiktionary.json — Lembar kerja
+- 44.585 entries dari jv.wiktionary XML dump (parser BENAR)
+- Field: word (lemma baku), definisi (arti Jawa), aksara, ngoko, krama, terjemahan_indo, keterangan (raw wikitext)
+- 8.618 entries dgn indo (cross-ref dari master lama)
+- 2.397 entries dgn register (dari template {{ngoko|}}/{{krama|}})
+- User validasi manual: isi indo (translate dari definisi Jawa), isi register (word→ngoko/krama)
 
-### 2. Kamus Jawa (download dari GitHub)
+### kamus-tui.py — Editor kamus
+- Edit jv.wiktionary.json (lembar kerja)
+- Search, browse, edit per entry
+- Deteksi duplikat (lintas field, lintas entry)
+- Audit flags (parser leak, indo long, word long, dll)
+- Tambah entry baru (workflow SRT editor)
+- Upload ke Supabase (hanya entries terverifikasi user)
 
-R-22: **kamus-jawa-draft.json = satu-satunya sumber (NETRAL)**. Semua raw files + parser scripts DIHAPUS dari repo — isinya parsing AI tolol.
+### Supabase — Database kamus terverifikasi
+- User upload manual setelah validasi satu-satu di jv.wiktionary.json
+- Schema: id, ngoko, aksara, krama, indo, keterangan, sumber, status, created_at, updated_at
+- Ground of truth = Supabase (bukan JSON)
+
+## Download
 
 ```bash
-# Download kamus draft (17MB, v2.27 — merge 611 duplikat + fallback arti=word)
-curl -L -o kamus-jawa-draft.json \
-  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus-jawa-draft.json?v=27"
+# Scripts
+curl -L -o yt-dlp-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/yt-dlp-tui.py"
+curl -L -o demucs-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/demucs-tui.py"
+curl -L -o edge-tts-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/edge-tts-tui.py"
+curl -L -o mix-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/mix-tui.py"
+curl -L -o kamus-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/kamus-tui.py"
+curl -L -o upload-supabase.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py"
 
-# Download TUI editor (v9, menu Deteksi Duplikat + filter NETRAL)
-curl -L -o kamus-tui.py \
-  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/kamus-tui.py?v=9"
-
-# Download upload script (Phase 5, user-triggered only, R-12 konfirmasi 'y')
-curl -L -o upload-supabase.py \
-  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py?v=2"
-
-# Download audit duplikat (catatan, bukan perintah hapus)
-curl -L -o duplikat-audit.json \
-  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/duplikat-audit.json?v=1"
+# Kamus
+curl -L -o jv.wiktionary.json "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/jv.wiktionary.json"
 ```
-
-> ⚠ **R-22: SEMUA raw files + parser scripts DIHAPUS dari repo.**
-> Raw files (kamus-jawa-full.json, angka-raw.json, lampiran-raw.json, dasanama-raw.csv, dll) = HASIL PARSING AI TOLOL dari internet sampah. Semua dihapus permanen.
-> Yang TINGGAL hanya `public/kamus-jawa-draft.json` (NETRAL — buta, word tanpa definisi, BUKAN sumber kebenaran).
-> User fallback kalau nemu kata belum dikenali: cari manual di https://kesakata.kemdikbud.go.id.
-
-### 3. Python Lokal (untuk Demucs + Mix)
-
-```bash
-# Setup (sekali saja)
-brew install ffmpeg
-pip3 install edge-tts numpy questionary
-
-# Optional: Demucs untuk SFX separation
-pip3 install demucs
-```
-
-Lihat [`scripts/tutor-python-lokal.md`](scripts/tutor-python-lokal.md) untuk detail.
-
----
-
-## Kamus Jawa
-
-### Filosofi (R-20 + R-21)
-
-- **Supabase DB = ground of truth** (yang user upload, mulai dari 2 entries, tumbuh bertahap)
-- **kamus-jawa-draft.json = satu-satunya rujukan lokal** (R-20) — raw files hanya arsip
-- **Web app + analyzer pakai Supabase**, bukan JSON lokal
-- **Web app READ-ONLY** untuk kamus — editing via TUI lokal → upload ke Supabase
-- **Validasi level 2** = user edit langsung di DB Supabase (Table Editor) kalau ada keanehan
-- **R-21: entries belum berpasangan = field 'word' (netral)** — data jujur, bukan tebakan AI
-
-### Schema v6.1 (45.021 entries, post-R-21 netral)
-
-```json
-{
-  "word": "kula",          // NETRAL — belum terdefinisi (R-21), kosong kalau sudah paired
-  "ngoko": "",             // ngoko + sinonim (koma) — diisi kalau paired
-  "aksara": "ꦏꦸꦭ",        // aksara Jawa (PERTAHANKAN, R-18)
-  "krama": "",             // krama + kramainggil + sinonim (koma) — diisi kalau paired
-  "arti": "",               // terjemahan Indonesia — diisi kalau paired
-  "keterangan": "aku, -ku; dak-, tak-; ...",  // definisi JAWA + Indonesia (JANGAN HAPUS, R-18)
-  "register": "umum",       // ngoko|krama|krama_inggil|kawi|umum
-  "sumber": "jv.wiktionary.org + xref",
-  "is_angka": false,        // true untuk angka 1-1000
-  "status": "draft"        // draft|ready (user validate via TUI)
-}
-```
-
-### Stats (v2.6.1, post-standarisasi-22-field + wiki-markup-cleanup — 10 Okt 2026)
-
-```
-Total entries:           44.005 (22 field per entry, semua identik)
-✅ PAIRED 3-field:        2.937  (6.67%)  ← ngoko+krama+arti lengkap
-🟡 NGOKO+ARTI:           1.766  (4.01%)  ← perlu krama
-⚠ NETRAL (word+arti):   39.230  (89.15%) ← arti=word (fallback), user tentukan ngoko/krama
-
-Analisa arti (CRITICAL — statistik 'arti 100% filled' MENIPU, R-24):
-  arti total terisi:        44.002 (99.99%)
-  arti = word (fallback):  39.231 (89.15%) — BUKAN Indonesia, cuma copy word
-  arti Indonesia real:     4.771 (10.84%) — paired + ngoko+arti (valid)
-  → User verifikasi 1-1 via TUI. Fallback = alat marking NETRAL.
-
-Field terisi:
-  word:        39.231 (89.15%)  ngoko:    4.704 (10.69%)
-  krama:        3.006 (6.83%)   arti:   44.002 (99.99%)
-  aksara:      41.350 (93.97%)  keterangan: 42.924 (97.54%)
-  register:    44.005 (100% — semua 'umum', label raw)
-  kelas:         1.404 (3.20% — kelas kata linguistik: t.a./t.k./t.s.)
-  krama_inggil:     0 (R-17: kosong by design)
-
-Source flags:
-  is_lemma: 1.816  is_mendeley: 814  is_dasanama: 427
-  is_angka: 1.008  is_lampiran: 2.151
-
-Duplikat (audit global 10 Okt 2026 — 3.275 tokens, R-25):
-  Same-field (877): ngoko 211 + krama 192 + word 61 + arti 413
-  Cross-field (2.398): ngoko↔krama 140 + ngoko↔arti 730 + krama↔arti 277
-                        + word↔ngoko 581 + word↔krama 258 + word↔arti 412
-  → user bersihkan via TUI menu 'Deteksi Duplikat' (8 kategori, word NETRAL tampil)
-  → JANGAN HAPUS otomatis (R-18)
-
-Wiki markup cleaning (10 Okt 2026):
-  1.918 entries dibersihkan (960 wiki link, 628 template, 18 HTML, 311 whitespace)
-  0 data hilang (R-18 + R-23 compliance)
-  Hapus: [[...]] bracket, {{...}} template, <sup>/<br> tag
-  Preserve: link text, teks data, aksara, diakritik Jawa
-
-Angka 1-1000 (contoh 3-pasangan terdefinisi):
-  Coverage: 1000/1000 (100%) — ngoko+krama+arti semua terisi
-  Ejaan baku v6.3: limo (5), limolas (15), sèlawé+selawe (25), séket+seket (50)
-  panca+ponco = sinonim Sanskrit, TETAP (R-18 jangan hapus)
-```
-
-### Menu TUI (kamus-tui.py v9 — 10 Okt 2026)
-
-```
-📊 Statistik kamus
-🔍 Search (cari kata di semua field)
-✅ Browse READY (status=ready, siap upload)
-📋 Browse DRAFT (belum di-edit user)
-⚠ Filter: NETRAL (39.230 entri, word+arti, user tentukan ngoko/krama)
-🟢 Filter: LENGKAP 3-field (2.937 entri, siap review/upload)
-🟡 Filter: NGOKO+KRAMA (perlu isi arti)
-⚪ Filter: NGOKO SAJA (perlu isi krama+arti)
-🔵 Filter: NGOKO+ARTI (perlu isi krama)
-📂 Browse by source (lemma/mendeley/dasanama/angka)
-⭐ Browse entries dengan krama mapping
-📝 Browse entries BELUM ada arti
-🔗 Merge 2 entries (search kata)
-🔍 Deteksi duplikat (JANGAN HAPUS, user putuskan)
-⚡ Mark READY/DRAFT bulk
-🔑 Set Supabase .env
-☁  Upload ke Supabase (hanya yang READY)
-❌ Keluar
-```
-
-### Bidirectional alias lookup (di web app)
-
-- Source: word + ngoko + krama + krama_inggil + **arti (Indonesia)** alias
-- Mis. user isi entry: `word=""`, `ngoko="Nyong, Aku, Inyong"`, `krama="Kula, Dalem"`, `arti="Saya, Aku, Gue, Gua, Ane"`
-- Source SRT = "saya" → klik Ngoko → "Nyong", klik Krama → "Kula"
-- Source SRT = "gue" → klik Ngoko → "Nyong", klik Krama → "Kula"
-- Source SRT = "kula" → klik Ngoko → "Nyong"
-
-### Workflow user (MacBook)
-
-```bash
-cd ~/Dubbing
-
-# 1. Download kamus draft + TUI + upload script (lihat section Setup)
-# 2. Set Supabase credentials (sekali saja via TUI menu "🔑 Set Supabase .env")
-python3 kamus-tui.py
-
-# 3. Statistik startup akan tampil: Total | NETRAL | 3-field ready | Approved
-# 4. Menu utama → pilih "⚠ Filter: NETRAL (39216 entri)" → browse entries word-only
-# 5. Pilih 1 entry → edit → isi ngoko/krama/arti (2 dari 3 → paired) → save
-#    word otomatis kosong saat paired (R-21)
-# 6. Setelah 3-field lengkap → status 'ready' → siap upload Supabase
-# 7. Menu "☁ Upload ke Supabase" → upload entries dengan user_approved=True (R-12)
-```
-
-### User fallback (kalau nemu kata belum dikenali)
-
-Per R-22: cari manual di kamus resmi Kemendikbud:
-- https://kesakata.kemdikbud.go.id
-- https://bahasa.kemdikbud.go.id
-- Wiktionary online langsung (jangan batch scrape)
-
-Setelah ketemu → user edit manual via TUI, AI bantu tapi jangan auto-merge (R-18 — jangan hapus).
-
-### Phase kerja bertahap kamus (R-27, 10 Okt 2026)
-
-Kamus draft (44.005 entries) = campur 5+ sumber (Wiktionary lemma/ngoko/krama, Mendeley, Dasanama, Lampiran, Angka). Banyak sumber = banyak sampah (merge AI tolol: 1 entry campur kata beda makna).
-
-**Solusi**: kerja bertahap. Bikin subset PURE per sumber, kurasi 1-1 manual via TUI. Setelah semua source di-kurasi, merge manual ke kamus-jawa-draft.json (clean).
-
-| Phase | Source | Filter sumber exact | Estimasi entries | Status |
-|-------|--------|---------------------|------------------:|--------|
-| **1** (NOW) | Mendeley PURE | `data.mendeley.com/datasets/y3hstv4bfn (new)` | 145 | ✅ Ready (`kamus_mendeley.json`) |
-| 2 | Pure lemma | `id.wiktionary.org Kategori:jv:Lema (new)` | ~1.043 | 🔜 Bikin setelah phase 1 |
-| 3 | Pure lampiran | `lampiran-raw.json (new)` | ~2.151 | 🔜 Setelah phase 2 |
-| 4 | Pure dasanama | `dasanama-raw.csv (new)` | ~427 | 🔜 Setelah phase 3 |
-| 5 | Pure angka | `angka-raw.json (new)` | ~1.027 | 🔜 Setelah phase 4 |
-| 6 | Pure wiktionary ngoko | `jv.wiktionary.org (group by ngoko)` | ~sisa | 🔜 Setelah phase 5 |
-| 7 | Pure wiktionary krama | `jv.wiktionary.org (group by krama)` | ~sisa | 🔜 Setelah phase 6 |
-| **Akhir** | Merge manual | Hasil kurasi semua phase | 44.005 (clean) | Setelah semua phase |
-
-#### Workflow user per phase
-
-```bash
-# Download subset source (mis. phase 1 = mendeley)
-curl -L -H 'Cache-Control: no-cache' -o ~/Dubbing/kamus_mendeley.json \
-  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus_mendeley.json?t=$(date +%s)"
-
-# Download TUI v10 (multi-source switch)
-curl -L -H 'Cache-Control: no-cache' -o ~/Dubbing/kamus-tui.py \
-  "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/kamus-tui.py?t=$(date +%s)"
-
-# Jalankan TUI, switch ke mendeley
-python3 ~/Dubbing/kamus-tui.py
-# Menu → 📂 Switch source JSON → pilih 'mendeley'
-# Header akan tampilkan: 📂 [mendeley] /Users/.../kamus_mendeley.json
-# Browse 145 entries → edit manual → curate 1-1
-# Save → simpan ke kamus_mendeley.json (preserve 20 field, R-18 OK)
-
-# Setelah phase 1 selesai, kasih tau AI → bikin subset phase 2 (lemma PURE)
-```
-
-#### Komitmen kerja bertahap
-
-- **R-22**: filter subset dari kamus draft, BUKAN parsing ulang dari raw (raw = sampah parsing AI tolol)
-- **R-18**: kamus draft tetap utuh 44.005 (backup .bak di ~/Dubbing/)
-- **R-12**: user edit manual via TUI, no auto-fix
-- **R-26**: subset 20 field match kamus draft (drop register + krama_inggil)
-- **R-27**: kerja bertahap per source, tidak campur sampah merge AI
-
----
-
-## Stack Teknologi
-
-### Web App
-- Next.js 16 + TypeScript + Tailwind CSS 4 + shadcn/ui
-- Deploy: Vercel (app + Edge TTS proxy + Google Translate proxy)
-- Supabase PostgreSQL (project + cues + kamus)
-- IndexedDB (browser local audio cache)
-
-### Python Scripts
-- Python 3.8+
-- FFmpeg (auto-detect)
-- Demucs (Meta, open source, untuk SFX separation, MPS acceleration di Apple Silicon)
-- Edge TTS (Microsoft, gratis, native Indonesia/Jawa)
-- Questionary (TUI interaktif)
-
-### Storage
-- Supabase PostgreSQL free tier (500MB DB) — project + cues + kamus (ground of truth)
-- IndexedDB browser (ratusan MB) — audio cache per cue + full audio
-- GitHub repo — `public/kamus-jawa-draft.json` (17MB NETRAL) untuk user download
-
----
-
-## Struktur Folder
-
-```
-srt-splitter/
-├── README.md                            # Dokumen ini
-├── AGENTS.md                            # Entry file AI agent
-├── PROJECT_RULES.md                     # 22 aturan project (R-01 sampai R-22)
-├── worklog.md                           # Work log multi-agent (append-only)
-├── docs/                                # Dokumentasi teknis + visi
-│   ├── PROJECT_VISION.md                # Visi digitalisasi bahasa + roadmap 2 tahun
-│   ├── PROGRESS.md                      # Status project + timeline
-│   └── EDGE_TTS_PROXY.md                # Cara kerja Edge TTS proxy
-├── scripts/                             # Python scripts + SQL migrations (R-22: hanya workflow, raw dihapus)
-│   ├── kamus-tui.py                     # TUI edit kamus v2.6 (Phase 1-6 refactor)
-│   ├── upload-supabase.py               # Upload script (Phase 5, user-triggered only)
-│   ├── yt-dlp-tui.py + demucs-tui.py + mix-tui.py  # Dubbing workflow
-│   ├── srt-frequency-analyzer.py        # Analyzer SRT (pakai DB Supabase)
-│   ├── supabase-migration-v2.sql + v3.sql  # SQL DB
-│   ├── tutor-*.md + README.md           # Dokumentasi
-├── src/                                 # Next.js source code
-├── api/                                 # Vercel serverless functions
-└── public/                              # Static assets (R-22: hanya 1 kamus + web assets)
-    ├── kamus-jawa-draft.json            # Kamus v2.6 (17MB, NETRAL — rujukan tunggal)
-    ├── kamus-viewer.html                # Kamus viewer (web, read-only)
-    ├── logo.svg + coi-serviceworker.js + robots.txt  # Web assets
-```
-
----
-
-## Deploy
-
-### Vercel (auto-deploy, default)
-1. Push ke GitHub `main` branch
-2. Vercel auto-deploy
-3. URL: https://srt-splitter.vercel.app/
-
-### Lokal (dev)
-```bash
-bun install
-bun run dev
-# Buka http://localhost:3000
-```
-
----
-
-## Environment Variables
-
-```
-NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx
-```
-
-Set di Vercel dashboard (Project Settings → Environment Variables).
-
-Edge TTS proxy pakai hardcoded Microsoft token (gratis, no auth). OpenAI/OpenRouter TTS pakai user API key di UI (localStorage).
-
----
-
-## Status Project
-
-Lihat [`docs/PROGRESS.md`](docs/PROGRESS.md) untuk:
-- Quick status table (apa yang sudah jadi, apa yang pending)
-- Milestone terbaru (R-21 netral kamus, Phase 1-6 TUI refactor, 9 Okt 2026)
-- Catatan untuk AI next time buka
-- Timeline update lengkap
-
-Lihat [`worklog.md`](worklog.md) untuk:
-- Work log per Task ID (multi-agent, append-only)
-- Stage summary tiap task
-- Pending items
-
----
-
-## License
-
-Bebas dipakai untuk produksi sendiri. Atribusi dihargai tapi tidak wajib.
-
----
-
-## Credits
-
-Teknologi yang dipakai:
-- **Edge TTS** — Microsoft neural voices (gratis, native Indonesia/Jawa)
-- **Demucs** — Source separation by Meta/Facebook Research
-- **FFmpeg** — Video/audio processing
-- **Supabase** — PostgreSQL + Auth + Storage
-- **ThioJoe ASTD** — Inspirasi trim silence + two-pass TTS
-- **VoiceStudio** — Inspirasi Smart Fit algorithm
-- **voicertool.com** — Inspirasi asymmetric trim + cap 2.0x
-- **Wiktionary Jawa** — Source kamus (44.585 entri awal, sekarang 45.021 setelah merge + R-21 netral)
-- **Mendeley Dataset** — Faisal Rahutomo et al, 2018 (krama + kramainggil pair, 955 entries)
-- **Lampiran Kamus Jawa-Indonesia** — Wiktionary (2.724 entries)
-- **Lampiran:Nama_angka_dalam_bahasa_Jawa** — Wiktionary (66 entries, ground truth angka)
-- **Kamendikbud** — https://kesakata.kemdikbud.go.id (user fallback untuk kata belum dikenali, R-20)
