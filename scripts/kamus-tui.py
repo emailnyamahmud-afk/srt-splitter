@@ -801,6 +801,147 @@ def bulk_mark_valid_draft(data):
     input('\n  Tekan Enter...')
 
 
+def do_merge_2_entries_by_idx(data, idx1, idx2, confirm_each=True):
+    """Merge 2 entries by index → 1 entry dengan koma (sinonim).
+
+    Logic:
+    - Smart ngoko/krama detection (kalau entry2 ngoko == entry1 krama, swap)
+    - Gabung ngoko/krama dengan koma (sinonim beda kata, 1 entry)
+    - Gabung indo dengan koma
+    - Combine aksara + keterangan + sumber (R-18 compliance)
+    - Delete entry2, re-number entry_id
+    - save_kamus (R-12: status='draft' setelah merge)
+
+    Args:
+      confirm_each: True = tampilkan preview + konfirmasi (interaktif)
+                    False = silent merge (untuk bulk operation)
+
+    Return: True kalau merge berhasil, False kalau batal.
+    """
+    if idx1 == idx2:
+        print('  ⚑ Entry 1 dan 2 sama. Skip.')
+        return False
+    if idx1 >= len(data['words']) or idx2 >= len(data['words']):
+        print('  ⚑ Index di luar range. Skip.')
+        return False
+
+    entry1 = data['words'][idx1]
+    entry2 = data['words'][idx2]
+    eid1 = entry1.get('entry_id', '?')
+    eid2 = entry2.get('entry_id', '?')
+
+    e1_ngoko = (entry1.get('ngoko') or '').strip()
+    e1_krama = (entry1.get('krama') or '').strip()
+    e1_word = (entry1.get('word') or '').strip()
+    e2_ngoko = (entry2.get('ngoko') or '').strip()
+    e2_krama = (entry2.get('krama') or '').strip()
+    e2_word = (entry2.get('word') or '').strip()
+    e1_indo = (entry1.get('indo') or '').strip()
+    e2_indo = (entry2.get('indo') or '').strip()
+
+    # Smart merge ngoko/krama
+    if e2_ngoko and e1_krama and e2_ngoko.lower() == e1_krama.lower():
+        merged_ngoko = e1_ngoko
+        merged_krama = e2_ngoko
+    elif not e1_krama and e1_ngoko and e2_krama and e1_ngoko.lower() == e2_krama.lower():
+        merged_ngoko = e2_ngoko
+        merged_krama = e1_ngoko
+    else:
+        # Normal merge: gabung dengan koma (R-29: sinonim = koma, 1 konsep 1 entry)
+        def merge_with_comma(a, b):
+            if not a: return b
+            if not b: return a
+            # Tokenize, dedupe case-insensitive, rejoin
+            tokens = [t.strip() for t in a.split(',') if t.strip()]
+            existing_lower = set(t.lower() for t in tokens)
+            for tok in b.split(','):
+                tok = tok.strip()
+                if tok and tok.lower() not in existing_lower:
+                    tokens.append(tok)
+                    existing_lower.add(tok.lower())
+            return ', '.join(tokens)
+
+        merged_ngoko = merge_with_comma(e1_ngoko, e2_ngoko)
+        merged_krama = merge_with_comma(e1_krama, e2_krama)
+
+    # Merge word (NETRAL lemma) — gabung dengan koma
+    def merge_word(a, b):
+        if not a: return b
+        if not b: return a
+        tokens = [t.strip() for t in a.split(',') if t.strip()]
+        existing_lower = set(t.lower() for t in tokens)
+        for tok in b.split(','):
+            tok = tok.strip()
+            if tok and tok.lower() not in existing_lower:
+                tokens.append(tok)
+                existing_lower.add(tok.lower())
+        return ', '.join(tokens)
+    merged_word = merge_word(e1_word, e2_word)
+
+    # Merge indo dengan koma
+    def merge_indo(a, b):
+        if not a: return b
+        if not b: return a
+        tokens = [t.strip() for t in a.split(',') if t.strip()]
+        existing_lower = set(t.lower() for t in tokens)
+        for tok in b.split(','):
+            tok = tok.strip()
+            if tok and tok.lower() not in existing_lower:
+                tokens.append(tok)
+                existing_lower.add(tok.lower())
+        return ', '.join(tokens)
+    merged_indo = merge_indo(e1_indo, e2_indo)
+
+    # Preview
+    if confirm_each:
+        print(f'\n  ═══ HASIL MERGE #{eid1} + #{eid2} ═══')
+        print(f'  word:  {merged_word!r}')
+        print(f'  ngoko: {merged_ngoko!r}')
+        print(f'  krama: {merged_krama!r}')
+        print(f'  indo:  {merged_indo!r}')
+        print(f'  Entry #{eid2} akan di-DELETE.')
+        confirm = questionary.confirm('Konfirmasi merge?', default=False).ask()
+        if not confirm:
+            print('  ⏹ Dibatalkan.')
+            return False
+
+    # Apply
+    entry1['word'] = merged_word
+    entry1['ngoko'] = merged_ngoko
+    entry1['krama'] = merged_krama
+    entry1['indo'] = merged_indo
+    # Combine aksara (R-18)
+    a1 = (entry1.get('aksara') or '').strip()
+    a2 = (entry2.get('aksara') or '').strip()
+    if a2 and a2 not in a1:
+        entry1['aksara'] = f'{a1}, {a2}'.strip(', ')
+    # Combine keterangan (R-18)
+    k1 = (entry1.get('keterangan') or '').strip()
+    k2 = (entry2.get('keterangan') or '').strip()
+    if k2 and k2 not in k1:
+        entry1['keterangan'] = f'{k1} | {k2}'.strip(' |')
+    # Sumber
+    s1 = (entry1.get('sumber') or '').strip()
+    s2 = (entry2.get('sumber') or '').strip()
+    if s2 and s2 not in s1:
+        entry1['sumber'] = f'{s1} + merge #{eid2}' if s1 else f'merge #{eid2}'
+    # R-12: status='draft' setelah merge
+    entry1['status'] = 'draft'
+
+    # Delete entry2 — hati2 index (idx2 > idx1 supaya idx1 tidak shift)
+    del_idx = max(idx1, idx2)
+    del data['words'][del_idx]
+    # Re-number entry_id
+    for i, w in enumerate(data['words'], 1):
+        w['entry_id'] = i
+
+    save_kamus(data)
+    if confirm_each:
+        print(f'  ✅ Merge sukses: 1 konsep 1 entry (sinonim dengan koma)')
+        print(f'  Entry #{eid2} di-DELETE. Total: {len(data["words"])}')
+    return True
+
+
 def merge_2_entries(data):
     """Merge 2 entries terpisah jadi 1 entry. Per Phase 4 — extract dari main_menu.
 
@@ -882,103 +1023,9 @@ def merge_2_entries(data):
     if idx2 is None:
         return
 
-    entry2 = data['words'][idx2]
-    eid2 = entry2.get('entry_id', '?')
-    print(f'\n  Entry 2: ngoko={entry2.get("ngoko","")!r} krama={entry2.get("krama","")!r} arti={entry2.get("indo","")!r}')
-
-    # Step 3: Preview merge
-    # Gabung field: kalau kedua entries punya ngoko → gabung sebagai alias (comma)
-    # Kalau hanya satu yang punya → pakai yang itu
-    e1_ngoko = (entry1.get('ngoko') or '').strip()
-    e1_krama = (entry1.get('krama') or '').strip()
-    e2_ngoko = (entry2.get('ngoko') or '').strip()
-    e2_krama = (entry2.get('krama') or '').strip()
-    e1_arti = (entry1.get('indo') or '').strip()
-    e2_arti = (entry2.get('indo') or '').strip()
-
-    # Smart merge ngoko:
-    # Kalau entry2 ngoko == entry1 krama → entry2 itu krama word → jadi krama
-    # Kalau entry2 ngoko beda dari entry1 ngoko → tambah sebagai alias
-    if e2_ngoko and e1_krama and e2_ngoko.lower() == e1_krama.lower():
-        # entry2 title = krama word (mis. "ingkang" == entry1 krama)
-        merged_ngoko = e1_ngoko
-        merged_krama = e2_ngoko
-    elif not e1_krama and e1_ngoko and e2_krama and e1_ngoko.lower() == e2_krama.lower():
-        # entry1 title = krama word
-        merged_ngoko = e2_ngoko
-        merged_krama = e1_ngoko
-    else:
-        # Normal merge: gabung ngoko (kalau beda, jadi alias comma)
-        parts_ngoko = []
-        if e1_ngoko:
-            parts_ngoko.append(e1_ngoko)
-        if e2_ngoko and e2_ngoko.lower() not in [p.lower() for p in parts_ngoko]:
-            parts_ngoko.append(e2_ngoko)
-        merged_ngoko = ', '.join(parts_ngoko) if parts_ngoko else ''
-
-        # Gabung krama (kalau beda, jadi alias comma)
-        parts_krama = []
-        if e1_krama:
-            parts_krama.append(e1_krama)
-        if e2_krama and e2_krama.lower() not in [p.lower() for p in parts_krama]:
-            parts_krama.append(e2_krama)
-        merged_krama = ', '.join(parts_krama) if parts_krama else ''
-
-    # Gabung arti (comma jika beda)
-    parts_arti = []
-    if e1_arti:
-        parts_arti.append(e1_arti)
-    if e2_arti and e2_arti.lower() not in [p.lower() for p in parts_arti]:
-        parts_arti.append(e2_arti)
-    merged_arti = ', '.join(parts_arti) if parts_arti else ''
-
-    print(f'\n  ═══ HASIL MERGE ═══')
-    print(f'  ngoko:    {merged_ngoko!r}')
-    print(f'  krama:    {merged_krama!r}')
-    print(f'  arti:     {merged_arti!r}  (kosong = isi nanti)')
-    print(f'  Entry #{eid2} akan di-DELETE.')
-    print()
-
-    # Step 4: Konfirmasi
-    confirm = questionary.confirm('Konfirmasi merge?', default=False).ask()
-    if not confirm:
-        print('  ⏹ Dibatalkan.')
+    success = do_merge_2_entries_by_idx(data, idx1, idx2, confirm_each=True)
+    if success:
         input('  Tekan Enter...')
-        return
-
-    # Apply: simpan ke entry1, delete entry2
-    entry1['ngoko'] = merged_ngoko
-    entry1['krama'] = merged_krama
-    entry1['indo'] = merged_arti
-    # Combine aksara (jangan hilangkan aksara dari entry2)
-    a1 = (entry1.get('aksara') or '').strip()
-    a2 = (entry2.get('aksara') or '').strip()
-    if a2 and a2 not in a1:
-        entry1['aksara'] = f'{a1}, {a2}'.strip(', ')
-    # Combine keterangan
-    k1 = (entry1.get('keterangan') or '').strip()
-    k2 = (entry2.get('keterangan') or '').strip()
-    if k2 and k2 not in k1:
-        entry1['keterangan'] = f'{k1} | {k2}'.strip(' |')
-    # Sumber
-    s1 = (entry1.get('sumber') or '').strip()
-    s2 = (entry2.get('sumber') or '').strip()
-    if s2 and s2 not in s1:
-        entry1['sumber'] = f'{s1} + merge #{eid2}'
-
-    # Delete entry2
-    del data['words'][idx2]
-
-    # Re-number entry_id
-    for i, w in enumerate(data['words'], 1):
-        w['entry_id'] = i
-
-    save_kamus(data)
-    print(f'\n  ✅ Merge sukses!')
-    print(f'  Hasil: ngoko={merged_ngoko!r} krama={merged_krama!r} arti={merged_arti!r}')
-    print(f'  Entry #{eid2} di-DELETE. Total: {len(data["words"])}')
-    print(f'  Sekarang isi arti: menu 📝 Browse BELUM ada arti → search kata → edit')
-    input('  Tekan Enter...')
 
 
 def add_new_entry(data):
@@ -1263,17 +1310,75 @@ def detect_duplicates(data):
     print(f'\n  ⚠ Duplikat = kata IDENTIK lintas entry, di FIELD APA PUN (lintas field).')
     print(f'  [P]=paired (indo+ngoko/krama) | [N]=netral (belum paired)')
     print(f'  R-29: TIDAK ADA SINONIM BEDA ENTRY — kalau kata sama di entry beda = duplikat.')
-    print(f'  → Ketik entry_id untuk edit. Enter=kembali.')
+    print(f'  R-34: 1 KONSEP 1 ENTRY. Merge 2 entries jadi 1 dengan koma (sinonim).')
+    print(f'  → Ketik kata duplikat untuk MERGE 2 entries.')
+    print(f'  → Atau ketik entry_id untuk EDIT 1 entry.')
+    print(f'  → Enter=kembali.')
 
-    # Edit by entry_id
+    # Interactive: user input kata duplikat OR entry_id
+    # Reload kamus karena merge bisa mengubah entry_id
     while True:
-        ans = input('  entry_id (Enter=kembali): ').strip()
+        ans = input(f'  kata (merge) / entry_id (edit) / Enter (kembali): ').strip()
         if not ans:
             break
+
+        # Cek apakah ans adalah kata duplikat
+        if ans.lower() in dupes:
+            # MERGE 2 entries by duplikat kata
+            locations = dupes[ans.lower()]
+            unique_eids = sorted(set(eid for eid, _ in locations))
+            print(f'\n  ═══ MERGE DUPlikat: {ans!r} ═══')
+            print(f'  Pilih 2 entries untuk merge (sisanya akan tetap):')
+            # List entries dengan duplikat
+            choices = []
+            eid_to_idx = {}
+            for i, eid in enumerate(unique_eids):
+                w = next((x for x in data['words'] if x.get('entry_id') == eid), None)
+                if not w:
+                    continue
+                idx = next((j for j, x in enumerate(data['words']) if x.get('entry_id') == eid), -1)
+                tag = '[P]' if is_paired_entry(w) else '[N]'
+                label = f'{tag} #{eid} word={w.get("word","")[:20]!r} ngoko={w.get("ngoko","")[:20]!r} krama={w.get("krama","")[:20]!r} indo={w.get("indo","")[:20]!r}'
+                eid_to_idx[label] = idx
+                choices.append(label)
+            if len(unique_eids) > 2:
+                # Multi entries — user pilih 2
+                choices.append('↩ Batal')
+                sel1 = questionary.select('Pilih entry PRIMARY (akan di-keep):',
+                                          choices=choices, default=choices[0]).ask()
+                if not sel1 or 'Batal' in sel1:
+                    continue
+                idx1 = eid_to_idx[sel1]
+                # Hapus pilihan pertama dari list
+                remaining = [c for c in choices if c != sel1 and c != '↩ Batal']
+                sel2 = questionary.select('Pilih entry SECONDARY (akan di-merge ke PRIMARY, lalu delete):',
+                                          choices=remaining + ['↩ Batal'],
+                                          default=remaining[0] if remaining else '↩ Batal').ask()
+                if not sel2 or 'Batal' in sel2:
+                    continue
+                idx2 = eid_to_idx[sel2]
+            else:
+                # 2 entries — langsung merge
+                idx1 = eid_to_idx[choices[0]]
+                idx2 = eid_to_idx[choices[1]]
+
+            success = do_merge_2_entries_by_idx(data, idx1, idx2, confirm_each=True)
+            if success:
+                # Reload dupes & words karena merge mengubah data
+                words = data['words']
+                cross_idx = build_cross_entry_index(words)
+                all_idx, indo_idx = cross_idx
+                dupes = {tok: locs for tok, locs in all_idx.items()
+                         if len(set(eid for eid, _ in locs)) > 1}
+                print(f'\n  📊 Duplikat tersisa: {len(dupes)}')
+            input('  Tekan Enter untuk lanjut...')
+            continue
+
+        # Cek apakah ans adalah entry_id (angka)
         try:
             eid = int(ans)
         except ValueError:
-            print('  ⚑ Bukan angka.')
+            print(f'  ⚑ "{ans}" bukan kata duplikat dan bukan angka entry_id.')
             continue
         idx = next((i for i, w in enumerate(words) if w.get('entry_id') == eid), -1)
         if idx < 0:
@@ -1724,7 +1829,7 @@ def main_menu(data):
         supabase_ok = bool(os.environ.get('NEXT_PUBLIC_SUPABASE_URL') and os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY'))
 
         print('╔' + '═' * 60 + '╗')
-        print('║  📖 Kamus Jawa Editor (TUI v13.3)' + ' ' * 24 + '║')
+        print('║  📖 Kamus Jawa Editor (TUI v14)' + ' ' * 24 + '║')
         print('║  Tab/panah untuk navigasi, Enter untuk pilih' + ' ' * 11 + '║')
         print('╚' + '═' * 60 + '╝')
         print()
@@ -1891,7 +1996,7 @@ def upload_to_supabase():
 def main():
     os.system('clear' if os.name != 'nt' else 'cls')
     print('╔' + '═' * 60 + '╗')
-    print('║  📖 Kamus Jawa Editor (TUI v13.3)' + ' ' * 24 + '║')
+    print('║  📖 Kamus Jawa Editor (TUI v14)' + ' ' * 24 + '║')
     print('║  Menu pre-built — arrow keys, no jq needed' + ' ' * 17 + '║')
     print('╚' + '═' * 60 + '╝')
     print()
