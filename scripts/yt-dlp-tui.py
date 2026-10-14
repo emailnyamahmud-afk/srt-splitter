@@ -272,9 +272,9 @@ def main():
         print('   - https://goblinsub.com')
 
     print('\n🎬 Langkah berikutnya:')
-    print('   1. Demucs: python3 demucs-tui.py')
-    print('   2. Web app: Editor SRT Jawa → generate TTS')
-    print('   3. Mix: python3 mix-tui.py')
+    print('   1. Demucs:   python3 demucs-tui.py')
+    print('   2. TTS:     python3 edge-tts-tui.py')
+    print('   3. Mix:     python3 mix-tui.py')
     print('═' * 64)
 
 
