@@ -1477,6 +1477,17 @@ def compute_entry_flags(entry):
         if n_space_tok > 3:
             flags.append(('WORD_MULTI_TOKEN', 'MEDIUM', f'word {n_space_tok} kata (suspect bukan lemma)'))
 
+    # ===== 🟡 MEDIUM — WORD_LEMMA_MULTI: word punya >3 lemma (suspect 2 konsep digabung dari parsing berantakan)
+    # Contoh: #6865 word='ngimpi, supena, impen, impi' = 4 lemma
+    #   ngimpi/supena/impi = konsep MIMPI, impen = konsep UMUR (halusinasi parsing)
+    #   User edit manual: hapus 'impen' atau pecah jadi 2 entries
+    # Bantu user prioritaskan audit entry berantakan
+    if word:
+        n_lemma = len([t for t in word.split(',') if t.strip()])
+        if n_lemma > 3:
+            flags.append(('WORD_LEMMA_MULTI', 'MEDIUM',
+                          f'word punya {n_lemma} lemma (suspect 2 konsep digabung dari parsing wiktionary)'))
+
     # ===== 🟢 LOW (sanity check) =====
 
     # DIGIT_IN_FIELD: ngoko/krama ada digit (entry_id leak atau angka janggal)
@@ -1829,7 +1840,7 @@ def main_menu(data):
         supabase_ok = bool(os.environ.get('NEXT_PUBLIC_SUPABASE_URL') and os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY'))
 
         print('╔' + '═' * 60 + '╗')
-        print('║  📖 Kamus Jawa Editor (TUI v14)' + ' ' * 24 + '║')
+        print('║  📖 Kamus Jawa Editor (TUI v14.1)' + ' ' * 24 + '║')
         print('║  Tab/panah untuk navigasi, Enter untuk pilih' + ' ' * 11 + '║')
         print('╚' + '═' * 60 + '╝')
         print()
@@ -1996,7 +2007,7 @@ def upload_to_supabase():
 def main():
     os.system('clear' if os.name != 'nt' else 'cls')
     print('╔' + '═' * 60 + '╗')
-    print('║  📖 Kamus Jawa Editor (TUI v14)' + ' ' * 24 + '║')
+    print('║  📖 Kamus Jawa Editor (TUI v14.1)' + ' ' * 24 + '║')
     print('║  Menu pre-built — arrow keys, no jq needed' + ' ' * 17 + '║')
     print('╚' + '═' * 60 + '╝')
     print()
