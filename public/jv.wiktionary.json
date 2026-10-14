@@ -1,10 +1,9 @@
 {
   "metadata": {
-    "version": "v2 (parser BENAR — ngoko=krama pasangan)",
+    "version": "v3 (kelas fix — 86 entries dgn kelas non-kosong)",
     "stats": {
       "total": 44585,
-      "ngoko_tpl": 1404,
-      "krama_tpl": 993
+      "kelas": 54
     }
   },
   "words": [
@@ -302129,7 +302128,7 @@
       "aksara": "ꦉꦪꦁ",
       "kelas": "",
       "definisi": "aku (lanang)",
-      "terjemahan_indo": "'''aku (laki-laki)''' iki tikus",
+      "terjemahan_indo": "",
       "ngoko": "",
       "krama": "",
       "keterangan": "=={{basa|jv}} Tengger==\n{{sirah|jv|alt=ꦉꦪꦁ}}\n{{-pron-|jv}}\n# aku (lanang)\n#: '''reyang''' iki tikus\n#:: '''aku (laki-laki)''' iki tikus\n\n{{-etym-|jv}}\n*\n\n{{-drv-|jv}}\n*\n\n{{-syn-|jv}}\n*\n\n{{-frasa-|jv}}\n*\n\n{{-var-|jv}}\n*\n\n{{terjemahan}}\n{{kotak mulai}}\n* \n{{kotak akhir}}\n\n{{footer}}"
