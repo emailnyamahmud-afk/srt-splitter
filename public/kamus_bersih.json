@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "version": "v5 (BENAR-BENAR bersih — entries dgn indo + jv valid, no NETRAL true, no indo only)",
-    "description": "Kamus Jawa-Indonesia BERSIH",
+    "version": "v3 (post cross-ref master)",
+    "description": "Kamus BERSIH master (post cross-ref workspace)",
     "stats": {
       "total": 12753
     }
