@@ -52,6 +52,9 @@ mkdir -p /Volumes/HDD/Dubbing/{input,demucs,tts,mix}
 
 ### 2. demucs-tui.py — Vocal separation
 - M1 MPS acceleration (~16 menit untuk 2 jam audio)
+- Segment 4 (RAM aman 16GB, ~2x lebih lambat dari default)
+- Output WAV → ffmpeg convert MP3 320kbps (streaming, RAM kecil)
+- Auto-hapus vocals.wav + WAV setelah convert (storage aman)
 - Cari audio di HDD/input/, output ke HDD/demucs/
 - Auto-hapus vocals
 - Install: `pip3 install torchaudio demucs`

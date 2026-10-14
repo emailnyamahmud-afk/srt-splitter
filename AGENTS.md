@@ -49,10 +49,12 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 - SRT editor web: live di https://srt-splitter.vercel.app/
 - Pipeline dubbing ID: tested end-to-end (S5, 2j 16m, 3866 cue)
 - Semua TUI updated dgn config.py (HDD path)
-- yt-dlp-tui.py tested: ✅ Toko-buku.mp4 + m4a + srt ke HDD/input/
+- yt-dlp-tui.py tested: ✅ Kepala-Perampok.mp4 + m4a + srt ke HDD/input/
+- demucs-tui.py v2: segment 4 (RAM aman) + WAV → ffmpeg MP3 streaming
+- Demucs test: Kepala-Perampok (segment=4, MPS, ~32 menit estimasi)
 
 ## Next
 
-- User: test workflow end-to-end ID (demucs → edge-tts → mix)
+- User: tunggu Demucs selesai → edge-tts-tui.py → mix-tui.py (end-to-end ID)
 - User: validasi jv.wiktionary.json manual di kamus-tui (isi indo + register)
 - AI: update SRT editor web utk lookup kamus dari Supabase

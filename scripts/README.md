@@ -9,7 +9,7 @@ Python TUI untuk workflow dubbing + kamus Jawa.
 | Script | Fungsi | Output |
 |--------|--------|--------|
 | yt-dlp-tui.py | Download video/audio + SRT | HDD/input/ |
-| demucs-tui.py | Vocal separation (M1 MPS) | HDD/demucs/ |
+| demucs-tui.py | Vocal separation (M1 MPS, segment RAM aman) | HDD/demucs/ |
 | edge-tts-tui.py | TTS generation (100% lokal) | HDD/tts/ |
 | mix-tui.py | Final mix video (stream/burn SRT) | HDD/mix/ |
 
