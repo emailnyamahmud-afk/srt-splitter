@@ -181,7 +181,7 @@ def main():
     print()
 
     # Step 1: Pilih file audio/video
-    print('▶ Step 1/6: Pilih file MP4/audio ori')
+    print('▶ Step 1/7: Pilih file MP4/audio ori')
     input_file = select_file(
         'File MP4/audio ori (mis. mp4-ori-test-7min.mp4):',
         ['mp4', 'wav', 'm4a', 'flac', 'mp3', 'opus', 'webm', 'ogg'],
@@ -193,7 +193,7 @@ def main():
     print()
 
     # Step 2: Pilih output directory (default: HDD/demucs/)
-    print('▶ Step 2/6: Pilih output directory')
+    print('▶ Step 2/7: Pilih output directory')
     from config import DEMUCS_DIR, ensure_hdd
     default_out = str(DEMUCS_DIR) if ensure_hdd() else './output'
     output_dir = questionary.text(
@@ -206,7 +206,7 @@ def main():
     print()
 
     # Step 3: Pilih model
-    print('▶ Step 3/6: Pilih model Demucs')
+    print('▶ Step 3/7: Pilih model Demucs')
     model = questionary.select(
         'Model:',
         choices=[
@@ -221,7 +221,7 @@ def main():
     print()
 
     # Step 4: Pilih mode
-    print('▶ Step 4/6: Pilih mode separation')
+    print('▶ Step 4/7: Pilih mode separation')
     mode = questionary.select(
         'Mode:',
         choices=[
@@ -234,8 +234,8 @@ def main():
     print(f'  ✓ {"two-stems vocals" if use_two_stems else "four-stems"}')
     print()
 
-    # Step 5: Pilih device
-    print('▶ Step 5/6: Pilih device (hardware acceleration)')
+    # Step 5: Pilih device (hardware acceleration)
+    print('▶ Step 5/7: Pilih device (hardware acceleration)')
     if detected_device == 'mps':
         device = questionary.select(
             'Device:',
@@ -257,8 +257,22 @@ def main():
     print(f'  ✓ {device_name}')
     print()
 
-    # Step 6: Konfirmasi
-    print('▶ Step 6/6: Konfirmasi')
+    # Step 6: Pilih segment size (RAM control)
+    print('▶ Step 6/7: Pilih segment size (kontrol RAM)')
+    segment_choice = questionary.select(
+        'Segment size:',
+        choices=[
+            '3.9 detik (RAM aman, 2x lebih lambat) — REKOMENDASI 16GB',
+            '7.8 detik (default, RAM spike di 100%)',
+        ],
+        default='3.9 detik (RAM aman, 2x lebih lambat) — REKOMENDASI 16GB',
+    ).ask()
+    segment_size = segment_choice.split(' ')[0]
+    print(f'  ✓ segment={segment_size}')
+    print()
+
+    # Step 7: Konfirmasi
+    print('▶ Step 7/7: Konfirmasi')
 
     # Estimasi waktu (rough, berdasarkan audio durasi)
     input_size_mb = os.path.getsize(input_file) / 1024 / 1024 if os.path.isfile(input_file) else 0
@@ -278,14 +292,15 @@ def main():
     print(f'║  Model  : {model_name[:46]:<46}║')
     print(f'║  Mode   : {"two-stems vocals" if use_two_stems else "four-stems":<46}║')
     print(f'║  Device : {device_name[:46]:<46}║')
+    print(f'║  Segment: {segment_size + " detik":<46}║')
     print(f'║  Estimasi: {est_label[:46]:<46}║')
     print('╚' + '═' * 64 + '╝')
     print()
 
     # Tampilkan command yang akan dijalankan
-    # Format output: MP3 320 kbps (hemat space ~10x dibanding WAV)
-    cmd_args = ['-n', model_name, '--device', device_name, '-o', output_dir,
-                '--mp3', '--mp3-bitrate', '320']
+    # Output WAV (bukan MP3) — encode MP3 pakai ffmpeg setelah Demucs (RAM aman)
+    cmd_args = ['-n', model_name, '--device', device_name, '--segment', segment_size,
+                '-o', output_dir]
     if use_two_stems:
         cmd_args.extend(['--two-stems', 'vocals'])
     cmd_args.append(input_file)
@@ -317,67 +332,92 @@ def main():
     print()
     if exit_code == 0:
         print('═' * 64)
-        print('✅ SELESAI!')
+        print('✅ Demucs separation selesai!')
         print()
-        # Cek output file
+        # Cek output file (WAV, bukan MP3)
         base_name = Path(input_file).stem
-        # Demucs output dengan --mp3: hanya .mp3 files (WAV diganti MP3, bukan ditambah)
-        # Output path: {output_dir}/{model}/{base_name}/no_vocals.mp3
         model_output_dir = Path(output_dir) / model_name / base_name
         if use_two_stems:
-            no_vocals = model_output_dir / 'no_vocals.mp3'
-            vocals_mp3 = model_output_dir / 'vocals.mp3'
-            if no_vocals.exists():
-                size_mb = no_vocals.stat().st_size / 1024 / 1024
-                print(f'📁 Output:')
-                print(f'   SFX (no_vocals.mp3): {no_vocals} ({size_mb:.1f} MB) — MP3 320 kbps')
+            no_vocals_wav = model_output_dir / 'no_vocals.wav'
+            vocals_wav = model_output_dir / 'vocals.wav'
+            
+            # Auto-hapus vocals.wav (tidak dipakai untuk dubbing)
+            if vocals_wav.exists():
+                try:
+                    v_size = vocals_wav.stat().st_size / 1024 / 1024
+                    vocals_wav.unlink()
+                    print(f'🗑 Auto-hapus vocals.wav ({v_size:.1f} MB)')
+                except OSError as e:
+                    print(f'⚠ Gagal hapus vocals.wav: {e}')
+            
+            if no_vocals_wav.exists():
+                wav_size = no_vocals_wav.stat().st_size / 1024 / 1024
+                print(f'📁 WAV output: {no_vocals_wav} ({wav_size:.1f} MB)')
+                
+                # Convert WAV → MP3 pakai ffmpeg (streaming, RAM kecil)
+                no_vocals_mp3 = model_output_dir / 'no_vocals.mp3'
+                print()
+                print('🔄 Convert WAV → MP3 320kbps (ffmpeg streaming)...')
+                ffmpeg_bin = shutil.which('ffmpeg')
+                if not ffmpeg_bin:
+                    print('⚠ ffmpeg tidak ditemukan, WAV tetap ada (tidak di-convert)')
+                else:
+                    ffmpeg_cmd = [
+                        ffmpeg_bin, '-y', '-i', str(no_vocals_wav),
+                        '-codec:a', 'libmp3lame', '-b:a', '320k',
+                        str(no_vocals_mp3)
+                    ]
+                    try:
+                        subprocess.run(ffmpeg_cmd, capture_output=True)
+                        if no_vocals_mp3.exists():
+                            mp3_size = no_vocals_mp3.stat().st_size / 1024 / 1024
+                            print(f'✅ MP3: {no_vocals_mp3} ({mp3_size:.1f} MB)')
+                            # Hapus WAV setelah convert
+                            no_vocals_wav.unlink()
+                            print(f'🗑 Hapus WAV ({wav_size:.1f} MB) — storage aman')
+                        else:
+                            print('⚠ Convert gagal, WAV tetap ada')
+                    except Exception as e:
+                        print(f'⚠ Convert gagal: {e}, WAV tetap ada')
+                
+                print()
+                print(f'   SFX (no_vocals.mp3): {no_vocals_mp3}')
                 print(f'   → Pakai ini untuk mix-tui.py (pilih file SFX)')
-            # Auto-hapus vocals.mp3 (tidak dipakai untuk dubbing)
-            if vocals_mp3.exists():
-                try:
-                    v_size = vocals_mp3.stat().st_size / 1024 / 1024
-                    vocals_mp3.unlink()
-                    print(f'   🗑 Auto-hapus vocals.mp3 ({v_size:.1f} MB)')
-                except OSError as e:
-                    print(f'   ⚠ Gagal hapus vocals.mp3: {e}')
         else:
-            # four-stems: --mp3 flag convert semua stems jadi .mp3
+            # four-stems
             stems = ['drums', 'bass', 'other', 'vocals']
-            print(f'📁 Output (4 stems, MP3 320):')
+            print(f'📁 Output (4 stems, WAV):')
             for stem in stems:
-                stem_path = model_output_dir / f'{stem}.mp3'
-                if stem_path.exists():
-                    size_mb = stem_path.stat().st_size / 1024 / 1024
-                    print(f'   {stem}.mp3: {stem_path} ({size_mb:.1f} MB)')
-            # Auto-hapus vocals.mp3 di mode four-stems (tidak dipakai)
-            vocals_mp3 = model_output_dir / 'vocals.mp3'
-            if vocals_mp3.exists():
+                stem_wav = model_output_dir / f'{stem}.wav'
+                if stem_wav.exists():
+                    size_mb = stem_wav.stat().st_size / 1024 / 1024
+                    print(f'   {stem}.wav: {stem_wav} ({size_mb:.1f} MB)')
+            # Auto-hapus vocals.wav
+            vocals_wav = model_output_dir / 'vocals.wav'
+            if vocals_wav.exists():
                 try:
-                    v_size = vocals_mp3.stat().st_size / 1024 / 1024
-                    vocals_mp3.unlink()
-                    print(f'   🗑 Auto-hapus vocals.mp3 ({v_size:.1f} MB)')
+                    v_size = vocals_wav.stat().st_size / 1024 / 1024
+                    vocals_wav.unlink()
+                    print(f'   🗑 Auto-hapus vocals.wav ({v_size:.1f} MB)')
                 except OSError as e:
-                    print(f'   ⚠ Gagal hapus vocals.mp3: {e}')
+                    print(f'   ⚠ Gagal hapus vocals.wav: {e}')
 
         print()
         print('═' * 64)
-        print('🎬 Langkah berikutnya (workflow mode ON + Smart Fit):')
+        print('🎬 Langkah berikutnya:')
         print()
-        print('   1. Web app: mode ON + Smart Fit → generate audio-id-dub.wav')
-        print('   2. Python mix (TUI):')
-        if use_two_stems and no_vocals.exists():
-            # Derive sibling MP4: kalau input "S5-ori-audio.m4a" → sarankan "S5-ori.mp4"
+        print('   1. edge-tts: python3 edge-tts-tui.py')
+        print('   2. mix:      python3 mix-tui.py')
+        if use_two_stems and no_vocals_mp3.exists():
             input_path = Path(input_file)
             base = input_path.stem
             if base.endswith('-audio'):
                 mp4_name = base[:-6] + '.mp4'
             else:
                 mp4_name = base + '.mp4'
-            print(f'      python3 mix-tui.py')
-            print(f'        → MP4: {mp4_name}  (video dari yt-dlp)')
-            print(f'        → SFX: {no_vocals.name}  ({no_vocals.parent}/)')
-            print(f'        → Dub: audio-id-dub.wav  (dari web app)')
-            print(f'        → Output: mp4-id-final.mp4')
+            print(f'      → MP4: {mp4_name}  (video dari yt-dlp)')
+            print(f'      → SFX: {no_vocals_mp3.name}  ({no_vocals_mp3.parent}/)')
+            print(f'      → Dub: audio-id-dub.wav  (dari edge-tts-tui.py)')
         print('═' * 64)
     else:
         print('═' * 64)
