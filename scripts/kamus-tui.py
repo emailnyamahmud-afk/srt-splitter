@@ -1200,49 +1200,37 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 
 
 def detect_duplicates(data):
-    """Deteksi duplikat = kata IDENTIK lintas entry. Bukan sinonim.
+    """Deteksi duplikat = kata IDENTIK lintas entry, di FIELD APA PUN (lintas field).
 
-    Duplikat: kata yang sama (case-insensitive) muncul di 2+ entries.
-    Sinonim (beda kata di 1 entry) = BUKAN duplikat.
-
-    R-30 fix: SCAN SEMUA entries (paired + netral). Netral juga data, perlu diaudit.
-    Tag [P]/[N] di output supaya user tahu context.
+    R-28/R-29: Duplikat = kata IDENTIK muncul di 2+ entries. Bukan sinonim.
+    R-29: TIDAK ADA SINONIM BEDA ENTRY — kalau kata sama di entry beda = duplikat.
+    R-30: SCAN SEMUA entries (paired + netral). Netral juga data.
+    R-32: 1 index gabungan SEMUA field (word+ngoko+krama+indo). SEMUA kata, TANPA filter.
+          Tokenize comma di SEMUA field (termasuk word).
+          Tag [P]/[N] di output supaya user tahu context.
+          HAPUS filter field_choice — tampilkan SEMUA duplikat langsung.
     """
-    from collections import defaultdict
     words = data['words']
     os.system('clear' if os.name != 'nt' else 'cls')
     print('╔' + '═' * 60 + '╗')
-    print('║  🔍 Deteksi Duplikat (kata identik lintas entry)' + ' ' * 10 + '║')
+    print('║  🔍 Deteksi Duplikat (lintas entry, SEMUA field)' + ' ' * 5 + '║')
     print('╚' + '═' * 60 + '╝')
     print()
 
-    # Index: lowercase kata → list of (entry_id, field, word)
-    # Cari di field word, ngoko, krama, indo (tokenize comma)
-    # R-30 fix: SCAN SEMUA entries — netral juga data, perlu diaudit
-    index = defaultdict(list)
-    for w in words:
-        eid = w.get('entry_id', '?')
-        word = (w.get('word') or '').strip()
-        if word and len(word) > 1:
-            index[word.lower()].append((eid, 'word', word))
-        for field in ['ngoko', 'krama', 'indo']:
-            val = (w.get(field) or '').strip()
-            if val:
-                for tok in val.split(','):
-                    tok = tok.strip()
-                    if tok and len(tok) > 1:
-                        index[tok.lower()].append((eid, field, tok))
+    # R-32: Build 1 index gabungan SEMUA field (lintas field)
+    # Pakai build_cross_entry_index (sama dengan audit_flags_menu) supaya konsisten
+    cross_idx = build_cross_entry_index(words)
+    all_idx, indo_idx = cross_idx
 
-    # Filter: hanya yang muncul di 2+ entries
-    # Group by entry_id dulu — kalau kata muncul 2x di 1 entry = sinonim, bukan duplikat
+    # Filter: hanya token di 2+ entries (lintas field lintas entry)
     dupes = {}
-    for kata, occ in index.items():
-        unique_entries = set(eid for eid, _, _ in occ)
-        if len(unique_entries) > 1:
-            dupes[kata] = occ
+    for tok, locations in all_idx.items():
+        unique_eids = set(eid for eid, _ in locations)
+        if len(unique_eids) > 1:
+            dupes[tok] = locations
 
-    print(f'  Total kata unik di kamus: {len(index):,}')
-    print(f'  Duplikat (kata identik lintas entry): {len(dupes):,}')
+    print(f'  Total kata unik (SEMUA field gabungan): {len(all_idx):,}')
+    print(f'  Duplikat (kata identik lintas entry, lintas field): {len(dupes):,}')
     print()
 
     if not dupes:
@@ -1250,50 +1238,36 @@ def detect_duplicates(data):
         input('  Tekan Enter untuk kembali...')
         return
 
-    # Pilih field untuk filter
-    field_choices = [
-        f'1. Semua field ({len(dupes)} duplikat)',
-        '2. Hanya word (lemma identik)',
-        '3. Hanya ngoko',
-        '4. Hanya krama',
-        '5. Hanya indo',
-        '↩ Kembali',
-    ]
-    sel = questionary.select('Filter:', choices=field_choices, default=field_choices[0]).ask()
-    if not sel or 'Kembali' in sel:
-        return
-
-    filter_field = None
-    if sel.startswith('2'): filter_field = 'word'
-    elif sel.startswith('3'): filter_field = 'ngoko'
-    elif sel.startswith('4'): filter_field = 'krama'
-    elif sel.startswith('5'): filter_field = 'indo'
-
-    # Tampilkan duplikat — dengan [P]/[N] tag (paired/netral)
-    sorted_dupes = sorted(dupes.items(), key=lambda x: len(set(eid for eid, _, _ in x[1])), reverse=True)
+    # Tampilkan SEMUA duplikat langsung (TIDAK ada filter field_choice)
+    # Sort by #entries descending (yg paling banyak duplikat di atas)
+    sorted_dupes = sorted(dupes.items(),
+                          key=lambda x: len(set(eid for eid, _ in x[1])),
+                          reverse=True)
     shown = 0
-    for kata, occ in sorted_dupes:
-        if filter_field:
-            occ = [o for o in occ if o[1] == filter_field]
-            if len(set(eid for eid, _, _ in occ)) <= 1:
-                continue
-        unique_entries = sorted(set(eid for eid, _, _ in occ))
-        print(f"\n  '{kata}' di {len(unique_entries)} entries:")
-        for eid, field, orig in occ[:8]:
+    for kata, locations in sorted_dupes:
+        unique_eids = sorted(set(eid for eid, _ in locations))
+        # Group by eid → fields where kata muncul
+        eids_to_fields = {}
+        for eid, field in locations:
+            eids_to_fields.setdefault(eid, set()).add(field)
+        print(f"\n  '{kata}' di {len(unique_eids)} entries:")
+        for eid in unique_eids[:8]:
             w = next((x for x in words if x.get('entry_id') == eid), None)
             if w:
-                # R-30 fix: tag [P]=paired, [N]=netral supaya user tahu context
+                # R-30: tag [P]=paired, [N]=netral
                 tag = '[P]' if is_paired_entry(w) else '[N]'
-                print(f"    {tag} [{eid}] {field:6} word={w.get('word','')[:25]!r} ngoko={w.get('ngoko','')[:20]!r} krama={w.get('krama','')[:20]!r} indo={w.get('indo','')[:20]!r}")
-        if len(unique_entries) > 8:
-            print(f"    ... +{len(unique_entries) - 8} more")
+                fields = sorted(eids_to_fields[eid])
+                print(f"    {tag} [{eid}] fields={','.join(fields):20} word={w.get('word','')[:25]!r} ngoko={w.get('ngoko','')[:20]!r} krama={w.get('krama','')[:20]!r} indo={w.get('indo','')[:20]!r}")
+        if len(unique_eids) > 8:
+            print(f"    ... +{len(unique_eids) - 8} more")
         shown += 1
         if shown >= 50:
             print(f"\n  ... +{len(dupes) - 50} more duplikat")
             break
 
-    print(f'\n  ⚠ Duplikat = kata IDENTIK lintas entry. Bukan sinonim.')
+    print(f'\n  ⚠ Duplikat = kata IDENTIK lintas entry, di FIELD APA PUN (lintas field).')
     print(f'  [P]=paired (indo+ngoko/krama) | [N]=netral (belum paired)')
+    print(f'  R-29: TIDAK ADA SINONIM BEDA ENTRY — kalau kata sama di entry beda = duplikat.')
     print(f'  → Ketik entry_id untuk edit. Enter=kembali.')
 
     # Edit by entry_id
@@ -1471,7 +1445,8 @@ def compute_cross_entry_flags(entry, cross_idx):
 
     # ===== 🔴 HIGH (wajib audit) =====
     # DUP_TOKEN: token di SEMUA field (word/ngoko/krama/indo) muncul di 2+ entries LINTAS FIELD
-    # Cek semua field, bukan per-field
+    # Cek semua field, bukan per-field. SEMUA kata, TANPA filter.
+    # Tidak ada break — tampilkan SEMUA duplikat per entry.
     seen_tokens = set()
     for field in ['word', 'ngoko', 'krama', 'indo']:
         val = (entry.get(field) or '').strip()
@@ -1494,7 +1469,7 @@ def compute_cross_entry_flags(entry, cross_idx):
                 fields_str = ','.join(sorted(other_fields))
                 flags.append(('DUP_TOKEN', 'HIGH',
                               f'token "{tok_lower}" di {field} juga di entry #{others_str} (di field: {fields_str})'))
-                break  # 1 DUP_TOKEN per entry cukup
+                # TIDAK break — tampilkan SEMUA duplikat per entry
 
     # ===== 🟡 MEDIUM (perlu cek) =====
     # SINONIM_INDO: indo identik dengan entry lain (case insensitive)
@@ -1758,7 +1733,7 @@ def main_menu(data):
         supabase_ok = bool(os.environ.get('NEXT_PUBLIC_SUPABASE_URL') and os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY'))
 
         print('╔' + '═' * 60 + '╗')
-        print('║  📖 Kamus Jawa Editor (TUI v13.1)' + ' ' * 24 + '║')
+        print('║  📖 Kamus Jawa Editor (TUI v13.2)' + ' ' * 24 + '║')
         print('║  Tab/panah untuk navigasi, Enter untuk pilih' + ' ' * 11 + '║')
         print('╚' + '═' * 60 + '╝')
         print()
@@ -1794,7 +1769,7 @@ def main_menu(data):
             '📝 Browse entries BELUM ada arti (Indonesia)',
             '🔗 Merge 2 entries (search kata)',
             '➕ Tambah Entry Baru (workflow SRT editor — nemu kata baru)',
-            '🔍 Deteksi duplikat (SEMUA entries, JANGAN HAPUS)',
+            '🔍 Deteksi duplikat (SEMUA entries, SEMUA field, TANPA filter)',
             '🚩 Audit Flags (SEMUA entries — heuristic, NO auto-fix)',
             '⚡ Mark READY/DRAFT bulk (search kata, tanpa edit)',
             '🔑 Set Supabase .env (URL + anon key)',
@@ -1925,7 +1900,7 @@ def upload_to_supabase():
 def main():
     os.system('clear' if os.name != 'nt' else 'cls')
     print('╔' + '═' * 60 + '╗')
-    print('║  📖 Kamus Jawa Editor (TUI v13.1)' + ' ' * 24 + '║')
+    print('║  📖 Kamus Jawa Editor (TUI v13.2)' + ' ' * 24 + '║')
     print('║  Menu pre-built — arrow keys, no jq needed' + ' ' * 17 + '║')
     print('╚' + '═' * 60 + '╝')
     print()
