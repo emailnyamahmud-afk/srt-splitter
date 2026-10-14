@@ -1335,7 +1335,7 @@
       "word": "pejuh",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1346,18 +1346,18 @@
       "word": "luh, waspa",
       "keterangan": "jv_raw: luh.",
       "aksara": "",
-      "sumber": "milstrike + sastra-jawa",
+      "sumber": "milstrike + sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 123,
       "indo": "air muka",
       "ngoko": "",
-      "krama": "",
-      "word": "pakurmatan, pasêmoning praean",
+      "krama": "pakurmatan",
+      "word": "pasêmoning praean",
       "keterangan": "jv_raw: 1 pasêmoning praean; 2 ent. pakurmatan.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1368,7 +1368,7 @@
       "word": "jarang",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1390,7 +1390,7 @@
       "word": "ancur",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1401,7 +1401,7 @@
       "word": "banyu rasa",
       "keterangan": "jv_raw: banyu rasa.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1423,7 +1423,7 @@
       "word": "uyuh",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1445,7 +1445,7 @@
       "word": "badh�k",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1467,18 +1467,18 @@
       "word": "prusi",
       "keterangan": "jv_raw: prusi.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 134,
       "indo": "air têrjun",
       "ngoko": "",
-      "krama": "",
-      "word": "grojogan",
+      "krama": "grojogan",
+      "word": "",
       "keterangan": "indo_raw: air têrjun (-lata) | indo_varian: -lata | PERINGATAN: indo punya diacritic Jawa, mungkin kolom Indonesia terkontaminasi | jv_raw: grojogan.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1500,7 +1500,7 @@
       "word": "'azab, gumun, siksa",
       "keterangan": "jv_raw: gumun. | jv_raw: siksa; kc. 'azab.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1508,10 +1508,10 @@
       "indo": "ajaib",
       "ngoko": "",
       "krama": "",
-      "word": "anèh, gumun, nggumunake",
+      "word": "anèh, gumun, nggumunaké",
       "keterangan": "jv_raw: gumun, nggumunake, anèh.\n--- 9 ---",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1522,18 +1522,18 @@
       "word": "ajak, diajak, diajani, digugah atine",
       "keterangan": "jv_raw: diajak: 1 diajak; 2 diajani, digugah atine.",
       "aksara": "",
-      "sumber": "milstrike + sastra-jawa",
+      "sumber": "milstrike + sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 139,
       "indo": "ajal",
       "ngoko": "",
-      "krama": "",
-      "word": "mati, wangênan, watêsing urip",
+      "krama": "wangênan",
+      "word": "mati, watêsing urip",
       "keterangan": "jv_raw: 1 wangênan, watêsing urip; 2 (sampai ajalnya) mati.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1544,18 +1544,18 @@
       "word": "pèrsi",
       "keterangan": "jv_raw: pèrsi.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 141,
       "indo": "ajar",
       "ngoko": "",
-      "krama": "",
-      "word": "ajar, belajar, diajari, digêgulang, dipelajari, disinau, disrêngêni, gladhi, guru, murid, nggêgulang, pamulang, pasinaon, pelajar, pelajaran, pintêr, piwulang, piwulang. ii ajar-ajar, sinau, wucal; wucal, wulang, wulangan, wêton sêkolahan dhuwur",
+      "krama": "pelajaran",
+      "word": "ajar, belajar, diajari, digêgulang, dipelajari, disinau, disrêngêni, gladhi, guru, murid, nggêgulang, pamulang, pasinaon, pelajar, pinter, piwulang, piwulang. ii ajar-ajar, sinau, wucal; wucal, wulang, wulangan, wêton sêkolahan dhuwur",
       "keterangan": "jv_raw: i piwulang; belajar: sinau, ajar, gladhi, nggêgulang; dipelajari: disinau, digêgulang; diajari: 1 diwulang, diajari; 2 disrêngêni; pelajar: murid; pelajaran: piwulang, pasinaon; terpelajar: (wong) pintêr, wêton sêkolahan dhuwur (têngahan); pengajar: pamulang, guru; pengajaran: wulangan, pasinaon, piwulang. ii ut. ajar-ajar: ajar (pandhita tapa).",
       "aksara": "",
-      "sumber": "milstrike + sastra-jawa",
+      "sumber": "milstrike + sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1566,7 +1566,7 @@
       "word": "ajar",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1577,7 +1577,7 @@
       "word": "udi",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1588,29 +1588,29 @@
       "word": "carane ngaji. ii sang aji, ngaji, piwulang, ratu, wulangan ngaji",
       "keterangan": "jv_raw: i mengaji: ngaji; pengajian: piwulang, wulangan ngaji, carane ngaji. ii sang aji, ratu.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 145,
       "indo": "ajnas",
-      "ngoko": "",
+      "ngoko": "warna-warna",
       "krama": "",
-      "word": "jenis, warna-warna",
+      "word": "jenis",
       "keterangan": "jv_raw: warna-warna; kc. jenis.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 146,
       "indo": "ajujah, ajujat",
-      "ngoko": "",
+      "ngoko": "ngala-ala",
       "krama": "",
-      "word": "ngala-ala, nyatur ala",
+      "word": "nyatur ala",
       "keterangan": "jv_raw: ngala-ala, nyatur ala.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1621,7 +1621,7 @@
       "word": "diajuk, diajuk - kan, dijajagi, duga, nyênyamah lsp. ii diajuk",
       "keterangan": "jv_raw: i diajuk(i), diajuk (ajuk)- kan: ditirokake saparipolahe prêlu dianggo gêguyon, nyênyamah lsp. ii diajuk: dijajagi, kc. duga.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1632,51 +1632,51 @@
       "word": "poyok",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 149,
       "indo": "ajun",
       "ngoko": "",
-      "krama": "",
-      "word": "diajun, dituju, diênêr, maksud, tujuan",
+      "krama": "tujuan",
+      "word": "diajun, dituju, diênêr, maksud",
       "keterangan": "jv_raw: 1 tujuan, maksud; 2 nylewar (nggiwar) adoh saka kang diêlês; diajun, diênêr, dituju.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 150,
       "indo": "akad",
       "ngoko": "",
-      "krama": "",
-      "word": "layang pikukuh, prajanjian",
+      "krama": "prajanjian",
+      "word": "layang pikukuh",
       "keterangan": "jv_raw: prajanjian, layang pikukuh.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 151,
       "indo": "akal",
       "ngoko": "",
-      "krama": "",
-      "word": "akal, ber'akal, budi kang bênêr, di'akali, diakali, diapusi, kajuligan, kêtêmu nalar, masuk'akal, nalar, pikiran, pintêr, reka, sugih akal",
+      "krama": "kajuligan",
+      "word": "akal, ber'akal, budi kang bênêr, di'akali, diakali, diapusi, kêtêmu nalar, masuk'akal, nalar, pikiran, pinter, réka, sugih akal",
       "keterangan": "jv_raw: 1 nalar, reka; 2 (-budi) pikiran, budi kang bênêr; 3 akal, kajuligan; ber'akal: sugih akal, pintêr; masuk'akal: kêtêmu nalar; di'akali: diakali, diapusi.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 152,
       "indo": "akan",
-      "ngoko": "",
+      "ngoko": "seakan-akan",
       "krama": "",
-      "word": "ajeng, akan tetapi, ananging, arêp, badh�; badhe, bakal, kanggo ing, kayadene, marang, minangka dadi, mungguh ing, mèh kaya, mênyang, seakan-akan, tumrap ing",
+      "word": "ajeng, akan tetapi, ananging, arêp, badh�; badhe, bakal, kanggo ing, kayadene, marang, minangka dadi, mungguh ing, mèh kaya, menyang, tumrap ing",
       "keterangan": "jv_raw: 1 mungguh ing, tumrap ing; 2 minangka dadi, kanggo ing; 3 marang, mênyang; 4 bakal, arêp; akan tetapi: ananging; seakan-akan: kayadene, mèh kaya.",
       "aksara": "",
-      "sumber": "milstrike + sastra-jawa",
+      "sumber": "milstrike + sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1687,7 +1687,7 @@
       "word": "arsa",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1704,12 +1704,12 @@
     {
       "entry_id": 155,
       "indo": "akar",
-      "ngoko": "",
+      "ngoko": "oyod-oyodan",
       "krama": "",
-      "word": "ngoyod, oyod, oyod-oyodan, oyot",
+      "word": "ngoyod, oyod, oyot",
       "keterangan": "jv_raw: 1 oyod, oyod-oyodan; 2 uga dianggo araning têtuwuhan rambat warna-warna; berakar: ngoyod.",
       "aksara": "",
-      "sumber": "milstrike + sastra-jawa",
+      "sumber": "milstrike + sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1720,7 +1720,7 @@
       "word": "akar bahar",
       "keterangan": "jv_raw: akar bahar.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1731,7 +1731,7 @@
       "word": "sulur",
       "keterangan": "jv_raw: sulur.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1742,29 +1742,29 @@
       "word": "larasètu",
       "keterangan": "jv_raw: larasètu.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 159,
       "indo": "akas",
-      "ngoko": "",
-      "krama": "",
-      "word": "awang-awang, cukat, kosokbalèn, trêngginas. ii akasa",
+      "ngoko": "awang-awang",
+      "krama": "cukat",
+      "word": "kosokbalèn, trêngginas. ii akasa",
       "keterangan": "jv_raw: i cukat, trêngginas. ii ut. akasa: awang-awang. | jv_raw: kosokbalèn.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 160,
       "indo": "akasa",
-      "ngoko": "",
+      "ngoko": "awang-awang",
       "krama": "",
-      "word": "awang-awang",
+      "word": "",
       "keterangan": "jv_raw: awang-awang.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1775,7 +1775,7 @@
       "word": "akad",
       "keterangan": "jv_raw: kc. akad.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1783,10 +1783,10 @@
       "indo": "akbar",
       "ngoko": "",
       "krama": "",
-      "word": "agung, gêdhe",
+      "word": "agung, gedhé",
       "keterangan": "jv_raw: gêdhe, agung.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1797,7 +1797,7 @@
       "word": "kabar",
       "keterangan": "jv_raw: (layang-) kabar.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1819,7 +1819,7 @@
       "word": "wusana",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1837,11 +1837,11 @@
       "entry_id": 167,
       "indo": "akhirat",
       "ngoko": "",
-      "krama": "",
-      "word": "ngakerat",
+      "krama": "ngakérat",
+      "word": "",
       "keterangan": "jv_raw: ngakerat.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1852,18 +1852,18 @@
       "word": "ing wasana, panutuping atur",
       "keterangan": "jv_raw: panutuping atur, ing wasana.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 169,
       "indo": "aki",
-      "ngoko": "",
+      "ngoko": "aki-aki",
       "krama": "",
-      "word": "aki-aki, kaki, to'aki, êmbah lanang",
+      "word": "kaki, to'aki, êmbah lanang",
       "keterangan": "jv_raw: to'aki, aki-aki: kaki, êmbah lanang.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1874,7 +1874,7 @@
       "word": "kadadeyane, kawusanane, têmahane",
       "keterangan": "jv_raw: kawusanane, têmahane, kadadeyane.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1885,7 +1885,7 @@
       "word": "akik, kima",
       "keterangan": "jv_raw: akik. | jv_raw: bngs. kima.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1896,7 +1896,7 @@
       "word": "wis diwasa",
       "keterangan": "jv_raw: wis diwasa.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1907,7 +1907,7 @@
       "word": "maha sampurna",
       "keterangan": "jv_raw: maha sampurna.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1918,7 +1918,7 @@
       "word": "rakêt pamitrane, sanak sadulur, urang",
       "keterangan": "jv_raw: urang. | jv_raw: rakêt pamitrane, sanak sadulur.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1929,29 +1929,29 @@
       "word": "aksara",
       "keterangan": "jv_raw: aksara.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 176,
       "indo": "aksi",
       "ngoko": "",
-      "krama": "",
-      "word": "pratingkah, tandang",
+      "krama": "pratingkah",
+      "word": "tandang",
       "keterangan": "jv_raw: 1 tandang; 2 pratingkah.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 177,
       "indo": "aku",
       "ngoko": "",
-      "krama": "",
-      "word": "aku, akuan, diakoni, diaku, diakui, dianggêp, kang wis diakoni, ngaku, ngandhêmi, nganggo têmbung aku, nyanggêmi",
+      "krama": "akuan",
+      "word": "aku, diakoni, diaku, diakui, dianggep, kang wis diakoni, ngaku, ngandhemi, nganggo têmbung aku, nyanggemi",
       "keterangan": "jv_raw: aku; beraku: nganggo têmbung aku; mengaku: ngaku, nyanggêmi, ngandhêmi; diakui: diakoni, diaku, dianggêp; akuan: kang wis diakoni.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1959,21 +1959,21 @@
       "indo": "akuk",
       "ngoko": "",
       "krama": "",
-      "word": "nglêntuk",
+      "word": "nglentuk",
       "keterangan": "jv_raw: terakuk: nglêntuk.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 179,
       "indo": "akur",
       "ngoko": "",
-      "krama": "",
-      "word": "cocog, mupakat",
+      "krama": "mupakat",
+      "word": "cocog",
       "keterangan": "jv_raw: cocog, mupakat.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1984,7 +1984,7 @@
       "word": "angkus, cis",
       "keterangan": "jv_raw: cis; kc. angkus.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -1995,7 +1995,7 @@
       "word": "maha luhur, miturut sakuwasane",
       "keterangan": "jv_raw: 'ala kadarnya: miturut sakuwasane. | jv_raw: maha luhur.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2006,29 +2006,29 @@
       "word": "linggis",
       "keterangan": "jv_raw: linggis.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 183,
       "indo": "alah",
       "ngoko": "",
-      "krama": "",
-      "word": "dialahkan, dikalahake",
+      "krama": "dialahkan",
+      "word": "dikalahaké",
       "keterangan": "jv_raw: kalah; dialahkan: dikalahake.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 184,
       "indo": "alahan",
       "ngoko": "",
-      "krama": "",
-      "word": "bêndungan, suwakan",
+      "krama": "bendungan",
+      "word": "suwakan",
       "keterangan": "jv_raw: bêndungan, suwakan.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2039,7 +2039,7 @@
       "word": "pête",
       "keterangan": "jv_raw: pête.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2050,18 +2050,18 @@
       "word": "kaslamêtan ana ing kowe",
       "keterangan": "jv_raw: kaslamêtan ana ing kowe.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 187,
       "indo": "alam",
       "ngoko": "",
-      "krama": "",
-      "word": "alam, dialami, jagad saisine, krajan gêdhe. ii gêndera, kupiya, pangalaman, waskitha, wêruh ing sakabèhe",
+      "krama": "pangalaman",
+      "word": "alam, dialami, jagad saisine, krajan gêdhe. ii gêndera, kupiya, waskitha, wêruh ing sakabèhe",
       "keterangan": "jv_raw: waskitha, wêruh ing sakabèhe. | jv_raw: dialami: dialami; pengalaman: kupiya, pangalaman. | jv_raw: i 1 alam, jagad saisine; 2 krajan gêdhe. ii gêndera.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2069,10 +2069,10 @@
       "indo": "alamang",
       "ngoko": "",
       "krama": "",
-      "word": "lamêng",
+      "word": "lameng",
       "keterangan": "jv_raw: lamêng.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2083,18 +2083,18 @@
       "word": "intên",
       "keterangan": "jv_raw: intên.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 190,
       "indo": "alamat",
       "ngoko": "",
-      "krama": "",
-      "word": "adrês, di'alamatkan, gêndera, kuncara, mulya, ngalamat, sasmita, sêmuwa, tandha, têtêngêr",
+      "krama": "ngalamat",
+      "word": "adrês, di'alamatkan, gendéra, kuncara, mulya, sasmita, semuwa, tandha, têtêngêr",
       "keterangan": "jv_raw: i têtêngêr, tandha, ngalamat, sasmita; 2 adrês; 3 gêndera; di'alamatkan: dingalamati marang. ii luhur, mulya, kuncara, sêmuwa.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2105,7 +2105,7 @@
       "word": "pariwara",
       "keterangan": "jv_raw: pariwara.\n--- 10 ---",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2116,29 +2116,29 @@
       "word": "badhut",
       "keterangan": "jv_raw: badhut.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 193,
       "indo": "alang",
-      "ngoko": "",
-      "krama": "",
-      "word": "alang, alang-kepalang, alangan, alangan. ii sapele, alangkah, bangêt, bukan alang kepalang, kêluwih-luwih, malang, mendah iba, ora sapiraa, palang, pêpalang, saiba, sathithik bangêt",
+      "ngoko": "alang-kepalang",
+      "krama": "alangan",
+      "word": "alang, alangan. ii sapele, alangkah, banget, bukan alang kepalang, keluwih-luwih, malang, mendah iba, ora sapiraa, palang, pêpalang, saiba, sathithik bangêt",
       "keterangan": "jv_raw: i alang, palang, malang; alangan: 1 nusa kang malang ing sungapan lsp; 2 palang; 3 pêpalang, alangan. ii sapele, ora sapiraa; alangkah: saiba, mendah iba; alang-kepalang: sathithik bangêt; bukan alang kepalang: bangêt, kêluwih-luwih.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 194,
       "indo": "alang-alang",
-      "ngoko": "",
+      "ngoko": "alang-alang",
       "krama": "",
-      "word": "alang-alang",
+      "word": "",
       "keterangan": "jv_raw: alang-alang.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2157,32 +2157,32 @@
       "indo": "alap",
       "ngoko": "",
       "krama": "",
-      "word": "dijupuk, diundhuh, ora kêsusu, rêmbên",
+      "word": "dijupuk, diundhuh, ora kêsusu, remben",
       "keterangan": "jv_raw: i rêmbên, ora kêsusu; 2 (-santun) sarwa alon lan sarèh. ii dialap: diundhuh, dijupuk.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 197,
       "indo": "alas",
       "ngoko": "",
-      "krama": "",
-      "word": "alasan, dhasar, dhêdhasar, dialas, didhasari, didokoki têtalês, dilèmèki, lambaran, lèmèk, têtalês, wêwaton",
+      "krama": "alasan",
+      "word": "dhasar, dhêdhasar, dialas, didhasari, didokoki têtalês, dilèmèki, lambaran, lèmèk, têtalês, wêwaton",
       "keterangan": "jv_raw: 1 lèmèk, lambaran; 2 dhasar, têtalês; dialas(kan): dilèmèki, didhasari, didokoki têtalês (wêwaton); alasan: dhêdhasar, wêwaton.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 198,
       "indo": "alas cawan",
       "ngoko": "",
-      "krama": "",
-      "word": "cawan, lèpèk",
+      "krama": "cawan",
+      "word": "lèpèk",
       "keterangan": "jv_raw: cawan, lèpèk.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2193,7 +2193,7 @@
       "word": "dhingklik pancadan",
       "keterangan": "jv_raw: dhingklik pancadan.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2204,7 +2204,7 @@
       "word": "bêbukaning layang",
       "keterangan": "jv_raw: bêbukaning layang.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2215,7 +2215,7 @@
       "word": "têtalêsing omah",
       "keterangan": "jv_raw: têtalêsing omah.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2226,7 +2226,7 @@
       "word": "umpak",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2244,11 +2244,11 @@
       "entry_id": 204,
       "indo": "alat",
       "ngoko": "",
-      "krama": "",
-      "word": "alat kerajaan, nindakake tatacara, peralatan, piranti, prabot, ubarampe, upacara, upacara kraton",
+      "krama": "peralatan",
+      "word": "alat kerajaan, nindakake tatacara, piranti, prabot, ubarampe, upacara, upacara kraton",
       "keterangan": "jv_raw: piranti, prabot; alat kerajaan: upacara kraton; peralatan: 1 prabot, ubarampe, upacara; 2 nindakake tatacara.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2259,18 +2259,18 @@
       "word": "celempung",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 206,
       "indo": "alat musik jawa",
       "ngoko": "",
-      "krama": "",
-      "word": "gamelan",
+      "krama": "gamelan",
+      "word": "",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2281,7 +2281,7 @@
       "word": "bonang, gambang",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2292,7 +2292,7 @@
       "word": "bendho",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2303,7 +2303,7 @@
       "word": "garu",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2314,7 +2314,7 @@
       "word": "canthing",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2325,7 +2325,7 @@
       "word": "gembor",
       "keterangan": "",
       "aksara": "",
-      "sumber": "milstrike",
+      "sumber": "milstrike + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2336,7 +2336,7 @@
       "word": "kayadene",
       "keterangan": "jv_raw: kayadene.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2347,7 +2347,7 @@
       "word": "manuk rangkok",
       "keterangan": "jv_raw: manuk rangkok.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2355,10 +2355,10 @@
       "indo": "algoja, algoju",
       "ngoko": "",
       "krama": "",
-      "word": "lêgojo",
+      "word": "legojo",
       "keterangan": "jv_raw: lêgojo (tukang ngukum kisas).",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2369,18 +2369,18 @@
       "word": "bandhil, mbandhil, membuang ali-ali",
       "keterangan": "jv_raw: i mengali: tansah ngaton (nglêleda lsp). ii ali-ali: bandhil; membuang ali-ali, mengali-ali: mbandhil.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
       "entry_id": 216,
       "indo": "alih",
       "ngoko": "",
-      "krama": "",
-      "word": "alihan, dialihkan, diingsêr, diêlih, malih, ngalih",
+      "krama": "alihan",
+      "word": "dialihkan, diingser, dielih, malih, ngalih",
       "keterangan": "jv_raw: beralih, alihan, ngalih, malih; mengalih: ngalih; dialihkan: diêlih, diingsêr.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2391,7 +2391,7 @@
       "word": "jêbule",
       "keterangan": "indo_raw: alih-alih(kan) | indo_varian: kan | jv_raw: jêbule ...",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2402,7 +2402,7 @@
       "word": "blêndok damar, wong pintêr babagan agama",
       "keterangan": "jv_raw: bngs. blêndok damar. | jv_raw: wong pintêr babagan agama.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2413,7 +2413,7 @@
       "word": "dialin",
       "keterangan": "jv_raw: dialin: diginyêr nganggo êndhog lsp. supaya mari lara.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
@@ -2421,10 +2421,10 @@
       "indo": "aling",
       "ngoko": "",
       "krama": "",
-      "word": "dialing, diiling-ilingi, ditamatake",
+      "word": "dialing, diiling-ilingi, ditamataké",
       "keterangan": "jv_raw: dialing(-aling): diiling-ilingi, ditamatake.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch2",
       "status": "draft"
     },
     {
