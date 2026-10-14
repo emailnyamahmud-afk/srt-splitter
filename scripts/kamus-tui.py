@@ -57,6 +57,12 @@ KAMUS_PATH = Path.home() / 'Dubbing' / 'kamus-jawa-draft.json'
 # Default = kamus-jawa-draft.json (44.005 entries, semua sumber campur).
 # Opsi lain = subset PURE per sumber, lebih bersih, kerja bertahap.
 KAMUS_SOURCES = {
+    'bersih': {
+        'path': Path.home() / 'Dubbing' / 'kamus_bersih.json',
+        'label': 'kamus_bersih.json (12.759 entries — INDO jangkar, 0 duplikat)',
+        'desc': 'Kamus BERSIH — INDO jangkar, 1 konsep 1 entry, 0 duplikat. Source: sastra-jawa + milstrike + existing LENGKAP + jv.wiktionary. Penulisan baku jv.wiktionary.',
+        'url': 'https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/kamus_bersih.json?t=CMD_TIMESTAMP',
+    },
     'unified': {
         'path': Path.home() / 'Dubbing' / 'kamus_unified.json',
         'label': 'kamus_unified.json (46.929 entries — jv + mendeley + dasanama + lemma + lampiran + angka)',
@@ -65,9 +71,8 @@ KAMUS_SOURCES = {
     },
 }
 
-# Default source: 'unified' (kamus UTAMA — jv + mendeley + dasanama + lemma + lampiran + angka).
-# Bisa di-switch di runtime via menu "📂 Switch source JSON".
-CURRENT_SOURCE = 'unified'
+# Default source: 'bersih' (kamus BERSIH — INDO jangkar, 0 duplikat).
+CURRENT_SOURCE = 'bersih'
 
 # .env file di ~/Dubbing/ — user simpan Supabase URL + anon key di sini
 # Format .env:
@@ -1838,7 +1843,7 @@ def main_menu(data):
         supabase_ok = bool(os.environ.get('NEXT_PUBLIC_SUPABASE_URL') and os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY'))
 
         print('╔' + '═' * 60 + '╗')
-        print('║  📖 Kamus Jawa Editor (TUI v14.3)' + ' ' * 24 + '║')
+        print('║  📖 Kamus Jawa Editor (TUI v15)' + ' ' * 24 + '║')
         print('║  Tab/panah untuk navigasi, Enter untuk pilih' + ' ' * 11 + '║')
         print('╚' + '═' * 60 + '╝')
         print()
@@ -2005,7 +2010,7 @@ def upload_to_supabase():
 def main():
     os.system('clear' if os.name != 'nt' else 'cls')
     print('╔' + '═' * 60 + '╗')
-    print('║  📖 Kamus Jawa Editor (TUI v14.3)' + ' ' * 24 + '║')
+    print('║  📖 Kamus Jawa Editor (TUI v15)' + ' ' * 24 + '║')
     print('║  Menu pre-built — arrow keys, no jq needed' + ' ' * 17 + '║')
     print('╚' + '═' * 60 + '╝')
     print()
