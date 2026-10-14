@@ -51,10 +51,14 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 - Semua TUI updated dgn config.py (HDD path)
 - yt-dlp-tui.py tested: ✅ Kepala-Perampok.mp4 + m4a + srt ke HDD/input/
 - demucs-tui.py v2: segment 4 (RAM aman) + WAV → ffmpeg MP3 streaming
-- Demucs test: Kepala-Perampok (segment=4, MPS, ~32 menit estimasi)
+- Demucs test: Kepala-Perampok (segment=4, MPS, ~32 menit) ✅
+- edge-tts: updated 7.2.8→7.3.1 (fix 403 error), test Toko-buku 4565 cue jalan ✅
+- Bug fix: --segment int (3.9→4), NameError no_vocals_mp3, yt-dlp next steps
 
 ## Next
 
-- User: tunggu Demucs selesai → edge-tts-tui.py → mix-tui.py (end-to-end ID)
+- User: edge-tts Toko-buku 4565 cue (~3 jam, tinggal jalan)
+- User: setelah TTS selesai → mix-tui.py (end-to-end ID complete)
 - User: validasi jv.wiktionary.json manual di kamus-tui (isi indo + register)
 - AI: update SRT editor web utk lookup kamus dari Supabase
+- AI: update edge-tts-tui.py docstring (bukan web app, bukan Mode ON)
