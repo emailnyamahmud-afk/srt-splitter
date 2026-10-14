@@ -2573,12 +2573,12 @@
     {
       "entry_id": 234,
       "indo": "almari",
-      "ngoko": "",
+      "ngoko": "lemari",
       "krama": "",
-      "word": "lemari",
+      "word": "",
       "keterangan": "jv_raw: lêmari.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch3",
       "status": "draft"
     },
     {
@@ -2782,23 +2782,23 @@
     {
       "entry_id": 253,
       "indo": "aman",
-      "ngoko": "",
+      "ngoko": "slamet",
       "krama": "",
-      "word": "aman, ora rusuh, slamet, tentrem",
+      "word": "aman, ora rusuh, tentrem",
       "keterangan": "jv_raw: slamêt, têntrêm, ora rusuh.",
       "aksara": "",
-      "sumber": "milstrike + sastra-jawa",
+      "sumber": "milstrike + sastra-jawa + baca-manual-batch3",
       "status": "draft"
     },
     {
       "entry_id": 254,
       "indo": "amanat",
-      "ngoko": "",
+      "ngoko": "kaslametan",
       "krama": "",
-      "word": "diamanatkan, dipasrahaké, dipracayakake, kaslametan, katentreman, piwêkas",
+      "word": "diamanatkan, dipasrahaké, dipracayakake, katentreman, piwêkas",
       "keterangan": "jv_raw: 1 kaslamêtan, katêntrêman; 2 apa-apa kang dititipake (dianggo tanggungan, dianggo cêkêlan, dipracayakake) 3 piwêling, piwêkas; diamanatkan: dipracayakake, dipasrahake.\n--- 11 ---",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch3",
       "status": "draft"
     },
     {
@@ -2816,11 +2816,11 @@
       "entry_id": 256,
       "indo": "amar",
       "ngoko": "",
-      "krama": "",
-      "word": "dhawuh, diamarkan, didhawuhaké, dipacuhi, pepacuh",
+      "krama": "dhawuh",
+      "word": "diamarkan, didhawuhaké, dipacuhi, pepacuh",
       "keterangan": "jv_raw: dhawuh, pêpacuh; diamarkan: didhawuhake, dipacuhi.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch3",
       "status": "draft"
     },
     {
@@ -2936,12 +2936,12 @@
     {
       "entry_id": 267,
       "indo": "ambil",
-      "ngoko": "",
+      "ngoko": "diepèk",
       "krama": "",
-      "word": "dialap, diambil, diambil ingatan, diambil simpan, dicathet, dicekak, digolèki, dipigunakake, dipêthik, diringkês, ditampa, diepèk, erah, jupuk, klèru tampa, padha ngalap, salah ambil",
+      "word": "dialap, diambil, diambil ingatan, diambil simpan, dicathet, dicekak, digolèki, dipigunakake, dipêthik, diringkês, ditampa, erah, jupuk, klèru tampa, padha ngalap, salah ambil",
       "keterangan": "jv_raw: diambil: 1 dijupuk; 2 diêpèk, dialap; 3 dipêthik (tmr. karangan lsp); 4 ditampa (tmr. surasaning têmbung lsp); 5 dipigunakake (tmr. reka, srana); 6 digolèki (tmr. iwak lsp); diambil ingatan: dicathêt; diambil simpan (ringkas): diringkês, dicêkak; berambil-ambilan: padha ngalap; salah ambil: klèru tampa.",
       "aksara": "",
-      "sumber": "milstrike + sastra-jawa",
+      "sumber": "milstrike + sastra-jawa + baca-manual-batch3",
       "status": "draft"
     },
     {
@@ -2980,12 +2980,12 @@
     {
       "entry_id": 271,
       "indo": "ambung",
-      "ngoko": "",
+      "ngoko": "diambung",
       "krama": "",
-      "word": "diambung, disawatake munggah, diumbulaké",
+      "word": "disawatake munggah, diumbulaké",
       "keterangan": "jv_raw: i bngs. kranjang ut. tenggok dianggo nggêgendhong diêrut olèh êndhas; diambung: digendhong kaêrut olèh êndhas. ii diambungkan: disawatake munggah, diumbulake.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch3",
       "status": "draft"
     },
     {
@@ -3090,12 +3090,12 @@
     {
       "entry_id": 281,
       "indo": "ampang",
-      "ngoko": "",
+      "ngoko": "gampang",
       "krama": "",
-      "word": "gampang, ii empang",
+      "word": "ii empang",
       "keterangan": "jv_raw: i gampang; ii kc. empang.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch3",
       "status": "draft"
     },
     {
@@ -3134,12 +3134,12 @@
     {
       "entry_id": 285,
       "indo": "ampat",
-      "ngoko": "",
+      "ngoko": "papat",
       "krama": "",
-      "word": "empat, papat",
+      "word": "empat",
       "keterangan": "jv_raw: papat; kc. empat.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch3",
       "status": "draft"
     },
     {
@@ -3178,12 +3178,12 @@
     {
       "entry_id": 289,
       "indo": "ampuh",
-      "ngoko": "",
+      "ngoko": "banjir",
       "krama": "",
-      "word": "banjir, lubèr. ii gêdhe dayane",
+      "word": "lubèr. ii gêdhe dayane",
       "keterangan": "jv_raw: i banjir, lubèr. ii gêdhe dayane.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch3",
       "status": "draft"
     },
     {
@@ -3200,23 +3200,23 @@
     {
       "entry_id": 291,
       "indo": "ampun",
-      "ngoko": "",
+      "ngoko": "pangapura",
       "krama": "",
-      "word": "apura, diampuni, diapura, pangapura",
+      "word": "apura, diampuni, diapura",
       "keterangan": "jv_raw: apura, pangapura; diampuni: diapura.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch3",
       "status": "draft"
     },
     {
       "entry_id": 292,
       "indo": "amsal",
-      "ngoko": "",
+      "ngoko": "upama",
       "krama": "",
-      "word": "sanépa, upama",
+      "word": "sanépa",
       "keterangan": "jv_raw: sanepa, upama.",
       "aksara": "",
-      "sumber": "sastra-jawa",
+      "sumber": "sastra-jawa + baca-manual-batch3",
       "status": "draft"
     },
     {
