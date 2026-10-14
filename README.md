@@ -60,7 +60,8 @@ mkdir -p /Volumes/HDD/Dubbing/{input,demucs,tts,mix}
 - Install: `pip3 install torchaudio demucs`
 
 ### 3. edge-tts-tui.py — TTS generation (100% lokal)
-- Edge TTS Python WebSocket (bukan browser, no rate-limit)
+- Edge TTS Python WebSocket v7.3.1 (bukan browser, no rate-limit)
+- 4565 cue tested (Toko-buku, ~3 jam generate)
 - Smart Fit algorithm (speedup + slowdown)
 - Inline mix (RAM efficient untuk 5000+ cues)
 - Cari SRT di HDD/input/, output ke HDD/tts/
