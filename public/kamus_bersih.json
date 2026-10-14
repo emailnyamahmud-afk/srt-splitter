@@ -3839,9 +3839,9 @@
       "entry_id": 349,
       "indo": "angau",
       "ngoko": "",
-      "krama": "anggau",
-      "word": "",
-      "keterangan": "jv_raw: kc. anggau.\n\n[AI baca-manual-batch4: confidence=MEDIUM | anggau=serapan (kc. anggau) → krama]",
+      "krama": "",
+      "word": "anggau",
+      "keterangan": "jv_raw: kc. anggau.\n\n[AI baca-manual-batch4-FIX: confidence=MEDIUM | anggau=serapan (kc. anggau) → krama]",
       "aksara": "",
       "sumber": "sastra-jawa + baca-manual-batch4",
       "status": "draft"
@@ -4025,10 +4025,10 @@
     {
       "entry_id": 366,
       "indo": "anggup",
-      "ngoko": "angguk",
+      "ngoko": "",
       "krama": "",
-      "word": "",
-      "keterangan": "jv_raw: kc. angguk.\n--- 13 ---\n\n[AI baca-manual-batch4: confidence=HIGH | angguk=ngoko (Jawa native)]",
+      "word": "angguk",
+      "keterangan": "jv_raw: kc. angguk.\n--- 13 ---\n\n[AI baca-manual-batch4-FIX: confidence=HIGH | angguk=ngoko (Jawa native)]",
       "aksara": "",
       "sumber": "sastra-jawa + baca-manual-batch4",
       "status": "draft"
@@ -4135,10 +4135,10 @@
     {
       "entry_id": 376,
       "indo": "angkasa",
-      "ngoko": "",
-      "krama": "awang-awang",
+      "ngoko": "awang-awang",
+      "krama": "",
       "word": "gegana, jumantara",
-      "keterangan": "jv_raw: awang-awang.\n\n[AI baca-manual-batch4: confidence=MEDIUM | awang-awang=reduplikasi tapi ragu (bisa ngoko/krama) → word]",
+      "keterangan": "jv_raw: awang-awang.\n\n[AI baca-manual-batch4-FIX: confidence=MEDIUM | awang-awang=reduplikasi tapi ragu (bisa ngoko/krama) → word]",
       "aksara": "",
       "sumber": "milstrike + sastra-jawa + baca-manual-batch4",
       "status": "draft"
@@ -4257,9 +4257,9 @@
       "entry_id": 387,
       "indo": "angkus, angkusa",
       "ngoko": "",
-      "krama": "cis",
-      "word": "",
-      "keterangan": "jv_raw: cis.\n\n[AI baca-manual-batch4: confidence=MEDIUM | cis=serapan Arab → krama]",
+      "krama": "",
+      "word": "cis",
+      "keterangan": "jv_raw: cis.\n\n[AI baca-manual-batch4-FIX: confidence=MEDIUM | cis=serapan Arab → krama]",
       "aksara": "",
       "sumber": "sastra-jawa + baca-manual-batch4",
       "status": "draft"
@@ -4443,10 +4443,10 @@
     {
       "entry_id": 404,
       "indo": "anjar",
-      "ngoko": "",
-      "krama": "jangkar",
+      "ngoko": "jangkar",
+      "krama": "",
       "word": "",
-      "keterangan": "jv_raw: jangkar.\n\n[AI baca-manual-batch4: confidence=MEDIUM | jangkar=ragu (bisa ngoko) → word]",
+      "keterangan": "jv_raw: jangkar.\n\n[AI baca-manual-batch4-FIX: confidence=MEDIUM | jangkar=ragu (bisa ngoko) → word]",
       "aksara": "",
       "sumber": "sastra-jawa + baca-manual-batch4",
       "status": "draft"
