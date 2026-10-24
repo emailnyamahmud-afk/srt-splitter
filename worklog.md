@@ -3295,3 +3295,124 @@ Stage Summary:
 - Mode A & C tetap stream copy (bitrate ikut ori, ~350 MB)
 - Backward compatible: kalau user pilih 2 Mbps = same dengan v3.4 behavior
 - Code verified: 8 kombinasi semua terbentuk benar, no edge case bug
+
+---
+Task ID: mix-tui-v3.5-test-1mbps-plan
+Agent: main
+Task: User mulai test Mode D @ 1 Mbps untuk verify hemat size
+
+Test plan:
+- Mode D @ 1 Mbps (Simple + Burn SRT, target bitrate 1 Mbps)
+- File: S10-ORI.mp4 + S10-ORI.id-audio-id-dub.wav + S10-ORI-id-final.srt
+- Expected output: ~1.2 GB (vs v3.4 @ 2 Mbps yang 2.3 GB → hemat 50%)
+- Expected time: ~5 menit (M1 VideoToolbox 32x speed, sama dengan v3.4)
+
+Important note:
+- Output filename suffix sama (-id-simple-sub.mp4) → akan overwrite file v3.4 test
+- Saran rename dulu: S10-ORI-id-simple-sub.mp4 → S10-ORI-id-simple-sub-2mb.mp4
+- Bisa banding 2 file di VLC
+
+VLC verify checklist (FOKUS quality karena bitrate turun 50%):
+1. Subtitle sharp di scene statis (00:01-00:30)
+2. Subtitle terbaca di scene action (menit 30+)
+3. Video tidak blocky di detail (wajah, teks, texture)
+4. Audio quality identik dengan dub wav asli (audio path sama, no filter)
+
+Expected outcome:
+- Kalau 1 Mbps OK di VLC → default produksi (hemat 50% storage)
+- Kalau 1 Mbps kurang sharp → fallback ke 1.5 Mbps (default baru v3.5)
+- Kalau 1 Mbps gagal total → pakai 2 Mbps (v3.4 behavior)
+
+Stage Summary:
+- Test Mode D @ 1 Mbps running, ETA ~5 menit
+- Sambil nunggu, prepare VLC verify checklist
+- Pending: user feedback untuk konfirmasi bitrate default optimal
+
+---
+Task ID: mix-tui-v3.5-test-1mbps-running
+Agent: main
+Task: User test Mode D @ 1 Mbps di film S1-id.mp4 — sedang berjalan
+
+Test setup:
+- MP4: S1-id.mp4 (2j 30m 4s) — beda film dari S10-ORI
+- Audio dub: S1-id.id-audio-id-dub.wav (2j 30m 4s)
+- SRT: S1-id.id.srt
+- Mode: Simple + Burn SRT, posisi Opsi A (bottom:20)
+- Bitrate: 1 Mbps (pilih opsi hemat)
+- Output: S1-id-id-simple-sub.mp4
+
+Verifikasi fitur v3.5 semua aktif:
+- ✅ Step 4.8 prompt muncul setelah Step 4.7
+- ✅ User pilih "1 Mbps" → parse ke '1M'
+- ✅ Ringkasan: Bitrate bar muncul "Bitrate : 1M (target bitrate)"
+- ✅ Command: -c:v h264_videotoolbox -b:v 1M (variable bitrate, bukan hard-coded)
+- ✅ Print: "Bitrate: 1M (target) — size estimasi ~1.2 GB/2jam"
+- ✅ Estimasi: "~4-6 menit untuk 2 jam video (M1 VideoToolbox 35x hardware)" — update dari v3.4 (20-40 menit)
+
+Observasi minor (cosmetic, tidak blocking):
+- Filename double "-id": S1-id.mp4 → S1-id-id-simple-sub.mp4
+- Penyebab: derive_default_output() tambah "-{lang}-final" ke base, base sudah ada "-id"
+- Tidak bug fatal, file valid, FFmpeg tetap proses
+- Fix cosmetic: tambah logic skip append "-id" kalau base endswith "-id" (low priority)
+
+Progress snapshot:
+- Speed: 32.7x (konsisten dengan Mode D @ 2 Mbps yang 32.0x — bitrate tidak pengaruhi speed)
+- ETA: 2m 52s (total estimasi ~4.5 menit)
+- Size display: 0.0 MB (sama seperti v3.4, h264_videotoolbox buffer issue, tidak masalah)
+
+Expected final:
+- Output: ~1.2 GB (vs v3.4 @ 2 Mbps 2.3 GB → hemat 50%)
+- Duration: 2j 30m 4s (identik MP4 ori)
+- VLC verify: subtitle sharp + scene action terbaca + video tidak blocky
+
+Stage Summary:
+- Mode D @ 1 Mbps running, fitur v3.5 semua aktif sesuai design
+- Speed sama dengan Mode D @ 2 Mbps (encoder hardware, bitrate tidak pengaruhi speed)
+- Hemat 50% size jika 1 Mbps quality OK di VLC
+- Pending: VLC feedback untuk konfirmasi bitrate 1 Mbps viable untuk produksi
+
+---
+Task ID: mix-tui-v3.5-mode-d-1mbps-confirmed
+Agent: main
+Task: User konfirmasi Mode D @ 1 Mbps — kualitas LEBIH BAGUS dari MP4 ori, sync 1000000%
+
+Test result final:
+- ✅ Exit code: 0
+- ✅ Speed: 33.2x (konsisten, sama dengan 2 Mbps — bitrate tidak pengaruhi speed)
+- ✅ Elapsed: 4m 31s
+- ✅ Output size: 1156.4 MB (~1.13 GB, hemat 51% dari v3.4 yang 2356 MB)
+- ✅ Duration: 2j 30m 4s (perfect match MP4 ori)
+- ✅ File created: S1-id-id-simple-sub.mp4
+- ✅ VLC feedback: "Lebih bagus dari ori" — kualitas video + subtitle OK di 1 Mbps
+
+User insight besar:
+- "versi simpel = bahkan engga perlu davinci resolve = karena bisa end to end"
+- Pipeline end-to-end: yt-dlp → edge-tts → mix-tui Simple + Burn SRT = sync 1000000%
+- Tidak perlu editing manual, output langsung siap publish
+- Workflow decision tree user:
+  - Hasil "proper" (dengan SFX/musik) → jalankan demucs-tui → Mode A atau B (Full)
+  - Hasil cepat/dialog dominan → skip demucs → Mode C atau D (Simple)
+
+Pipeline final yang teruji (PRODUCTION-READY):
+- ✅ Mode A (Full + Stream copy): 5 film sukses, ~350 MB
+- ⚠ Mode B (Full + Burn SRT): low risk, belum user test (kode sama dengan D + audio filter)
+- ✅ Mode C (Simple + Stream copy): 1 film sukses (S10-ORI 352.7 MB, 1m 16s, sync 100%)
+- ✅ Mode D (Simple + Burn SRT): 2 film tested (S10-ORI @ 2Mbps 2.3GB, S1-id @ 1Mbps 1.13GB)
+- ✅ Bitrate 1 Mbps confirmed viable — kualitas lebih bagus dari MP4 ori, hemat 50% size
+
+Size comparison Mode D (S10-ORI 2j 38m vs S1-id 2j 30m, ~sama durasi):
+- v3.4 @ 2 Mbps: 2356 MB (baseline)
+- v3.5 @ 1 Mbps: 1156 MB (hemat 51%)
+- Default v3.5 = 1.5 Mbps (~1.8 GB, compromise)
+- 1 Mbps confirmed OK untuk produksi (user pilih ini untuk film S1-id)
+
+Bug cosmetic (tidak blocking):
+- ETA=0sss0ss di akhir progress (carriage return glitch terminal)
+- Filename double -id: S1-id.mp4 → S1-id-id-simple-sub.mp4 (cosmetic, low priority fix)
+
+Stage Summary:
+- mix-tui v3.5 production-ready, 4 mode + 4 pilihan bitrate (Mode B/D)
+- User confirmed: 1 Mbps LEBIH BAGUS dari MP4 ori (hemat 50% storage)
+- Pipeline end-to-end tanpa DaVinci = workflow user final
+- Mode B belum di-test tapi low risk (kode = Mode D + audio filter)
+- Workflow dubbing Jawa production-ready untuk film-film berikutnya

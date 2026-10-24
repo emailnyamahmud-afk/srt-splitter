@@ -68,23 +68,26 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 - edge-tts v7.3.1: ✅ 4565 cue tested (Toko-buku, ~3 jam generate)
 - mix-tui v3.3 → v3.4 (24 Okt): 5 film sukses pakai Full + Stream copy
 
-### mix-tui v3.5 (24 Okt 2026, commit feat v3.5 — pilihan bitrate)
+### mix-tui v3.5 (24 Okt 2026, commit 5a17ab7 — pilihan bitrate)
 - 4 kombinasi mode (2 input × 2 output):
   - ✅ A. Full + Stream copy → `{prefix}-id-final.mp4` (5 film sukses, ~350 MB)
   - ⚠ B. Full + Burn SRT → `{prefix}-id-final-sub.mp4` (low risk, belum user test)
   - ✅ C. Simple + Stream copy → `{prefix}-id-simple.mp4` (1 film sukses: S10-ORI 352.7 MB, 1m 16s, sync 100%)
-  - ✅ D. Simple + Burn SRT → `{prefix}-id-simple-sub.mp4` (1 film sukses: S10-ORI 2356 MB @ 2Mbps, 4m 57s, VLC OK)
+  - ✅ D. Simple + Burn SRT → `{prefix}-id-simple-sub.mp4` (2 film tested):
+    - S10-ORI @ 2 Mbps: 2356 MB, 4m 57s, VLC OK
+    - S1-id @ 1 Mbps: 1156 MB, 4m 31s, VLC "lebih bagus dari ori" — hemat 51% size
 - Default = Full (backward compatible)
 - Ducking PERLU untuk Full mode (SFX/musik latar dari Demucs tetap ada walau vokal dibuang)
 - Ducking TIDAK PERLU untuk Simple mode (no SFX, dub copy as-is)
 - v3.5 NEW: Step 4.8 — pilih video bitrate untuk Mode B & D (burn SRT wajib re-encode):
-  - 1 Mbps → ~1.2 GB/2jam (hemat, quality OK untuk 480p hardsub)
-  - 1.5 Mbps → ~1.8 GB/2jam (default, seimbang) — REKOMENDASI
-  - 2 Mbps → ~2.3 GB/2jam (current behavior, subtitle paling sharp)
+  - 1 Mbps → ~1.2 GB/2jam (USER CONFIRMED OK, kualitas lebih bagus dari ori, hemat 51%)
+  - 1.5 Mbps → ~1.8 GB/2jam (default v3.5, seimbang)
+  - 2 Mbps → ~2.3 GB/2jam (v3.4 behavior, subtitle paling sharp)
   - 4 Mbps → ~4.5 GB/2jam (HD-ready, kalau source ori high quality)
   - Mode A & C (stream copy) tidak perlu prompt — bitrate ikut MP4 ori
-- M1 VideoToolbox 35x hardware = 2.5 jam video di-encode 5 menit (bukan 30 menit estimasi)
-- Code audited: py_compile OK, 8 kombinasi (4 bitrate × 2 burn mode) terbentuk benar
+- M1 VideoToolbox 32-33x speed (konsisten) = 2.5 jam video di-encode ~4.5 menit
+- User confirmed: pipeline Simple mode end-to-end = sync 1000000%, tidak perlu DaVinci Resolve
+- Workflow user final: dialog dominan → Simple mode; hasil "proper" dengan SFX → demucs + Full mode
 
 ## Ducking — Best Practice (PERMANEN)
 
