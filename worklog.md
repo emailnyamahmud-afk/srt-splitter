@@ -3507,3 +3507,47 @@ Stage Summary:
 - Backward compatible: Demucs & mix-tui bisa baca MP3 sama dengan M4A
 - File matching include M4A fallback supaya file lama (sebelum v6) tetap terbaca
 - User test berikutnya: download film baru → verify output .mp3
+
+---
+Task ID: yt-dlp-tui-v6-mp3-test-confirmed
+Agent: main
+Task: User test yt-dlp-tui v6 — output MP3 sukses di Mac
+
+Test setup:
+- Film: S8-HQ (1080p, ~2 jam durasi)
+- URL: https://www.youtube.com/watch?v=Fca50v9-Eik&t=1s
+
+Test result:
+- ✅ Banner v6 muncul (YouTube Downloader v6)
+- ✅ Audio output: S8-HQ-audio.mp3 (219.7 MB) — MP3 confirmed
+- ✅ Source audio: webm (Opus 160kbps) → convert ke MP3 via ffmpeg
+- ✅ Auto-delete source webm (default behavior, hemat disk)
+- ✅ ExtractAudio post-process: [ExtractAudio] Destination log muncul
+- ✅ File matching: detect .mp3 primary (Audio: S8-HQ-audio.mp3)
+- ✅ Video MP4: S8-HQ.mp4 (1646.7 MB, 1080p HQ)
+- ✅ SRT Indonesia: S8-HQ.id.srt (286.9 KB, auto-converted to SRT format)
+
+yt-dlp format selection:
+- Pilih format 400+251 (video VP9/AV1 1080p + audio Opus 160kbps)
+- YouTube tidak ada MP3 native → wajib convert dari webm/opus
+- ffmpeg convert ke MP3 VBR best (~190 kbps rata-rata)
+
+Size comparison M4A vs MP3 (untuk 2 jam audio):
+- M4A native (sebelumnya v5): ~100-150 MB
+- MP3 VBR best (v6): 219.7 MB → ~50-100% lebih besar
+- Trade-off: MP3 lebih kompatibel + standar industry, size lebih besar
+- Untuk dubbing tidak masalah: audio hanya untuk Demucs split vokal
+  (final audio = dub Jawa dari edge-tts-tui, independent dari MP3 ori)
+
+Timing:
+- Download audio (Opus 160kbps, 126.81 MiB): 37 detik
+- Convert MP3 (ffmpeg M1 hardware): <5 detik
+- Total audio path: ~45 detik
+- Download video 1080p (1.6 GB): beberapa menit
+- Download SRT: <1 detik
+
+Stage Summary:
+- yt-dlp-tui v6 production-ready: output MP4 + MP3 + SRT
+- Convert MP3 via ffmpeg work sempurna (auto-delete source)
+- Backward compatible: file matching MP3 primary, M4A fallback
+- User bisa lanjut ke Demucs (split vokal) atau langsung ke edge-tts + mix Simple mode
