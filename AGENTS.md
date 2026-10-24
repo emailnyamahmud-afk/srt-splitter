@@ -103,10 +103,21 @@ Alasan:
 
 Simple mode tidak ada SFX → ducking concept tidak apply → auto-skip.
 
-## Next
+## Next (lanjut besok)
 
-- User: test mix-tui v3.4 Mode C & D di Mac (git pull + python3 mix-tui.py)
+- User: istirahat dulu, lanjut besok
 - User: validasi kamus-tui (8.618 entries dengan indo) satu per satu, mark READY, upload Supabase
 - User: validasi 231 entries ngoko+krama yang perlu indo manual
-- AI: tunggu feedback user setelah test Mode C/D
-- AI: web app Jawa (TUI #4) — penyesuaian lookup kamus dari Supabase
+- AI (optional): tunggu user — kalau user mau test Mode B (Full + Burn SRT), low risk
+- AI (optional): fix bug cosmetic
+  - Filename double `-id` di `derive_default_output()` (S1-id.mp4 → S1-id-id-simple-sub.mp4)
+  - Progress bar `ETA=0sss0ss` di akhir encoding (carriage return glitch)
+- AI: web app Jawa (TUI #4) — penyesuaian lookup kamus dari Supabase (setelah kamus audit selesai)
+
+## Catatan PAT (PERMANEN)
+
+PAT user sudah exposure di chat (6x push hari ini). User WAJIB revoke sekarang:
+→ GitHub → Settings → Developer settings → Personal access tokens → Revoke
+
+Untuk push sesi berikutnya, user kirim PAT baru. Atau setup SSH key di sandbox
+untuk permanent solution (lebih aman dari PAT).

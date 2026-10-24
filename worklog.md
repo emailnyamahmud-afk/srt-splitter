@@ -3416,3 +3416,31 @@ Stage Summary:
 - Pipeline end-to-end tanpa DaVinci = workflow user final
 - Mode B belum di-test tapi low risk (kode = Mode D + audio filter)
 - Workflow dubbing Jawa production-ready untuk film-film berikutnya
+
+---
+Task ID: final-docs-update-session-end
+Agent: main
+Task: Update semua dokumentasi sebelum istirahat — konsistensi 4 file
+
+Files updated:
+1. PROJECT_RULES.md — update date 15 Okt → 24 Okt, tambah 7 TUI table, pipeline 2 alur (Simple/Full), rules mix-tui v3.5 dengan 4 mode + bitrate, R-22 compliance
+2. scripts/README.md — tambah 7 TUI status table, pipeline 2 alur, mix-tui v3.5 table 4 mode + bitrate options, workflow Simple/Full branch
+3. scripts/tutor-demucs-setup.md — tambah section 'Kapan perlu Demucs?' (Full mode) vs 'Kapan SKIP Demucs?' (Simple mode)
+4. AGENTS.md — update section Next (v3.4 test done, plan besok), tambah Catatan PAT (PERMANEN) untuk revoke
+
+Verify konsistensi:
+- Semua file ada section '7 TUI' (PROJECT_RULES, AGENTS, README, scripts/README)
+- Semua refer 'mix-tui v3.5' (worklog history pakai v3.4, v3.3, v3.2 — itu OK sebagai history)
+- Semua tanggal '24 Okt 2026'
+- Status konsisten: A,C,D tested; B low risk
+- Pipeline 2 alur (Simple/Full) konsisten di semua file
+- Bitrate options (1/1.5/2/4 Mbps) tercatat dengan status user confirmation (1 Mbps confirmed > ori)
+
+Stage Summary:
+- 4 file dokumentasi update: PROJECT_RULES.md, scripts/README.md, scripts/tutor-demucs-setup.md, AGENTS.md
+- Semua konsisten dengan status final hari ini (24 Okt 2026)
+- 7 TUI status table tersinkron di 4 file markdown
+- Pipeline 2 alur (Simple/Full) terdokumentasi dengan workflow jelas
+- Bug cosmetic 2 item (filename double -id, progress bar ETA glitch) tercatat di Next untuk fix besok (optional, low priority)
+- Catatan PAT revoke tersimpan permanen supaya tidak lupa
+- Sesi hari ini selesai — 8 commit, 2 fitur baru + 2 bug fix + dokumentasi lengkap
