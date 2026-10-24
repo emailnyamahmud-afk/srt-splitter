@@ -17,7 +17,7 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 | 4 | Web app | Translate SRT Indonesia → Jawa (pakai kamus Supabase) | ⚠ Prototype (perlu penyesuaian) |
 | 5 | SRT editor | Sementara pakai SRT Indonesia (SRT Jawa = nunggu kamus + web selesai) | ⏳ Pending |
 | 6 | edge-tts-tui.py | Generate audio dub dari SRT (5000+ cue, 2-5 jam durasi) | ✅ Jalan |
-| 7 | mix-tui.py v3.4 | Mix MP4 + audio → final video (4 kombinasi mode) | ✅ Production (C/D belum user uji) |
+| 7 | mix-tui.py v3.4 | Mix MP4 + audio → final video (4 kombinasi mode) | ✅ Production-ready (3 mode tested) |
 
 ## Struktur Folder
 
@@ -68,18 +68,20 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 - edge-tts v7.3.1: ✅ 4565 cue tested (Toko-buku, ~3 jam generate)
 - mix-tui v3.3 → v3.4 (24 Okt): 5 film sukses pakai Full + Stream copy
 
-### mix-tui v3.4 (24 Okt 2026, commit df7ecc6)
+### mix-tui v3.4 (24 Okt 2026, commit df7ecc6 + 04795f0)
 - 4 kombinasi mode (2 input × 2 output):
-  - A. Full + Stream copy → `{prefix}-id-final.mp4` (existing, 5 film sukses)
-  - B. Full + Burn SRT → `{prefix}-id-final-sub.mp4` (existing)
-  - C. Simple + Stream copy → `{prefix}-id-simple.mp4` (NEW, user belum uji)
-  - D. Simple + Burn SRT → `{prefix}-id-simple-sub.mp4` (NEW, user belum uji)
+  - ✅ A. Full + Stream copy → `{prefix}-id-final.mp4` (5 film sukses, backward compatible)
+  - ⚠ B. Full + Burn SRT → `{prefix}-id-final-sub.mp4` (low risk, belum user test)
+  - ✅ C. Simple + Stream copy → `{prefix}-id-simple.mp4` (1 film sukses: S10-ORI 352.7 MB, 1m 16s, sync 100%)
+  - ✅ D. Simple + Burn SRT → `{prefix}-id-simple-sub.mp4` (1 film sukses: S10-ORI 2356 MB, 4m 57s, VLC OK)
 - Default = Full (backward compatible)
 - Ducking PERLU untuk Full mode (SFX/musik latar dari Demucs tetap ada walau vokal dibuang)
 - Ducking TIDAK PERLU untuk Simple mode (no SFX, dub copy as-is)
 - Step 1.5 NEW: pilih mode input (Full / Simple)
 - Step 2 + Step 4 auto-skip kalau Simple mode
 - Code audited: py_compile OK, 4 kombinasi command terbentuk benar, no edge case bug
+- Mode D size 2.3 GB normal: burn SRT wajib re-encode video (-b:v 2M h264_videotoolbox)
+- M1 VideoToolbox 35x hardware = 2.5 jam video di-encode 5 menit (bukan 30 menit estimasi)
 
 ## Ducking — Best Practice (PERMANEN)
 
