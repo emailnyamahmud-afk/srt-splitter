@@ -14,7 +14,7 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 | 4 | Web app (srt-splitter) | Translate SRT Indonesia → Jawa (pakai kamus Supabase) | ⚠ Prototype (perlu penyesuaian) |
 | 5 | SRT editor | Sementara pakai SRT Indonesia (SRT Jawa = nunggu kamus + web selesai) | ⏳ Pending |
 | 6 | `edge-tts-tui.py` | Generate audio dub dari SRT (5000+ cue, 2-5 jam durasi) | ✅ Production |
-| 7 | `mix-tui.py` v3.4 | Mix MP4 + audio → final video (4 kombinasi mode) | ✅ Production (v3.4 baru, user belum uji C/D) |
+| 7 | `mix-tui.py` v3.5 | Mix MP4 + audio → final video (4 kombinasi mode + pilihan bitrate) | ✅ Production-ready (A,C,D tested; B low-risk) |
 
 ## Pipeline
 
@@ -89,20 +89,25 @@ mkdir -p /Volumes/HDD/Dubbing/{input,demucs,tts,mix}
 - Build: Next.js 16 + Vercel
 - Repo: https://github.com/emailnyamahmud-afk/srt-splitter
 
-### 5. mix-tui.py v3.4 — Final mix (4 kombinasi mode)
+### 5. mix-tui.py v3.5 — Final mix (4 kombinasi mode + pilihan bitrate)
 
 User pilih 2 mode input × 2 mode output = 4 kombinasi:
 
-| # | Mode Input | Mode Output | Output filename | Durasi | Cocok untuk |
-|---|------------|-------------|-----------------|--------|-------------|
-| A | Full (MP4+SFX+Dub) | Stream copy | `{prefix}-id-final.mp4` | ~3 menit | Preview cepat, arsip, publish |
-| B | Full (MP4+SFX+Dub) | Burn SRT | `{prefix}-id-final-sub.mp4` | ~30 menit | Publish + hardsub Indonesia |
-| C | Simple (MP4+Dub) | Stream copy | `{prefix}-id-simple.mp4` | ~3 menit | Preview cepat tanpa SFX |
-| D | Simple (MP4+Dub) | Burn SRT | `{prefix}-id-simple-sub.mp4` | ~30 menit | Publish + hardsub, tanpa SFX |
+| # | Mode Input | Mode Output | Output filename | Durasi | Size estimasi (2 jam) |
+|---|------------|-------------|-----------------|--------|-----------------------|
+| A | Full (MP4+SFX+Dub) | Stream copy | `{prefix}-id-final.mp4` | ~3 menit | ~350 MB (ikut MP4 ori) |
+| B | Full (MP4+SFX+Dub) | Burn SRT | `{prefix}-id-final-sub.mp4` | ~5 menit | ~1.2-4.5 GB (pilih bitrate) |
+| C | Simple (MP4+Dub) | Stream copy | `{prefix}-id-simple.mp4` | ~1 menit | ~350 MB (ikut MP4 ori) |
+| D | Simple (MP4+Dub) | Burn SRT | `{prefix}-id-simple-sub.mp4` | ~5 menit | ~1.2-4.5 GB (pilih bitrate) |
 
 - Default mode = Full (workflow existing, 5 film sukses)
 - Simple mode = MP4 + Dub saja, no SFX, no ducking. Untuk preview cepat / film dialog dominan.
 - Burn SRT: 4 posisi (Opsi A/B/C/D, Justify=2 center), M1 VideoToolbox 35x hardware
+- **Video bitrate (v3.5 NEW)**: pilihan untuk Mode B & D (burn SRT wajib re-encode)
+  - 1 Mbps → ~1.2 GB/2jam (hemat, quality OK untuk 480p hardsub)
+  - 1.5 Mbps → ~1.8 GB/2jam (default, seimbang)
+  - 2 Mbps → ~2.3 GB/2jam (subtitle paling sharp)
+  - 4 Mbps → ~4.5 GB/2jam (HD-ready, kalau source ori high quality)
 - Ducking: sidechain compress (turunkan SFX saat dub bicara)
   - Full mode: pilih 6/12/18 dB (default 12 dB) atau 0 dB (no ducking)
   - Simple mode: auto-skip (no SFX, no ducking concept)

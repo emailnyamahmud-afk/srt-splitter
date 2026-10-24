@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-mix-tui.py v3.4 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX + optional SRT burn)
+mix-tui.py v3.5 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX + optional SRT burn)
 
 Workflow produksi (4 fase, bersih — sesuai v5 yt-dlp + edge-tts-tui):
   Fase 1: yt-dlp v5      → {name}.mp4 (video) + {name}-audio.m4a (native) + {name}.id.srt
@@ -10,19 +10,26 @@ Workflow produksi (4 fase, bersih — sesuai v5 yt-dlp + edge-tts-tui):
                         → {prefix}-audio-id-dub.wav (Bahasa Indonesia, full durasi)
   Fase 3b: web app SRT editor (Bahasa Jawa, per cue — nunggu code fix)
                         → audio-jw-dub.wav
-  Fase 4: mix-tui.py v3.4 → 2 mode input × 2 mode output = 4 kombinasi
+  Fase 4: mix-tui.py v3.5 → 2 mode input × 2 mode output = 4 kombinasi
     Mode input:
       - Full   = MP4 + no_vocals SFX + audio_dub (3 input — workflow existing 5 film sukses)
       - Simple = MP4 + audio_dub saja (2 input — tanpa SFX, cepat, untuk preview/cleanup)
     Mode output:
-      - Stream copy = video copy (no re-encode), audio encode AAC → 3 menit
-      - Burn SRT    = re-encode video h264_videotoolbox + hardsub SRT → 30 menit M1
+      - Stream copy = video copy (no re-encode), audio encode AAC → ~1-3 menit
+      - Burn SRT    = re-encode video h264_videotoolbox + hardsub SRT → ~5 menit M1
 
     Hasil 4 kombinasi:
-      A. Full  + Stream copy → {prefix}-id-final.mp4      (3 menit, ~275 MB, no SRT)
-      B. Full  + Burn SRT    → {prefix}-id-final-sub.mp4  (30 menit, ~2.1 GB, hardsub)
-      C. Simple + Stream copy → {prefix}-id-simple.mp4   (3 menit, lebih kecil, no SFX, no SRT)
-      D. Simple + Burn SRT    → {prefix}-id-simple-sub.mp4 (30 menit, hardsub, no SFX)
+      A. Full  + Stream copy → {prefix}-id-final.mp4      (~3 menit, ~350 MB, no SRT)
+      B. Full  + Burn SRT    → {prefix}-id-final-sub.mp4  (~5 menit, ~1.2-2.3 GB, hardsub)
+      C. Simple + Stream copy → {prefix}-id-simple.mp4   (~1 menit, ~350 MB, no SFX, no SRT)
+      D. Simple + Burn SRT    → {prefix}-id-simple-sub.mp4 (~5 menit, ~1.2-2.3 GB, hardsub, no SFX)
+
+v3.5 NEW: Step 4.8 — pilih video bitrate untuk Mode B & D (burn SRT).
+  - Burn SRT wajib re-encode video → user pilih bitrate untuk hemat size.
+  - Pilihan: 1 Mbps (~1.2 GB/2jam) / 1.5 Mbps (~1.8 GB/2jam, default) /
+             2 Mbps (~2.3 GB/2jam, subtitle paling sharp) / 4 Mbps (~4.5 GB/2jam, HD-ready).
+  - Default = 1.5 Mbps (compromise antara size dan quality untuk 480p + hardsub).
+  - Mode A & C (stream copy) tidak perlu prompt — bitrate ikut MP4 ori (no re-encode).
 
 v3.4 NEW: Step 1.5 — pilih mode input (Full / Simple).
   - Default = Full (workflow existing teruji 5 film).
@@ -357,6 +364,44 @@ def prompt_ducking():
     return int(ducking_choice.split(' dB')[0])
 
 
+def prompt_video_bitrate():
+    """Prompt video bitrate untuk burn SRT mode (Mode B & D).
+
+    v3.5 NEW: User bisa pilih bitrate untuk hemat size.
+    Burn SRT wajib re-encode video → bitrate target menentukan output size.
+
+    Return: string ffmpeg format ('1M', '1.5M', '2M', atau '4M').
+
+    Estimasi size untuk 2 jam video (480p):
+      - 1 Mbps   → ~1.2 GB (hemat, quality masih OK untuk subtitle 480p)
+      - 1.5 Mbps → ~1.8 GB (seimbang, rekomendasi default)
+      - 2 Mbps   → ~2.3 GB (current behavior, paling aman untuk subtitle sharp)
+      - 4 Mbps   → ~4.5 GB (HD-ready, kalau source ori high quality)
+
+    Default = 1.5 Mbps (compromise antara size dan quality untuk 480p + hardsub).
+    Catatan: Mode A & C (stream copy) tidak perlu prompt — bitrate ikut MP4 ori.
+    """
+    bitrate_choices = [
+        '1.5 Mbps (seimbang ~1.8 GB/2jam, rekomendasi default) — REKOMENDASI',
+        '1 Mbps (hemat ~1.2 GB/2jam, quality masih OK untuk 480p hardsub)',
+        '2 Mbps (current default ~2.3 GB/2jam, subtitle paling sharp)',
+        '4 Mbps (HD-ready ~4.5 GB/2jam, kalau source ori high quality)',
+    ]
+    bitrate_choice = questionary.select('Video bitrate (Mode burn SRT):', choices=bitrate_choices, default=bitrate_choices[0]).ask()
+    if not bitrate_choice:
+        return '1.5M'
+    # Parse pilihan → string ffmpeg format
+    if bitrate_choice.startswith('1 Mbps'):
+        return '1M'
+    elif bitrate_choice.startswith('1.5 Mbps'):
+        return '1.5M'
+    elif bitrate_choice.startswith('2 Mbps'):
+        return '2M'
+    elif bitrate_choice.startswith('4 Mbps'):
+        return '4M'
+    return '1.5M'
+
+
 def prompt_output(default_output):
     """Prompt output filename, return string."""
     output = questionary.text('Output MP4:', default=default_output).ask()
@@ -506,6 +551,17 @@ def main():
         print(f'  ✓ {srt_position}')
         print()
 
+        # Step 4.8: Video bitrate (NEW v3.5) — muncul kalau burn_srt=True (Mode B & D)
+        # Burn SRT wajib re-encode video → user pilih bitrate untuk hemat size
+        # Mode A & C (stream copy) tidak perlu prompt — bitrate ikut MP4 ori
+        print(f'▶ Step 4.8/{total}: Pilih video bitrate (untuk burn SRT)')
+        video_bitrate = prompt_video_bitrate()
+        print(f'  ✓ {video_bitrate}')
+        print()
+    else:
+        # Stream copy mode — bitrate ikut MP4 ori, tidak perlu prompt
+        video_bitrate = None  # unused, stream copy pakai -c:v copy
+
     # Step 5: Output — default derive dari MP4 prefix (Bug #1 fix)
     # v3.4: suffix dipilih berdasarkan mode input (Full/Simple) + mode output (Stream/Burn)
     print(f'▶ Step 5/{total}: Pilih nama output MP4')
@@ -565,6 +621,9 @@ def main():
     print(f'║  Mode     : {mode_label[:46]:<46}║')
     if burn_srt and srt_path:
         print(f'║  SRT      : {os.path.basename(srt_path)[:46]:<46}║')
+        # v3.5: tampilkan video bitrate kalau burn SRT (Mode B & D)
+        bitrate_display = f'{video_bitrate} (target bitrate)'
+        print(f'║  Bitrate  : {bitrate_display[:46]:<46}║')
     print(f'║  MP4 dur  : {format_duration(mp4_dur):<46}║')
     if not simple_mode:
         print(f'║  SFX dur  : {format_duration(sfx_dur):<46}║')
@@ -731,7 +790,7 @@ def main():
             cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
                    '-filter_complex', filter_complex,
                    '-map', '[vout]', '-map', '[aout]',
-                   '-c:v', 'h264_videotoolbox', '-b:v', '2M',
+                   '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
                    '-c:a', 'aac', '-b:a', '192k',
                    '-movflags', '+faststart', output]
         else:
@@ -741,16 +800,17 @@ def main():
             cmd = [ffmpeg, '-y', '-i', mp4, '-i', audio_dub,
                    '-filter_complex', filter_complex,
                    '-map', '[vout]', '-map', '1:a',
-                   '-c:v', 'h264_videotoolbox', '-b:v', '2M',
+                   '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
                    '-c:a', 'aac', '-b:a', '192k',
                    '-movflags', '+faststart', output]
 
-        print(f'Command: ffmpeg ... -c:v h264_videotoolbox -b:v 2M -c:a aac -b:a 192k {output}')
+        print(f'Command: ffmpeg ... -c:v h264_videotoolbox -b:v {video_bitrate} -c:a aac -b:a 192k {output}')
         print(f'  SRT path : {srt_path}')
         print(f'  Posisi   : {srt_position} (Alignment={alignment}, MarginV={margin_v})')
         print(f'  Style    : font 18pt, putih outline hitam, VideoToolbox M1 hardware')
         print(f'  Mode     : {"Simple (no SFX)" if simple_mode else "Full (SFX+Dub)"}')
-        print(f'  Estimasi : ~20-40 menit untuk 2 jam video (vs 3 menit stream copy)')
+        print(f'  Bitrate  : {video_bitrate} (target) — size estimasi {"~1.2 GB/2jam" if video_bitrate == "1M" else "~1.8 GB/2jam" if video_bitrate == "1.5M" else "~2.3 GB/2jam" if video_bitrate == "2M" else "~4.5 GB/2jam"}')
+        print(f'  Estimasi : ~4-6 menit untuk 2 jam video (M1 VideoToolbox 35x hardware)')
     print()
     print('Progress:')
     print()

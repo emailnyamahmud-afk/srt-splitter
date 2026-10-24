@@ -3241,3 +3241,57 @@ Stage Summary:
 - Size Mode D 2.3 GB normal (re-encode 2 Mbps wajib untuk burn SRT)
 - M1 VideoToolbox 35x hardware encoder = 2.5 jam video di-encode 5 menit
 - Pipeline dubbing end-to-end: yt-dlp → demucs → edge-tts → mix (4 mode) ✅ production
+
+---
+Task ID: mix-tui-v3.5-bitrate-prompt
+Agent: main
+Task: User request — tambah opsi pilihan bitrate (1/1.5/2/4 Mbps) untuk Mode B & D (burn SRT)
+
+User context:
+- Mode C (Simple + Stream copy) sudah test 352 MB, kualitas sudah bagus
+- Mode D (Simple + Burn SRT) test 2.3 GB (terlalu besar untuk 480p hardsub)
+- User bilang "mode B dan C" tapi yang dimaksud = Mode B dan D (yang burn SRT, wajib re-encode video)
+- Mode A & C (stream copy) tidak perlu prompt karena bitrate ikut MP4 ori
+
+Implementasi (scripts/mix-tui.py v3.5):
+1. Function baru `prompt_video_bitrate()` (line 360-395):
+   - Pilihan: 1.5 Mbps (default, rekomendasi) / 1 Mbps (hemat) / 2 Mbps (current) / 4 Mbps (HD-ready)
+   - Return: string ffmpeg format ('1M', '1.5M', '2M', '4M')
+   - Default = 1.5 Mbps (compromise size vs quality untuk 480p + hardsub)
+
+2. Step 4.8 NEW (line 547-556):
+   - Muncul kalau burn_srt=True (Mode B & D)
+   - Print 'Pilih video bitrate (untuk burn SRT)'
+   - else (Stream copy) → video_bitrate = None (unused)
+
+3. Ringkasan Step 6 (line 617-619):
+   - Tambah bar 'Bitrate : {video_bitrate} (target bitrate)' kalau burn_srt
+   - Hanya muncul setelah bar SRT (mode burn only)
+
+4. FFmpeg command (line 786, 796):
+   - Mode B: '-b:v', video_bitrate (sebelumnya hard-coded '2M')
+   - Mode D: '-b:v', video_bitrate (sebelumnya hard-coded '2M')
+   - Print command + estimasi size dinamis: ~1.2/1.8/2.3/4.5 GB/2jam based on bitrate
+
+5. Docstring header (v3.5):
+   - Update version v3.4 → v3.5
+   - Tambah section 'v3.5 NEW: Step 4.8 — pilih video bitrate'
+   - Update estimasi durasi 30 menit → 5 menit (M1 VideoToolbox actual)
+   - Update size table di 4 kombinasi (semua mode burn ~1.2-4.5 GB tergantung bitrate)
+
+Verify:
+- python3 -m py_compile scripts/mix-tui.py → OK
+- Test prompt_video_bitrate parsing: 4 pilihan → 4 string ffmpeg format benar
+- Test 8 kombinasi cmd build (4 bitrate × 2 burn mode): semua bitrate ter-set benar di cmd
+- Test size estimation display: 4 bitrate → 4 size estimasi benar
+
+Update dokumentasi:
+- README.md: section 5 mix-tui v3.5, table 4 kombinasi + size estimasi dinamis
+- AGENTS.md: TUI #7 status v3.5, mix-tui v3.5 section dengan 4 opsi bitrate
+
+Stage Summary:
+- mix-tui v3.5: 4 mode + 4 pilihan bitrate (Mode B/D) = 8 kombinasi total
+- Default bitrate = 1.5 Mbps (compromise), user bisa pilih 1 Mbps untuk hemat ~50% size
+- Mode A & C tetap stream copy (bitrate ikut ori, ~350 MB)
+- Backward compatible: kalau user pilih 2 Mbps = same dengan v3.4 behavior
+- Code verified: 8 kombinasi semua terbentuk benar, no edge case bug
