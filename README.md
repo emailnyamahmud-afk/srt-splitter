@@ -4,6 +4,18 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 
 **Live:** https://srt-splitter.vercel.app/
 
+## 7 TUI — Tugas masing-masing
+
+| # | TUI | Tugas | Status |
+|---|-----|-------|--------|
+| 1 | `yt-dlp-tui.py` | Download MP4 + audio M4A + SRT Indonesia | ✅ Production |
+| 2 | `demucs-tui.py` | Split audio → no_vocals.mp3 (SFX bersih) + vocals (auto-hapus) | ✅ Production |
+| 3 | `kamus-tui.py` | User edit JSON kamus untuk kurasi manual (sebelum masuk DB) | ✅ Production (user audit) |
+| 4 | Web app (srt-splitter) | Translate SRT Indonesia → Jawa (pakai kamus Supabase) | ⚠ Prototype (perlu penyesuaian) |
+| 5 | SRT editor | Sementara pakai SRT Indonesia (SRT Jawa = nunggu kamus + web selesai) | ⏳ Pending |
+| 6 | `edge-tts-tui.py` | Generate audio dub dari SRT (5000+ cue, 2-5 jam durasi) | ✅ Production |
+| 7 | `mix-tui.py` v3.4 | Mix MP4 + audio → final video (4 kombinasi mode) | ✅ Production (v3.4 baru, user belum uji C/D) |
+
 ## Pipeline
 
 ```
@@ -15,6 +27,8 @@ yt-dlp-tui.py → demucs-tui.py → edge-tts-tui.py → SRT editor (web) → mix
                                                       ↑
                                                Supabase (verified)
 ```
+
+Catatan: Sementara SRT pake Indonesia (kalau SRT Jawa = harus selesai kamus + web). Edge-tts-tui generate dub dari SRT Indonesia. Mix-tui jahit MP4 + no_vocals + dub → final video.
 
 ## Struktur Folder
 
@@ -75,12 +89,26 @@ mkdir -p /Volumes/HDD/Dubbing/{input,demucs,tts,mix}
 - Build: Next.js 16 + Vercel
 - Repo: https://github.com/emailnyamahmud-afk/srt-splitter
 
-### 5. mix-tui.py — Final mix
-- Mode A: stream copy (~3 menit, no SRT burn)
-- Mode B: burn SRT (~4 menit, M1 VideoToolbox 35x hardware)
-- 4 posisi SRT (Opsi A/B/C/D, Justify=2 center)
-- Cari MP4 di HDD/input/, SFX di HDD/demucs/, dub di HDD/tts/
-- Output: HDD/mix/final.mp4
+### 5. mix-tui.py v3.4 — Final mix (4 kombinasi mode)
+
+User pilih 2 mode input × 2 mode output = 4 kombinasi:
+
+| # | Mode Input | Mode Output | Output filename | Durasi | Cocok untuk |
+|---|------------|-------------|-----------------|--------|-------------|
+| A | Full (MP4+SFX+Dub) | Stream copy | `{prefix}-id-final.mp4` | ~3 menit | Preview cepat, arsip, publish |
+| B | Full (MP4+SFX+Dub) | Burn SRT | `{prefix}-id-final-sub.mp4` | ~30 menit | Publish + hardsub Indonesia |
+| C | Simple (MP4+Dub) | Stream copy | `{prefix}-id-simple.mp4` | ~3 menit | Preview cepat tanpa SFX |
+| D | Simple (MP4+Dub) | Burn SRT | `{prefix}-id-simple-sub.mp4` | ~30 menit | Publish + hardsub, tanpa SFX |
+
+- Default mode = Full (workflow existing, 5 film sukses)
+- Simple mode = MP4 + Dub saja, no SFX, no ducking. Untuk preview cepat / film dialog dominan.
+- Burn SRT: 4 posisi (Opsi A/B/C/D, Justify=2 center), M1 VideoToolbox 35x hardware
+- Ducking: sidechain compress (turunkan SFX saat dub bicara)
+  - Full mode: pilih 6/12/18 dB (default 12 dB) atau 0 dB (no ducking)
+  - Simple mode: auto-skip (no SFX, no ducking concept)
+  - Catatan: no_vocals dari Demucs sudah bersih (vokal dibuang), tapi SFX/musik latar tetap ada → ducking PERLU biar dub jelas terdengar. Default 12 dB seimbang.
+- Cari MP4 di HDD/input/, SFX di HDD/demucs/, dub di HDD/tts/, SRT di HDD/input/
+- Output: HDD/mix/
 - Install: `brew install ffmpeg`
 
 ## Kamus

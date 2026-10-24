@@ -2975,3 +2975,89 @@ Stage Summary:
 - Simple mode: skip Step 2+4, dub copy as-is, output suffix -simple atau -simple-sub
 - Backward compatible: kalau user asal Enter di Step 1.5 → Full mode → semua step existing sama
 - Output: siap push ke GitHub, user tinggal git pull di Mac
+
+---
+Task ID: mix-tui-v3.4-audit + docs-update
+Agent: main
+Task: User ingatkan struktur 7 TUI + audit mix-tui v3.4 sebelum user uji di Mac + update dokumentasi
+
+User context (PERMANEN):
+- 7 TUI masing-masing tugas:
+  1. yt-dlp-tui = download MP4+audio+SRT = ✅ jalan
+  2. demucs-tui = split vocal/no_vocal = ✅ jalan
+  3. kamus-tui = user edit JSON kamus manual sebelum DB = ✅ jalan (audit)
+  4. website = translate sub indo→jawa = prototype (perlu penyesuaian)
+  5. SRT editor = sementara pakai ID (SRT Jawa = nunggu kamus + web selesai)
+  6. edge-tts-tui = generate dub dari SRT ID = ✅ jalan (5000+ cue, 2-5 jam)
+  7. mix-tui = yg lagi di-garap (v3.4 baru, mode C/D belum uji)
+
+User pertanyaan ducking:
+- "Apa perlu ducking padahal proses sudah clean dari hasil demucs-tui?"
+- Pertanyaan muncul untuk Full mode (Stream copy + Burn SRT) dan Simple mode (Stream copy + Burn SRT)
+
+Audit code mix-tui v3.4 — verify sebelum user uji di Mac:
+
+1. Audit sfx_wav access (all 7 line):
+   - Line 402: sfx_wav = None (default)
+   - Line 405: sfx_wav = select_file(...) — di dalam `if not simple_mode:`
+   - Line 426: validate_input_file(sfx_wav, ...) — di dalam `if not simple_mode:`
+   - Line 544: sfx_dur = ... if sfx_wav else 0 — guard None OK
+   - Line 553: print SFX — di dalam `if not simple_mode:`
+   - Line 653, 731: cmd = ... -i sfx_wav — di dalam `if not simple_mode:` branch
+   - Hasil: SEMUA akses sfx_wav ada guard simple_mode → no None dereference bug
+
+2. Audit srt_path + srt_position initialization:
+   - Line 457: srt_path = None (default)
+   - Line 458: srt_position = 'top' (default)
+   - Akses srt_path di line 566: `if burn_srt and srt_path:` — guard OK
+   - Akses srt_path di line 702: srt_escaped = srt_path.replace(...) — di dalam burn_srt block ✓
+   - Akses srt_position di line 563: f'Burn SRT {srt_position}' — hanya kalau burn_srt=True
+   - Akses srt_position di line 681-699 — di dalam burn_srt block ✓
+   - Hasil: SEMUA akses di-guard dengan benar
+
+3. Audit Step 5 filename logic (16 kombinasi test):
+   - Test 4 mp4 input × 4 mode (Full/Simple × Stream/Burn) = 16 output filename
+   - Semua terbentuk benar:
+     - S5-ori.mp4 + Full+Stream → S5-id-final.mp4 ✓
+     - S5-ori.mp4 + Full+Burn → S5-id-final-sub.mp4 ✓
+     - S5-ori.mp4 + Simple+Stream → S5-id-simple.mp4 ✓
+     - S5-ori.mp4 + Simple+Burn → S5-id-simple-sub.mp4 ✓
+   - Edge case MP4 tanpa -ori suffix (test.mp4) → test-id-{simple|final}{-sub}.mp4 ✓
+   - Edge case MP4 dengan -final di nama → random-name-final-id-{...}.mp4 ✓
+
+4. Audit FFmpeg command 4 variant:
+   - Mode A (Full+Stream): 3 input (mp4+sfx+dub) + audio_filter + -c:v copy -c:a aac ✓
+   - Mode B (Full+Burn): 3 input + audio_filter + subtitle_filter + h264_videotoolbox ✓
+   - Mode C (Simple+Stream): 2 input (mp4+dub) + -map 0:v -map 1:a + -c:v copy ✓ (no audio filter)
+   - Mode D (Simple+Burn): 2 input + subtitle_filter + -map [vout] -map 1:a + h264_videotoolbox ✓ (no audio filter)
+
+5. Audit backward compatibility:
+   - Default Step 1.5 = Full mode → user asal Enter = workflow existing (5 film sukses preserved)
+   - Mode A & B command sama persis dengan v3.3 (tidak ada line cmd yang diubah)
+   - Audio filter logic untuk Full mode unchanged (ducking 6/12/18/0 dB tetap prompt)
+
+6. Audit edge case warning dub durasi:
+   - mp4_dur > 0 and dub_dur > 0: ratio check, Simple mode → SILENCE warning (lebih kritikal)
+   - mp4_dur > 0 and dub_dur == 0: confirm dialog
+   - Tidak akses sfx_wav di warning block → aman untuk Simple mode
+
+7. py_compile: OK (no syntax error)
+
+Jawaban pertanyaan ducking (PERMANEN — tercatat di AGENTS.md):
+- Full mode: ducking PERLU. Demucs buang vokal ori, tapi SFX/musik latar TETAP ADA di no_vocals.mp3. Saat dub bicara, musik bisa mendominasi (terutama scene action/emotional). Ducking = sidechain compress, standard industry untuk dubbing. Default 12 dB seimbang. User bisa pilih 0 dB kalau SFX sudah balance.
+- Simple mode: ducking TIDAK PERLU. Tidak ada SFX layer, dub copy as-is. Auto-skip di code.
+- Code v3.4 sudah benar: prompt ducking hanya muncul kalau Full mode, skip di Simple mode.
+
+Update dokumentasi:
+- README.md: tambah section "7 TUI — Tugas masing-masing" di atas (table status)
+- README.md: update section 5 (mix-tui.py v3.4) dengan 4 kombinasi mode + catatan ducking
+- AGENTS.md: tambah section "7 TUI" (status table)
+- AGENTS.md: update Status (24 Okt 2026) dengan mix-tui v3.4 + bug fix kamus-tui
+- AGENTS.md: tambah section "Ducking — Best Practice (PERMANEN)" dengan jawaban user pertanyaan
+- AGENTS.md: tambah section Next (user test C/D, validasi kamus, AI tunggu feedback)
+
+Stage Summary:
+- Code mix-tui v3.4 audited: no bug, no edge case, backward compatible
+- Ducking PERLU untuk Full mode (SFX ada), TIDAK PERLU untuk Simple mode (no SFX)
+- Dokumentasi update: README + AGENTS konsisten dengan 7 TUI structure
+- User bisa git pull di Mac → test Mode C & D dengan aman (code verified)

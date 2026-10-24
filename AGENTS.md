@@ -1,11 +1,23 @@
 # AGENTS.md
 
-> Dibaca AI di awal setiap session. Update terakhir: 15 Okt 2026.
+> Dibaca AI di awal setiap session. Update terakhir: 24 Okt 2026.
 
 ## Project: SRT Splitter + Dubbing Jawa
 
 Pipeline: yt-dlp → Demucs → edge-tts → SRT editor (web) → mix-tui
 Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
+
+## 7 TUI — Tugas masing-masing (PERMANEN)
+
+| # | TUI | Tugas | Status |
+|---|-----|-------|--------|
+| 1 | yt-dlp-tui.py | Download MP4 + audio M4A + SRT Indonesia | ✅ Jalan |
+| 2 | demucs-tui.py | Split audio → no_vocals.mp3 (SFX bersih) + vocals (auto-hapus) | ✅ Jalan |
+| 3 | kamus-tui.py | User edit JSON kamus untuk kurasi manual (sebelum masuk DB) | ✅ Jalan (user audit) |
+| 4 | Web app | Translate SRT Indonesia → Jawa (pakai kamus Supabase) | ⚠ Prototype (perlu penyesuaian) |
+| 5 | SRT editor | Sementara pakai SRT Indonesia (SRT Jawa = nunggu kamus + web selesai) | ⏳ Pending |
+| 6 | edge-tts-tui.py | Generate audio dub dari SRT (5000+ cue, 2-5 jam durasi) | ✅ Jalan |
+| 7 | mix-tui.py v3.4 | Mix MP4 + audio → final video (4 kombinasi mode) | ✅ Production (C/D belum user uji) |
 
 ## Struktur Folder
 
@@ -38,27 +50,55 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 | `scripts/yt-dlp-tui.py` | Download video/audio |
 | `scripts/demucs-tui.py` | Vocal separation |
 | `scripts/edge-tts-tui.py` | TTS generation |
-| `scripts/mix-tui.py` | Final mix video |
+| `scripts/mix-tui.py` | Final mix video (v3.4 — 4 kombinasi mode) |
 | `scripts/upload-supabase.py` | Upload kamus ke DB |
 | `scripts/parse-jv-wiktionary-v2.py` | Parser jv.wiktionary XML |
 
-## Status (15 Okt 2026)
+## Status (24 Okt 2026)
 
+### Kamus
 - jv.wiktionary.json: 44.585 entries, 99% definisi Jawa, 8.618 dgn indo, 2.397 dgn register, 2.165 LENGKAP
-- Supabase: kosong (user upload setelah validasi)
-- SRT editor web: live di https://srt-splitter.vercel.app/
-- Pipeline dubbing ID: tested end-to-end (S5, 2j 16m, 3866 cue)
-- Semua TUI updated dgn config.py (HDD path)
-- yt-dlp-tui.py tested: ✅ Kepala-Perampok.mp4 + m4a + srt ke HDD/input/
-- demucs-tui.py v2: segment 4 (RAM aman) + WAV → ffmpeg MP3 streaming
-- Demucs test: Kepala-Perampok (segment=4, MPS, ~32 menit) ✅
-- edge-tts: updated 7.2.8→7.3.1 (fix 403 error), test Toko-buku 4565 cue jalan ✅
-- Bug fix: --segment int (3.9→4), NameError no_vocals_mp3, yt-dlp next steps
+- Bug fix (24 Okt): kamus-tui.py normalisasi field `terjemahan_indo` → `indo` saat load (commit 38e1e9d). 8.618 entries sekarang terbaca di TUI.
+- Supabase: kosong (user upload setelah validasi satu-satu)
+- User akan lanjut validasi manual tiap entry di kamus-tui (besok, jeda istirahat)
+
+### Pipeline produksi (5 film tested, end-to-end sempurna)
+- yt-dlp-tui: ✅ Kepala-Perampok + 5 film lain
+- demucs-tui v2: ✅ segment 4 (RAM aman), WAV→ffmpeg MP3 streaming
+- edge-tts v7.3.1: ✅ 4565 cue tested (Toko-buku, ~3 jam generate)
+- mix-tui v3.3 → v3.4 (24 Okt): 5 film sukses pakai Full + Stream copy
+
+### mix-tui v3.4 (24 Okt 2026, commit df7ecc6)
+- 4 kombinasi mode (2 input × 2 output):
+  - A. Full + Stream copy → `{prefix}-id-final.mp4` (existing, 5 film sukses)
+  - B. Full + Burn SRT → `{prefix}-id-final-sub.mp4` (existing)
+  - C. Simple + Stream copy → `{prefix}-id-simple.mp4` (NEW, user belum uji)
+  - D. Simple + Burn SRT → `{prefix}-id-simple-sub.mp4` (NEW, user belum uji)
+- Default = Full (backward compatible)
+- Ducking PERLU untuk Full mode (SFX/musik latar dari Demucs tetap ada walau vokal dibuang)
+- Ducking TIDAK PERLU untuk Simple mode (no SFX, dub copy as-is)
+- Step 1.5 NEW: pilih mode input (Full / Simple)
+- Step 2 + Step 4 auto-skip kalau Simple mode
+- Code audited: py_compile OK, 4 kombinasi command terbentuk benar, no edge case bug
+
+## Ducking — Best Practice (PERMANEN)
+
+User pertanyaan: "Apa perlu ducking padahal no_vocals sudah clean dari Demucs?"
+
+Jawaban: **PERLU untuk Full mode**, TIDAK PERLU untuk Simple mode.
+
+Alasan:
+- Demucs buang VOKAL ori, tapi SFX/musik latar TETAP ADA di no_vocals.mp3
+- Saat dub Indonesia/Jawa bicara, musik latar bisa mendominasi (terutama scene action/emotional)
+- Ducking = sidechain compress (turunkan volume SFX saat dub aktif) → standard industry
+- Pilihan di mix-tui: 6/12/18 dB (default 12 dB = seimbang) atau 0 dB (no ducking)
+
+Simple mode tidak ada SFX → ducking concept tidak apply → auto-skip.
 
 ## Next
 
-- User: edge-tts Toko-buku 4565 cue (~3 jam, tinggal jalan)
-- User: setelah TTS selesai → mix-tui.py (end-to-end ID complete)
-- User: validasi jv.wiktionary.json manual di kamus-tui (isi indo + register)
-- AI: update SRT editor web utk lookup kamus dari Supabase
-- AI: update edge-tts-tui.py docstring (bukan web app, bukan Mode ON)
+- User: test mix-tui v3.4 Mode C & D di Mac (git pull + python3 mix-tui.py)
+- User: validasi kamus-tui (8.618 entries dengan indo) satu per satu, mark READY, upload Supabase
+- User: validasi 231 entries ngoko+krama yang perlu indo manual
+- AI: tunggu feedback user setelah test Mode C/D
+- AI: web app Jawa (TUI #4) — penyesuaian lookup kamus dari Supabase
