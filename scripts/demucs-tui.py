@@ -31,8 +31,8 @@ Output:
   (vocals.mp3 auto-dihapus setelah separation — tidak dipakai untuk dubbing)
 
 Workflow integrasi (3 fase, bersih):
-  Fase 1: yt-dlp         → download MP4 (video) + audio.wav (terpisah)
-  Fase 2: demucs-tui.py  → split audio.wav → no_vocals.mp3 (MP3 320, SFX bersih)
+  Fase 1: yt-dlp v6      → download MP4 (video) + audio.mp3 (terpisah, via yt-dlp convert)
+  Fase 2: demucs-tui.py  → split audio.mp3 → no_vocals.mp3 (MP3 320, SFX bersih)
                            + vocals.mp3 (auto-hapus, tidak dipakai)
   Fase 3: mix-tui.py    → MP4 + no_vocals.mp3 + audio_dub → mp4-id-final.mp4
 

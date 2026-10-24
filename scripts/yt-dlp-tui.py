@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """
-yt-dlp-tui.py v5 — TUI download YouTube: video + audio + SRT
+yt-dlp-tui.py v6 — TUI download YouTube: video + audio + SRT
 
 Pilihan resolusi: 480p, 720p, 1080p, best
-Output: 2 file = MP4 (video only) + M4A (audio only, native YouTube)
+Output: 2 file = MP4 (video only) + MP3 (audio only, via yt-dlp convert)
 SRT: list subtitle dari JSON metadata, user pilih Indonesia / lain / skip
+
+v6 update: Output audio = MP3 (sebelumnya M4A native).
+  - Pakai yt-dlp `-x --audio-format mp3` → download audio terbaik → convert MP3
+  - Butuh ffmpeg terinstall (sudah di repo: `brew install ffmpeg`)
+  - Quality: VBR best (~190 kbps), sedikit lebih rendah dari M4A tapi cukup untuk dubbing
+  - Kompatibel dengan lebih banyak tool + ringkas
 
 Install: pip3 install yt-dlp questionary
 Usage: python3 yt-dlp-tui.py
@@ -71,8 +77,8 @@ def list_subtitles(ytdlp, url):
 def main():
     os.system('clear' if os.name != 'nt' else 'cls')
     print('╔' + '═' * 64 + '╗')
-    print('║  📺 YouTube Downloader v5 (TUI)' + ' ' * 31 + '║')
-    print('║  Resolusi + MP4 + M4A terpisah + SRT Indonesia' + ' ' * 14 + '║')
+    print('║  📺 YouTube Downloader v6 (TUI)' + ' ' * 31 + '║')
+    print('║  Resolusi + MP4 + MP3 terpisah + SRT Indonesia' + ' ' * 14 + '║')
     print('╚' + '═' * 64 + '╝')
     print()
 
@@ -164,7 +170,7 @@ def main():
     print('║  📋 Ringkasan:' + ' ' * 49 + '║')
     print('╠' + '═' * 64 + '╣')
     print(f'║  Resolusi: {res[:48]:<48}║')
-    print('║  Output  : MP4 (video) + M4A (audio) terpisah' + ' ' * 8 + '║')
+    print('║  Output  : MP4 (video) + MP3 (audio) terpisah' + ' ' * 8 + '║')
     print(f'║  SRT     : {srt_choice[:48]:<48}║')
     print(f'║  URL     : {url[:48]:<48}║')
     print(f'║  Dir     : {output_dir[:48]:<48}║')
@@ -187,11 +193,17 @@ def main():
         print('\n⏹ Dibatalkan.')
         sys.exit(130)
 
-    # Download audio (M4A native, tanpa konversi)
-    # YouTube sudah punya m4a (AAC) — skip konversi MP3 (hemat waktu + disk + quality)
-    # Demucs, ffmpeg, whisper, dll semua bisa baca m4a langsung
-    print('\n▶ Download audio (M4A native)...')
-    cmd_audio = [ytdlp, '-f', 'bestaudio[ext=m4a]/bestaudio/best',
+    # Download audio (MP3, via yt-dlp post-process convert)
+    # v2 update: User minta output MP3 (bukan M4A native) supaya compatible dengan
+    # lebih banyak tool + ringkas. yt-dlp pakai -x --audio-format mp3 → download
+    # audio terbaik → convert ke MP3 otomatis via ffmpeg (yang wajib terinstall).
+    # Catatan: quality MP3 sedikit lebih rendah dari M4A (lossy → lossy transcode),
+    # tapi untuk workflow dubbing tidak masalah (audio dipakai untuk Demucs yang
+    # convert ulang ke MP3 320kbps juga).
+    print('\n▶ Download audio (MP3 via yt-dlp convert)...')
+    cmd_audio = [ytdlp, '-f', 'bestaudio/best',
+                 '-x', '--audio-format', 'mp3',
+                 '--audio-quality', '0',  # 0 = VBR best quality (~190 kbps)
                  '-o', audio_template,
                  '--no-playlist', '--newline', url]
     try:
@@ -230,13 +242,14 @@ def main():
 
     # Cari file berdasarkan base_name yang dipakai. Kalau custom_name None, kita tidak
     # tahu judul asli — fallback ke "file terbaru" tapi filter ekstensi.
+    # v2: audio output sekarang .mp3 (sebelumnya .m4a)
     found_video = found_audio = found_srt = None
     if custom_name:
         # Filter exact match by base_name
         v_match = list(Path(output_dir).glob(f'{custom_name}.mp4'))
-        a_match = list(Path(output_dir).glob(f'{custom_name}-audio.m4a')) + \
-                  list(Path(output_dir).glob(f'{custom_name}-audio.mp4')) + \
-                  list(Path(output_dir).glob(f'{custom_name}-audio.webm'))
+        a_match = list(Path(output_dir).glob(f'{custom_name}-audio.mp3')) + \
+                  list(Path(output_dir).glob(f'{custom_name}-audio.m4a')) + \
+                  list(Path(output_dir).glob(f'{custom_name}-audio.webm'))  # fallback kalau MP3 convert gagal
         s_match = list(Path(output_dir).glob(f'{custom_name}*.srt'))
         if v_match: found_video = max(v_match, key=os.path.getmtime)
         if a_match: found_audio = max(a_match, key=os.path.getmtime)
@@ -244,8 +257,8 @@ def main():
     else:
         # Fallback: file terbaru per ekstensi
         mp4 = sorted(Path(output_dir).glob('*.mp4'), key=os.path.getmtime, reverse=True)
-        aud = sorted(list(Path(output_dir).glob('*.m4a')) + list(Path(output_dir).glob('*.mp3')),
-                     key=os.path.getmtime, reverse=True)
+        aud = sorted(list(Path(output_dir).glob('*.mp3')) + list(Path(output_dir).glob('*.m4a')),
+                     key=os.path.getmtime, reverse=True)  # MP3 primary, M4A fallback
         srt = sorted(Path(output_dir).glob('*.srt'), key=os.path.getmtime, reverse=True)
         if mp4: found_video = mp4[0]
         if aud: found_audio = aud[0]

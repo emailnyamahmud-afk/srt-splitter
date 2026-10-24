@@ -3444,3 +3444,66 @@ Stage Summary:
 - Bug cosmetic 2 item (filename double -id, progress bar ETA glitch) tercatat di Next untuk fix besok (optional, low priority)
 - Catatan PAT revoke tersimpan permanen supaya tidak lupa
 - Sesi hari ini selesai — 8 commit, 2 fitur baru + 2 bug fix + dokumentasi lengkap
+
+---
+Task ID: yt-dlp-tui-v6-mp3-output
+Agent: main
+Task: User request — yt-dlp output audio M4A → MP3, supaya compatible + ringkas
+
+User context:
+- MP4 sudah benar (no change)
+- M4A native YouTube → minta MP3 supaya compatible dengan lebih banyak tool
+- Jika yt-dlp tidak menyediakan MP3 native → minimal convert M4A ke MP3
+
+Investigation:
+- yt-dlp support `-x --audio-format mp3` (post-process convert via ffmpeg)
+- Format support: best, aac, alac, flac, m4a, mp3, opus, vorbis
+- FFmpeg sudah terinstall di Mac (sudah ada dependency untuk mix-tui, demucs-tui)
+- YouTube tidak ada MP3 native → wajib convert dari m4a/webm
+
+Implementasi (scripts/yt-dlp-tui.py v6):
+1. Update docstring header v5 → v6, output audio = MP3 (sebelumnya M4A)
+2. Update banner v5 → v6, "MP4 + MP3 terpisah" (sebelumnya M4A)
+3. Update ringkasan: "MP4 (video) + MP3 (audio) terpisah" (sebelumnya M4A)
+4. cmd_audio (line 197-202):
+   - Sebelumnya: `-f 'bestaudio[ext=m4a]/bestaudio/best'` (prefer m4a, no convert)
+   - Sekarang: `-f 'bestaudio/best' -x --audio-format mp3 --audio-quality 0`
+   - -x: extract audio only
+   - --audio-format mp3: convert ke MP3 via ffmpeg
+   - --audio-quality 0: VBR best quality (~190 kbps MP3)
+5. File matching post-download (line 245-260):
+   - Pattern cari: MP3 primary, M4A fallback (kalau convert gagal), WEBM fallback
+   - custom_name branch: glob .mp3 → .m4a → .webm
+   - fallback branch: glob '*.mp3' + glob '*.m4a'
+
+Update file reference lain:
+- scripts/demucs-tui.py docstring: 'audio.wav' → 'audio.mp3', yt-dlp → yt-dlp v6
+- scripts/mix-tui.py docstring: 'audio.m4a (native)' → 'audio.mp3 (via yt-dlp convert)', yt-dlp v5 → v6
+- scripts/mix-tui.py banner: 'yt-dlp v5' → 'yt-dlp v6'
+- scripts/mix-tui.py line 78, 83, 236: yt-dlp v5 → v6
+- README.md: 'M4A native' → 'MP3 via yt-dlp convert', TUI #1 description update
+- AGENTS.md: TUI #1 'M4A' → 'MP3'
+- PROJECT_RULES.md: TUI #1 'M4A' → 'MP3'
+
+Catatan trade-off (PERMANEN):
+- Pro MP3: compatible dengan tool legacy, ringkas, standar industry
+- Kontra MP3: quality sedikit turun dari M4A (lossy → lossy transcode)
+- Tapi untuk workflow dubbing tidak masalah:
+  - Demucs convert ulang ke MP3 320kbps juga (transcode tetap terjadi)
+  - Audio dipakai untuk split vokal, bukan untuk final mix (dub Jawa yang dipakai)
+  - Final audio = dub dari edge-tts-tui (independent dari MP3 ori)
+- VBR best (~190 kbps) sudah cukup quality untuk Demucs input
+
+Verify:
+- python3 -m py_compile scripts/yt-dlp-tui.py → OK
+- python3 -m py_compile scripts/demucs-tui.py → OK
+- python3 -m py_compile scripts/mix-tui.py → OK
+- Simulasi cmd_audio build: 11 args benar (yt-dlp -f bestaudio/best -x --audio-format mp3 --audio-quality 0 -o ...)
+- Simulasi file matching: MP3 primary, M4A fallback, WEBM fallback terakhir
+- yt-dlp --help verify: support --audio-format mp3 (post-process via ffmpeg)
+
+Stage Summary:
+- yt-dlp-tui v6: output MP4 + MP3 (sebelumnya M4A), kompatibel + ringkas
+- Backward compatible: Demucs & mix-tui bisa baca MP3 sama dengan M4A
+- File matching include M4A fallback supaya file lama (sebelum v6) tetap terbaca
+- User test berikutnya: download film baru → verify output .mp3

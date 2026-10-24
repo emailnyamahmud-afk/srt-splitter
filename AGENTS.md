@@ -11,7 +11,7 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 
 | # | TUI | Tugas | Status |
 |---|-----|-------|--------|
-| 1 | yt-dlp-tui.py | Download MP4 + audio M4A + SRT Indonesia | ✅ Jalan |
+| 1 | yt-dlp-tui.py | Download MP4 + audio MP3 + SRT Indonesia | ✅ Jalan |
 | 2 | demucs-tui.py | Split audio → no_vocals.mp3 (SFX bersih) + vocals (auto-hapus) | ✅ Jalan |
 | 3 | kamus-tui.py | User edit JSON kamus untuk kurasi manual (sebelum masuk DB) | ✅ Jalan (user audit) |
 | 4 | Web app | Translate SRT Indonesia → Jawa (pakai kamus Supabase) | ⚠ Prototype (perlu penyesuaian) |

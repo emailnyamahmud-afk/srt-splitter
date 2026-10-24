@@ -8,7 +8,7 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 
 | # | TUI | Tugas | Status |
 |---|-----|-------|--------|
-| 1 | `yt-dlp-tui.py` | Download MP4 + audio M4A + SRT Indonesia | ✅ Production |
+| 1 | `yt-dlp-tui.py` | Download MP4 + audio MP3 + SRT Indonesia | ✅ Production |
 | 2 | `demucs-tui.py` | Split audio → no_vocals.mp3 (SFX bersih) + vocals (auto-hapus) | ✅ Production |
 | 3 | `kamus-tui.py` | User edit JSON kamus untuk kurasi manual (sebelum masuk DB) | ✅ Production (user audit) |
 | 4 | Web app (srt-splitter) | Translate SRT Indonesia → Jawa (pakai kamus Supabase) | ⚠ Prototype (perlu penyesuaian) |
@@ -59,7 +59,7 @@ mkdir -p /Volumes/HDD/Dubbing/{input,demucs,tts,mix}
 ## Komponen
 
 ### 1. yt-dlp-tui.py — Download video/audio
-- M4A native (skip MP3 conversion)
+- MP4 (video) + MP3 (audio via yt-dlp convert, VBR best quality)
 - Subtitle JSON parser (SRT Indonesia otomatis)
 - Default output: HDD/input/
 - Install: `pip3 install yt-dlp`

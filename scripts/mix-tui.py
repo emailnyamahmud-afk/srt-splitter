@@ -2,9 +2,9 @@
 """
 mix-tui.py v3.5 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX + optional SRT burn)
 
-Workflow produksi (4 fase, bersih — sesuai v5 yt-dlp + edge-tts-tui):
-  Fase 1: yt-dlp v5      → {name}.mp4 (video) + {name}-audio.m4a (native) + {name}.id.srt
-  Fase 2: demucs-tui.py  → split {name}-audio.m4a → no_vocals.mp3 (MP3 320, SFX bersih)
+Workflow produksi (4 fase, bersih — sesuai v6 yt-dlp + edge-tts-tui):
+  Fase 1: yt-dlp v6      → {name}.mp4 (video) + {name}-audio.mp3 (via yt-dlp convert) + {name}.id.srt
+  Fase 2: demucs-tui.py  → split {name}-audio.mp3 → no_vocals.mp3 (MP3 320, SFX bersih)
                           + vocals.mp3 (auto-hapus, tidak dipakai)
   Fase 3a: edge-tts-tui.py (LOKAL — ganti web app Mode ON)
                         → {prefix}-audio-id-dub.wav (Bahasa Indonesia, full durasi)
@@ -75,12 +75,12 @@ Kenapa burn SRT lokal (bukan DaVinci):
   - mix-tui v3 mode B: tetap 480p, VideoToolbox hardware, hemat storage
 
 Mix ini selalu pakai 3 input wajib:
-  1. MP4 ori (video, dari yt-dlp v5)
+  1. MP4 ori (video, dari yt-dlp v6)
   2. no_vocals (SFX bersih dari Demucs — MP3 320 kbps, vokal ori sudah dibuang)
   3. audio_dub.wav (dialog hasil dubbing dari edge-tts-tui.py atau web app Jawa)
 
 Optional input (Mode B only):
-  4. SRT Indonesia (dari yt-dlp v5, mis. S5-ori.id.srt)
+  4. SRT Indonesia (dari yt-dlp v6, mis. S5-ori.id.srt)
 
 Output: MP4 durasi penuh. Setelah dub selesai, SFX tetap bermain (dub = hening).
 
@@ -126,7 +126,7 @@ def print_banner():
     clear_screen()
     print('╔' + '═' * 64 + '╗')
     print('║  🎬 Mix MP4 + No-Vocal SFX + Audio Dub v2 (TUI)' + ' ' * 13 + '║')
-    print('║  yt-dlp v5 → Demucs → edge-tts-tui → mix → final' + ' ' * 12 + '║')
+    print('║  yt-dlp v6 → Demucs → edge-tts-tui → mix → final' + ' ' * 12 + '║')
     print('╚' + '═' * 64 + '╝')
     print()
 
@@ -233,7 +233,7 @@ def derive_default_output(mp4_path, lang='id'):
     Mis. S5-ori.mp4 → S5-ori-id-final.mp4
     """
     base = Path(mp4_path).stem
-    # Hapus suffix -ori kalau ada (sesuai konvensi yt-dlp v5)
+    # Hapus suffix -ori kalau ada (sesuai konvensi yt-dlp v6)
     if base.endswith('-ori'):
         base = base[:-4]
     return f'{base}-{lang}-final.mp4'

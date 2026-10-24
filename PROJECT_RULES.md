@@ -23,7 +23,7 @@ Kamus (sambil kerja, parallel):
 
 | # | TUI | Tugas | Status |
 |---|-----|-------|--------|
-| 1 | yt-dlp-tui | Download MP4 + audio M4A + SRT Indonesia | ✅ Jalan |
+| 1 | yt-dlp-tui | Download MP4 + audio MP3 + SRT Indonesia | ✅ Jalan |
 | 2 | demucs-tui | Split audio → no_vocals.mp3 (SFX bersih) | ✅ Jalan |
 | 3 | kamus-tui | User edit JSON kamus manual (sebelum masuk DB) | ✅ Jalan (audit) |
 | 4 | Web app | Translate SRT Indonesia → Jawa (kamus Supabase) | ⚠ Prototype |
