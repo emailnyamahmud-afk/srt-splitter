@@ -2918,3 +2918,60 @@ Stage Summary:
 - Fix: normalisasi saat load (1 function diubah, 0 fungsi lain diutak-atik)
 - 8.618 entries jv.wiktionary.json sekarang muncul di TUI (display/stats/edit/ready/merge)
 - User bisa lanjut audit duplikat + isi entries ngoko+krama yang belum ada indo (231 entries)
+
+---
+Task ID: mix-tui-v3.4-simple-mode
+Agent: main
+Task: User request — tambah opsi mix "MP4 + Dub saja" (tanpa SFX) ke mix-tui.py
+
+User context:
+- 5 hari terakhir user bikin 5 film pakai mix-tui (Full mode = mp4+no_vocal+dub)
+- Sync sempurna, sukses semua
+- Mau tambah opsi: cuma mp4 + dub (no SFX) — untuk preview cepat atau film dialog dominan
+- Pertahankan opsi existing (Full mode)
+- Opsi stream copy + opsi burn SRT tetap ada untuk kedua mode
+
+Audit findings (sebelum edit):
+- mix-tui.py v3.3, 703 baris, well-structured
+- Step 2 (SFX) hard-coded wajib → tidak bisa skip
+- Step 4 (ducking) asumsi SFX ada → sidechain compress butuh sfx track
+- Audio filter selalu assume 3 input (mp4 + sfx + dub)
+- 2 mode output existing: stream copy (3 menit) + burn SRT (30 menit)
+- Konflik konsep: stream copy + subtitle burn mutually exclusive (stream copy = no re-encode, tidak bisa burn)
+
+Diskusi dengan user (AskUserQuestion):
+1. Cara pilih mode: "1 prompt awal" — Step 1.5 baru (Full / Simple)
+2. Audio Simple: "Copy dub as-is" (no filter, no ducking)
+3. Default mode: "Full" (current behavior preserved)
+
+Implementasi (scripts/mix-tui.py v3.4, 747+ baris):
+- Step 1.5 NEW: prompt 'Mode input: Full / Simple' (default=Full)
+- Step 2: conditional `if not simple_mode:` — skip SFX selection kalau Simple
+- Step 3: tetap wajib (audio dub)
+- Step 4: conditional `if not simple_mode:` — skip ducking prompt kalau Simple
+  - ducking_db = 0 default (no effect)
+- Step 4.5: tetap Stream copy / Burn SRT (2 opsi, existing behavior)
+- Step 5: output filename suffix logic:
+  - Full + Stream: {prefix}-id-final.mp4 (existing, no change)
+  - Full + Burn SRT: {prefix}-id-final-sub.mp4 (existing, no change)
+  - Simple + Stream: {prefix}-id-simple.mp4 (NEW)
+  - Simple + Burn SRT: {prefix}-id-simple-sub.mp4 (NEW)
+- Step 6: ringkasan SFX bar conditional, ducking bar conditional, mode label "Full | Stream copy" atau "Simple (no SFX) | Burn SRT"
+- Warning dub < 90% MP4: kalau Simple mode, "→ SILENCE sampai MP4 selesai" (lebih kritikal)
+- FFmpeg command 4 variant:
+  - A (Full + Stream): 3 input + audio_filter (sfx+dub+ducking) + -c:v copy
+  - B (Full + Burn): 3 input + audio_filter + subtitle_filter + h264_videotoolbox
+  - C (Simple + Stream): 2 input (mp4+dub) + -map 0:v -map 1:a + -c:v copy (NEW, no audio filter)
+  - D (Simple + Burn): 2 input + subtitle_filter only + -map [vout] -map 1:a + h264_videotoolbox (NEW, no audio filter)
+
+Verify:
+- python3 -m py_compile scripts/mix-tui.py → OK
+- Simulasi 4 kombinasi command → semua terbentuk benar (input count, map, codec, output filename)
+- Default behavior Full mode = tidak berubah (backward compatible dengan 5 film existing)
+
+Stage Summary:
+- mix-tui.py v3.4: 2 mode input (Full/Simple) × 2 mode output (Stream copy/Burn SRT) = 4 kombinasi
+- Default = Full (workflow existing 5 film sukses, preserved)
+- Simple mode: skip Step 2+4, dub copy as-is, output suffix -simple atau -simple-sub
+- Backward compatible: kalau user asal Enter di Step 1.5 → Full mode → semua step existing sama
+- Output: siap push ke GitHub, user tinggal git pull di Mac
