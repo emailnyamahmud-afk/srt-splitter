@@ -14,7 +14,7 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 | 4 | Web app (srt-splitter) | Translate SRT Indonesia → Jawa (pakai kamus Supabase) | ⚠ Prototype (perlu penyesuaian) |
 | 5 | SRT editor | Sementara pakai SRT Indonesia (SRT Jawa = nunggu kamus + web selesai) | ⏳ Pending |
 | 6 | `edge-tts-tui.py` | Generate audio dub dari SRT (5000+ cue, 2-5 jam durasi) | ✅ Production |
-| 7 | `mix-tui.py` v3.5 | Mix MP4 + audio → final video (4 kombinasi mode + pilihan bitrate) | ✅ Production-ready (A,C,D tested; B low-risk) |
+| 7 | `mix-tui.py` v3.6 | Mix MP4 + audio → final video (6 kombinasi mode + pilihan bitrate) | ✅ Production-ready (A,C,D tested; B,E,F low-risk) |
 
 ## Pipeline
 
@@ -89,9 +89,9 @@ mkdir -p /Volumes/HDD/Dubbing/{input,demucs,tts,mix}
 - Build: Next.js 16 + Vercel
 - Repo: https://github.com/emailnyamahmud-afk/srt-splitter
 
-### 5. mix-tui.py v3.5 — Final mix (4 kombinasi mode + pilihan bitrate)
+### 5. mix-tui.py v3.6 — Final mix (6 kombinasi mode + pilihan bitrate)
 
-User pilih 2 mode input × 2 mode output = 4 kombinasi:
+User pilih 3 mode input × 2 mode output = 6 kombinasi:
 
 | # | Mode Input | Mode Output | Output filename | Durasi | Size estimasi (2 jam) |
 |---|------------|-------------|-----------------|--------|-----------------------|
@@ -99,20 +99,23 @@ User pilih 2 mode input × 2 mode output = 4 kombinasi:
 | B | Full (MP4+SFX+Dub) | Burn SRT | `{prefix}-id-final-sub.mp4` | ~5 menit | ~1.2-4.5 GB (pilih bitrate) |
 | C | Simple (MP4+Dub) | Stream copy | `{prefix}-id-simple.mp4` | ~1 menit | ~350 MB (ikut MP4 ori) |
 | D | Simple (MP4+Dub) | Burn SRT | `{prefix}-id-simple-sub.mp4` | ~5 menit | ~1.2-4.5 GB (pilih bitrate) |
+| E | **Original (MP4+MP3 ori+Dub)** | Stream copy | `{prefix}-id-orig.mp4` | ~3 menit | ~350 MB | **v3.6 NEW** |
+| F | **Original (MP4+MP3 ori+Dub)** | Burn SRT | `{prefix}-id-orig-sub.mp4` | ~5 menit | ~1.2-4.5 GB | **v3.6 NEW** |
 
 - Default mode = Full (workflow existing, 5 film sukses)
 - Simple mode = MP4 + Dub saja, no SFX, no ducking. Untuk preview cepat / film dialog dominan.
+- **Original mode (v3.6 NEW)** = MP4 + MP3 ori + Dub dengan ducking otomatis. Skip Demucs (~16 menit), tapi tetap ada ducking sidechain compress. Cocok untuk produksi cepat tanpa Demucs.
 - Burn SRT: 4 posisi (Opsi A/B/C/D, Justify=2 center), M1 VideoToolbox 35x hardware
 - **Video bitrate (v3.5 NEW)**: pilihan untuk Mode B & D (burn SRT wajib re-encode)
   - 1 Mbps → ~1.2 GB/2jam (hemat, quality OK untuk 480p hardsub)
   - 1.5 Mbps → ~1.8 GB/2jam (default, seimbang)
   - 2 Mbps → ~2.3 GB/2jam (subtitle paling sharp)
   - 4 Mbps → ~4.5 GB/2jam (HD-ready, kalau source ori high quality)
-- Ducking: sidechain compress (turunkan SFX saat dub bicara)
+- Ducking: sidechain compress (turunkan SFX/MP3 ori saat dub bicara)
   - Full mode: pilih 6/12/18 dB (default 12 dB) atau 0 dB (no ducking)
+  - Original mode: sama dengan Full mode (MP3 ori di-duck saat dub bicara)
   - Simple mode: auto-skip (no SFX, no ducking concept)
-  - Catatan: no_vocals dari Demucs sudah bersih (vokal dibuang), tapi SFX/musik latar tetap ada → ducking PERLU biar dub jelas terdengar. Default 12 dB seimbang.
-- Cari MP4 di HDD/input/, SFX di HDD/demucs/, dub di HDD/tts/, SRT di HDD/input/
+- Cari MP4 di HDD/input/, SFX di HDD/demucs/, MP3 ori di HDD/input/, dub di HDD/tts/, SRT di HDD/input/
 - Output: HDD/mix/
 - Install: `brew install ffmpeg`
 

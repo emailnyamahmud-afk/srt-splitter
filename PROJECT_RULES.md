@@ -29,7 +29,7 @@ Kamus (sambil kerja, parallel):
 | 4 | Web app | Translate SRT Indonesia → Jawa (kamus Supabase) | ⚠ Prototype |
 | 5 | SRT editor | Sementara pakai SRT Indonesia (Jawa nunggu kamus+web) | ⏳ Pending |
 | 6 | edge-tts-tui | Generate audio dub dari SRT (5000+ cue) | ✅ Jalan |
-| 7 | mix-tui v3.5 | Mix MP4 + audio → final video (4 mode + bitrate) | ✅ Production-ready |
+| 7 | mix-tui v3.6 | Mix MP4 + audio → final video (6 mode + pilihan bitrate) | ✅ Production-ready (A,C,D tested) |
 
 ## Struktur Folder
 
@@ -53,14 +53,16 @@ Kamus (sambil kerja, parallel):
 - R-73: Cross-ref penulisan + keterangan, BUKAN register
 - R-22: GIGO — AI tidak merujuk raw untuk audit/fix
 
-### Pipeline (mix-tui v3.5)
-- Mode A: Full + Stream copy → ~3 menit, ~350 MB
+### Pipeline (mix-tui v3.6)
+- Mode A: Full + Stream copy → ~3 menit, ~350 MB (no_vocals + ducking)
 - Mode B: Full + Burn SRT → ~5 menit, ~1.2-4.5 GB (pilih bitrate)
 - Mode C: Simple + Stream copy → ~1 menit, ~350 MB (USER confirmed sync 100%)
 - Mode D: Simple + Burn SRT → ~5 menit, ~1.2-4.5 GB (USER confirmed: 1 Mbps > ori)
+- Mode E: Original + Stream copy → ~3 menit, ~350 MB (MP3 ori + ducking, skip Demucs) — v3.6 NEW
+- Mode F: Original + Burn SRT → ~5 menit, ~1.2-4.5 GB (MP3 ori + ducking + hardsub) — v3.6 NEW
 - Default mode input = Full (backward compatible)
-- Default bitrate (Mode B/D) = 1.5 Mbps (seimbang); 1 Mbps user-confirmed viable
-- Ducking PERLU untuk Full mode (SFX tetap ada walau vokal dibuang Demucs)
+- Default bitrate (Mode B/D/F) = 1.5 Mbps (seimbang); 1 Mbps user-confirmed viable
+- Ducking PERLU untuk Full + Original mode (SFX/musik latar tetap ada walau vokal dibuang Demucs)
 - Ducking TIDAK PERLU untuk Simple mode (no SFX)
 
 ### Data

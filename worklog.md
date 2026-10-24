@@ -3551,3 +3551,82 @@ Stage Summary:
 - Convert MP3 via ffmpeg work sempurna (auto-delete source)
 - Backward compatible: file matching MP3 primary, M4A fallback
 - User bisa lanjut ke Demucs (split vokal) atau langsung ke edge-tts + mix Simple mode
+
+---
+Task ID: mix-tui-v3.6-original-mode
+Agent: main
+Task: User request besok — tambah mode 'Original' di mix-tui (MP4 + MP3 ori + Dub dengan ducking)
+
+User context:
+- Produksi cepat cukup MP4 ori + MP3 ori + Dub (tanpa Demucs)
+- Saat dub bicara → MP3 ori volume turun otomatis (ducking)
+- No_vocals tetap diperlukan untuk produksi "proper" (Full mode)
+- Tapi untuk produksi cepat, cukup MP3 ori + Dub dengan ducking
+
+Implementasi (scripts/mix-tui.py v3.6):
+
+1. Step 1.5 — pilihan mode input jadi 3 (sebelumnya 2):
+   - Full (MP4 + SFX no_vocals + Dub) — existing, default
+   - Original (MP4 + MP3 ori + Dub) — v3.6 NEW, ducking otomatis
+   - Simple (MP4 + Dub saja, no SFX) — existing
+
+2. Step 2 — conditional input SFX/audio:
+   - Simple: [SKIP]
+   - Original: cari MP3 ori di HDD/input/ (audio asli dari yt-dlp)
+   - Full: cari no_vocals di HDD/demucs/ (dari Demucs)
+
+3. Step 4 — ducking conditional:
+   - Simple: [SKIP] (no SFX → no ducking)
+   - Original: prompt ducking (sama dengan Full mode, MP3 ori di-duck saat dub bicara)
+   - Full: prompt ducking (existing)
+
+4. Step 5 — output filename:
+   - Original + Stream: {prefix}-id-orig.mp4 (NEW)
+   - Original + Burn SRT: {prefix}-id-orig-sub.mp4 (NEW)
+   - Full + Stream: {prefix}-id-final.mp4 (existing)
+   - Full + Burn SRT: {prefix}-id-final-sub.mp4 (existing)
+   - Simple + Stream: {prefix}-id-simple.mp4 (existing)
+   - Simple + Burn SRT: {prefix}-id-simple-sub.mp4 (existing)
+
+5. Step 6 ringkasan:
+   - SFX bar conditional: ganti label 'SFX' jadi 'MP3 ori' untuk Original mode
+   - Ducking bar: tampilkan untuk Full + Original mode (skip Simple)
+   - Mode label: 'Full (SFX+Dub)' / 'Original (MP3 ori+Dub)' / 'Simple (no SFX)'
+   - Durasi label: 'MP3 dur' untuk Original, 'SFX dur' untuk Full
+
+6. Audio filter logic:
+   - Original mode pakai audio_filter SAMA dengan Full mode (sidechain compress)
+   - Bedanya hanya input sfx-nya: MP3 ori (vokal+SFX+musik) vs no_vocals (SFX only)
+   - Ducking bekerja sama: saat dub bicara → MP3 ori/no_vocals di-duck otomatis
+
+7. FFmpeg command 6 kombinasi:
+   - A (Full+Stream): 3 input + audio_filter + -c:v copy
+   - B (Full+Burn): 3 input + audio_filter + subtitle_filter + h264_videotoolbox
+   - C (Simple+Stream): 2 input + -map 1:a + -c:v copy
+   - D (Simple+Burn): 2 input + subtitle_filter + h264_videotoolbox
+   - E (Original+Stream): 3 input (mp4+mp3ori+dub) + audio_filter + -c:v copy — NEW
+   - F (Original+Burn): 3 input (mp4+mp3ori+dub) + audio_filter + subtitle_filter + h264_videotoolbox — NEW
+
+8. Warning dub durasi:
+   - Original mode: kalau dub < 90% MP4 → MP3 ori (vokal+SFX) tetap bermain setelah dub selesai
+   - Lebih informatif dari Simple mode (SILENCE) — user tahu vokal Mandarin akan terdengar
+
+9. Docstring header v3.5 → v3.6 dengan 6 kombinasi + section v3.6 NEW
+
+Update dokumentasi:
+- README.md: section 5 mix-tui v3.6, table 6 kombinasi (E & F NEW)
+- AGENTS.md: TUI #7 status v3.6, mix-tui v3.6 section dengan Original mode
+- PROJECT_RULES.md: TUI #7 v3.6, Pipeline section dengan 6 mode
+- scripts/README.md: status table v3.6, pipeline 3 alur (Simple/Original/Full), 6 mode table
+
+Verify:
+- python3 -m py_compile scripts/mix-tui.py → OK
+- Test 6 kombinasi cmd build: semua input count + sfx source + output filename benar
+- Test filename derivation: 6 kombinasi (3 mode × 2 output) semua terbentuk benar
+- Backward compatible: Default = Full, user asal Enter = workflow existing preserved
+
+Stage Summary:
+- mix-tui v3.6: 3 mode input × 2 mode output = 6 kombinasi total
+- Original mode: MP4 + MP3 ori + Dub dengan ducking (skip Demucs, tapi tetap ada ducking)
+- User akan test besok dengan S8-HQ (1080p) → pakai 4 Mbps (HD-ready)
+- Backward compatible: Full & Simple mode tidak berubah dari v3.5

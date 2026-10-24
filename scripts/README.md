@@ -12,7 +12,7 @@ Python TUI untuk workflow dubbing + kamus Jawa.
 | 4 | Web app | ⚠ Prototype | Live di Vercel |
 | 5 | SRT editor | ⏳ Pending | Pakai SRT Indonesia sementara |
 | 6 | edge-tts-tui.py | ✅ Production | 4565 cue tested |
-| 7 | mix-tui.py v3.5 | ✅ Production-ready | A,C,D tested |
+| 7 | mix-tui.py v3.6 | ✅ Production-ready | A,C,D tested; B,E,F low-risk |
 
 ## Pipeline (2 alur produksi)
 
@@ -26,12 +26,22 @@ yt-dlp-tui.py → edge-tts-tui.py → mix-tui.py (Mode C/D)
 
 Cocok untuk: preview cepat, film dialog dominan, audio dub Jawa yang sudah clean.
 
+### Original mode — v3.6 NEW, MP4 + MP3 ori + Dub dengan ducking
+
+```
+yt-dlp-tui.py → edge-tts-tui.py → mix-tui.py (Mode E/F)
+→ ~350 MB stream copy / ~1.2-4.5 GB burn SRT
+→ skip Demucs (~16 menit), tapi tetap ada ducking saat dub bicara
+```
+
+Cocok untuk: produksi cepat tanpa Demucs, tapi tetap ada ducking otomatis (MP3 ori di-duck saat dub bicara). Bedanya dengan Simple: ada ducking. Bedanya dengan Full: skip Demucs, pakai MP3 ori (vokal+SFX+musik tetap ada).
+
 ### Full mode — proper, dengan SFX
 
 ```
 yt-dlp-tui.py → demucs-tui.py → edge-tts-tui.py → mix-tui.py (Mode A/B)
 → ~350 MB stream copy / ~1.2-4.5 GB burn SRT
-→ dengan ducking sidechain, musik latar tetap ada
+→ dengan ducking sidechain, musik latar tetap ada (no_vocals dari Demucs)
 ```
 
 Cocok untuk: film action, musik latar penting, produksi "proper".
@@ -45,7 +55,7 @@ Cocok untuk: film action, musik latar penting, produksi "proper".
 | yt-dlp-tui.py | Download video/audio + SRT Indonesia | HDD/input/ |
 | demucs-tui.py | Vocal separation (M1 MPS, segment RAM aman) | HDD/demucs/ |
 | edge-tts-tui.py | TTS generation (100% lokal, 5000+ cue) | HDD/tts/ |
-| mix-tui.py v3.5 | Final mix video (4 mode + pilihan bitrate) | HDD/mix/ |
+| mix-tui.py v3.6 | Final mix video (6 mode + pilihan bitrate) | HDD/mix/ |
 
 ### Kamus
 
@@ -63,7 +73,7 @@ Cocok untuk: film action, musik latar penting, produksi "proper".
 |------|-----|
 | tutor-demucs-setup.md | Setup Demucs M1 MPS |
 
-## mix-tui v3.5 — 4 mode
+## mix-tui v3.6 — 6 mode
 
 | # | Mode Input | Mode Output | Output filename | Durasi | Size (2jam) |
 |---|------------|-------------|-----------------|--------|-------------|
@@ -71,8 +81,10 @@ Cocok untuk: film action, musik latar penting, produksi "proper".
 | B | Full (MP4+SFX+Dub) | Burn SRT | `{prefix}-id-final-sub.mp4` | ~5 menit | ~1.2-4.5 GB |
 | C | Simple (MP4+Dub) | Stream copy | `{prefix}-id-simple.mp4` | ~1 menit | ~350 MB |
 | D | Simple (MP4+Dub) | Burn SRT | `{prefix}-id-simple-sub.mp4` | ~5 menit | ~1.2-4.5 GB |
+| **E** | **Original (MP4+MP3 ori+Dub)** | Stream copy | `{prefix}-id-orig.mp4` | ~3 menit | ~350 MB | **v3.6 NEW** |
+| **F** | **Original (MP4+MP3 ori+Dub)** | Burn SRT | `{prefix}-id-orig-sub.mp4` | ~5 menit | ~1.2-4.5 GB | **v3.6 NEW** |
 
-### Pilihan bitrate (Mode B & D, v3.5 NEW)
+### Pilihan bitrate (Mode B & D & F, v3.5 NEW)
 
 | Bitrate | Estimasi size (2 jam) | Status |
 |---------|----------------------|--------|

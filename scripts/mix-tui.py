@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-mix-tui.py v3.5 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX + optional SRT burn)
+mix-tui.py v3.6 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn)
 
 Workflow produksi (4 fase, bersih — sesuai v6 yt-dlp + edge-tts-tui):
   Fase 1: yt-dlp v6      → {name}.mp4 (video) + {name}-audio.mp3 (via yt-dlp convert) + {name}.id.srt
@@ -10,28 +10,39 @@ Workflow produksi (4 fase, bersih — sesuai v6 yt-dlp + edge-tts-tui):
                         → {prefix}-audio-id-dub.wav (Bahasa Indonesia, full durasi)
   Fase 3b: web app SRT editor (Bahasa Jawa, per cue — nunggu code fix)
                         → audio-jw-dub.wav
-  Fase 4: mix-tui.py v3.5 → 2 mode input × 2 mode output = 4 kombinasi
-    Mode input:
-      - Full   = MP4 + no_vocals SFX + audio_dub (3 input — workflow existing 5 film sukses)
-      - Simple = MP4 + audio_dub saja (2 input — tanpa SFX, cepat, untuk preview/cleanup)
+  Fase 4: mix-tui.py v3.6 → 3 mode input × 2 mode output = 6 kombinasi
+    Mode input (v3.6 NEW: + Original):
+      - Full     = MP4 + no_vocals SFX (Demucs) + audio_dub (3 input, ducking, workflow existing)
+      - Original = MP4 + MP3 ori (audio asli yt-dlp) + audio_dub (3 input, ducking saat dub bicara)
+                   Cocok untuk produksi cepat tanpa Demucs, tapi tetap ada ducking
+      - Simple   = MP4 + audio_dub saja (2 input, no SFX, no ducking, paling cepat)
     Mode output:
       - Stream copy = video copy (no re-encode), audio encode AAC → ~1-3 menit
       - Burn SRT    = re-encode video h264_videotoolbox + hardsub SRT → ~5 menit M1
 
-    Hasil 4 kombinasi:
-      A. Full  + Stream copy → {prefix}-id-final.mp4      (~3 menit, ~350 MB, no SRT)
-      B. Full  + Burn SRT    → {prefix}-id-final-sub.mp4  (~5 menit, ~1.2-2.3 GB, hardsub)
-      C. Simple + Stream copy → {prefix}-id-simple.mp4   (~1 menit, ~350 MB, no SFX, no SRT)
-      D. Simple + Burn SRT    → {prefix}-id-simple-sub.mp4 (~5 menit, ~1.2-2.3 GB, hardsub, no SFX)
+    Hasil 6 kombinasi:
+      A. Full     + Stream copy → {prefix}-id-final.mp4      (~3 menit, ~350 MB, no SRT)
+      B. Full     + Burn SRT    → {prefix}-id-final-sub.mp4  (~5 menit, ~1.2-4.5 GB, hardsub)
+      C. Simple   + Stream copy → {prefix}-id-simple.mp4    (~1 menit, ~350 MB, no SFX, no SRT)
+      D. Simple   + Burn SRT    → {prefix}-id-simple-sub.mp4 (~5 menit, ~1.2-4.5 GB, hardsub, no SFX)
+      E. Original + Stream copy → {prefix}-id-orig.mp4      (~3 menit, ~350 MB, MP3 ori+ducking)  ← v3.6 NEW
+      F. Original + Burn SRT    → {prefix}-id-orig-sub.mp4  (~5 menit, ~1.2-4.5 GB, hardsub, MP3 ori+ducking) ← v3.6 NEW
 
-v3.5 NEW: Step 4.8 — pilih video bitrate untuk Mode B & D (burn SRT).
+v3.6 NEW: Original mode — MP4 + MP3 ori + Dub dengan ducking otomatis.
+  - User request: "produksi cepat cukup mp4 ori, mp3 ori dan dub" tanpa Demucs
+  - Ducking: saat dub bicara → MP3 ori (vokal+SFX+musik) volume turun otomatis (sidechain compress)
+  - Bedanya dengan Full mode: Full pakai no_vocals (Demucs), Original pakai MP3 ori (skip Demucs)
+  - Bedanya dengan Simple mode: Simple no ducking, Original ada ducking
+  - Cocok untuk: produksi cepat, skip Demucs (~16 menit), tapi tetap ada ducking
+
+v3.5: Step 4.8 — pilih video bitrate untuk Mode B & D (burn SRT).
   - Burn SRT wajib re-encode video → user pilih bitrate untuk hemat size.
   - Pilihan: 1 Mbps (~1.2 GB/2jam) / 1.5 Mbps (~1.8 GB/2jam, default) /
              2 Mbps (~2.3 GB/2jam, subtitle paling sharp) / 4 Mbps (~4.5 GB/2jam, HD-ready).
   - Default = 1.5 Mbps (compromise antara size dan quality untuk 480p + hardsub).
   - Mode A & C (stream copy) tidak perlu prompt — bitrate ikut MP4 ori (no re-encode).
 
-v3.4 NEW: Step 1.5 — pilih mode input (Full / Simple).
+v3.4: Step 1.5 — pilih mode input (Full / Simple / Original).
   - Default = Full (workflow existing teruji 5 film).
   - Simple = MP4 + Dub saja, no SFX, no ducking. Untuk preview cepat atau
     film yang SFX-nya sudah tidak dibutuhkan (mis. dialog dominan).
@@ -428,32 +439,53 @@ def main():
     print(f'  ✓ {mp4}')
     print()
 
-    # Step 1.5: Mode input (NEW v3.4) — Full vs Simple
+    # Step 1.5: Mode input (v3.4: Full/Simple, v3.6: + Original)
     print(f'▶ Step 1.5/{total}: Pilih mode input')
     mode_input_choice = questionary.select(
         'Mode input:',
         choices=[
             'Full (MP4 + SFX no_vocals + Dub) — workflow existing, 5 film sukses',
+            'Original (MP4 + MP3 ori + Dub) — v3.6 NEW, ducking otomatis saat dub bicara',
             'Simple (MP4 + Dub saja, no SFX) — cepat, untuk preview/dialog dominan',
         ],
         default='Full (MP4 + SFX no_vocals + Dub) — workflow existing, 5 film sukses',
     ).ask()
     simple_mode = 'Simple' in mode_input_choice
-    print(f'  ✓ {"Simple (MP4 + Dub, no SFX)" if simple_mode else "Full (MP4 + SFX + Dub)"}')
+    original_mode = 'Original' in mode_input_choice
+    # Full mode = bukan Simple AND bukan Original
+    if simple_mode:
+        mode_label_display = 'Simple (MP4 + Dub, no SFX)'
+    elif original_mode:
+        mode_label_display = 'Original (MP4 + MP3 ori + Dub, ducking)'
+    else:
+        mode_label_display = 'Full (MP4 + SFX + Dub)'
+    print(f'  ✓ {mode_label_display}')
     print()
 
-    # Step 2: no_vocals (SFX bersih dari Demucs) — cari di HDD/demucs/
-    # v3.4: skip kalau Simple mode (no SFX)
-    sfx_wav = None
-    if not simple_mode:
-        print(f'▶ Step 2/{total}: Pilih file SFX bersih (no_vocals.mp3 / .wav)')
-        sfx_wav = select_file('SFX bersih (no_vocals):', ['mp3', 'wav', 'flac'], search_dir=str(DEMUCS_DIR) if ensure_hdd() else None)
+    # Step 2: SFX/audio input — tergantung mode
+    # - Full: no_vocals.mp3 dari Demucs (cari di HDD/demucs/)
+    # - Original: MP3 ori dari yt-dlp (cari di HDD/input/)
+    # - Simple: skip (no SFX layer)
+    sfx_wav = None  # tetap pakai nama lama supaya FFmpeg cmd downstream tidak banyak ubah
+    if simple_mode:
+        print(f'▶ Step 2/{total}: [SKIP] Simple mode — no SFX input')
+        print()
+    elif original_mode:
+        # v3.6 NEW: Original mode — pakai MP3 ori (audio asli dari yt-dlp, termasuk vokal + SFX + musik)
+        # Sumber: HDD/input/ (sama dengan MP4 ori, bukan HDD/demucs/ seperti no_vocals)
+        print(f'▶ Step 2/{total}: Pilih file MP3 ori (audio asli dari yt-dlp)')
+        sfx_wav = select_file('MP3 ori (audio asli):', ['mp3', 'm4a', 'wav'], search_dir=str(INPUT_DIR) if ensure_hdd() else None)
         if not sfx_wav:
             print('Batal.'); sys.exit(0)
         print(f'  ✓ {sfx_wav}')
         print()
     else:
-        print(f'▶ Step 2/{total}: [SKIP] Simple mode — no SFX input')
+        # Full mode: no_vocals dari Demucs
+        print(f'▶ Step 2/{total}: Pilih file SFX bersih (no_vocals.mp3 / .wav)')
+        sfx_wav = select_file('SFX bersih (no_vocals):', ['mp3', 'wav', 'flac'], search_dir=str(DEMUCS_DIR) if ensure_hdd() else None)
+        if not sfx_wav:
+            print('Batal.'); sys.exit(0)
+        print(f'  ✓ {sfx_wav}')
         print()
 
     # Step 3: Audio dub — cari di HDD/tts/
@@ -468,12 +500,15 @@ def main():
     print('▶ Validasi input file...')
     validate_input_file(mp4, 'MP4 ori')
     if not simple_mode:
-        validate_input_file(sfx_wav, 'SFX no_vocals')
+        # Full mode: sfx_wav = no_vocals; Original mode: sfx_wav = MP3 ori
+        label = 'MP3 ori' if original_mode else 'SFX no_vocals'
+        validate_input_file(sfx_wav, label)
     validate_input_file(audio_dub, 'Audio dub')
     print('  ✓ Semua file valid')
     print()
 
-    # Step 4: Ducking — v3.4: skip kalau Simple mode (no SFX → no ducking concept)
+    # Step 4: Ducking — skip kalau Simple mode (no SFX → no ducking concept)
+    # v3.6: Original mode juga pakai ducking (sama dengan Full mode), karena ada MP3 ori yang perlu di-duck saat dub bicara
     ducking_db = 0
     if not simple_mode:
         print(f'▶ Step 4/{total}: Pilih ducking level')
@@ -563,16 +598,27 @@ def main():
         video_bitrate = None  # unused, stream copy pakai -c:v copy
 
     # Step 5: Output — default derive dari MP4 prefix (Bug #1 fix)
-    # v3.4: suffix dipilih berdasarkan mode input (Full/Simple) + mode output (Stream/Burn)
+    # v3.4: suffix berdasarkan mode input (Full/Simple) + mode output (Stream/Burn)
+    # v3.6: tambah Original mode → suffix -id-orig / -id-orig-sub
     print(f'▶ Step 5/{total}: Pilih nama output MP4')
     default_output = derive_default_output(mp4, lang='id')
     base = Path(default_output).stem  # tanpa .mp4
     # Suffix logic:
-    # - Full + Stream copy: {prefix}-id-final.mp4 (current behavior, no change)
-    # - Full + Burn SRT:    {prefix}-id-final-sub.mp4 (current behavior, no change)
-    # - Simple + Stream:    {prefix}-id-simple.mp4 (NEW)
-    # - Simple + Burn SRT: {prefix}-id-simple-sub.mp4 (NEW)
-    if simple_mode and burn_srt:
+    # - Full + Stream copy: {prefix}-id-final.mp4 (existing, no change)
+    # - Full + Burn SRT:    {prefix}-id-final-sub.mp4 (existing, no change)
+    # - Simple + Stream:    {prefix}-id-simple.mp4 (v3.4)
+    # - Simple + Burn SRT: {prefix}-id-simple-sub.mp4 (v3.4)
+    # - Original + Stream:  {prefix}-id-orig.mp4 (v3.6 NEW)
+    # - Original + Burn SRT: {prefix}-id-orig-sub.mp4 (v3.6 NEW)
+    if original_mode:
+        # Original mode: replace -final dengan -orig (atau -orig-sub kalau burn)
+        if base.endswith('-id-final'):
+            base = base[:-9]  # hapus -id-final
+        if burn_srt:
+            default_output = f'{base}-id-orig-sub.mp4'
+        else:
+            default_output = f'{base}-id-orig.mp4'
+    elif simple_mode and burn_srt:
         # Simple + Burn: replace -final dengan -simple-sub
         if base.endswith('-id-final'):
             base = base[:-9]  # hapus -id-final
@@ -605,17 +651,24 @@ def main():
     print('║  📋 Ringkasan:' + ' ' * 49 + '║')
     print('╠' + '═' * 64 + '╣')
     print(f'║  MP4      : {mp4[:46]:<46}║')
-    if not simple_mode:
-        print(f'║  SFX      : {sfx_wav[:46]:<46}║')
-    else:
+    if simple_mode:
         print(f'║  SFX      : [SKIP — Simple mode, no SFX]                    ║')
+    elif original_mode:
+        print(f'║  MP3 ori  : {sfx_wav[:46]:<46}║')  # ganti label 'SFX' jadi 'MP3 ori' untuk Original mode
+    else:
+        print(f'║  SFX      : {sfx_wav[:46]:<46}║')
     print(f'║  Audio dub: {audio_dub[:46]:<46}║')
     print(f'║  Output   : {output[:46]:<46}║')
-    if not simple_mode:
-        print(f'║  Ducking  : {str(ducking_db) + " dB":<46}║')
-    else:
+    if simple_mode:
         print(f'║  Ducking  : [SKIP — dub copy as-is]                       ║')
-    mode_input_label = 'Simple (no SFX)' if simple_mode else 'Full (SFX+Dub)'
+    else:
+        print(f'║  Ducking  : {str(ducking_db) + " dB":<46}║')
+    if simple_mode:
+        mode_input_label = 'Simple (no SFX)'
+    elif original_mode:
+        mode_input_label = 'Original (MP3 ori+Dub)'
+    else:
+        mode_input_label = 'Full (SFX+Dub)'
     mode_output_label = f'Burn SRT {srt_position}' if burn_srt else 'Stream copy'
     mode_label = f'{mode_input_label} | {mode_output_label}'
     print(f'║  Mode     : {mode_label[:46]:<46}║')
@@ -626,7 +679,9 @@ def main():
         print(f'║  Bitrate  : {bitrate_display[:46]:<46}║')
     print(f'║  MP4 dur  : {format_duration(mp4_dur):<46}║')
     if not simple_mode:
-        print(f'║  SFX dur  : {format_duration(sfx_dur):<46}║')
+        # Original mode: label durasi = 'MP3 ori dur'; Full mode: 'SFX dur'
+        dur_label = 'MP3 dur' if original_mode else 'SFX dur'
+        print(f'║  {dur_label}  : {format_duration(sfx_dur):<46}║')
     print(f'║  Dub dur  : {format_duration(dub_dur):<46}║')
     print('╚' + '═' * 64 + '╝')
     print()
@@ -634,6 +689,7 @@ def main():
     # === Bug #5 fix: warning prominent kalau dub < 90% MP4 dur ===
     # v3.4: kalau Simple mode (no SFX), warning lebih kritikal karena
     # setelah dub selesai → SILENCE (bukan SFX) sampai MP4 selesai.
+    # v3.6: Original mode — MP3 ori (vokal+SFX) tetap bermain setelah dub selesai (sama dengan Full mode)
     if mp4_dur > 0 and dub_dur > 0:
         ratio = dub_dur / mp4_dur
         if ratio < 0.9:
@@ -647,7 +703,12 @@ def main():
                 print(f'  → SILENCE (tidak ada SFX) sampai MP4 selesai!')
                 print(f'    Simple mode tidak ada SFX fallback — dub harus full durasi.')
             else:
-                print(f'  → hanya SFX yang bermain sampai MP4 selesai.')
+                # Full mode (SFX) atau Original mode (MP3 ori vokal+musik) tetap bermain
+                if original_mode:
+                    print(f'  → MP3 ori (vokal+SFX+musik) tetap bermain sampai MP4 selesai.')
+                    print(f'    Original mode: dialog asli vokal Mandarin akan terdengar setelah dub selesai.')
+                else:
+                    print(f'  → hanya SFX (no_vocals) yang bermain sampai MP4 selesai.')
             print()
             print(f'  Kemungkinan sebab:')
             print(f'   - Generate TTS gagal di tengah (cek .cache/ untuk resume)')
@@ -676,15 +737,24 @@ def main():
 
     # === Build FFmpeg command (v3.4: 4 kombinasi mode) ===
     # Indeks input:
-    # - Full mode:   0=mp4 (video), 1=sfx_wav, 2=audio_dub
-    # - Simple mode: 0=mp4 (video), 1=audio_dub (NO SFX)
-    mode_name = f'{"Simple" if simple_mode else "Full"} + {"Burn SRT" if burn_srt else "Stream copy"}'
+    # - Full mode:     0=mp4 (video), 1=sfx_wav (no_vocals), 2=audio_dub
+    # - Original mode: 0=mp4 (video), 1=sfx_wav (MP3 ori), 2=audio_dub
+    # - Simple mode:   0=mp4 (video), 1=audio_dub (NO SFX)
+    if simple_mode:
+        mode_input_name = 'Simple'
+    elif original_mode:
+        mode_input_name = 'Original'
+    else:
+        mode_input_name = 'Full'
+    mode_name = f'{mode_input_name} + {"Burn SRT" if burn_srt else "Stream copy"}'
     print('\n' + '═' * 64)
     print(f'🚀 Mulai mix... (mode: {mode_name})')
     print('═' * 64 + '\n')
 
-    # Audio filter — hanya untuk Full mode (SFX + dub + ducking)
+    # Audio filter — untuk Full + Original mode (3 input: mp4 + sfx/mp3ori + dub + ducking)
     # Simple mode: dub copy as-is (no filter, no ducking)
+    # v3.6: Original mode pakai audio_filter sama dengan Full mode (sidechain compress),
+    #       bedanya cuma input sfx-nya MP3 ori (vokal+SFX+musik) vs no_vocals (SFX only)
     audio_filter = None
     if not simple_mode:
         if ducking_db <= 0:
@@ -705,9 +775,10 @@ def main():
             )
 
     if not burn_srt:
-        # === MODE A/C: Stream copy (3 menit, no SRT) ===
+        # === Stream copy (3 menit, no SRT) — Mode A/C/E ===
         if not simple_mode:
-            # Full + Stream copy (A): 3 input (mp4 + sfx + dub) + audio filter
+            # Full + Stream copy (A) / Original + Stream copy (E): 3 input + audio filter
+            # Audio filter: sidechain compress — ducking MP3 ori/no_vocals saat dub bicara
             filter_complex = audio_filter
             cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
                    '-filter_complex', filter_complex,
@@ -724,7 +795,7 @@ def main():
                    '-movflags', '+faststart', output]
             print(f'Command: ffmpeg ... -c:v copy -c:a aac -b:a 192k {output} (Simple, no SFX, no filter)')
     else:
-        # === MODE B/D: Burn SRT (re-encode video, VideoToolbox M1 hardware) ===
+        # === Burn SRT (re-encode video, VideoToolbox M1 hardware) — Mode B/D/F ===
         # Build subtitle filter dengan force_style untuk posisi + style
         # ASS Alignment (libass/ffmpeg spec, verified 13 Okt 2026):
         #   1 = bottom-left, 2 = bottom-center, 3 = bottom-right
@@ -785,7 +856,8 @@ def main():
         subtitle_filter = f"[0:v]subtitles='{srt_escaped}':force_style='{force_style}'[vout]"
 
         if not simple_mode:
-            # Full + Burn SRT (B): 3 input + audio_filter + subtitle_filter
+            # Full + Burn SRT (B) / Original + Burn SRT (F): 3 input + audio_filter + subtitle_filter
+            # Audio filter: sidechain compress untuk ducking (MP3 ori/no_vocals saat dub bicara)
             filter_complex = audio_filter + ';' + subtitle_filter
             cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
                    '-filter_complex', filter_complex,
@@ -808,7 +880,13 @@ def main():
         print(f'  SRT path : {srt_path}')
         print(f'  Posisi   : {srt_position} (Alignment={alignment}, MarginV={margin_v})')
         print(f'  Style    : font 18pt, putih outline hitam, VideoToolbox M1 hardware')
-        print(f'  Mode     : {"Simple (no SFX)" if simple_mode else "Full (SFX+Dub)"}')
+        if simple_mode:
+            mode_print = 'Simple (no SFX)'
+        elif original_mode:
+            mode_print = 'Original (MP3 ori+Dub, ducking)'
+        else:
+            mode_print = 'Full (SFX+Dub)'
+        print(f'  Mode     : {mode_print}')
         print(f'  Bitrate  : {video_bitrate} (target) — size estimasi {"~1.2 GB/2jam" if video_bitrate == "1M" else "~1.8 GB/2jam" if video_bitrate == "1.5M" else "~2.3 GB/2jam" if video_bitrate == "2M" else "~4.5 GB/2jam"}')
         print(f'  Estimasi : ~4-6 menit untuk 2 jam video (M1 VideoToolbox 35x hardware)')
     print()
