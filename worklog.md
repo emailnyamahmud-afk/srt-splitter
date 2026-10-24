@@ -3630,3 +3630,54 @@ Stage Summary:
 - Original mode: MP4 + MP3 ori + Dub dengan ducking (skip Demucs, tapi tetap ada ducking)
 - User akan test besok dengan S8-HQ (1080p) → pakai 4 Mbps (HD-ready)
 - Backward compatible: Full & Simple mode tidak berubah dari v3.5
+
+---
+Task ID: mix-tui-v3.6.1-original-not-recommended
+Agent: main
+Task: User feedback setelah test v3.6 — Mode Original TIDAK direkomendasi
+
+User verdict (PERMANEN):
+1. "Mix mp4, mp3 ori dan dub = tidak rekomendet = suara asli tetap muncul bahkan saat dub bicara"
+2. "versi proper yg paling baik = mix mp4, no_vocal, dub = clean benar-benar sempurna" → Full mode (A/B)
+3. "veri cepat = mp4 dan dub (tanpa mp3 ori atau tanpa no_vocal)" → Simple mode (C/D)
+
+Penyebab Original mode tidak bekerja sesuai harapan:
+- Ducking sidechain compress CUMA turunkan volume MP3 ori (50% / 25% / 12.5%)
+- TIDAK hilangkan vokal asli — vokal Mandarin tetap terdengar saat dub bicara
+- Untuk hilangkan vokal asli, butuh Demucs (pisahkan vokal dari SFX/musik)
+- Jadi satu-satunya cara proper: pakai no_vocals dari Demucs (Full mode)
+
+Implementasi v3.6.1:
+1. Step 1.5 prompt — mark Original mode 'NOT RECOMMENDED':
+   - Pilihan ke-3 diberi label '⚠ NOT RECOMMENDED, vokal asli tetap terdengar'
+   - Default = Full (pilihan pertama, REKOMENDASI proper)
+   - Simple di posisi kedua (REKOMENDASI cepat)
+2. Confirm dialog sebelum lanjut Original mode:
+   - Print warning + pertanyaan 'Tetap lanjut dengan Original mode?' (default No)
+   - User harus explicit confirm (Enter = No = batal)
+3. Code Original mode tetap ada — untuk edge case kalau user ingin vokal asli + dub
+   (mis. musik latar penting, atau komparasi dual-audio). Tapi ada warning jelas.
+
+Update dokumentasi:
+- README.md: section 5 v3.6.1 dengan verdict user + table mode A-F dengan status rekomendasi
+- AGENTS.md: mix-tui v3.6.1 section dengan verdict user + warning permanent
+- PROJECT_RULES.md: Pipeline section mark E/F NOT RECOMMENDED + catatan ducking tidak hilangkan vokal
+- scripts/README.md: status table v3.6.1, Original section NOT RECOMMENDED, 6 mode table dengan status
+
+Verdict user final (PERMANEN):
+- ✅ Full (A/B) = proper, clean sempurna (REKOMENDASI) — pakai no_vocals dari Demucs
+- ✅ Simple (C/D) = cepat, cukup untuk preview/dialog dominan (REKOMENDASI)
+- ⚠ Original (E/F) = TIDAK direkomendasi (vokal asli mengganggu saat dub bicara)
+
+Lesson learned (PERMANEN untuk AI sesi berikutnya):
+- Ducking sidechain compress CUMA turunkan volume, TIDAK hilangkan vokal
+- Untuk dubbing proper, vokal asli WAJIB dibuang via Demucs (neural network source separation)
+- Sidechain compress untuk ducking = standard industry untuk MIXING audio (mis. radio host duck music)
+- Sidechain compress BUKAN alat untuk vocal removal — itu tugas Demucs
+
+Stage Summary:
+- Mode Original (E/F) deprecated berdasarkan user test — code tetap ada tapi ada warning
+- 3 mode rekomendasi final: Full (proper) / Simple (cepat) — 2 saja, Original tidak dipakai
+- Aku tidak hapus code Original mode supaya tidak perlu re-implement kalau edge case muncul
+- Documentation update: 4 file markdown konsisten dengan verdict user
+- Backward compatible: default Full = workflow 5 film preserved

@@ -440,15 +440,18 @@ def main():
     print()
 
     # Step 1.5: Mode input (v3.4: Full/Simple, v3.6: + Original)
+    # v3.6.1 update: Original mode TIDAK REKOMENDASI — vokal asli masih terdengar
+    # saat dub bicara (ducking cuma turunkan volume, tidak hilangkan vokal).
+    # User verdict setelah test: pakai Full (proper) atau Simple (cepat).
     print(f'▶ Step 1.5/{total}: Pilih mode input')
     mode_input_choice = questionary.select(
         'Mode input:',
         choices=[
-            'Full (MP4 + SFX no_vocals + Dub) — workflow existing, 5 film sukses',
-            'Original (MP4 + MP3 ori + Dub) — v3.6 NEW, ducking otomatis saat dub bicara',
-            'Simple (MP4 + Dub saja, no SFX) — cepat, untuk preview/dialog dominan',
+            'Full (MP4 + SFX no_vocals + Dub) — REKOMENDASI proper, clean sempurna',
+            'Simple (MP4 + Dub saja, no SFX) — REKOMENDASI cepat, untuk preview/dialog dominan',
+            'Original (MP4 + MP3 ori + Dub) — ⚠ NOT RECOMMENDED, vokal asli tetap terdengar',
         ],
-        default='Full (MP4 + SFX no_vocals + Dub) — workflow existing, 5 film sukses',
+        default='Full (MP4 + SFX no_vocals + Dub) — REKOMENDASI proper, clean sempurna',
     ).ask()
     simple_mode = 'Simple' in mode_input_choice
     original_mode = 'Original' in mode_input_choice
@@ -456,10 +459,19 @@ def main():
     if simple_mode:
         mode_label_display = 'Simple (MP4 + Dub, no SFX)'
     elif original_mode:
-        mode_label_display = 'Original (MP4 + MP3 ori + Dub, ducking)'
+        mode_label_display = 'Original (NOT RECOMMENDED — vokal asli tetap terdengar)'
     else:
         mode_label_display = 'Full (MP4 + SFX + Dub)'
     print(f'  ✓ {mode_label_display}')
+    if original_mode:
+        print('  ⚠  Catatan: Mode Original tidak direkomendasi. Vokal asli Mandarin akan terdengar')
+        print('      saat dub bicara (ducking cuma turunkan volume, tidak hilangkan vokal).')
+        print('      Untuk hasil proper → pakai Full mode (no_vocals dari Demucs).')
+        print('      Untuk hasil cepat → pakai Simple mode (no MP3 ori).')
+        confirm_orig = questionary.confirm('Tetap lanjut dengan Original mode?', default=False).ask()
+        if not confirm_orig:
+            print('Batal. Pilih Full atau Simple mode.')
+            sys.exit(0)
     print()
 
     # Step 2: SFX/audio input — tergantung mode

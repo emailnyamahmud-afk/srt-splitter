@@ -12,7 +12,7 @@ Python TUI untuk workflow dubbing + kamus Jawa.
 | 4 | Web app | ⚠ Prototype | Live di Vercel |
 | 5 | SRT editor | ⏳ Pending | Pakai SRT Indonesia sementara |
 | 6 | edge-tts-tui.py | ✅ Production | 4565 cue tested |
-| 7 | mix-tui.py v3.6 | ✅ Production-ready | A,C,D tested; B,E,F low-risk |
+| 7 | mix-tui.py v3.6.1 | ✅ Production-ready | A/B/C/D rekomendasi, E/F not recommended |
 
 ## Pipeline (2 alur produksi)
 
@@ -26,15 +26,15 @@ yt-dlp-tui.py → edge-tts-tui.py → mix-tui.py (Mode C/D)
 
 Cocok untuk: preview cepat, film dialog dominan, audio dub Jawa yang sudah clean.
 
-### Original mode — v3.6 NEW, MP4 + MP3 ori + Dub dengan ducking
+### Original mode — v3.6 NEW, ⚠ NOT RECOMMENDED
 
 ```
 yt-dlp-tui.py → edge-tts-tui.py → mix-tui.py (Mode E/F)
 → ~350 MB stream copy / ~1.2-4.5 GB burn SRT
-→ skip Demucs (~16 menit), tapi tetap ada ducking saat dub bicara
+→ ⚠ Vokal asli Mandarin tetap terdengar saat dub bicara
 ```
 
-Cocok untuk: produksi cepat tanpa Demucs, tapi tetap ada ducking otomatis (MP3 ori di-duck saat dub bicara). Bedanya dengan Simple: ada ducking. Bedanya dengan Full: skip Demucs, pakai MP3 ori (vokal+SFX+musik tetap ada).
+**NOT RECOMMENDED** (verdict user setelah test). Ducking sidechain compress hanya turunkan volume MP3 ori, tidak hilangkan vokal asli. Untuk hasil proper → pakai Full mode (Demucs hilangkan vokal). Untuk hasil cepat → pakai Simple mode (no MP3 ori). Code tetap ada untuk edge case, ada warning prompt di Step 1.5.
 
 ### Full mode — proper, dengan SFX
 
@@ -55,7 +55,7 @@ Cocok untuk: film action, musik latar penting, produksi "proper".
 | yt-dlp-tui.py | Download video/audio + SRT Indonesia | HDD/input/ |
 | demucs-tui.py | Vocal separation (M1 MPS, segment RAM aman) | HDD/demucs/ |
 | edge-tts-tui.py | TTS generation (100% lokal, 5000+ cue) | HDD/tts/ |
-| mix-tui.py v3.6 | Final mix video (6 mode + pilihan bitrate) | HDD/mix/ |
+| mix-tui.py v3.6.1 | Final mix video (6 mode + pilihan bitrate) | HDD/mix/ |
 
 ### Kamus
 
@@ -73,16 +73,16 @@ Cocok untuk: film action, musik latar penting, produksi "proper".
 |------|-----|
 | tutor-demucs-setup.md | Setup Demucs M1 MPS |
 
-## mix-tui v3.6 — 6 mode
+## mix-tui v3.6.1 — 6 mode (A/B/C/D rekomendasi, E/F not recommended)
 
-| # | Mode Input | Mode Output | Output filename | Durasi | Size (2jam) |
-|---|------------|-------------|-----------------|--------|-------------|
-| A | Full (MP4+SFX+Dub) | Stream copy | `{prefix}-id-final.mp4` | ~3 menit | ~350 MB |
-| B | Full (MP4+SFX+Dub) | Burn SRT | `{prefix}-id-final-sub.mp4` | ~5 menit | ~1.2-4.5 GB |
-| C | Simple (MP4+Dub) | Stream copy | `{prefix}-id-simple.mp4` | ~1 menit | ~350 MB |
-| D | Simple (MP4+Dub) | Burn SRT | `{prefix}-id-simple-sub.mp4` | ~5 menit | ~1.2-4.5 GB |
-| **E** | **Original (MP4+MP3 ori+Dub)** | Stream copy | `{prefix}-id-orig.mp4` | ~3 menit | ~350 MB | **v3.6 NEW** |
-| **F** | **Original (MP4+MP3 ori+Dub)** | Burn SRT | `{prefix}-id-orig-sub.mp4` | ~5 menit | ~1.2-4.5 GB | **v3.6 NEW** |
+| # | Mode Input | Mode Output | Output filename | Status |
+|---|------------|-------------|-----------------|--------|
+| A | Full (MP4+SFX+Dub) | Stream copy | `{prefix}-id-final.mp4` | ✅ REKOMENDASI proper |
+| B | Full (MP4+SFX+Dub) | Burn SRT | `{prefix}-id-final-sub.mp4` | ✅ REKOMENDASI proper + hardsub |
+| C | Simple (MP4+Dub) | Stream copy | `{prefix}-id-simple.mp4` | ✅ REKOMENDASI cepat |
+| D | Simple (MP4+Dub) | Burn SRT | `{prefix}-id-simple-sub.mp4` | ✅ REKOMENDASI cepat + hardsub |
+| E | Original (MP4+MP3 ori+Dub) | Stream copy | `{prefix}-id-orig.mp4` | ⚠ NOT RECOMMENDED (vokal asli terdengar) |
+| F | Original (MP4+MP3 ori+Dub) | Burn SRT | `{prefix}-id-orig-sub.mp4` | ⚠ NOT RECOMMENDED (vokal asli terdengar) |
 
 ### Pilihan bitrate (Mode B & D & F, v3.5 NEW)
 

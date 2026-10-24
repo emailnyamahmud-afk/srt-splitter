@@ -17,7 +17,7 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 | 4 | Web app | Translate SRT Indonesia → Jawa (pakai kamus Supabase) | ⚠ Prototype (perlu penyesuaian) |
 | 5 | SRT editor | Sementara pakai SRT Indonesia (SRT Jawa = nunggu kamus + web selesai) | ⏳ Pending |
 | 6 | edge-tts-tui.py | Generate audio dub dari SRT (5000+ cue, 2-5 jam durasi) | ✅ Jalan |
-| 7 | mix-tui.py v3.6 | Mix MP4 + audio → final video (6 mode + pilihan bitrate) | ✅ Production-ready (A,C,D tested) |
+| 7 | mix-tui.py v3.6.1 | Mix MP4 + audio → final video (6 mode + pilihan bitrate) | ✅ Production-ready (A/B/C/D rekomendasi) |
 
 ## Struktur Folder
 
@@ -50,7 +50,7 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 | `scripts/yt-dlp-tui.py` | Download video/audio |
 | `scripts/demucs-tui.py` | Vocal separation |
 | `scripts/edge-tts-tui.py` | TTS generation |
-| `scripts/mix-tui.py` | Final mix video (v3.6 — 6 kombinasi mode + pilihan bitrate) |
+| `scripts/mix-tui.py` | Final mix video (v3.6.1 — 6 mode + pilihan bitrate, E/F not recommended) |
 | `scripts/upload-supabase.py` | Upload kamus ke DB |
 | `scripts/parse-jv-wiktionary-v2.py` | Parser jv.wiktionary XML |
 
@@ -68,26 +68,35 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 - edge-tts v7.3.1: ✅ 4565 cue tested (Toko-buku, ~3 jam generate)
 - mix-tui v3.3 → v3.4 (24 Okt): 5 film sukses pakai Full + Stream copy
 
-### mix-tui v3.6 (24 Okt 2026, commit feat v3.6 — Original mode)
+### mix-tui v3.6.1 (24 Okt 2026, commit feat v3.6.1 — Original mode NOT RECOMMENDED)
+- v3.6.1 UPDATE: Original mode (E/F) NOT RECOMMENDED berdasarkan test user
+  - User verdict: 'Mix mp4, mp3 ori dan dub = tidak rekomendet = suara asli tetap muncul
+    bahkan saat dub bicara'
+  - Penyebab: ducking sidechain compress CUMA turunkan volume MP3 ori, tidak hilangkan vokal asli
+  - Solusi: untuk hasil proper → pakai Full mode (no_vocals dari Demucs hilangkan vokal asli)
+  - Code tetap ada (untuk edge case kalau user ingin vokal asli + dub), tapi ada warning prompt
+  - Step 1.5: pilihan Original mode diberi label '⚠ NOT RECOMMENDED'
+  - Confirm dialog sebelum lanjut Original mode (default No)
+- Verdict user final (3 mode):
+  - Full (A/B) = proper, clean sempurna (REKOMENDASI)
+  - Simple (C/D) = cepat, cukup untuk preview/dialog dominan (REKOMENDASI)
+  - Original (E/F) = TIDAK direkomendasi (vokal asli mengganggu)
 - 6 kombinasi mode (3 input × 2 output):
   - ✅ A. Full + Stream copy → `{prefix}-id-final.mp4` (5 film sukses, ~350 MB)
   - ⚠ B. Full + Burn SRT → `{prefix}-id-final-sub.mp4` (low risk, belum user test)
-  - ✅ C. Simple + Stream copy → `{prefix}-id-simple.mp4` (1 film sukses: S10-ORI 352.7 MB, 1m 16s, sync 100%)
-  - ✅ D. Simple + Burn SRT → `{prefix}-id-simple-sub.mp4` (2 film tested, 1 Mbps user confirmed > ori)
-  - ⚠ E. Original + Stream copy → `{prefix}-id-orig.mp4` (NEW v3.6, user akan test besok)
-  - ⚠ F. Original + Burn SRT → `{prefix}-id-orig-sub.mp4` (NEW v3.6, user akan test besok)
-- v3.6 NEW: Original mode — MP4 + MP3 ori + Dub dengan ducking otomatis (sidechain compress)
-  - User request: 'produksi cepat cukup mp4 ori, mp3 ori dan dub' tanpa Demucs
-  - Ducking: saat dub bicara → MP3 ori (vokal+SFX+musik) volume turun otomatis
-  - Skip Demucs (~16 menit) tapi tetap ada ducking (lebih baik dari Simple mode)
-  - Input MP3 ori: cari di HDD/input/ (sama dengan MP4 ori, bukan HDD/demucs/)
+  - ✅ C. Simple + Stream copy → `{prefix}-id-simple.mp4` (sync 100%)
+  - ✅ D. Simple + Burn SRT → `{prefix}-id-simple-sub.mp4` (1 Mbps user confirmed > ori)
+  - ⚠ E. Original + Stream copy → `{prefix}-id-orig.mp4` (NOT RECOMMENDED, vokal asli terdengar)
+  - ⚠ F. Original + Burn SRT → `{prefix}-id-orig-sub.mp4` (NOT RECOMMENDED, vokal asli terdengar)
 - Ducking PERLU untuk Full + Original mode (SFX/musik latar tetap ada)
+  - Tapi Original mode ducking tidak hilangkan vokal asli (cuma turunkan volume)
+  - Hanya no_vocals dari Demucs (Full mode) yang benar-benar hilangkan vokal
 - Ducking TIDAK PERLU untuk Simple mode (no SFX, dub copy as-is)
 - v3.5: Step 4.8 — pilih video bitrate untuk Mode B & D (burn SRT wajib re-encode):
-  - 1 Mbps → ~1.2 GB/2jam (USER CONFIRMED OK, kualitas lebih bagus dari ori, hemat 51%)
+  - 1 Mbps → ~1.2 GB/2jam (USER CONFIRMED OK, kualitas > ori, hemat 51%)
   - 1.5 Mbps → ~1.8 GB/2jam (default v3.5, seimbang)
   - 2 Mbps → ~2.3 GB/2jam (v3.4 behavior, subtitle paling sharp)
-  - 4 Mbps → ~4.5 GB/2jam (HD-ready, source ori high quality) — user akan pakai untuk S8-HQ 1080p besok
+  - 4 Mbps → ~4.5 GB/2jam (HD-ready, source ori high quality)
   - Mode A & C (stream copy) tidak perlu prompt — bitrate ikut MP4 ori
 - M1 VideoToolbox 32-33x speed (konsisten) = 2.5 jam video di-encode ~4.5 menit
 - User confirmed: pipeline Simple mode end-to-end = sync 1000000%, tidak perlu DaVinci Resolve
