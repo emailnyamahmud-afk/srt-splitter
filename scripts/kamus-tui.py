@@ -174,7 +174,15 @@ def select_kamus_source():
 
 
 def load_kamus():
-    """Load kamus JSON aktif (CURRENT_SOURCE)."""
+    """Load kamus JSON aktif (CURRENT_SOURCE).
+
+    Normalisasi field terjemahan:
+    - jv.wiktionary.json (SOURCE OF TRUTH) pakai field `terjemahan_indo` (8.618 entries).
+    - TUI code (display/edit/save) semua baca field `indo`.
+    - Fix: saat load, copy `terjemahan_indo` → `indo` (kalau `indo` kosong),
+      lalu hapus `terjemahan_indo` supaya schema konsisten.
+    - Sekali di-save, file pakai schema TUI (20 field, `indo` sebagai source of truth).
+    """
     path = get_kamus_path()
     if not path:
         src = KAMUS_SOURCES.get(CURRENT_SOURCE, {})
@@ -186,7 +194,28 @@ def load_kamus():
         print(f'     "{url}"')
         return None
     with open(path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+        data = json.load(f)
+
+    # Normalisasi field terjemahan: terjemahan_indo → indo
+    # (jv.wiktionary.json pakai terjemahan_indo; TUI pakai indo)
+    words = data.get('words', [])
+    migrated = 0
+    had_legacy_field = 0
+    for w in words:
+        legacy = (w.get('terjemahan_indo') or '').strip() if isinstance(w.get('terjemahan_indo'), str) else ''
+        if legacy:
+            had_legacy_field += 1
+            if not (w.get('indo') or '').strip():
+                w['indo'] = w['terjemahan_indo']
+                migrated += 1
+        # Hapus field legacy supaya schema konsisten (TUI pakai 20 field, tidak ada terjemahan_indo)
+        if 'terjemahan_indo' in w:
+            del w['terjemahan_indo']
+    if had_legacy_field > 0:
+        print(f'  ℹ Normalisasi field: {migrated} entries terjemahan_indo → indo '
+              f'(dari {had_legacy_field} entries dengan field legacy)')
+
+    return data
 
 
 def save_kamus(data):

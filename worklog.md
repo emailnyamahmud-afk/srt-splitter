@@ -2866,3 +2866,55 @@ Kesimpulan PERMANEN:
 - Workflow: user baca keterangan Jawa → user isi ngoko/krama/indo manual
 - AI hanya bantu workflow (TUI, upload), bukan isi data
 - R-22 compliance: GIGO — AI tidak merujuk raw untuk audit/fix
+
+---
+Task ID: kamus-tui-indo-field-fix
+Agent: main
+Task: User report "terjemahan indo tidak terbaca di tui, apa yg salah?"
+
+Diagnosis:
+- Default source TUI = jv.wiktionary.json (KAMUS_SOURCES['jv'], CURRENT_SOURCE='jv')
+- File jv.wiktionary.json pakai field `terjemahan_indo` (8.618 entries terisi)
+- TUI code (scripts/kamus-tui.py) baca `w.get('indo')` di SEMUA tempat:
+  - show_stats (line 229-237): with_arti, ngoko_krama_arti, dll
+  - display_entry (line 291, 320): arti_old print
+  - edit_entry (line 377): entry['indo'] = new_arti
+  - browse (line 586): filter tidak punya indo
+  - mark_ready (line 724, 757): ready check
+  - merge_duplicates (line 836-909): e1_indo, merge_indo
+  - new_entry (line 1065): validate wajib indo
+  - detect_duplicates: lintas field
+- Akibat: 8.618 terjemahan TIDAK PERNAH TERBACA → semua muncul kosong di TUI
+
+Audit field schema semua kamus JSON:
+- public/jv.wiktionary.json (44.585): pakai `terjemahan_indo` (8.618 terisi) — BUG source
+- out/kamus_unified.json (43.630): pakai `indo` (1.468 terisi) — sudah benar
+- out/kamus_unified_draft.json (43.630): pakai `indo` (2.590 terisi) — sudah benar
+- out/kamus_id_wiktionary_jv.json (2.303): pakai `indo` (2.154 terisi) — sudah benar
+
+Fix (minimal invasive, di scripts/kamus-tui.py:176-218):
+- Tambah normalisasi di load_kamus(): copy `terjemahan_indo` → `indo` kalau `indo` kosong
+- Hapus field `terjemahan_indo` dari in-memory data (schema konsisten)
+- Tidak ubah fungsi display/edit/save — semua sudah pakai `indo`
+- Print info normalisasi saat load (migrated count)
+
+Verify:
+- python3 -m py_compile scripts/kamus-tui.py → OK
+- Simulasi load 44.585 entries jv.wiktionary.json:
+  - Had terjemahan_indo: 8.618
+  - Migrated to indo: 8.618 (100%)
+  - indo filled (after normalization): 8.618 (sebelumnya 0)
+  - Remaining terjemahan_indo fields: 0 (schema clean)
+- Simulasi show_stats: ngoko+krama+indo (lengkap) 2.165 entries, indo filled 8.618
+- Sample display: word='unting-unting' indo='unting' (sebelumnya "(kosong)")
+
+Side effect (expected & safe):
+- Setelah user save pertama kali, file jv.wiktionary.json akan pakai schema TUI
+  (20 field, `indo` sbg source of truth, tanpa `terjemahan_indo`)
+- Backup otomatis tidak perlu — `indo` sudah berisi semua data dari `terjemahan_indo`
+
+Stage Summary:
+- Root cause: field name mismatch — source pakai terjemahan_indo, TUI baca indo
+- Fix: normalisasi saat load (1 function diubah, 0 fungsi lain diutak-atik)
+- 8.618 entries jv.wiktionary.json sekarang muncul di TUI (display/stats/edit/ready/merge)
+- User bisa lanjut audit duplikat + isi entries ngoko+krama yang belum ada indo (231 entries)
