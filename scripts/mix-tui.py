@@ -884,6 +884,8 @@ def main():
     # Step 5: Output — default derive dari MP4 prefix (Bug #1 fix)
     # v3.4: suffix berdasarkan mode input (Full/Simple) + mode output (Stream/Burn)
     # v3.6: tambah Original mode → suffix -id-orig / -id-orig-sub
+    # v3.7.4 FIX: default output pakai FULL PATH ke MIX_DIR (HDD), bukan hanya filename
+    #            (sebelumnya output disimpan di cwd = SSD, user harus move manual ke HDD)
     print(f'▶ Step 5/{total}: Pilih nama output MP4')
     default_output = derive_default_output(mp4, lang='id')
     base = Path(default_output).stem  # tanpa .mp4
@@ -916,7 +918,32 @@ def main():
         # Full + Burn SRT (existing): -id-final-sub
         default_output = f'{base}-sub.mp4'
     # else: Full + Stream copy (existing): pakai default_output apa adanya (-id-final)
+
+    # v3.7.4 FIX: prepend MIX_DIR (HDD) ke default_output
+    # Sebelumnya: default = "S5-ori-id-final.mp4" → disimpan di cwd (SSD)
+    # Sekarang: default = "/Volumes/HDD/Dubbing/mix/S5-ori-id-final.mp4" → disimpan di HDD
+    # User tetap bisa edit prompt untuk path lain (mis. ke SSD kalau mau)
+    if ensure_hdd():
+        # HDD available → pakai MIX_DIR (HDD path dari config.py)
+        default_output = str(MIX_DIR / default_output)
+        print(f'  ℹ Default output: {default_output}')
+        print(f'    (HDD path dari config.py — output langsung ke HDD, tidak perlu move manual)')
+    else:
+        # HDD tidak ter-colok → fallback ke cwd (SSD)
+        print(f'  ⚠ HDD tidak ter-colok, output ke cwd (SSD): {default_output}')
+        print(f'    Move manual ke HDD setelah selesai, atau colok HDD dulu.')
+
     output = prompt_output(default_output)
+    # Expand user (~ → home) kalau ada, normalize path
+    output = os.path.expanduser(output)
+    # Pastikan directory output ada (buat kalau perlu)
+    output_dir = os.path.dirname(output)
+    if output_dir and not os.path.isdir(output_dir):
+        try:
+            os.makedirs(output_dir, exist_ok=True)
+            print(f'  ℹ Created output dir: {output_dir}')
+        except OSError as e:
+            print(f'  ⚠ Gagal buat output dir: {e}')
     print(f'  ✓ {output}')
     print()
 
