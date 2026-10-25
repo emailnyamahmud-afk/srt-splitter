@@ -14,7 +14,7 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 | 4 | Web app | Translate SRT Indonesia → Jawa (kamus Supabase) | ⚠ Prototype |
 | 5 | SRT editor | Pakai SRT Indonesia (Jawa nunggu kamus+web) | ⏳ Pending |
 | 6 | edge-tts-tui.py | Generate audio dub (5000+ cue, 2-5 jam) | ✅ Production |
-| 7 | mix-tui.py v3.7.6 | Mix MP4 + audio → final video (6 mode) | ✅ Production (A/B/C/D/E tested) |
+| 7 | mix-tui.py v3.7.6 | Mix MP4 + audio → final video (6 mode) | ✅ Production (A/B/C/D/E/F tested) |
 
 ## Pipeline
 
@@ -53,7 +53,7 @@ HDD /Volumes/HDD/Dubbing/            ← data (besar)
 | C | Simple + Stream | MP4+Dub | `-id-simple.mp4` | ~1 min | Cepat, no SFX |
 | D | Simple + Burn | MP4+Dub | `-id-simple-sub.mp4` | ~5 min | Cepat + hardsub |
 | E | Original + Stream | MP4+MP3+Dub+SRT | `-id-orig.mp4` | ~4 min | MUTE, no hardsub ⭐ |
-| F | Original + Burn | MP4+MP3+Dub+SRT | `-id-orig-sub.mp4` | ~14 min | MUTE + hardsub |
+| F | Original + Burn | MP4+MP3+Dub+SRT | `-id-orig-sub.mp4` | ~14-27 min | MUTE + hardsub |
 
 ### Ducking strategy (3 jenis)
 

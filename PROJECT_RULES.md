@@ -22,7 +22,7 @@ Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 | 4 | Web app | ⚠ Prototype |
 | 5 | SRT editor | ⏳ Pending (pakai SRT ID) |
 | 6 | edge-tts-tui v7.3.1 | ✅ Production |
-| 7 | mix-tui v3.7.6 | ✅ Production (A/B/C/D/E tested) |
+| 7 | mix-tui v3.7.6 | ✅ Production (A/B/C/D/E/F tested) |
 
 ## Struktur Folder
 

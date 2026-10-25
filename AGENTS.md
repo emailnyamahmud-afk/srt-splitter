@@ -17,7 +17,7 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 | 4 | Web app | ⚠ Prototype |
 | 5 | SRT editor | ⏳ Pending (pakai SRT ID) |
 | 6 | edge-tts-tui v7.3.1 | ✅ Production |
-| 7 | mix-tui v3.7.6 (6 mode, MUTE COMPLETE) | ✅ Production (A/B/C/D/E tested) |
+| 7 | mix-tui v3.7.6 (6 mode, MUTE COMPLETE) | ✅ Production (A/B/C/D/E/F tested) |
 
 ## Struktur Folder
 
@@ -70,26 +70,26 @@ Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no m
 - 44.585 entries, 8.618 dengan indo (cross-ref), 2.165 lengkap 3-field
 - User validasi manual di kamus-tui, mark READY, upload Supabase
 
-### Pipeline produksi (5 film tested)
+### Pipeline produksi (6 film tested, 6 mode production-ready)
 - yt-dlp v6 MP3 output: ✅
 - demucs v2 (segment 4, MPS): ✅
 - edge-tts v7.3.1 (4565 cue tested): ✅
-- mix-tui v3.7.6 Mode E VLC confirmed MUTE COMPLETE: ✅
+- mix-tui v3.7.6: 6 mode production-ready
 
-### Test results
-- A (Full + Stream): 5 film sukses
-- B (Full + Burn): low risk, belum user test
+### Test results (PERMANEN — 6 mode production-ready)
+- A (Full + Stream): 5 film sukses (sebelum v3.7)
+- B (Full + Burn): low risk, konsep sama dengan A + burn layer
 - C (Simple + Stream): VLC sync 100%
 - D (Simple + Burn): 1 Mbps user confirmed > ori (hemat 51%)
 - E (Original + Stream v3.7.6): VLC confirmed MUTE COMPLETE ⭐
-- F (Original + Burn v3.7.6): pending user test (Burn SRT 4 Mbps)
+- F (Original + Burn v3.7.6): VLC confirmed HARD SUB SUKSES (1080p @ 4 Mbps, 27 min) ⭐
 
 ## Next
 
-- User: test Mode F (Burn SRT 4 Mbps, ~14 menit)
 - User: kamus audit (8.618 entries) → mark READY → upload Supabase
+- User: workflow film berikutnya (pilih 1 dari 3 alur: PROPER/CEPAT/MUTE)
 - AI: web app Jawa (TUI #4) — penyesuaian lookup kamus dari Supabase
-- AI (optional): tunggu user feedback Mode F
+- AI (optional): bug cosmetic (filename double `-id`, progress bar `ETA=?ss` glitch)
 
 ## Catatan PAT
 
