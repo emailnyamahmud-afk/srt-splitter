@@ -4539,3 +4539,56 @@ Sesi berikutnya: kirim PAT baru (atau setup SSH key untuk permanent solution).
 - Pipeline dubbing Mandarin→Indonesia production-ready untuk skala besar
 
 User verdict: "capek tapi terbayar" — sesi produktif, fix selesai total.
+
+---
+Task ID: mix-tui-v3.8-logo-overlay
+Agent: main
+Task: User request — tambah logo PNG overlay untuk Mode Burn SRT (B/D/F)
+
+User context:
+- "jika aku ada logo png (transparan), apakah logo bisa di burn? (bareng saat burn srt subs)?"
+- "moder burn srt sekaligus juga ikut masukan logo"
+
+Discussion + user pilih:
+- Auto-detect (default) → logo.png di ~/Dubbing/ atau HDD/input/
+- Top-right (10px margin)
+- Pakai size asli (no resize)
+- Burn SRT saja (Mode B/D/F)
+
+Implementasi v3.8:
+1. Function baru find_logo_file():
+   - Auto-detect di HDD/input/logo.png (priority) atau ~/Dubbing/logo.png (fallback)
+   - Return path kalau ada, None kalau tidak
+
+2. Function baru build_logo_overlay_filter():
+   - Build overlay filter: [logo_idx:v]format=rgba[logo_input];[vsub][logo_input]overlay=main_w-overlay_w-10:10[vout]
+   - Top-right position (10px margin)
+   - PNG transparan: format=rgba handle alpha channel
+
+3. Step 4.9 NEW (muncul kalau burn_srt):
+   - Auto-detect logo
+   - Print info: "Logo ditemukan" atau "Tidak ada logo di default path"
+   - Hint: "Untuk burn logo, taruh file 'logo.png' di ~/Dubbing/ atau HDD/input/"
+
+4. Update subtitle_filter build:
+   - Kalau logo ada: subtitle output = [vsub] (bukan [vout]), logo overlay output = [vout]
+   - Kalau logo tidak ada: subtitle output = [vout] (existing behavior)
+
+5. Update cmd build Mode B/D/F:
+   - Mode B + logo: 4 input (mp4 + sfx + dub + logo), logo index = 3
+   - Mode D + logo: 3 input (mp4 + dub + logo), logo index = 2
+   - Mode F + logo: 5 input (mp4 + sfx + dub + envelope + logo), logo index = 4
+   - filter_complex chain: audio_filter + subtitle + overlay
+
+6. Update ringkasan Step 6:
+   - Tambah Logo bar kalau ada: "Logo : logo.png"
+
+Verify:
+- python3 -m py_compile scripts/mix-tui.py → OK
+- Backward compatible: kalau tidak ada logo → existing behavior (no change)
+
+Stage Summary:
+- v3.8: Logo overlay untuk Mode Burn SRT (B/D/F) — auto-detect, top-right, size asli
+- User tinggal taruh file "logo.png" di ~/Dubbing/ atau HDD/input/
+- FFmpeg overlay filter handle PNG transparan (format=rgba, alpha channel)
+- Pending: user test dengan logo.png → VLC confirm logo muncul di top-right

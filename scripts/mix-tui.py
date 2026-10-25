@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-mix-tui.py v3.7.6 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn)
+mix-tui.py v3.8 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn + logo overlay)
 
 Workflow produksi (4 fase, bersih — sesuai v6 yt-dlp + edge-tts-tui):
   Fase 1: yt-dlp v6      → {name}.mp4 (video) + {name}-audio.mp3 (via yt-dlp convert) + {name}.id.srt
@@ -675,6 +675,67 @@ def generate_duck_envelope_wav(segments, total_dur, output_path, duck_value=0.0,
         return None
 
 
+def find_logo_file():
+    """Cari logo PNG di lokasi default (auto-detect).
+
+    v3.8 NEW: Logo overlay untuk Mode Burn SRT (B/D/F).
+    Auto-detect di lokasi berikut (urutan prioritas):
+      1. HDD/input/logo.png (kalau HDD ter-colok)
+      2. ~/Dubbing/logo.png (SSD)
+
+    User tinggal taruh file "logo.png" di salah satu lokasi.
+    Logo akan di-burn ke top-right video (10px margin).
+
+    Returns:
+      Path logo PNG (string) kalau ditemukan, None kalau tidak ada.
+    """
+    candidates = []
+
+    # Priority 1: HDD/input/logo.png (kalau HDD ter-colok)
+    try:
+        from config import INPUT_DIR, ensure_hdd
+        if ensure_hdd():
+            candidates.append(INPUT_DIR / 'logo.png')
+    except Exception:
+        pass
+
+    # Priority 2: ~/Dubbing/logo.png (SSD)
+    candidates.append(Path.home() / 'Dubbing' / 'logo.png')
+
+    for path in candidates:
+        if path.is_file():
+            return str(path)
+    return None
+
+
+def build_logo_overlay_filter(logo_path, logo_input_index, base_filter_output_label, final_output_label):
+    """Build FFmpeg overlay filter untuk burn logo PNG ke video.
+
+    v3.8 NEW: Chain subtitle + logo overlay untuk Mode Burn SRT.
+    Logo di-burn ke top-right (10px margin dari kanan atas).
+
+    Args:
+      logo_path: path ke file logo PNG
+      logo_input_index: index input logo di FFmpeg cmd (mis. 3 untuk input ke-4)
+      base_filter_output_label: label output dari filter sebelumnya (mis. 'vsub' dari subtitle)
+      final_output_label: label output final (mis. 'vout')
+
+    Returns:
+      Tuple (overlay_filter_str, logo_path):
+        - overlay_filter_str: string filter overlay untuk di-chain ke filter_complex
+        - logo_path: path logo (untuk dijadikan input FFmpeg)
+    """
+    if not logo_path or not os.path.isfile(logo_path):
+        return None, None
+
+    # overlay=main_w-overlay_w-10:10 → top-right, 10px margin
+    overlay_filter = (
+        f'[{logo_input_index}:v]format=rgba[logo_input];'
+        f'[{base_filter_output_label}][logo_input]overlay=main_w-overlay_w-10:10[{final_output_label}]'
+    )
+    return overlay_filter, logo_path
+
+
 def main():
     print_banner()
 
@@ -903,8 +964,25 @@ def main():
             video_bitrate = prompt_video_bitrate()
             print(f'  ✓ {video_bitrate}')
             print()
-    # else: Mode A/C/E (Stream copy) — tidak ada Step 4.6/4.7/4.8 (no SRT needed for A/C, SRT only for duck in E)
-    # Catatan: Mode E (Original + Stream copy) sudah dapat SRT di Step 4.6 untuk ducking, no need Step 4.7/4.8
+
+            # Step 4.9: Logo auto-detect (v3.8 NEW, muncul kalau burn_srt)
+            # User tinggal taruh file "logo.png" di ~/Dubbing/ atau HDD/input/
+            # Logo akan di-burn ke top-right video (10px margin)
+            # Kalau tidak ada → skip logo (subtitle only, existing behavior)
+            print(f'▶ Step 4.9/{total}: Logo detection (auto-detect)')
+            logo_path = find_logo_file()
+            if logo_path:
+                logo_size_kb = os.path.getsize(logo_path) / 1024
+                print(f'  ✓ Logo ditemukan: {logo_path} ({logo_size_kb:.1f} KB)')
+                print(f'    Posisi: top-right (10px margin dari kanan atas)')
+                print(f'    Logo akan di-burn bersama subtitle')
+            else:
+                print(f'  ℹ Tidak ada logo di default path')
+                print(f'    Untuk burn logo, taruh file "logo.png" di ~/Dubbing/ atau HDD/input/')
+            print()
+    # else: Mode A/C/E (Stream copy) — tidak ada Step 4.6/4.7/4.8/4.9 (no SRT needed for A/C, SRT only for duck in E)
+    # Catatan: Mode E (Original + Stream copy) sudah dapat SRT di Step 4.6 untuk ducking, no need Step 4.7/4.8/4.9
+
 
     # Step 5: Output — default derive dari MP4 prefix (Bug #1 fix)
     # v3.4: suffix berdasarkan mode input (Full/Simple) + mode output (Stream/Burn)
@@ -1026,6 +1104,9 @@ def main():
         # v3.5: tampilkan video bitrate kalau burn SRT (Mode B/D/F)
         bitrate_display = f'{video_bitrate} (target bitrate)'
         print(f'║  Bitrate  : {bitrate_display[:46]:<46}║')
+    # v3.8: tampilkan Logo bar kalau ada (Mode B/D/F dengan logo)
+    if logo_path:
+        print(f'║  Logo     : {os.path.basename(logo_path)[:46]:<46}║')
     print(f'║  MP4 dur  : {format_duration(mp4_dur):<46}║')
     if not simple_mode:
         # Original mode: label durasi = 'MP3 ori dur'; Full mode: 'SFX dur'
@@ -1280,40 +1361,102 @@ def main():
 
         # Filter: [0:v] + subtitles → [vout]
         # subtitles filter butuh file path (escape), force_style untuk styling
-        subtitle_filter = f"[0:v]subtitles='{srt_escaped}':force_style='{force_style}'[vout]"
+        # v3.8: kalau ada logo, chain subtitle + overlay → output label 'vout' (tetap sama)
+        if logo_path:
+            # v3.8: Chain subtitle + logo overlay
+            # [0:v]subtitles='...'[vsub];[vsub][logo_idx:v]overlay=top-right[vout]
+            # Logo input index tergantung mode (Mode F: 4, Mode B/D: 3 atau 2)
+            subtitle_filter = f"[0:v]subtitles='{srt_escaped}':force_style='{force_style}'[vsub]"
+            # Logo overlay akan ditambah di cmd build (perlu tahu index input logo)
+        else:
+            # No logo → subtitle only (existing behavior)
+            subtitle_filter = f"[0:v]subtitles='{srt_escaped}':force_style='{force_style}'[vout]"
 
         if not simple_mode:
             # Full + Burn SRT (B) / Original + Burn SRT (F): 3 input + audio_filter + subtitle_filter
             # v3.7.3: Original mode butuh input ke-4 (envelope WAV) untuk sidechain compress
-            # v3.7.3: Hapus filter_file_path logic (diganti envelope WAV approach)
+            # v3.8: kalau ada logo, tambah 1 input lagi (logo PNG)
             if original_mode and envelope_wav_path:
                 # Mode F dengan envelope WAV → 4 input (mp4 + sfx + dub + envelope)
-                filter_complex = audio_filter + ';' + subtitle_filter
-                cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub, '-i', envelope_wav_path,
+                # v3.8: + logo → 5 input (mp4 + sfx + dub + envelope + logo)
+                if logo_path:
+                    # Mode F + logo: 5 input
+                    # Input index: 0=mp4, 1=sfx, 2=dub, 3=envelope, 4=logo
+                    overlay_filter, _ = build_logo_overlay_filter(
+                        logo_path, logo_input_index=4,
+                        base_filter_output_label='vsub', final_output_label='vout'
+                    )
+                    filter_complex = audio_filter + ';' + subtitle_filter + ';' + overlay_filter
+                    cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
+                           '-i', envelope_wav_path, '-i', logo_path,
+                           '-filter_complex', filter_complex,
+                           '-map', '[vout]', '-map', '[aout]',
+                           '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
+                           '-c:a', 'aac', '-b:a', '192k',
+                           '-movflags', '+faststart', output]
+                else:
+                    # Mode F tanpa logo → 4 input (existing)
+                    filter_complex = audio_filter + ';' + subtitle_filter
+                    cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub, '-i', envelope_wav_path,
+                           '-filter_complex', filter_complex,
+                           '-map', '[vout]', '-map', '[aout]',
+                           '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
+                           '-c:a', 'aac', '-b:a', '192k',
+                           '-movflags', '+faststart', output]
+            else:
+                # Mode B (Full) atau Mode F tanpa envelope (fallback) → 3 input
+                # v3.8: + logo → 4 input (mp4 + sfx + dub + logo)
+                if logo_path:
+                    # Mode B + logo: 4 input
+                    # Input index: 0=mp4, 1=sfx, 2=dub, 3=logo
+                    overlay_filter, _ = build_logo_overlay_filter(
+                        logo_path, logo_input_index=3,
+                        base_filter_output_label='vsub', final_output_label='vout'
+                    )
+                    filter_complex = audio_filter + ';' + subtitle_filter + ';' + overlay_filter
+                    cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
+                           '-i', logo_path,
+                           '-filter_complex', filter_complex,
+                           '-map', '[vout]', '-map', '[aout]',
+                           '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
+                           '-c:a', 'aac', '-b:a', '192k',
+                           '-movflags', '+faststart', output]
+                else:
+                    # Mode B tanpa logo → 3 input (existing)
+                    filter_complex = audio_filter + ';' + subtitle_filter
+                    cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
+                           '-filter_complex', filter_complex,
+                           '-map', '[vout]', '-map', '[aout]',
+                           '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
+                           '-c:a', 'aac', '-b:a', '192k',
+                           '-movflags', '+faststart', output]
+        else:
+            # Simple + Burn SRT (D): 2 input + subtitle_filter only (no audio filter)
+            # Audio dub map langsung (index 1), tidak ada audio processing
+            # v3.8: + logo → 3 input (mp4 + dub + logo)
+            if logo_path:
+                # Mode D + logo: 3 input
+                # Input index: 0=mp4, 1=dub, 2=logo
+                overlay_filter, _ = build_logo_overlay_filter(
+                    logo_path, logo_input_index=2,
+                    base_filter_output_label='vsub', final_output_label='vout'
+                )
+                filter_complex = subtitle_filter + ';' + overlay_filter
+                cmd = [ffmpeg, '-y', '-i', mp4, '-i', audio_dub, '-i', logo_path,
                        '-filter_complex', filter_complex,
-                       '-map', '[vout]', '-map', '[aout]',
+                       '-map', '[vout]', '-map', '1:a',
                        '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
                        '-c:a', 'aac', '-b:a', '192k',
                        '-movflags', '+faststart', output]
             else:
-                # Mode B (Full) atau Mode F tanpa envelope (fallback) → 3 input
-                filter_complex = audio_filter + ';' + subtitle_filter
-                cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
+                # Mode D tanpa logo → 2 input (existing)
+                filter_complex = subtitle_filter
+                cmd = [ffmpeg, '-y', '-i', mp4, '-i', audio_dub,
                        '-filter_complex', filter_complex,
-                       '-map', '[vout]', '-map', '[aout]',
+                       '-map', '[vout]', '-map', '1:a',
                        '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
                        '-c:a', 'aac', '-b:a', '192k',
                        '-movflags', '+faststart', output]
-        else:
-            # Simple + Burn SRT (D): 2 input + subtitle_filter only (no audio filter)
-            # Audio dub map langsung (index 1), tidak ada audio processing
-            filter_complex = subtitle_filter
-            cmd = [ffmpeg, '-y', '-i', mp4, '-i', audio_dub,
-                   '-filter_complex', filter_complex,
-                   '-map', '[vout]', '-map', '1:a',
-                   '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
-                   '-c:a', 'aac', '-b:a', '192k',
-                   '-movflags', '+faststart', output]
 
         print(f'Command: ffmpeg ... -c:v h264_videotoolbox -b:v {video_bitrate} -c:a aac -b:a 192k {output}')
         print(f'  SRT path : {srt_path}')
