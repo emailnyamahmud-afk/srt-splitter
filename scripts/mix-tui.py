@@ -708,10 +708,12 @@ def find_logo_file():
     return None
 
 
-def build_logo_overlay_filter(logo_path, logo_input_index, base_filter_output_label, final_output_label):
+def build_logo_overlay_filter(logo_path, logo_input_index, base_filter_output_label, final_output_label,
+                               logo_size=100):
     """Build FFmpeg overlay filter untuk burn logo PNG ke video.
 
     v3.8 NEW: Chain subtitle + logo overlay untuk Mode Burn SRT.
+    v3.8.2: Tambah scale filter (default 100px, user feedback "agak terlalu besar").
     Logo di-burn ke top-right (10px margin dari kanan atas).
 
     Args:
@@ -719,6 +721,7 @@ def build_logo_overlay_filter(logo_path, logo_input_index, base_filter_output_la
       logo_input_index: index input logo di FFmpeg cmd (mis. 3 untuk input ke-4)
       base_filter_output_label: label output dari filter sebelumnya (mis. 'vsub' dari subtitle)
       final_output_label: label output final (mis. 'vout')
+      logo_size: ukuran logo dalam pixel (default 100, sebelumnya 150 — user feedback "terlalu besar")
 
     Returns:
       Tuple (overlay_filter_str, logo_path):
@@ -728,9 +731,12 @@ def build_logo_overlay_filter(logo_path, logo_input_index, base_filter_output_la
     if not logo_path or not os.path.isfile(logo_path):
         return None, None
 
+    # v3.8.2: scale logo ke logo_size px (default 100, dari 150 — user feedback "terlalu besar")
+    # format=rgba → preserve transparan alpha channel
+    # scale=100:100 → resize logo ke 100x100 px (regardless of original file size)
     # overlay=main_w-overlay_w-10:10 → top-right, 10px margin
     overlay_filter = (
-        f'[{logo_input_index}:v]format=rgba[logo_input];'
+        f'[{logo_input_index}:v]format=rgba,scale={logo_size}:{logo_size}[logo_input];'
         f'[{base_filter_output_label}][logo_input]overlay=main_w-overlay_w-10:10[{final_output_label}]'
     )
     return overlay_filter, logo_path
@@ -975,6 +981,7 @@ def main():
                 logo_size_kb = os.path.getsize(logo_path) / 1024
                 print(f'  ✓ Logo ditemukan: {logo_path} ({logo_size_kb:.1f} KB)')
                 print(f'    Posisi: top-right (10px margin dari kanan atas)')
+                print(f'    Size: 100x100 px (v3.8.2: scale di FFmpeg, sebelumnya 150px)')
                 print(f'    Logo akan di-burn bersama subtitle')
             else:
                 print(f'  ℹ Tidak ada logo di default path')
