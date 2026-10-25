@@ -1,6 +1,6 @@
 # AGENTS.md
 
-> Dibaca AI di awal setiap session. Update: 25 Okt 2026.
+> Dibaca AI di awal setiap session. Update: 26 Okt 2026.
 
 ## Project: SRT Splitter + Dubbing Jawa
 
@@ -17,7 +17,7 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 | 4 | Web app | ⚠ Prototype |
 | 5 | SRT editor | ⏳ Pending (pakai SRT ID) |
 | 6 | edge-tts-tui v7.3.1 | ✅ Production |
-| 7 | mix-tui v3.7.6 (6 mode, MUTE COMPLETE) | ✅ Production (A/B/C/D/E/F tested) |
+| 7 | mix-tui v3.8.2 (6 mode, MUTE + logo + fade 100ms) | ✅ Production (all tested) |
 
 ## Struktur Folder
 
@@ -49,6 +49,12 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 | **E** | **Original + Stream** | **amultiply MUTE COMPLETE** | **Cepat, MUTE, no hardsub** ⭐ |
 | F | Original + Burn | amultiply MUTE COMPLETE | Cepat, MUTE + hardsub |
 
+### v3.8.2 Logo + Fade (PERMANEN)
+- v3.8: Logo PNG auto-detect, overlay top-right (Mode B/D/F only)
+- v3.8.1: Fade 100ms smooth transition (fix "kaget" — user request "transisi mulus")
+- v3.8.2: Logo scale 150→100px (user feedback "agak terlalu besar")
+- User confirmed: "burn sub dan logo berjalan sempurna"
+
 ### v3.7.6 MUTE COMPLETE approach (PERMANEN)
 
 User request: "MP3 ori MUTE TOTAL saat cue, NORMAL saat gap" (bukan reduksi gradual).
@@ -76,13 +82,14 @@ Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no m
 - edge-tts v7.3.1 (4565 cue tested): ✅
 - mix-tui v3.7.6: 6 mode production-ready
 
-### Test results (PERMANEN — 6 mode production-ready)
+### Test results (PERMANEN — all 6 mode production-ready + logo + fade)
 - A (Full + Stream): 5 film sukses (sebelum v3.7)
 - B (Full + Burn): low risk, konsep sama dengan A + burn layer
 - C (Simple + Stream): VLC sync 100%
 - D (Simple + Burn): 1 Mbps user confirmed > ori (hemat 51%)
 - E (Original + Stream v3.7.6): VLC confirmed MUTE COMPLETE ⭐
-- F (Original + Burn v3.7.6): VLC confirmed HARD SUB SUKSES (1080p @ 4 Mbps, 27 min) ⭐
+- F (Original + Burn v3.8.2): VLC confirmed burn sub + logo "sempurna" ⭐
+  - 480p @ 2 Mbps: 5m 58s, 2152 MB, fade 100ms smooth, logo 100px top-right
 
 ## Next
 

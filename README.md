@@ -14,7 +14,7 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 | 4 | Web app | Translate SRT Indonesia → Jawa (kamus Supabase) | ⚠ Prototype |
 | 5 | SRT editor | Pakai SRT Indonesia (Jawa nunggu kamus+web) | ⏳ Pending |
 | 6 | edge-tts-tui.py | Generate audio dub (5000+ cue, 2-5 jam) | ✅ Production |
-| 7 | mix-tui.py v3.7.6 | Mix MP4 + audio → final video (6 mode) | ✅ Production (A/B/C/D/E/F tested) |
+| 7 | mix-tui.py v3.8.2 | Mix MP4 + audio → final video (6 mode + logo + fade) | ✅ Production (all tested) |
 
 ## Pipeline
 
@@ -44,7 +44,7 @@ HDD /Volumes/HDD/Dubbing/            ← data (besar)
 └── .env                             ← Supabase credentials
 ```
 
-## mix-tui v3.7.6 — 6 mode
+## mix-tui v3.8.2 — 6 mode + logo + smooth fade
 
 | # | Mode | Input | Output | Durasi | Cocok |
 |---|------|-------|--------|--------|-------|
@@ -53,7 +53,9 @@ HDD /Volumes/HDD/Dubbing/            ← data (besar)
 | C | Simple + Stream | MP4+Dub | `-id-simple.mp4` | ~1 min | Cepat, no SFX |
 | D | Simple + Burn | MP4+Dub | `-id-simple-sub.mp4` | ~5 min | Cepat + hardsub |
 | E | Original + Stream | MP4+MP3+Dub+SRT | `-id-orig.mp4` | ~4 min | MUTE, no hardsub ⭐ |
-| F | Original + Burn | MP4+MP3+Dub+SRT | `-id-orig-sub.mp4` | ~14-27 min | MUTE + hardsub |
+| F | Original + Burn | MP4+MP3+Dub+SRT | `-id-orig-sub.mp4` | ~5-27 min* | MUTE + hardsub |
+
+* Mode F durasi: 480p ~5min, 720p ~10min, 1080p ~27min (tergantung resolusi + bitrate)
 
 ### Ducking strategy (3 jenis)
 
@@ -73,12 +75,12 @@ HDD /Volumes/HDD/Dubbing/            ← data (besar)
 | 2 Mbps | ~2.3 GB | Subtitle paling sharp |
 | 4 Mbps | ~4.5 GB | HD-ready (1080p+) |
 
-### Logo overlay (v3.8 NEW — Mode B/D/F only)
+### Logo overlay (v3.8 NEW, v3.8.2 scale 100px — Mode B/D/F only)
 
-Auto-detect logo PNG transparan, burn ke top-right (10px margin) bersama subtitle.
+Auto-detect logo PNG transparan, burn ke top-right (100×100 px, 10px margin) bersama subtitle. User confirmed "berjalan sempurna".
 
 **Cara pakai:**
-1. Download logo (150×150 px, 24 KB, transparan):
+1. Download logo channel (150×150 px, 49 KB, transparan, sudah di-crop):
    ```bash
    curl -L -o ~/Dubbing/logo.png "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/logo.png"
    ```

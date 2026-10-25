@@ -12,7 +12,7 @@ Python TUI untuk workflow dubbing + kamus Jawa.
 | 4 | Web app | ⚠ Prototype |
 | 5 | SRT editor | ⏳ Pending (pakai SRT ID) |
 | 6 | edge-tts-tui.py v7.3.1 | ✅ Production |
-| 7 | mix-tui.py v3.7.6 | ✅ Production (A/B/C/D/E/F tested) |
+| 7 | mix-tui.py v3.8.2 | ✅ Production (all tested + logo + fade) |
 
 ## Pipeline (3 alur)
 
@@ -68,7 +68,7 @@ yt-dlp → edge-tts → mix Original (E/F)
 |------|-----|
 | tutor-demucs-setup.md | Setup Demucs M1 MPS + kapan perlu/skip |
 
-## mix-tui v3.7.6 — 6 mode
+## mix-tui v3.8.2 — 6 mode + logo + smooth fade
 
 | # | Mode | Ducking | Durasi |
 |---|------|---------|--------|
@@ -77,7 +77,7 @@ yt-dlp → edge-tts → mix Original (E/F)
 | C | Simple + Stream | no ducking | ~1 min |
 | D | Simple + Burn | no ducking | ~5 min |
 | **E** | **Original + Stream** | **amultiply MUTE** ⭐ | ~4 min |
-| F | Original + Burn | amultiply MUTE | ~14-27 min |
+| F | Original + Burn | amultiply MUTE | ~5-27 min* |
 
 ### Bitrate (Mode B/D/F, burn SRT)
 
