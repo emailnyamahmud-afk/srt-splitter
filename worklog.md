@@ -4076,3 +4076,64 @@ Stage Summary:
 - Test sandbox confirm Dub dominant saat cue (2x lebih dominan dari MP3 ori)
 - User harus pull v3.7.4 (output ke HDD) + v3.7.5 (cascade fix)
 - Test ulang Mode E dengan S9-ORI → seharusnya Dub dominant, MP3 ori background
+
+---
+Task ID: mix-tui-v3.7.6-mute-complete-amultiply
+Agent: main
+Task: User feedback v3.7.5 — "jangan over engineer dengan reduksi 50%, bahkan 20% tetap terdengar"
+
+User request (clear):
+- MP3 ori MUTE COMPLETE saat dub bicara (volume 0, silent total)
+- Bukan reduksi gradual (50%, 67%, 80%)
+- Sederhana, no over-engineering
+
+Audit code v3.7.5:
+- Pakai sidechain compress (dynamic range compressor)
+- Sidechain compress desainnya untuk reduksi GRADUAL, BUKAN mute hard
+- Bahkan ratio max 20 + cascade tetap menyisakan volume
+- Wrong tool for the job
+
+Solution v3.7.6: amultiply + inverted envelope
+- amultiply = sample-by-sample multiplication
+- MP3_ori * envelope_inverted = MUTE saat cue (envelope=0), NORMAL saat gap (envelope=1)
+- TRUE MUTE (volume 0), bukan reduksi gradual
+- Sederhana, no over-engineering
+
+Implementasi:
+1. generate_duck_envelope_wav default INVERTED:
+   - duck_value = 0.0 (MUTE saat cue, sebelumnya 1.0 untuk sidechain trigger)
+   - normal_value = 1.0 (NORMAL saat gap, sebelumnya 0.0)
+   - fade_ms = 1 (sebelumnya 10ms, sekarang fast transition untuk hard mute)
+   - sample_rate = 44100 (match audio)
+2. audio_filter Original mode ganti:
+   - Hapus sidechaincompress (cascade 2-stage)
+   - Pakai amultiply:
+     [1:a]aformat=mono[mp3_fmt]; [3:a]aformat=mono[env_fmt];
+     [mp3_fmt][env_fmt]amultiply[sfx_muted];  ← sample-by-sample multiply
+     [2:a]volume=1[dub];
+     [sfx_muted][dub]amix[aout]
+3. Update info print: 'v3.7.6: amultiply hard mute (MUTE COMPLETE saat cue, NORMAL saat gap)'
+
+Test sandbox v3.7.6 (1 cue 2-8s, 100ms windows):
+- Gap (0-2s, 8-10s): MP3 ori mag 50572515 (NORMAL penuh)
+- Mid-cue (2.1s-7.8s): MP3 ori mag 31 (TRUE MUTE, floating noise only)
+- Boundary (2.0s, 7.9s): MP3 ori mag 200K (fade 1ms transition, wajar)
+- ✅ MUTE COMPLETE sesuai user request
+
+Test dengan 10 cues (real dialog pattern):
+- Mid-cue: MP3 ori mag 154-739 (TRUE MUTE)
+- Boundary: MP3 ori mag 47M-53M (fade transition, wajar)
+- Gap: MP3 ori mag 252M (NORMAL penuh)
+- 79.5% overall reduction (karena window 500ms overlap boundary)
+- Tapi di mid-cue: TRUE MUTE (mag 154)
+
+Verify:
+- python3 -m py_compile scripts/mix-tui.py → OK
+- amultiply filter supported FFmpeg (exit 0)
+- MUTE COMPLETE confirmed via FFT analysis
+
+Stage Summary:
+- v3.7.6: amultiply + inverted envelope = TRUE MUTE saat cue
+- Solve user complaint "MP3 ori makin keras" — sekarang MUTE TOTAL
+- Sederhana, no over-engineering, sesuai user request
+- User bisa test ulang Mode E dengan S9-ORI → seharusnya MP3 ori MUTE saat cue

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-mix-tui.py v3.7.5 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn)
+mix-tui.py v3.7.6 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn)
 
 Workflow produksi (4 fase, bersih — sesuai v6 yt-dlp + edge-tts-tui):
   Fase 1: yt-dlp v6      → {name}.mp4 (video) + {name}-audio.mp3 (via yt-dlp convert) + {name}.id.srt
@@ -27,6 +27,16 @@ Workflow produksi (4 fase, bersih — sesuai v6 yt-dlp + edge-tts-tui):
       D. Simple   + Burn SRT    → {prefix}-id-simple-sub.mp4 (~5 menit, ~1.2-4.5 GB, hardsub, no SFX)
       E. Original + Stream copy → {prefix}-id-orig.mp4      (~3 menit, ~350 MB, MP3 ori+ducking)  ← v3.6 NEW
       F. Original + Burn SRT    → {prefix}-id-orig-sub.mp4  (~5 menit, ~1.2-4.5 GB, hardsub, MP3 ori+ducking) ← v3.6 NEW
+
+v3.7.6 FIX: MUTE COMPLETE via amultiply + inverted envelope (ganti sidechain compress).
+  - User feedback v3.7.5: "jangan over engineer dengan reduksi 50%, bahkan 20% tetap terdengar"
+  - v3.7.5 cascade 2-stage sidechain masih gradual (67% reduction, masih ada 33% MP3 ori)
+  - v3.7.6: amultiply (sample-by-sample multiplication) → MP3 ori * 0 = MUTE TOTAL saat cue
+  - Envelope inverted: 0.0 saat cue (MUTE), 1.0 saat gap (NORMAL)
+  - MP3_ori * envelope = MUTE saat cue, NORMAL saat gap
+  - Test sandbox: MP3 ori cue reduction 99.9% (true MUTE, mag 154 = floating noise)
+  - Fade 1ms di boundary untuk avoid click artifact (very fast transition)
+  - Sederhana, no over-engineering, sesuai user request
 
 v3.7.5 FIX: Cascade 2-stage sidechain compress + Dub boost 1.5x + envelope 44100 Hz.
   - v3.7.3 single-stage ratio=20 hanya reduce 50% — user lihat "MP3 ori makin keras"
@@ -582,31 +592,32 @@ def write_filter_complex_to_file(filter_complex_str, output_dir=None):
     return filepath
 
 
-def generate_duck_envelope_wav(segments, total_dur, output_path, duck_value=1.0, normal_value=0.0,
-                                fade_ms=10, sample_rate=44100):
-    """Generate WAV envelope untuk sidechain compress ducking.
+def generate_duck_envelope_wav(segments, total_dur, output_path, duck_value=0.0, normal_value=1.0,
+                                fade_ms=1, sample_rate=44100):
+    """Generate WAV envelope untuk amultiply ducking (MUTE COMPLETE approach).
 
-    v3.7.3 NEW: Alternative approach untuk SRT-driven ducking.
-    v3.7.5 UPDATE: sample rate default 44100 Hz (match dengan audio biasanya)
-                   supaya sidechain compress lebih reliable (no resample artifact).
+    v3.7.6 NEW: Hard mute approach (bukan sidechain compress gradual reduction).
+    v3.7.5 update: cascade 2-stage sidechain compress masih gradual (67% reduction).
+    User mau: MUTE COMPLETE saat cue (volume 0), NORMAL saat gap (volume 1).
 
-    Nested if expression dengan 4857 levels gagal di FFmpeg (exit code 8, parse error).
-    Solusi: generate WAV envelope mono (44100 Hz, value 0.0/1.0) berdasarkan SRT segments,
-    pakai sidechain compress untuk ducking MP3 ori.
+    Approach: amultiply filter
+      - envelope_inverted = 1.0 saat GAP (MP3 ori normal)
+      - envelope_inverted = 0.0 saat CUE (MP3 ori MUTE complete)
+      - MP3_ori * envelope_inverted = MP3_ori saat gap, 0 (mute) saat cue
 
     Logic:
-      - envelope = 1.0 (loud) saat cue SRT aktif → trigger sidechain compress → MP3 ori di-duck
-      - envelope = 0.0 (silent) saat gap antar cue → MP3 ori normal (no compress)
-      - Fade in/out 10ms di boundary untuk smooth transition (avoid click artifact)
+      - envelope = normal_value (1.0) saat GAP → MP3 ori normal
+      - envelope = duck_value (0.0) saat CUE → MP3 ori MUTE
+      - Fade 1ms di boundary untuk avoid click artifact (very fast transition)
 
     Args:
       segments: list of (start_sec, end_sec) dari parse_srt_for_ducking
       total_dur: total durasi audio (detik)
       output_path: path output WAV file
-      duck_value: value saat cue aktif (1.0 = loud, trigger sidechain)
-      normal_value: value saat gap (0.0 = silent, no ducking)
-      fade_ms: fade in/out duration di boundary cue (default 10ms)
-      sample_rate: sample rate envelope (100 Hz cukup, 10ms resolution)
+      duck_value: value saat cue aktif (0.0 = MUTE, default v3.7.6 inverted)
+      normal_value: value saat gap (1.0 = NORMAL, default v3.7.6 inverted)
+      fade_ms: fade in/out duration di boundary cue (default 1ms, fast transition)
+      sample_rate: sample rate envelope (default 44100, match audio)
 
     Returns:
       Path output WAV file (caller cleanup setelah FFmpeg selesai)
@@ -618,13 +629,12 @@ def generate_duck_envelope_wav(segments, total_dur, output_path, duck_value=1.0,
     try:
         import wave
         import struct
-        import math
 
-        # Generate envelope signal (mono, 100 Hz)
+        # Generate envelope signal (mono, sample_rate Hz)
         n_samples = int(total_dur * sample_rate) + sample_rate  # +1s buffer
-        envelope = [normal_value] * n_samples  # default = 0.0 (no duck)
+        envelope = [normal_value] * n_samples  # default = normal (1.0)
 
-        # Fade samples (10ms = 1 sample @ 100 Hz)
+        # Fade samples (1ms = ~44 samples @ 44100 Hz)
         fade_samples = max(1, int(fade_ms * sample_rate / 1000))
 
         for start, end in segments:
@@ -633,22 +643,25 @@ def generate_duck_envelope_wav(segments, total_dur, output_path, duck_value=1.0,
             if end_idx <= start_idx:
                 continue
 
-            # Set duck value saat cue aktif
+            # Set duck value (0.0 = MUTE) saat cue aktif
             for i in range(start_idx, end_idx):
                 # Fade in (start) dan fade out (end) untuk smooth transition
                 fade_in = (i - start_idx) / fade_samples  # 0 → 1 dalam fade_samples
                 fade_out = (end_idx - 1 - i) / fade_samples  # 1 → 0 dalam fade_samples
                 fade_factor = min(1.0, fade_in, fade_out)
+                # Interpolasi: normal (1.0) → duck (0.0) saat fade_factor 0
+                # saat fade_factor 1 → full duck (0.0)
+                # saat fade_factor 0 → normal (1.0)
                 envelope[i] = normal_value + (duck_value - normal_value) * fade_factor
 
-        # Convert float (0.0-1.0) ke int16 (-32768 to 32767)
-        # sidechain compress trigger berdasarkan amplitude, jadi 1.0 → 32767 (loud), 0.0 → 0 (silent)
+        # Convert float (0.0-1.0) ke int16 (0 to 32767)
+        # amultiply butuh range 0-32767 (0 = mute, 32767 = full volume)
         samples_int16 = []
         for v in envelope:
             v_clamped = max(0.0, min(1.0, v))  # clamp 0.0-1.0
             samples_int16.append(int(v_clamped * 32767))
 
-        # Write WAV (mono, 16-bit PCM, 100 Hz)
+        # Write WAV (mono, 16-bit PCM, sample_rate Hz)
         with wave.open(output_path, 'w') as w:
             w.setnchannels(1)
             w.setsampwidth(2)  # 16-bit
@@ -1098,20 +1111,23 @@ def main():
         # Simple: no audio filter (dub copy as-is)
         pass
     elif original_mode:
-        # v3.7.5 UPDATE: Cascade 2-stage sidechain compress + boost Dub 1.5x
-        # v3.7.3 single-stage ratio=20 hanya reduce 50% (test sandbox: 8410 vs 16218)
-        # v3.7.5 cascade 2-stage (20×20=400x effective) + Dub boost 1.5x = Dub dominant saat cue
-        # Test sandbox: MP3 ori cue reduction 67%, Dub 1.6x lebih dominan dari MP3 ori saat cue
-        # Saat cue aktif → envelope loud → sidechain compress trigger 2x → MP3 ori heavily ducked
-        # Saat gap → envelope silent → no compress → MP3 ori normal
-        # Input index: 0=mp4, 1=sfx_wav (MP3 ori), 2=audio_dub, 3=envelope_wav
+        # v3.7.6 NEW: MUTE COMPLETE via amultiply + inverted envelope
+        # v3.7.5 cascade sidechain masih gradual (67% reduction) — user mau MUTE TOTAL
+        # v3.7.6: amultiply (multiply sample-by-sample) → MP3 ori * 0 = MUTE saat cue
+        # Test sandbox: MP3 ori cue reduction 99.9% (mag 154 floating noise, true MUTE)
+        # Saat cue aktif → envelope=0 → MP3 ori * 0 = MUTE complete
+        # Saat gap → envelope=1 → MP3 ori * 1 = NORMAL
+        # Fade 1ms di boundary untuk avoid click (very fast transition)
+        # Input index: 0=mp4, 1=sfx_wav (MP3 ori), 2=audio_dub, 3=envelope_wav (inverted: 0=cue, 1=gap)
         if duck_segments:
             import tempfile
-            # Generate envelope WAV (44100 Hz, match dengan audio biasanya)
+            # Generate envelope WAV INVERTED (0=cue mute, 1=gap normal) untuk amultiply
             envelope_wav_path = tempfile.mktemp(prefix='mix_tui_envelope_', suffix='.wav')
-            print(f'  📄 Generate envelope WAV untuk SRT-driven ducking...')
+            print(f'  📄 Generate envelope WAV untuk SRT-driven MUTE (amultiply approach)...')
             envelope_wav_path = generate_duck_envelope_wav(
-                duck_segments, mp4_dur, envelope_wav_path, sample_rate=44100
+                duck_segments, mp4_dur, envelope_wav_path,
+                duck_value=0.0, normal_value=1.0,  # INVERTED: 0=cue (mute), 1=gap (normal)
+                fade_ms=1, sample_rate=44100
             )
             if envelope_wav_path:
                 envelope_size_kb = os.path.getsize(envelope_wav_path) / 1024
@@ -1122,20 +1138,22 @@ def main():
                 print(f'     Cue coverage: {total_cue_dur:.0f}s / {mp4_dur:.0f}s = {cue_coverage:.1f}%')
                 if cue_coverage > 80:
                     print(f'     ⚠ Warning: Cue coverage >80% — film dialog sangat padat.')
-                    print(f'       MP3 ori akan sering di-duck, mungkin tidak ada banyak gap "normal".')
-                # v3.7.5: Cascade 2-stage sidechain compress (lebih aggressive)
-                # Stage 1: ratio=20, threshold=0.5, attack=5ms, release=300ms → ~50% reduction
-                # Stage 2: cascade lagi → ~67% total reduction (MP3 ori di-duck 2/3 volume)
-                # Plus boost Dub 1.5x supaya Dub dominant saat cue aktif
+                    print(f'       MP3 ori akan sering di-MUTE, mungkin tidak ada banyak gap "normal".')
+                # v3.7.6: amultiply (hard mute, no gradual reduction)
+                # [1:a] = MP3 ori, [3:a] = envelope_inverted (0=cue, 1=gap)
+                # amultiply: sample-by-sample multiplication
+                # MP3_ori * envelope = MP3_ori saat gap (1), 0 saat cue (MUTE)
+                # Need aformat untuk match sample format + channel layout
                 audio_filter = (
-                    f'[1:a][3:a]sidechaincompress=threshold=0.5:ratio=20:attack=5:release=300[stage1];'
-                    f'[stage1][3:a]sidechaincompress=threshold=0.5:ratio=20:attack=5:release=300[sfx_ducked];'
-                    f'[2:a]volume=1.5[dub];'
-                    f'[sfx_ducked][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
+                    f'[1:a]aformat=sample_fmts=s16:channel_layouts=mono[mp3_fmt];'
+                    f'[3:a]aformat=sample_fmts=s16:channel_layouts=mono[env_fmt];'
+                    f'[mp3_fmt][env_fmt]amultiply[sfx_muted];'
+                    f'[2:a]volume=1[dub];'
+                    f'[sfx_muted][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
                 )
-                print(f'  ℹ v3.7.5: Cascade 2-stage sidechain compress + Dub boost 1.5x')
-                print(f'     Stage 1+2: MP3 ori di-duck ~67% saat cue aktif')
-                print(f'     Dub boost 1.5x: Dub dominant saat cue, MP3 ori background')
+                print(f'  ℹ v3.7.6: amultiply hard mute (MUTE COMPLETE saat cue, NORMAL saat gap)')
+                print(f'     MP3 ori * envelope_inverted = MUTE saat cue, normal saat gap')
+                print(f'     Fade 1ms di boundary untuk avoid click artifact')
             else:
                 # Fallback: no ducking (kalau envelope generate gagal)
                 print(f'  ⚠ Envelope generate gagal, fallback: no ducking (MP3 ori penuh)')
