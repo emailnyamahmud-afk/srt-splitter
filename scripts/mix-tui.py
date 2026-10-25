@@ -476,29 +476,33 @@ def parse_srt_for_ducking(srt_path, lead_ms=100, tail_ms=100):
     return segments
 
 
-def build_srt_ducking_filter(segments, duck_volume=0.0625, total_dur=0):
+def build_srt_ducking_filter(segments, duck_volume=0.0625, total_dur=0, output_dir=None):
     """Build FFmpeg volume filter expression dari SRT duck segments.
 
     v3.7 NEW: Build dynamic volume expression berdasarkan SRT timestamps.
+    v3.7.2 FIX: Kalau expression >LIMIT_ARG_BYTES (~100 KB), tulis ke file temp
+               supaya tidak kena OS arg limit (~128 KB). Pakai -filter_complex_script.
+
     Format: if(between(t,4.9,6.6),0.0625,if(between(t,23.1,25.2),0.0625,...,1.0))
 
     Args:
       segments: list of (start_sec, end_sec) tuples dari parse_srt_for_ducking
       duck_volume: volume saat duck (0.0625 = -24 dB, hampir mute)
       total_dur: total durasi MP4 (untuk info display only)
+      output_dir: directory untuk file temp (kalau None → pakai default tempdir)
 
     Returns:
-      FFmpeg filter string untuk [1:a] → [sfx_ducked] (volume dipakai ke MP3 ori).
-      Kalau segments kosong → return volume=1 (no ducking).
+      Tuple (filter_inline, filter_file):
+        - filter_inline: string untuk dipakai langsung di -filter_complex (kalau <= limit)
+        - filter_file: path file temp berisi full filter_complex (kalau > limit, dipakai dengan -filter_complex_script)
+
+      Salah satu akan None. Caller harus cek:
+        if filter_file: pakai -filter_complex_script filter_file
+        else: pakai -filter_complex filter_inline
     """
     if not segments:
         # No SRT cues → no ducking, MP3 ori penuh
-        return '[1:a]volume=1[sfx_ducked]'
-
-    # Warning kalau cues sangat banyak (FFmpeg expression bisa besar)
-    if len(segments) > 500:
-        print(f'  ⚠ Warning: {len(segments)} cues di SRT. FFmpeg expression akan besar.')
-        print(f'    Mungkin perlu waktu lebih lama untuk parse. Tapi tetap jalan.')
+        return '[1:a]volume=1[sfx_ducked]', None
 
     # Build nested if expression, mulai dari default 1.0 (volume normal)
     # Iterasi dari cue TERAKHIR → FIRST supaya nested if benar
@@ -509,7 +513,52 @@ def build_srt_ducking_filter(segments, duck_volume=0.0625, total_dur=0):
         e = round(end, 3)
         expr = f'if(between(t,{s},{e}),{duck_volume},{expr})'
     # eval=frame: evaluate per-frame (setiap audio sample chunk) untuk smooth transition
-    return f"[1:a]volume='{expr}':eval=frame[sfx_ducked]"
+    volume_filter = f"[1:a]volume='{expr}':eval=frame[sfx_ducked]"
+
+    # OS arg limit ~128 KB, pakai threshold 100 KB (margin safety)
+    # Kalau expression > limit → tulis ke file temp, pakai -filter_complex_script
+    ARG_LIMIT_BYTES = 100 * 1024  # 100 KB threshold
+
+    if len(volume_filter) > ARG_LIMIT_BYTES:
+        # Expression terlalu besar untuk arg → tulis ke file temp
+        # File akan berisi FULL filter_complex (audio + subtitle kalau ada)
+        # Tapi function ini hanya return volume_filter, caller gabung dengan audio mix
+        # Jadi return (None, volume_filter) — caller handle file writing
+        if len(segments) > 500:
+            print(f'  ℹ Filter expression besar ({len(volume_filter) // 1024} KB, {len(segments)} cues).')
+            print(f'    Pakai -filter_complex_script (file temp) supaya tidak kena OS arg limit.')
+        return None, volume_filter  # filter_inline None, filter_file = filter string (caller write to file)
+    else:
+        # Inline OK
+        return volume_filter, None
+
+
+def write_filter_complex_to_file(filter_complex_str, output_dir=None):
+    """Tulis filter_complex ke file temp untuk -filter_complex_script.
+
+    v3.7.2 NEW: Handle filter expression yang melebihi OS arg limit (~128 KB).
+    Tulis ke file temp, pakai -filter_complex_script filename.
+
+    Args:
+      filter_complex_str: full filter_complex string (audio + subtitle)
+      output_dir: directory untuk file temp (kalau None → pakai tempfile.gettempdir())
+
+    Returns:
+      Path file temp (caller pakai dengan -filter_complex_script <path>).
+      Caller WAJIB hapus file setelah FFmpeg selesai.
+    """
+    import tempfile
+    if output_dir is None:
+        output_dir = tempfile.gettempdir()
+    # Generate unique filename
+    fd, filepath = tempfile.mkstemp(prefix='mix_tui_filter_', suffix='.txt', dir=output_dir)
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8') as f:
+            f.write(filter_complex_str)
+    except Exception as e:
+        os.unlink(filepath)
+        raise e
+    return filepath
 
 
 def main():
@@ -913,26 +962,46 @@ def main():
     # Audio filter build — v3.7: 3 jenis ducking strategy
     # - Simple mode: dub copy as-is (no filter, no ducking)
     # - Full mode: sidechain compress (existing, ducking_db dari prompt)
-    # - Original mode: SRT-driven ducking (volume dynamic expression dari SRT Mandarin cues)
+    # - Original mode: SRT-driven ducking (volume dynamic expression dari SRT Indonesia cues)
+    # v3.7.2 FIX: kalau SRT-driven filter >OS arg limit (~100 KB), tulis ke file temp
+    #             pakai -filter_complex_script filename (no arg length limit)
     audio_filter = None
+    sfx_duck_filter_str = None  # v3.7.2: filter string besar (kalau None = inline OK)
     if simple_mode:
         # Simple: no audio filter (dub copy as-is)
         pass
     elif original_mode:
         # v3.7 NEW: Original mode pakai SRT-driven ducking
-        # SRT Mandarin → duck segments → volume filter expression
-        # MP3 ori (index 1) di-duck saat cue Mandarin aktif (volume 6.25% = -24 dB)
+        # v3.7.2 FIX: handle filter expression >OS arg limit via file temp
+        # SRT Indonesia → duck segments → volume filter expression
+        # MP3 ori (index 1) di-duck saat cue SRT aktif (volume 6.25% = -24 dB)
         # Dub (index 2) tetap volume 1 (normal)
         # Mix: [sfx_ducked][dub]amix → [aout]
         if duck_segments:
             # Build SRT-driven volume filter untuk MP3 ori
             duck_volume = 0.0625  # 6.25% = -24 dB (strong, hampir mute)
-            sfx_duck_filter = build_srt_ducking_filter(duck_segments, duck_volume=duck_volume)
-            audio_filter = (
-                f'{sfx_duck_filter};'
+            # v3.7.2: function return tuple (inline_filter, big_filter_str)
+            # inline_filter = None jika filter >OS arg limit (pakai file temp)
+            # big_filter_str = None jika filter inline OK (cukup kecil)
+            sfx_duck_inline, sfx_duck_big = build_srt_ducking_filter(
+                duck_segments, duck_volume=duck_volume
+            )
+            # audio_mix_part: volume dub + amix (selalu inline, ukuran kecil)
+            audio_mix_part = (
                 f'[2:a]volume=1[dub];'
                 f'[sfx_ducked][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
             )
+            if sfx_duck_inline is not None:
+                # Inline OK (filter kecil) → gabung jadi 1 audio_filter string
+                audio_filter = f'{sfx_duck_inline};{audio_mix_part}'
+                # sfx_duck_filter_str stays None (tidak butuh file temp)
+            else:
+                # v3.7.2 FIX: Filter besar (>100 KB) → tidak bisa inline (OS arg limit)
+                # audio_filter hanya berisi audio_mix_part (volume dub + amix)
+                # sfx_duck_big akan ditulis ke file temp + pakai -filter_complex_script
+                # Caller (cmd build) akan handle ini
+                audio_filter = audio_mix_part  # tanpa sfx_duck (ditambah di cmd build via file)
+                sfx_duck_filter_str = sfx_duck_big  # set outer scope variable untuk cmd build
         else:
             # No SRT cues → no ducking (fallback, sama dengan ducking_db=0)
             audio_filter = (
@@ -959,21 +1028,47 @@ def main():
                 f'[ducked_sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
             )
 
+    # v3.7.2: filter_file_path — kalau sfx_duck_filter_str besar, tulis full filter_complex ke file
+    # Pakai -filter_complex_script filename (no OS arg limit)
+    filter_file_path = None
+    if sfx_duck_filter_str:
+        # Filter besar (>100 KB) → tulis ke file temp
+        # Full filter_complex = sfx_duck_filter_str + audio_filter (mix part)
+        # audio_filter sudah berisi: [2:a]volume=1[dub];[sfx_ducked][dub]amix...[aout]
+        # sfx_duck_filter_str sudah berisi: [1:a]volume='...'[sfx_ducked]
+        # Combine: sfx_duck_filter_str + ';' + audio_filter (yang sudah ada [sfx_ducked] reference)
+        filter_file_path = write_filter_complex_to_file(
+            f'{sfx_duck_filter_str};{audio_filter}'
+        )
+        print(f'  📄 Filter ditulis ke file temp: {filter_file_path}')
+        print(f'     Size: {os.path.getsize(filter_file_path) // 1024} KB (>{100} KB threshold)')
+        print(f'     Pakai -filter_complex_script (no OS arg limit)')
+
     if not burn_srt:
         # === Stream copy (3 menit, no SRT) — Mode A/C/E ===
         if not simple_mode:
             # Full + Stream copy (A) / Original + Stream copy (E): 3 input + audio filter
-            # Audio filter: sidechain compress — ducking MP3 ori/no_vocals saat dub bicara
-            filter_complex = audio_filter
-            cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
-                   '-filter_complex', filter_complex,
-                   '-map', '0:v', '-map', '[aout]',
-                   '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
-                   '-movflags', '+faststart', output]
-            print(f'Command: ffmpeg ... -c:v copy -c:a aac -b:a 192k {output}')
+            # v3.7.2: kalau filter_file_path set, pakai -filter_complex_script (file temp)
+            # Kalau tidak, pakai -filter_complex (inline string)
+            if filter_file_path:
+                # Mode E dengan filter besar → pakai file script
+                cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
+                       '-filter_complex_script', filter_file_path,
+                       '-map', '0:v', '-map', '[aout]',
+                       '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
+                       '-movflags', '+faststart', output]
+                print(f'Command: ffmpeg ... -filter_complex_script {os.path.basename(filter_file_path)} -c:v copy -c:a aac -b:a 192k {output}')
+            else:
+                # Mode A atau Mode E dengan filter kecil → inline
+                filter_complex = audio_filter
+                cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
+                       '-filter_complex', filter_complex,
+                       '-map', '0:v', '-map', '[aout]',
+                       '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
+                       '-movflags', '+faststart', output]
+                print(f'Command: ffmpeg ... -c:v copy -c:a aac -b:a 192k {output}')
         else:
             # Simple + Stream copy (C): 2 input (mp4 + dub), no filter, dub copy as-is
-            # Map langsung audio dub (index 1) ke output, video copy
             cmd = [ffmpeg, '-y', '-i', mp4, '-i', audio_dub,
                    '-map', '0:v', '-map', '1:a',
                    '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
@@ -1043,13 +1138,32 @@ def main():
         if not simple_mode:
             # Full + Burn SRT (B) / Original + Burn SRT (F): 3 input + audio_filter + subtitle_filter
             # Audio filter: sidechain compress untuk ducking (MP3 ori/no_vocals saat dub bicara)
-            filter_complex = audio_filter + ';' + subtitle_filter
-            cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
-                   '-filter_complex', filter_complex,
-                   '-map', '[vout]', '-map', '[aout]',
-                   '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
-                   '-c:a', 'aac', '-b:a', '192k',
-                   '-movflags', '+faststart', output]
+            # v3.7.2: kalau filter_file_path set (Original mode + filter besar), tulis full filter_complex ke file
+            # Full filter_complex = sfx_duck_filter_str + audio_filter + ';' + subtitle_filter
+            if filter_file_path:
+                # Mode F dengan filter besar → tulis ulang file dengan subtitle_filter ditambah
+                # File sebelumnya berisi sfx_duck_filter_str + audio_filter (sudah ditulis di atas)
+                # Tapi sekarang perlu + subtitle_filter juga → rewrite file
+                full_filter_complex = f'{sfx_duck_filter_str};{audio_filter};{subtitle_filter}'
+                # Rewrite file dengan full filter (overwrite existing file)
+                with open(filter_file_path, 'w', encoding='utf-8') as f:
+                    f.write(full_filter_complex)
+                cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
+                       '-filter_complex_script', filter_file_path,
+                       '-map', '[vout]', '-map', '[aout]',
+                       '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
+                       '-c:a', 'aac', '-b:a', '192k',
+                       '-movflags', '+faststart', output]
+                print(f'Command: ffmpeg ... -filter_complex_script {os.path.basename(filter_file_path)} -c:v h264_videotoolbox -b:v {video_bitrate} -c:a aac -b:a 192k {output}')
+            else:
+                # Mode B atau Mode F dengan filter kecil → inline
+                filter_complex = audio_filter + ';' + subtitle_filter
+                cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
+                       '-filter_complex', filter_complex,
+                       '-map', '[vout]', '-map', '[aout]',
+                       '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
+                       '-c:a', 'aac', '-b:a', '192k',
+                       '-movflags', '+faststart', output]
         else:
             # Simple + Burn SRT (D): 2 input + subtitle_filter only (no audio filter)
             # Audio dub map langsung (index 1), tidak ada audio processing
@@ -1090,7 +1204,20 @@ def main():
                 print(f'Partial output dihapus: {output}')
             except OSError:
                 pass
+        # v3.7.2: cleanup file temp filter (kalau ada)
+        if filter_file_path and os.path.isfile(filter_file_path):
+            try:
+                os.unlink(filter_file_path)
+            except OSError:
+                pass
         sys.exit(130)
+
+    # v3.7.2: cleanup file temp filter setelah FFmpeg selesai (success atau fail)
+    if filter_file_path and os.path.isfile(filter_file_path):
+        try:
+            os.unlink(filter_file_path)
+        except OSError:
+            pass
 
     print()
     if exit_code == 0 and os.path.isfile(output):

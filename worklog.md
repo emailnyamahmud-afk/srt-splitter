@@ -3856,3 +3856,57 @@ Stage Summary:
 - Workflow Original mode sekarang lebih simple: download 1 SRT Indonesia saja via yt-dlp
 - Mode E (Original + Stream copy) sekarang butuh SRT (untuk duck), sebelumnya v3.7 pakai SRT Mandarin terpisah
 - Mode F (Original + Burn) cuma 1 SRT (sebelumnya v3.7 pakai 2 SRT terpisah)
+
+---
+Task ID: mix-tui-v3.7.2-filter-file-fix
+Agent: main
+Task: User test v3.7.1 gagal — exit code 234 (OS arg limit untuk filter 171 KB)
+
+User error:
+- Mode F (Original + Burn SRT) dengan S9-ORI
+- SRT Indonesia 4857 cues → filter expression ~171 KB
+- FFmpeg exit code 234 — gagal langsung, tidak ada progress
+- "Argument list too long" error OS
+
+Root cause (verified di sandbox):
+- Linux/macOS ada OS arg limit ~128 KB untuk command line argument
+- 4857 cues × ~35 char/cue = ~171 KB filter string
+- Melebihi limit → FFmpeg command tidak bisa dijalankan OS
+- Test lokal: `OSError: [Errno 7] Argument list too long: 'ffmpeg'`
+
+Fix (v3.7.2):
+1. Function build_srt_ducking_filter — return tuple (inline, big):
+   - Kalau filter <= 100 KB threshold → return (inline_filter, None)
+   - Kalau filter > 100 KB threshold → return (None, big_filter_str)
+2. Function baru write_filter_complex_to_file:
+   - Tulis filter_complex string ke file temp
+   - Return path file (caller pakai dengan -filter_complex_script)
+3. Update audio_filter build untuk Original mode:
+   - Track sfx_duck_filter_str (None jika inline OK, set jika filter besar)
+   - Kalau inline OK → audio_filter = full inline (sfx_duck + dub + amix)
+   - Kalau filter besar → audio_filter = dub + amix only (sfx_duck via file)
+4. Update cmd build:
+   - Kalau sfx_duck_filter_str set → tulis full filter_complex ke file temp
+   - Mode E (Stream copy): file berisi sfx_duck + audio_mix_part
+   - Mode F (Burn SRT): rewrite file dengan tambah subtitle_filter
+   - Pakai -filter_complex_script filename (no OS arg limit)
+5. Cleanup file temp setelah FFmpeg selesai (success atau fail atau KeyboardInterrupt)
+
+Verify:
+- python3 -m py_compile scripts/mix-tui.py → OK
+- Test build_srt_ducking_filter dengan 3 cues → inline path (inline 136 chars, big None)
+- Test build_srt_ducking_filter dengan 4857 cues → file path (inline None, big 175712 chars / 171 KB)
+- Test write_filter_complex_to_file → file created, content verified
+- Test FFmpeg -filter_complex_script dengan dummy file → exit code 0 (works)
+
+Catatan (PERMANEN):
+- OS arg limit ~128 KB di Linux/macOS untuk command line argument
+- FFmpeg support -filter_complex_script filename untuk baca filter dari file
+- Untuk filter besar (>100 KB), wajib pakai file mode (threshold 100 KB dengan margin safety)
+- Cleanup file temp setelah FFmpeg selesai supaya tidak buang disk
+
+Stage Summary:
+- v3.7.2: fix OS arg limit dengan -filter_complex_script + file temp
+- 4857 cues → filter 171 KB → file temp mode → FFmpeg bisa parse
+- User bisa test ulang Mode E/F dengan S9-ORI (4857 cues)
+- Mode A/B/C/D tidak ada perubahan (filter kecil, inline OK)
