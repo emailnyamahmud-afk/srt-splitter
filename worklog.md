@@ -4592,3 +4592,125 @@ Stage Summary:
 - User tinggal taruh file "logo.png" di ~/Dubbing/ atau HDD/input/
 - FFmpeg overlay filter handle PNG transparan (format=rgba, alpha channel)
 - Pending: user test dengan logo.png → VLC confirm logo muncul di top-right
+
+---
+Task ID: mix-tui-v3.8-logo-crop-fix
+Agent: main
+Task: User feedback — logo crop dulu, jangan asal resize
+
+User feedback:
+"lihat dulu logo, jangan asal resize. mungkin crop karena logo ditengah.
+di burn nanti aku mau logo di kanan atas"
+
+Logo analysis (PIL alpha channel):
+- Original: 1024x1024 px, RGBA, 1044 KB
+- Kontent (alpha >10): 678x669 px di bounding box (174-851, 130-798)
+- Padding transparan: 33.8% X, 34.7% Y (logo di tengah, padding besar)
+
+Bug v3.8 awal (commit 8e4931f):
+- Langsung resize 1024x1024 → 150x150 (square)
+- Padding 34% ikut di-resize → kontent logo jadi kecil (logo "tengah" dengan padding transparan)
+
+Fix (commit f89bef1):
+- CROP dulu ke bounding box kontent: 1024x1024 → 685x678 px (buang padding transparan)
+- RESIZE: 685x678 → 150x150 px (kontent penuh, no padding)
+- File size: 49.2 KB (95.3% reduction dari 1.1 MB)
+- RGBA preserve transparan
+
+Result:
+- Logo 150x150 px, 49.2 KB
+- Kontent logo penuh (no padding buang-buang)
+- Cocok untuk top-right channel logo (10px margin)
+
+Stage Summary:
+- v3.8 logo crop + resize (sesuai user request)
+- User akan test dengan logo baru
+- Pending: VLC feedback untuk confirm logo muncul OK di top-right
+
+---
+Task ID: mix-tui-v3.8-mode-f-logo-test-running
+Agent: main
+Task: User test v3.8 Mode F dengan logo (Kepala-Perampok, 480p, 1 Mbps)
+
+Test setup:
+- Film: Kepala-Perampok (480p, 2j 18m 41s, 4448 cues)
+- Mode: F (Original + Burn SRT, 1 Mbps hemat)
+- Logo: 24.3 KB (lama, tanpa crop — user belum download yang baru)
+- Output: /Volumes/HDD/Dubbing/mix/Kepala-Perampok-id-orig-sub.mp4
+
+Verifikasi v3.8 fitur:
+- ✅ Step 4.9 Logo detection: "Logo ditemukan: /Users/macbookpro/Dubbing/logo.png (24.3 KB)"
+- ✅ Logo info: "Posisi: top-right (10px margin)" + "Logo akan di-burn bersama subtitle"
+- ✅ Ringkasan: "Logo : logo.png" (Logo bar muncul)
+- ✅ Mode F + logo: 5 input (mp4 + sfx + dub + envelope + logo)
+- ✅ Envelope: 716 MB (4448 cues, 8322s)
+- ✅ Cue coverage: 73.7% (normal)
+- ✅ Progress: 6.0% speed=34.0x ETA=3m 50s (480p @ 1 Mbps cepat)
+
+Observasi:
+- Logo yang dipakai user = 24.3 KB (lama, tanpa crop, commit 8e4931f)
+- Logo baru (sudah crop, 49 KB, commit f89bef1) belum di-download user
+- Test ini tetap valid untuk verify logo feature jalan
+- Untuk logo lebih besar (kontent penuh), user perlu download logo baru
+
+Performance confirm user insight:
+- 480p @ 1 Mbps: speed 34x, total ~4 menit
+- User statement kemarin confirmed: "480, 720, 1080 = sangat cepat dibawah 5 menit"
+
+Expected VLC test:
+- Logo muncul top-right (10px margin)
+- Logo transparan (RGBA, alpha channel)
+- Logo size 150x150 px (tapi kontent kecil karena padding 34%)
+- Subtitle bottom (Indonesia, bottom:20)
+- Audio MUTE TOTAL (amultiply v3.7.6)
+- Video 480p @ 1 Mbps (hemat)
+
+Stage Summary:
+- v3.8 Mode F + logo running, 6% progress, ETA ~4 menit
+- Logo feature auto-detect + overlay bekerja (no FFmpeg error)
+- Test ini verify: v3.8 logo infrastructure works
+- Pending: user download logo baru (crop, 49 KB) untuk test 2 dengan logo lebih besar
+- Pending: VLC feedback untuk confirm logo + subtitle + MUTE all OK
+
+---
+Task ID: mix-tui-v3.8.1-fade-smooth-transition
+Agent: main
+Task: User feedback — transisi silent→bersuara "bikin kaget", minta smooth fade
+
+User feedback:
+"catatan mix = suara asli = transisi dari silent ke bersuara = kadang masih
+bikin kaget = bisakah dibuat tiap transisi di sisi suara asli = fade = agar
+transisi mulus. Apakah ada solusi? sejauh ini 90% ok, cuma transisinya yg
+bikin kaget."
+
+Root cause:
+- v3.7.6/3.8 pakai fade_ms=1 (hard switch, 1ms transition)
+- Transisi cue→gap (mute→normal) langsung loncat dari 0 ke 1
+- User dengar "kaget" karena MP3 ori tiba-tiba muncul full volume
+
+Test sandbox (cue 1-3s, gap 3-5s, transition di t=3.0):
+- 1ms (v3.7.6): RMS 6950 → 17644 (HARD switch, loncat)
+- 100ms: RMS 6950 → 8381 → 14206 → 17644 (smooth ramp 100ms)
+- 300ms: RMS 6950 → 11766 → 14032 → 16430 → 17644 (very smooth 300ms)
+- 500ms: RMS 7013 → 11318 → 14017 → 16909 → 17644 (cinematic 500ms)
+
+Fix v3.8.1: fade_ms 1 → 100 (default)
+- 100ms = sweet spot (smooth, tidak terlalu lambat)
+- Fade in (cue start: gap → mute) + fade out (cue end: mute → gap) keduanya 100ms
+- Apply ke generate_duck_envelope_wav default parameter
+- Update call site di main() + print message
+
+Trade-off:
+- 100ms fade = 0.1s MP3 ori mulai naik sebelum cue berakhir
+- Untuk dialog pendek (<200ms), fade overlap → cue tidak full mute
+- Tapi untuk film real (cue rata-rata 2-3s), 100ms fade tidak signifikan
+
+Verify:
+- python3 -m py_compile → OK
+- Test sandbox confirm smooth transition (100ms ramp, no hard switch)
+- Backward compatible: Mode A/B/C/D tidak ada perubahan
+
+Stage Summary:
+- v3.8.1: fade 100ms smooth transition (user request "transisi mulus")
+- User akan test ulang → VLC verify transisi tidak kaget
+- Mode E/F v3.8.1 seharusnya: MUTE COMPLETE + smooth fade + logo (kalau ada)
