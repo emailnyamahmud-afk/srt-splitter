@@ -2,49 +2,44 @@
 
 Python TUI untuk workflow dubbing + kamus Jawa.
 
-## 7 TUI — Status (24 Okt 2026)
+## 7 TUI
 
-| # | TUI | Status | Test |
-|---|-----|--------|------|
-| 1 | yt-dlp-tui.py | ✅ Production | 5+ film tested |
-| 2 | demucs-tui.py | ✅ Production | Kepala-Perampok ~32 menit |
-| 3 | kamus-tui.py (v16) | ✅ Production (audit) | 8.618 entries terbaca |
-| 4 | Web app | ⚠ Prototype | Live di Vercel |
-| 5 | SRT editor | ⏳ Pending | Pakai SRT Indonesia sementara |
-| 6 | edge-tts-tui.py | ✅ Production | 4565 cue tested |
-| 7 | mix-tui.py v3.7.1 | ✅ Production-ready | A/B/C/D tested; E/F baru v3.7.1 (SRT-driven, 1 SRT) |
+| # | TUI | Status |
+|---|-----|--------|
+| 1 | yt-dlp-tui.py v6 (MP3) | ✅ Production |
+| 2 | demucs-tui.py (M1 MPS) | ✅ Production |
+| 3 | kamus-tui.py v16 | ✅ Production (audit) |
+| 4 | Web app | ⚠ Prototype |
+| 5 | SRT editor | ⏳ Pending (pakai SRT ID) |
+| 6 | edge-tts-tui.py v7.3.1 | ✅ Production |
+| 7 | mix-tui.py v3.7.6 | ✅ Production (A/B/C/D/E tested) |
 
-## Pipeline (2 alur produksi)
+## Pipeline (3 alur)
 
-### Simple mode — cepat, dialog dominan
-
-```
-yt-dlp-tui.py → edge-tts-tui.py → mix-tui.py (Mode C/D)
-→ ~350 MB stream copy / ~1.2-2.3 GB burn SRT
-→ sync 1000000%, tidak perlu DaVinci Resolve
-```
-
-Cocok untuk: preview cepat, film dialog dominan, audio dub Jawa yang sudah clean.
-
-### Original mode — v3.7.1, MP4 + MP3 ori + Dub dengan SRT-driven ducking (1 SRT)
+### PROPER — clean sempurna (pakai Demucs)
 
 ```
-yt-dlp-tui.py → edge-tts-tui.py → mix-tui.py (Mode E/F)
-→ ~350 MB stream copy / ~1.2-4.5 GB burn SRT
-→ skip Demucs (~16 menit), ducking SRT-driven (1 SRT Indonesia untuk duck + burn)
+yt-dlp → demucs → edge-tts → mix Full (A/B)
+→ ~350 MB stream / ~2-4.5 GB burn
+→ clean sempurna (no_vocals dari Demucs + ducking sidechain)
 ```
 
-**v3.7.1 REKOMENDASI** (simplifikasi dari v3.7 yang awalnya butuh 2 SRT terpisah). User feedback: SRT Indonesia timestamps identik dengan SRT Mandarin (translation dari source sama), jadi 1 SRT Indonesia cukup untuk ducking + burn. Cocok untuk produksi cepat skala besar (skip Demucs ~16 menit/film). Ducking: setiap cue = MP3 ori volume turun ke 6.25% (-24 dB), SFX/musik latar tetap normal di gap antar dialog.
-
-### Full mode — proper, dengan SFX
+### CEPAT — dialog dominan (skip Demucs, no SFX)
 
 ```
-yt-dlp-tui.py → demucs-tui.py → edge-tts-tui.py → mix-tui.py (Mode A/B)
-→ ~350 MB stream copy / ~1.2-4.5 GB burn SRT
-→ dengan ducking sidechain, musik latar tetap ada (no_vocals dari Demucs)
+yt-dlp → edge-tts → mix Simple (C/D)
+→ ~350 MB stream / ~2-4.5 GB burn
+→ no SFX layer, Dub copy as-is
 ```
 
-Cocok untuk: film action, musik latar penting, produksi "proper".
+### MUTE — skip Demucs, MUTE COMPLETE (v3.7.6)
+
+```
+yt-dlp → edge-tts → mix Original (E/F)
+→ ~1 GB stream / ~4.5 GB burn
+→ MP3 ori MUTE TOTAL saat cue (amultiply + SRT-driven envelope)
+→ SFX/musik latar normal di gap
+```
 
 ## Scripts
 
@@ -52,46 +47,46 @@ Cocok untuk: film action, musik latar penting, produksi "proper".
 
 | Script | Fungsi | Output |
 |--------|--------|--------|
-| yt-dlp-tui.py | Download video/audio + SRT Indonesia | HDD/input/ |
-| demucs-tui.py | Vocal separation (M1 MPS, segment RAM aman) | HDD/demucs/ |
-| edge-tts-tui.py | TTS generation (100% lokal, 5000+ cue) | HDD/tts/ |
-| mix-tui.py v3.7.1 | Final mix video (6 mode + SRT-driven ducking + pilihan bitrate) | HDD/mix/ |
+| yt-dlp-tui.py v6 | Download MP4 + MP3 + SRT Indonesia | HDD/input/ |
+| demucs-tui.py | Vocal separation (M1 MPS) | HDD/demucs/ |
+| edge-tts-tui.py | TTS generation (5000+ cue) | HDD/tts/ |
+| mix-tui.py v3.7.6 | Final mix (6 mode, MUTE COMPLETE) | HDD/mix/ |
 
 ### Kamus
 
 | Script | Fungsi |
 |--------|--------|
-| kamus-tui.py (v16) | TUI editor jv.wiktionary.json |
-| config.py | Base path SSD/HDD + ensure_hdd/kamus + load_env |
+| kamus-tui.py v16 | TUI editor jv.wiktionary.json |
+| config.py | Base path SSD/HDD |
 | upload-supabase.py | Upload kamus terverifikasi ke Supabase |
-| parse-jv-wiktionary-v2.py | Parser jv.wiktionary XML dump |
+| parse-jv-wiktionary-v2.py | Parser jv.wiktionary XML |
 | srt-frequency-analyzer.py | Analisis frekuensi kata SRT |
 
 ### Tutor
 
 | File | Isi |
 |------|-----|
-| tutor-demucs-setup.md | Setup Demucs M1 MPS |
+| tutor-demucs-setup.md | Setup Demucs M1 MPS + kapan perlu/skip |
 
-## mix-tui v3.7.1 — 6 mode (semua REKOMENDASI, A/B proper, C/D/E/F cepat)
+## mix-tui v3.7.6 — 6 mode
 
-| # | Mode Input | Mode Output | Output filename | Status |
-|---|------------|-------------|-----------------|--------|
-| A | Full (MP4+SFX+Dub) | Stream copy | `{prefix}-id-final.mp4` | ✅ REKOMENDASI proper |
-| B | Full (MP4+SFX+Dub) | Burn SRT | `{prefix}-id-final-sub.mp4` | ✅ REKOMENDASI proper + hardsub |
-| C | Simple (MP4+Dub) | Stream copy | `{prefix}-id-simple.mp4` | ✅ REKOMENDASI cepat |
-| D | Simple (MP4+Dub) | Burn SRT | `{prefix}-id-simple-sub.mp4` | ✅ REKOMENDASI cepat + hardsub |
-| E | Original (MP4+MP3 ori+Dub) | Stream copy | `{prefix}-id-orig.mp4` | ✅ REKOMENDASI cepat (v3.7.1 SRT-driven) |
-| F | Original (MP4+MP3 ori+Dub) | Burn SRT | `{prefix}-id-orig-sub.mp4` | ✅ REKOMENDASI cepat + hardsub (v3.7.1 SRT-driven) |
+| # | Mode | Ducking | Durasi |
+|---|------|---------|--------|
+| A | Full + Stream | sidechain | ~3 min |
+| B | Full + Burn | sidechain | ~5 min |
+| C | Simple + Stream | no ducking | ~1 min |
+| D | Simple + Burn | no ducking | ~5 min |
+| **E** | **Original + Stream** | **amultiply MUTE** ⭐ | ~4 min |
+| F | Original + Burn | amultiply MUTE | ~14 min |
 
-### Pilihan bitrate (Mode B & D & F, v3.5 NEW)
+### Bitrate (Mode B/D/F, burn SRT)
 
-| Bitrate | Estimasi size (2 jam) | Status |
-|---------|----------------------|--------|
-| 1 Mbps | ~1.2 GB | ✅ User confirmed: kualitas > ori, hemat 51% |
-| 1.5 Mbps | ~1.8 GB | Default v3.5 (seimbang) |
-| 2 Mbps | ~2.3 GB | v3.4 behavior (subtitle paling sharp) |
-| 4 Mbps | ~4.5 GB | HD-ready (source ori high quality) |
+| Bitrate | Size (2 jam) |
+|---------|-------------|
+| 1 Mbps | ~1.2 GB (hemat, user confirmed > ori) |
+| 1.5 Mbps | ~1.8 GB (default) |
+| 2 Mbps | ~2.3 GB (subtitle sharp) |
+| 4 Mbps | ~4.5 GB (HD-ready) |
 
 ## Install
 
@@ -108,32 +103,18 @@ brew install ffmpeg
 cd ~/Dubbing
 source venv/bin/activate
 
-# === Alur Simple (cepat, dialog dominan) ===
-# 1. Download video + audio + SRT
+# Alur CEPAT + MUTE (skip Demucs)
 python3 yt-dlp-tui.py
-
-# 2. Skip demucs (tidak perlu untuk Simple mode)
-
-# 3. Generate TTS dari SRT
 python3 edge-tts-tui.py
+python3 mix-tui.py     # Mode E (Stream) / F (Burn)
 
-# 4. Mix final video (Mode C: stream copy / Mode D: burn SRT)
-python3 mix-tui.py
-
-# === Alur Full (proper, dengan SFX) ===
-# 1. Download
+# Alur PROPER (pakai Demucs)
 python3 yt-dlp-tui.py
-
-# 2. Separasi vocal (SFX bersih)
 python3 demucs-tui.py
-
-# 3. Generate TTS
 python3 edge-tts-tui.py
+python3 mix-tui.py     # Mode A (Stream) / B (Burn)
 
-# 4. Mix final video (Mode A: stream copy / Mode B: burn SRT)
-python3 mix-tui.py
-
-# === Kamus (parallel, sambil kerja) ===
+# Kamus (parallel)
 python3 kamus-tui.py
 ```
 

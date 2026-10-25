@@ -1,145 +1,97 @@
 # AGENTS.md
 
-> Dibaca AI di awal setiap session. Update terakhir: 24 Okt 2026.
+> Dibaca AI di awal setiap session. Update: 25 Okt 2026.
 
 ## Project: SRT Splitter + Dubbing Jawa
 
 Pipeline: yt-dlp → Demucs → edge-tts → SRT editor (web) → mix-tui
 Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 
-## 7 TUI — Tugas masing-masing (PERMANEN)
+## 7 TUI
 
-| # | TUI | Tugas | Status |
-|---|-----|-------|--------|
-| 1 | yt-dlp-tui.py | Download MP4 + audio MP3 + SRT Indonesia | ✅ Jalan |
-| 2 | demucs-tui.py | Split audio → no_vocals.mp3 (SFX bersih) + vocals (auto-hapus) | ✅ Jalan |
-| 3 | kamus-tui.py | User edit JSON kamus untuk kurasi manual (sebelum masuk DB) | ✅ Jalan (user audit) |
-| 4 | Web app | Translate SRT Indonesia → Jawa (pakai kamus Supabase) | ⚠ Prototype (perlu penyesuaian) |
-| 5 | SRT editor | Sementara pakai SRT Indonesia (SRT Jawa = nunggu kamus + web selesai) | ⏳ Pending |
-| 6 | edge-tts-tui.py | Generate audio dub dari SRT (5000+ cue, 2-5 jam durasi) | ✅ Jalan |
-| 7 | mix-tui.py v3.7.1 | Mix MP4 + audio → final video (6 mode + SRT-driven ducking + bitrate) | ✅ Production-ready (A/B/C/D tested) |
+| # | TUI | Status |
+|---|-----|--------|
+| 1 | yt-dlp-tui v6 (MP3 output) | ✅ Production |
+| 2 | demucs-tui | ✅ Production |
+| 3 | kamus-tui v16 | ✅ Production (audit pending) |
+| 4 | Web app | ⚠ Prototype |
+| 5 | SRT editor | ⏳ Pending (pakai SRT ID) |
+| 6 | edge-tts-tui v7.3.1 | ✅ Production |
+| 7 | mix-tui v3.7.6 (6 mode, MUTE COMPLETE) | ✅ Production (A/B/C/D/E tested) |
 
 ## Struktur Folder
 
-- SSD `~/Dubbing/` — scripts (.py) + venv + jv.wiktionary.json (kecil, cepat)
-- HDD `/Volumes/HDD/Dubbing/` — data besar (input, demucs, tts, mix, .env)
+- SSD `~/Dubbing/` — scripts (.py) + venv + jv.wiktionary.json
+- HDD `/Volumes/HDD/Dubbing/` — data (input, demucs, tts, mix, .env)
 - `config.py` — base path, `ensure_hdd()`, `ensure_kamus()`, `load_env()`
 
 ## Aturan
 
-1. jv.wiktionary.json = SOURCE OF TRUTH. Parsing dari XML dump Wikimedia. DILARANG rusak data.
+1. jv.wiktionary.json = SOURCE OF TRUTH. DILARANG rusak data.
 2. Supabase DB = kamus terverifikasi. User upload manual setelah validasi.
 3. AI DILARANG parsing tolol. Baca manual per batch 100 entries kalau perlu.
-4. AI DILARANG buang data. Kalau ragu → keterangan, bukan hapus.
+4. AI DILARANG buang data. Ragu → keterangan, bukan hapus.
 5. Register (ngoko/krama) = tugas user native Jawa. AI gak bisa.
-6. Standarisasi penulisan = cross-ref jv.wiktionary (penulisan modern).
-7. 1 entry = 1 konsep. Sinonim = koma.
-8. di- = pasif Jawa VALID. Bukan noise. Jangan buang.
-9. Template {{ngoko|krama_form}} = krama pasangan, title = ngoko.
-10. Kalau AI gak yakin → SKIP. Jangan halu.
-11. Data di HDD, scripts di SSD. config.py handle path.
-12. Kalau HDD gak ter-colok, fallback ke cwd.
+6. 1 entry = 1 konsep. Sinonim = koma.
+7. di- = pasif Jawa VALID. Bukan noise.
+8. Kalau AI gak yakin → SKIP. Jangan halu.
+9. Data di HDD, scripts di SSD. config.py handle path.
+10. Ducking ≠ vocal removal. Untuk MUTE → pakai Demucs (Full mode) atau amultiply SRT-driven (Original v3.7.6).
 
-## File Penting
+## mix-tui v3.7.6 — 6 mode
 
-| File | Fungsi |
-|------|--------|
-| `public/jv.wiktionary.json` | 44.585 entries (lembar kerja kamus) |
-| `scripts/config.py` | Base path SSD/HDD |
-| `scripts/kamus-tui.py` | TUI editor kamus (v16) |
-| `scripts/yt-dlp-tui.py` | Download video/audio |
-| `scripts/demucs-tui.py` | Vocal separation |
-| `scripts/edge-tts-tui.py` | TTS generation |
-| `scripts/mix-tui.py` | Final mix video (v3.7.1 — 6 mode + SRT-driven ducking + pilihan bitrate, 1 SRT) |
-| `scripts/upload-supabase.py` | Upload kamus ke DB |
-| `scripts/parse-jv-wiktionary-v2.py` | Parser jv.wiktionary XML |
+| # | Mode | Ducking | Use case |
+|---|------|---------|----------|
+| A | Full + Stream | sidechain compress | Proper, no hardsub |
+| B | Full + Burn | sidechain compress | Proper + hardsub |
+| C | Simple + Stream | no ducking | Cepat, no SFX |
+| D | Simple + Burn | no ducking | Cepat + hardsub |
+| **E** | **Original + Stream** | **amultiply MUTE COMPLETE** | **Cepat, MUTE, no hardsub** ⭐ |
+| F | Original + Burn | amultiply MUTE COMPLETE | Cepat, MUTE + hardsub |
 
-## Status (24 Okt 2026)
+### v3.7.6 MUTE COMPLETE approach (PERMANEN)
+
+User request: "MP3 ori MUTE TOTAL saat cue, NORMAL saat gap" (bukan reduksi gradual).
+Fix: amultiply + inverted envelope WAV (sample-by-sample multiplication).
+- envelope = 0.0 saat cue → MP3 ori × 0 = MUTE TOTAL
+- envelope = 1.0 saat gap → MP3 ori × 1 = NORMAL
+- Fade 1ms di boundary (avoid click)
+- 1 SRT Indonesia untuk ducking + burn subtitle (timestamps identik SRT Mandarin)
+- Test sandbox: MP3 ori mag 31 (TRUE MUTE, floating noise only)
+- User VLC confirm: "mp3 suara ori hening saat dub id bicara"
+
+### v3.7.4 output HDD (PERMANEN)
+
+Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no manual move).
+
+## Status (25 Okt 2026)
 
 ### Kamus
-- jv.wiktionary.json: 44.585 entries, 99% definisi Jawa, 8.618 dgn indo, 2.397 dgn register, 2.165 LENGKAP
-- Bug fix (24 Okt): kamus-tui.py normalisasi field `terjemahan_indo` → `indo` saat load (commit 38e1e9d). 8.618 entries sekarang terbaca di TUI.
-- Supabase: kosong (user upload setelah validasi satu-satu)
-- User akan lanjut validasi manual tiap entry di kamus-tui (besok, jeda istirahat)
+- 44.585 entries, 8.618 dengan indo (cross-ref), 2.165 lengkap 3-field
+- User validasi manual di kamus-tui, mark READY, upload Supabase
 
-### Pipeline produksi (5 film tested, end-to-end sempurna)
-- yt-dlp-tui: ✅ Kepala-Perampok + 5 film lain
-- demucs-tui v2: ✅ segment 4 (RAM aman), WAV→ffmpeg MP3 streaming
-- edge-tts v7.3.1: ✅ 4565 cue tested (Toko-buku, ~3 jam generate)
-- mix-tui v3.3 → v3.4 (24 Okt): 5 film sukses pakai Full + Stream copy
+### Pipeline produksi (5 film tested)
+- yt-dlp v6 MP3 output: ✅
+- demucs v2 (segment 4, MPS): ✅
+- edge-tts v7.3.1 (4565 cue tested): ✅
+- mix-tui v3.7.6 Mode E VLC confirmed MUTE COMPLETE: ✅
 
-### mix-tui v3.7.1 (24 Okt 2026, commit feat v3.7.1 — 1 SRT untuk duck + burn)
-- v3.7.1 SIMPLIFIKASI: 1 SRT Indonesia cukup untuk duck + burn (timestamps identik dengan SRT Mandarin)
-  - User feedback v3.7: "SRT mandarin tak relevan, karena SRT id juga identik timesmapnya"
-  - Fix: hapus Step 4.55 (SRT Mandarin prompt) → 1 SRT Indonesia di Step 4.6 untuk 2 tujuan
-  - Original mode (E/F): SRT Indonesia = sumber ducking window + burn subtitle (kalau Burn SRT)
-  - Mode F (Original + Burn): 1 SRT untuk 2 tujuan (duck + burn), bukan 2 SRT terpisah
-- v3.7 UPDATE: Original mode (E/F) REKOMENDASI lagi (fix v3.6 vokal asli bocor)
-  - User feedback v3.6: "suara asli tetap muncul bahkan saat dub bicara"
-  - Penyebab v3.6: sidechain compress CUMA turunkan volume, TIDAK hilangkan vokal Mandarin
-  - v3.7 fix: pakai SRT Indonesia (timestamps identik SRT Mandarin) sebagai pedoman ducking window
-    - Setiap cue SRT = window duck MP3 ori (volume 6.25% = -24 dB, hampir mute)
-    - Lead 100ms + tail 100ms (smooth transition, avoid click artifact)
-    - SFX/musik latar tetap normal di gap antar dialog (volume 100%)
-  - FFmpeg filter: volume='if(between(t,start,end),0.0625,if(...,1.0))':eval=frame
-- Verdict user final (3 mode semua REKOMENDASI):
-  - Full (A/B) = proper, clean sempurna (REKOMENDASI) — pakai no_vocals dari Demucs
-  - Simple (C/D) = cepat (REKOMENDASI) — no SFX layer
-  - Original (E/F) = cepat + ducking proper (REKOMENDASI v3.7.1) — skip Demucs, SRT-driven duck, 1 SRT
-- 6 kombinasi mode (3 input × 2 output):
-  - ✅ A. Full + Stream copy → `{prefix}-id-final.mp4` (5 film sukses, ~350 MB)
-  - ⚠ B. Full + Burn SRT → `{prefix}-id-final-sub.mp4` (low risk, belum user test)
-  - ✅ C. Simple + Stream copy → `{prefix}-id-simple.mp4` (sync 100%)
-  - ✅ D. Simple + Burn SRT → `{prefix}-id-simple-sub.mp4` (1 Mbps user confirmed > ori)
-  - ⚠ E. Original + Stream copy → `{prefix}-id-orig.mp4` (v3.7.1 baru, user akan test)
-  - ⚠ F. Original + Burn SRT → `{prefix}-id-orig-sub.mp4` (v3.7.1 baru, 1 SRT untuk duck+burn, user akan test)
-- Step 4.6 logic (1 SRT untuk duck + burn):
-  - Original mode + Stream copy (E): SRT untuk ducking saja (no burn, no Step 4.7/4.8)
-  - Original mode + Burn SRT (F): 1 SRT untuk ducking + burn (Step 4.6 + 4.7 + 4.8)
-  - Full/Simple + Burn SRT (B/D): SRT untuk burn saja (Step 4.6 + 4.7 + 4.8)
-  - Full/Simple + Stream copy (A/C): no SRT needed (skip Step 4.6)
-- Ducking strategy 3 jenis:
-  - Full mode: sidechain compress (pilih 6/12/18 dB, default 12)
-  - Original mode v3.7.1: SRT-driven volume expression (-24 dB fixed, lead/tail 100ms, 1 SRT Indonesia)
-  - Simple mode: no ducking (no SFX)
-- v3.5: Step 4.8 — pilih video bitrate untuk Mode B & D & F (burn SRT wajib re-encode):
-  - 1 Mbps → ~1.2 GB/2jam (USER CONFIRMED OK, kualitas > ori, hemat 51%)
-  - 1.5 Mbps → ~1.8 GB/2jam (default v3.5, seimbang)
-  - 2 Mbps → ~2.3 GB/2jam (v3.4 behavior, subtitle paling sharp)
-  - 4 Mbps → ~4.5 GB/2jam (HD-ready, user test S9-ORI 1080p 14m 48s @ 10x speed)
-  - Mode A & C & E (stream copy) tidak perlu prompt — bitrate ikut MP4 ori
-- M1 VideoToolbox 32-33x speed (480p), 10x speed (1080p @ 4 Mbps)
-- User confirmed: pipeline Simple mode end-to-end = sync 1000000%, tidak perlu DaVinci Resolve
+### Test results
+- A (Full + Stream): 5 film sukses
+- B (Full + Burn): low risk, belum user test
+- C (Simple + Stream): VLC sync 100%
+- D (Simple + Burn): 1 Mbps user confirmed > ori (hemat 51%)
+- E (Original + Stream v3.7.6): VLC confirmed MUTE COMPLETE ⭐
+- F (Original + Burn v3.7.6): pending user test (Burn SRT 4 Mbps)
 
-## Ducking — Best Practice (PERMANEN)
+## Next
 
-User pertanyaan: "Apa perlu ducking padahal no_vocals sudah clean dari Demucs?"
+- User: test Mode F (Burn SRT 4 Mbps, ~14 menit)
+- User: kamus audit (8.618 entries) → mark READY → upload Supabase
+- AI: web app Jawa (TUI #4) — penyesuaian lookup kamus dari Supabase
+- AI (optional): tunggu user feedback Mode F
 
-Jawaban: **PERLU untuk Full mode**, TIDAK PERLU untuk Simple mode.
+## Catatan PAT
 
-Alasan:
-- Demucs buang VOKAL ori, tapi SFX/musik latar TETAP ADA di no_vocals.mp3
-- Saat dub Indonesia/Jawa bicara, musik latar bisa mendominasi (terutama scene action/emotional)
-- Ducking = sidechain compress (turunkan volume SFX saat dub aktif) → standard industry
-- Pilihan di mix-tui: 6/12/18 dB (default 12 dB = seimbang) atau 0 dB (no ducking)
-
-Simple mode tidak ada SFX → ducking concept tidak apply → auto-skip.
-
-## Next (lanjut besok)
-
-- User: istirahat dulu, lanjut besok
-- User: validasi kamus-tui (8.618 entries dengan indo) satu per satu, mark READY, upload Supabase
-- User: validasi 231 entries ngoko+krama yang perlu indo manual
-- AI (optional): tunggu user — kalau user mau test Mode B (Full + Burn SRT), low risk
-- AI (optional): fix bug cosmetic
-  - Filename double `-id` di `derive_default_output()` (S1-id.mp4 → S1-id-id-simple-sub.mp4)
-  - Progress bar `ETA=0sss0ss` di akhir encoding (carriage return glitch)
-- AI: web app Jawa (TUI #4) — penyesuaian lookup kamus dari Supabase (setelah kamus audit selesai)
-
-## Catatan PAT (PERMANEN)
-
-PAT user sudah exposure di chat (6x push hari ini). User WAJIB revoke sekarang:
+PAT user exposure di chat (≥21x). User WAJIB revoke sebelum tidur:
 → GitHub → Settings → Developer settings → Personal access tokens → Revoke
-
-Untuk push sesi berikutnya, user kirim PAT baru. Atau setup SSH key di sandbox
-untuk permanent solution (lebih aman dari PAT).
