@@ -73,6 +73,22 @@ HDD /Volumes/HDD/Dubbing/            ← data (besar)
 | 2 Mbps | ~2.3 GB | Subtitle paling sharp |
 | 4 Mbps | ~4.5 GB | HD-ready (1080p+) |
 
+### Logo overlay (v3.8 NEW — Mode B/D/F only)
+
+Auto-detect logo PNG transparan, burn ke top-right (10px margin) bersama subtitle.
+
+**Cara pakai:**
+1. Download logo (150×150 px, 24 KB, transparan):
+   ```bash
+   curl -L -o ~/Dubbing/logo.png "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/public/logo.png"
+   ```
+2. Atau taruh logo custom di salah satu lokasi:
+   - `~/Dubbing/logo.png` (SSD)
+   - `/Volumes/HDD/Dubbing/input/logo.png` (HDD)
+3. Jalankan mix-tui Mode Burn SRT (B/D/F) → logo auto-detect → burn top-right
+
+**Note:** Mode Stream copy (A/C/E) tidak support logo (no re-encode). Logo hanya untuk Mode Burn SRT.
+
 ## Install
 
 ```bash
