@@ -3681,3 +3681,92 @@ Stage Summary:
 - Aku tidak hapus code Original mode supaya tidak perlu re-implement kalau edge case muncul
 - Documentation update: 4 file markdown konsisten dengan verdict user
 - Backward compatible: default Full = workflow 5 film preserved
+
+---
+Task ID: mix-tui-v3.7-srt-driven-ducking
+Agent: main
+Task: User feedback setelah v3.6 test — Original mode vokal asli bocor. Fix dengan SRT-driven ducking.
+
+User context:
+1. Original mode (v3.6 sidechain compress) — vokal Mandarin asli tetap terdengar saat dub bicara
+2. User ingin SRT jadi pedoman ducking: tiap cue = window duck MP3 ori
+3. Lead/tail (mis. 100ms) untuk smooth transition
+4. Mode Original = paling cepat untuk skala produksi banyak (skip Demucs ~16 menit/film)
+5. SRT ducking = SRT Mandarin (ori) — semua cue Mandarin = silent MP3 ori
+6. SRT burn = SRT Indonesia (untuk subtitle)
+
+Implementasi (scripts/mix-tui.py v3.7):
+
+1. Function baru parse_srt_for_ducking(srt_path, lead_ms=100, tail_ms=100):
+   - Parse SRT timestamps → list of (start_sec, end_sec) segments
+   - Apply lead 100ms + tail 100ms (smooth transition)
+   - Sort by start time
+   - Return empty list kalau SRT tidak ada / parse error
+
+2. Function baru build_srt_ducking_filter(segments, duck_volume=0.0625):
+   - Build FFmpeg volume filter expression dari segments
+   - Format: if(between(t,start,end),0.0625,if(...,1.0))
+   - eval=frame: per-frame evaluation untuk smooth transition (avoid click artifact)
+   - Volume saat duck: 0.0625 (6.25% = -24 dB, hampir mute)
+   - Empty segments → volume=1 (no ducking fallback)
+
+3. Step 1.5 update:
+   - 3 pilihan mode input: Full / Original (v3.7 SRT-duck) / Simple — semua REKOMENDASI
+   - Original mode REKOMENDASI lagi (sebelumnya v3.6 NOT RECOMMENDED)
+   - Print info v3.7 SRT-driven ducking + 2 SRT files untuk Mode F
+
+4. Step 4 update:
+   - Simple mode: [SKIP] no ducking (existing)
+   - Original mode v3.7: print info SRT-driven (-24 dB fixed, lead/tail 100ms)
+   - Full mode: prompt ducking level (existing sidechain compress)
+
+5. Step 4.55 NEW (Original mode only):
+   - Prompt SRT Mandarin (untuk ducking MP3 ori)
+   - Wajib untuk Original mode (tidak bisa skip)
+   - Parse SRT → segments + print count cues
+
+6. Step 4.6 update (SRT Indonesia untuk burn):
+   - Tetap conditional di burn_srt (existing)
+   - Tapi sekarang user pilih 2 SRT berbeda untuk Original + Burn SRT (Mode F):
+     - SRT Mandarin (Step 4.55) untuk duck
+     - SRT Indonesia (Step 4.6) untuk burn
+
+7. audio_filter logic 3 strategy:
+   - Simple mode: no audio filter (dub copy as-is)
+   - Original mode v3.7: SRT-driven ducking (build_srt_ducking_filter)
+   - Full mode: sidechain compress (existing, prompt ducking_db)
+
+8. Step 6 ringkasan:
+   - Ducking bar conditional:
+     - Simple: [SKIP]
+     - Original: 'SRT-driven -24 dB (N cues)'
+     - Full: 'N dB'
+   - SRT bar terpisah: SRT duck (Original) + SRT burn (kalau burn)
+   - Mode label: 'Original (SRT-driven duck)' / 'Full (SFX+Dub)' / 'Simple (no SFX)'
+
+9. Docstring header v3.6 → v3.7 dengan section v3.7 NEW (SRT-driven ducking fix)
+
+Verify:
+- python3 -m py_compile scripts/mix-tui.py → OK
+- Test parse_srt_for_ducking: 3 cues → segments dengan lead/tail 100ms benar
+  - Cue 1: 5.000-6.500 → 4.900-6.600 ✓
+  - Cue 2: 83.200-85.100 → 83.100-85.200 ✓
+  - Cue 3: 135.000-138.500 → 134.900-138.600 ✓
+- Test build_srt_ducking_filter: expression structure OK (nested if + between + 0.0625 + eval=frame)
+- Test empty SRT: fallback volume=1 (no ducking)
+- Test large SRT (2000 cues): works, filter 69 KB (masih feasible, ada warning >500 cues)
+- Backward compatible: Full + Simple mode tidak ada perubahan (sidechain + no-ducking existing)
+
+Update dokumentasi:
+- README.md: section 5 v3.7 dengan 6 mode semua REKOMENDASI + explanation SRT-driven ducking
+- AGENTS.md: mix-tui v3.7 section dengan verdict user + SRT-driven fix
+- PROJECT_RULES.md: Pipeline section v3.7 dengan ducking strategy 3 jenis
+- scripts/README.md: status table v3.7, Original mode REKOMENDASI lagi, 6 mode table
+
+Stage Summary:
+- v3.7: Original mode REKOMENDASI lagi — fix masalah v3.6 vokal asli bocor dengan SRT-driven ducking
+- SRT Mandarin = pedoman ducking window, SRT Indonesia = burn subtitle
+- Duck level fixed -24 dB (hampir mute), lead/tail 100ms untuk smooth transition
+- FFmpeg filter: volume='if(between(t,start,end),0.0625,if(...,1.0))':eval=frame
+- User akan test v3.7 dengan S9-ORI (1080p) → 2 SRT files (Mandarin duck + Indonesia burn)
+- Skala produksi besar: skip Demucs, pakai Original mode, hemat ~16 menit/film

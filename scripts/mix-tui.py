@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-mix-tui.py v3.6 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn)
+mix-tui.py v3.7 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn)
 
 Workflow produksi (4 fase, bersih — sesuai v6 yt-dlp + edge-tts-tui):
   Fase 1: yt-dlp v6      → {name}.mp4 (video) + {name}-audio.mp3 (via yt-dlp convert) + {name}.id.srt
@@ -27,6 +27,21 @@ Workflow produksi (4 fase, bersih — sesuai v6 yt-dlp + edge-tts-tui):
       D. Simple   + Burn SRT    → {prefix}-id-simple-sub.mp4 (~5 menit, ~1.2-4.5 GB, hardsub, no SFX)
       E. Original + Stream copy → {prefix}-id-orig.mp4      (~3 menit, ~350 MB, MP3 ori+ducking)  ← v3.6 NEW
       F. Original + Burn SRT    → {prefix}-id-orig-sub.mp4  (~5 menit, ~1.2-4.5 GB, hardsub, MP3 ori+ducking) ← v3.6 NEW
+
+v3.7 NEW: SRT-driven ducking untuk Original mode (fix masalah vokal asli v3.6).
+  - User feedback v3.6: "suara asli tetap muncul bahkan saat dub bicara" — sidechain compress
+    cuma turunkan volume, tidak hilangkan vokal Mandarin asli.
+  - v3.7 fix: pakai SRT Mandarin (ori) sebagai pedoman ducking window
+    - Setiap cue SRT Mandarin = window duck MP3 ori (volume turun ke 6.25% = -24 dB)
+    - Lead 100ms sebelum cue + tail 100ms setelah cue (smooth transition)
+    - SFX/musik latar tetap normal di gap antar dialog (volume 100%)
+  - 2 SRT files untuk Original + Burn SRT (Mode F):
+    - SRT Mandarin (untuk ducking MP3 ori) → Step 4.55
+    - SRT Indonesia (untuk burn subtitle) → Step 4.6 (existing)
+  - Original + Stream copy (Mode E): hanya butuh SRT Mandarin (no burn)
+  - FFmpeg filter: volume='if(between(t,start,end),0.0625,if(...,1.0))':eval=frame
+    - eval=frame: per-frame evaluation untuk smooth transition (avoid click artifact)
+  - Cocok untuk: produksi cepat skala besar (skip Demucs ~16 menit, tetap ada ducking proper)
 
 v3.6 NEW: Original mode — MP4 + MP3 ori + Dub dengan ducking otomatis.
   - User request: "produksi cepat cukup mp4 ori, mp3 ori dan dub" tanpa Demucs
@@ -419,6 +434,82 @@ def prompt_output(default_output):
     return output or default_output
 
 
+def parse_srt_for_ducking(srt_path, lead_ms=100, tail_ms=100):
+    """Parse SRT → list of (start_sec, end_sec) untuk ducking segments.
+
+    v3.7 NEW: SRT-driven ducking untuk Original mode.
+    Setiap cue SRT (Mandarin ori) = window duck MP3 ori.
+    Lead 100ms: duck sebelum dialog mulai (smooth transition, avoid click).
+    Tail 100ms: duck setelah dialog berakhir (avoid abrupt cut).
+
+    Returns:
+      list of (start_sec, end_sec) tuples, sorted by start.
+      Empty list kalau SRT tidak ada / parse error.
+    """
+    if not srt_path or not os.path.isfile(srt_path):
+        return []
+
+    segments = []
+    # Pattern: 00:00:05,000 --> 00:00:06,500
+    cue_pattern = re.compile(
+        r'(\d{2}):(\d{2}):(\d{2})[,.](\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})[,.](\d{3})'
+    )
+    try:
+        with open(srt_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        for match in cue_pattern.finditer(content):
+            h1, m1, s1, ms1, h2, m2, s2, ms2 = match.groups()
+            start_sec = int(h1) * 3600 + int(m1) * 60 + int(s1) + int(ms1) / 1000
+            end_sec = int(h2) * 3600 + int(m2) * 60 + int(s2) + int(ms2) / 1000
+            # Apply lead/tail
+            duck_start = max(0, start_sec - lead_ms / 1000)
+            duck_end = end_sec + tail_ms / 1000
+            if duck_end > duck_start:
+                segments.append((duck_start, duck_end))
+    except Exception as e:
+        print(f'  ⚠ Gagal parse SRT untuk ducking: {e}')
+        return []
+    # Sort by start time
+    segments.sort(key=lambda x: x[0])
+    return segments
+
+
+def build_srt_ducking_filter(segments, duck_volume=0.0625, total_dur=0):
+    """Build FFmpeg volume filter expression dari SRT duck segments.
+
+    v3.7 NEW: Build dynamic volume expression berdasarkan SRT timestamps.
+    Format: if(between(t,4.9,6.6),0.0625,if(between(t,23.1,25.2),0.0625,...,1.0))
+
+    Args:
+      segments: list of (start_sec, end_sec) tuples dari parse_srt_for_ducking
+      duck_volume: volume saat duck (0.0625 = -24 dB, hampir mute)
+      total_dur: total durasi MP4 (untuk info display only)
+
+    Returns:
+      FFmpeg filter string untuk [1:a] → [sfx_ducked] (volume dipakai ke MP3 ori).
+      Kalau segments kosong → return volume=1 (no ducking).
+    """
+    if not segments:
+        # No SRT cues → no ducking, MP3 ori penuh
+        return '[1:a]volume=1[sfx_ducked]'
+
+    # Warning kalau cues sangat banyak (FFmpeg expression bisa besar)
+    if len(segments) > 500:
+        print(f'  ⚠ Warning: {len(segments)} cues di SRT. FFmpeg expression akan besar.')
+        print(f'    Mungkin perlu waktu lebih lama untuk parse. Tapi tetap jalan.')
+
+    # Build nested if expression, mulai dari default 1.0 (volume normal)
+    # Iterasi dari cue TERAKHIR → FIRST supaya nested if benar
+    # Format: if(between(t,start,end),duck,if(between(...),duck,...,1.0))
+    expr = '1.0'  # default volume (normal, no duck)
+    for start, end in reversed(segments):
+        s = round(start, 3)
+        e = round(end, 3)
+        expr = f'if(between(t,{s},{e}),{duck_volume},{expr})'
+    # eval=frame: evaluate per-frame (setiap audio sample chunk) untuk smooth transition
+    return f"[1:a]volume='{expr}':eval=frame[sfx_ducked]"
+
+
 def main():
     print_banner()
 
@@ -439,19 +530,19 @@ def main():
     print(f'  ✓ {mp4}')
     print()
 
-    # Step 1.5: Mode input (v3.4: Full/Simple, v3.6: + Original)
-    # v3.6.1 update: Original mode TIDAK REKOMENDASI — vokal asli masih terdengar
-    # saat dub bicara (ducking cuma turunkan volume, tidak hilangkan vokal).
-    # User verdict setelah test: pakai Full (proper) atau Simple (cepat).
+    # Step 1.5: Mode input (v3.4: Full/Simple, v3.6: + Original, v3.7: Original SRT-driven ducking)
+    # v3.7 update: Original mode sekarang REKOMENDASI lagi — SRT-driven ducking fix masalah vokal asli.
+    # SRT Mandarin → duck window (volume 6.25% = -24 dB saat dialog Mandarin).
+    # SFX/musik latar tetap normal di gap antar dialog.
     print(f'▶ Step 1.5/{total}: Pilih mode input')
     mode_input_choice = questionary.select(
         'Mode input:',
         choices=[
-            'Full (MP4 + SFX no_vocals + Dub) — REKOMENDASI proper, clean sempurna',
+            'Full (MP4 + SFX no_vocals + Dub) — REKOMENDASI proper, clean sempurna (perlu Demucs)',
+            'Original (MP4 + MP3 ori + Dub + SRT-duck) — REKOMENDASI cepat, skip Demucs, v3.7 NEW',
             'Simple (MP4 + Dub saja, no SFX) — REKOMENDASI cepat, untuk preview/dialog dominan',
-            'Original (MP4 + MP3 ori + Dub) — ⚠ NOT RECOMMENDED, vokal asli tetap terdengar',
         ],
-        default='Full (MP4 + SFX no_vocals + Dub) — REKOMENDASI proper, clean sempurna',
+        default='Full (MP4 + SFX no_vocals + Dub) — REKOMENDASI proper, clean sempurna (perlu Demucs)',
     ).ask()
     simple_mode = 'Simple' in mode_input_choice
     original_mode = 'Original' in mode_input_choice
@@ -459,19 +550,16 @@ def main():
     if simple_mode:
         mode_label_display = 'Simple (MP4 + Dub, no SFX)'
     elif original_mode:
-        mode_label_display = 'Original (NOT RECOMMENDED — vokal asli tetap terdengar)'
+        mode_label_display = 'Original (MP4 + MP3 ori + Dub, SRT-driven ducking)'
     else:
         mode_label_display = 'Full (MP4 + SFX + Dub)'
     print(f'  ✓ {mode_label_display}')
     if original_mode:
-        print('  ⚠  Catatan: Mode Original tidak direkomendasi. Vokal asli Mandarin akan terdengar')
-        print('      saat dub bicara (ducking cuma turunkan volume, tidak hilangkan vokal).')
-        print('      Untuk hasil proper → pakai Full mode (no_vocals dari Demucs).')
-        print('      Untuk hasil cepat → pakai Simple mode (no MP3 ori).')
-        confirm_orig = questionary.confirm('Tetap lanjut dengan Original mode?', default=False).ask()
-        if not confirm_orig:
-            print('Batal. Pilih Full atau Simple mode.')
-            sys.exit(0)
+        # v3.7: Original mode sekarang REKOMENDASI (SRT-driven ducking fix vokal issue)
+        print('  ℹ  v3.7: Original mode pakai SRT-driven ducking (SRT Mandarin = window duck).')
+        print('      Saat dialog Mandarin aktif (cue SRT) → MP3 ori volume turun ke 6.25% (-24 dB).')
+        print('      SFX/musik latar tetap normal di gap antar dialog.')
+        print('      Butuh 2 SRT: SRT Mandarin (untuk duck) + SRT Indonesia (untuk burn, kalau Burn SRT mode).')
     print()
 
     # Step 2: SFX/audio input — tergantung mode
@@ -519,16 +607,26 @@ def main():
     print('  ✓ Semua file valid')
     print()
 
-    # Step 4: Ducking — skip kalau Simple mode (no SFX → no ducking concept)
-    # v3.6: Original mode juga pakai ducking (sama dengan Full mode), karena ada MP3 ori yang perlu di-duck saat dub bicara
+    # Step 4: Ducking — skip kalau Simple (no SFX) ATAU Original (SRT-driven, prompt di Step 4.55)
+    # v3.6: Original mode pakai ducking (sama dengan Full)
+    # v3.7: Original mode sekarang SRT-driven (Step 4.55), bukan sidechain prompt di Step 4
     ducking_db = 0
-    if not simple_mode:
+    if simple_mode:
+        print(f'▶ Step 4/{total}: [SKIP] Simple mode — no ducking (dub copy as-is)')
+        print()
+    elif original_mode:
+        # v3.7: Original mode pakai SRT-driven ducking, level fixed (-24 dB)
+        # Tidak prompt ducking level di Step 4, prompt SRT Mandarin di Step 4.55
+        print(f'▶ Step 4/{total}: [v3.7] Original mode pakai SRT-driven ducking (-24 dB fixed)')
+        print('  Duck level fixed: 6.25% volume (-24 dB) saat cue SRT Mandarin aktif')
+        print('  Lead 100ms + tail 100ms untuk smooth transition')
+        print('  SRT Mandarin dipilih di Step 4.55 (nanti)')
+        print()
+    else:
+        # Full mode: prompt ducking level (existing behavior, sidechain compress)
         print(f'▶ Step 4/{total}: Pilih ducking level')
         ducking_db = prompt_ducking()
         print(f'  ✓ {ducking_db}dB')
-        print()
-    else:
-        print(f'▶ Step 4/{total}: [SKIP] Simple mode — no ducking (dub copy as-is)')
         print()
 
     # Step 4.5: Mode mix (NEW v3) — stream copy cepat vs burn SRT
@@ -545,8 +643,31 @@ def main():
     print(f'  ✓ {"Burn SRT (encode ulang video)" if burn_srt else "Stream copy (3 menit)"}')
     print()
 
-    # Step 4.6: Kalau burn SRT, pilih SRT file + posisi
-    srt_path = None
+    # Step 4.55: SRT Mandarin untuk ducking (v3.7 NEW, Original mode only)
+    # Original mode pakai SRT-driven ducking: cue SRT Mandarin = window duck MP3 ori
+    # Full mode & Simple mode: pakai sidechain compress (existing), tidak butuh SRT duck
+    srt_path_duck = None  # SRT untuk ducking (Mandarin ori)
+    if original_mode:
+        print(f'▶ Step 4.55/{total}: Pilih SRT Mandarin (untuk ducking)')
+        print('  v3.7: SRT Mandarin → window duck MP3 ori. Setiap cue = MP3 ori di-mute (-24 dB).')
+        print('  Lead 100ms + tail 100ms untuk smooth transition.')
+        srt_path_duck = select_file('File SRT Mandarin (mis. S9.zh.srt):', ['srt'], search_dir=str(INPUT_DIR) if ensure_hdd() else None)
+        if not srt_path_duck:
+            print('Batal. SRT Mandarin wajib untuk Original mode v3.7.')
+            sys.exit(0)
+        validate_input_file(srt_path_duck, 'SRT Mandarin (ducking)')
+        print(f'  ✓ {srt_path_duck}')
+        # Parse SRT → segments untuk ducking
+        duck_segments = parse_srt_for_ducking(srt_path_duck, lead_ms=100, tail_ms=100)
+        print(f'  ℹ Parsed {len(duck_segments)} cues dari SRT Mandarin → ducking windows')
+        if not duck_segments:
+            print('  ⚠ Warning: Tidak ada cue di SRT. Ducking tidak akan bekerja (MP3 ori penuh).')
+        print()
+    else:
+        duck_segments = None  # Full/Simple mode: tidak pakai SRT ducking
+
+    # Step 4.6: Kalau burn SRT, pilih SRT file + posisi (SRT Indonesia untuk burn)
+    srt_path = None  # SRT untuk burn subtitle (Indonesia)
     srt_position = 'top'  # default top supaya tidak overlap SRT Mandarin
     if burn_srt:
         print(f'▶ Step 4.6/{total}: Pilih SRT Indonesia untuk burn')
@@ -673,19 +794,26 @@ def main():
     print(f'║  Output   : {output[:46]:<46}║')
     if simple_mode:
         print(f'║  Ducking  : [SKIP — dub copy as-is]                       ║')
+    elif original_mode:
+        # v3.7: Original mode pakai SRT-driven ducking (-24 dB fixed)
+        duck_info = f'SRT-driven -24 dB ({len(duck_segments) if duck_segments else 0} cues)'
+        print(f'║  Ducking  : {duck_info[:46]:<46}║')
     else:
         print(f'║  Ducking  : {str(ducking_db) + " dB":<46}║')
     if simple_mode:
         mode_input_label = 'Simple (no SFX)'
     elif original_mode:
-        mode_input_label = 'Original (MP3 ori+Dub)'
+        mode_input_label = 'Original (SRT-driven duck)'
     else:
         mode_input_label = 'Full (SFX+Dub)'
     mode_output_label = f'Burn SRT {srt_position}' if burn_srt else 'Stream copy'
     mode_label = f'{mode_input_label} | {mode_output_label}'
     print(f'║  Mode     : {mode_label[:46]:<46}║')
+    if original_mode and srt_path_duck:
+        # v3.7: tampilkan SRT Mandarin untuk ducking (Original mode)
+        print(f'║  SRT duck : {os.path.basename(srt_path_duck)[:46]:<46}║')
     if burn_srt and srt_path:
-        print(f'║  SRT      : {os.path.basename(srt_path)[:46]:<46}║')
+        print(f'║  SRT burn : {os.path.basename(srt_path)[:46]:<46}║')
         # v3.5: tampilkan video bitrate kalau burn SRT (Mode B & D)
         bitrate_display = f'{video_bitrate} (target bitrate)'
         print(f'║  Bitrate  : {bitrate_display[:46]:<46}║')
@@ -763,12 +891,38 @@ def main():
     print(f'🚀 Mulai mix... (mode: {mode_name})')
     print('═' * 64 + '\n')
 
-    # Audio filter — untuk Full + Original mode (3 input: mp4 + sfx/mp3ori + dub + ducking)
-    # Simple mode: dub copy as-is (no filter, no ducking)
-    # v3.6: Original mode pakai audio_filter sama dengan Full mode (sidechain compress),
-    #       bedanya cuma input sfx-nya MP3 ori (vokal+SFX+musik) vs no_vocals (SFX only)
+    # Audio filter build — v3.7: 3 jenis ducking strategy
+    # - Simple mode: dub copy as-is (no filter, no ducking)
+    # - Full mode: sidechain compress (existing, ducking_db dari prompt)
+    # - Original mode: SRT-driven ducking (volume dynamic expression dari SRT Mandarin cues)
     audio_filter = None
-    if not simple_mode:
+    if simple_mode:
+        # Simple: no audio filter (dub copy as-is)
+        pass
+    elif original_mode:
+        # v3.7 NEW: Original mode pakai SRT-driven ducking
+        # SRT Mandarin → duck segments → volume filter expression
+        # MP3 ori (index 1) di-duck saat cue Mandarin aktif (volume 6.25% = -24 dB)
+        # Dub (index 2) tetap volume 1 (normal)
+        # Mix: [sfx_ducked][dub]amix → [aout]
+        if duck_segments:
+            # Build SRT-driven volume filter untuk MP3 ori
+            duck_volume = 0.0625  # 6.25% = -24 dB (strong, hampir mute)
+            sfx_duck_filter = build_srt_ducking_filter(duck_segments, duck_volume=duck_volume)
+            audio_filter = (
+                f'{sfx_duck_filter};'
+                f'[2:a]volume=1[dub];'
+                f'[sfx_ducked][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
+            )
+        else:
+            # No SRT cues → no ducking (fallback, sama dengan ducking_db=0)
+            audio_filter = (
+                '[1:a]volume=1[sfx];'
+                '[2:a]volume=1[dub];'
+                '[sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
+            )
+    else:
+        # Full mode: sidechain compress (existing behavior)
         if ducking_db <= 0:
             audio_filter = (
                 '[1:a]volume=1[sfx];'
