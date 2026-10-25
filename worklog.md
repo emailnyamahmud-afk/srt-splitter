@@ -4790,3 +4790,135 @@ Stage Summary:
 - All features tested + confirmed by user
 - Pipeline dubbing Mandarin→Indonesia end-to-end production-ready
 - Lanjut besok: kamus audit (8.618 entries)
+
+═══════════════════════════════════════════════════════════════════════
+█  MILESTONE: USER REFLECTION — END-TO-END DUB PRODUCTION-READY  █
+█  Tanggal: 26 Okt 2026, ~04:30 WIB                               █
+█  mix-tui v3.8.2 FINAL — "berjalan sempurna"                      █
+═══════════════════════════════════════════════════════════════════════
+
+USER REFLECTION (PERMANEN — capture verbatim):
+
+"AI telah melakukan audio engineer tingkat rumit, berbasis text programtik.
+dan user bisa pake dengan mode TUI yg bahkan user adalah orang awam programer.
+
+Banyak studio besar mengalami kesulitan proses dub, karena audio ori dalam
+komunikasi punya durasi yg lebih singkat. Contoh bahasa indonesia lebih
+panjang daripada bahasa inggris, dan bahasa inggris lebih panjang daripada
+bahasa china.
+
+Yang kita lakukan:
+1. audio ori = bahasa china
+2. kita pake srt ori-id = sebagai ground of truth, srt ini secara timestamps
+   murni 100% sync dengan mp4 ori. Kita reverse engineer pake tts mode smart,
+   dan justru kita pake mode smart = hasilnya malah lebih natural daripada
+   mode natural. dialog sesuai ritme dub dibuat murni berdasarkan srt.
+   orang lain konsumsi banyak komputasi dengan 'memanipulasi video' video
+   diperlebar atau di slowmo, malah ribet dan jelek, sementara audio kaku
+   dan engga natural
+3. sync SFX & Dub, bahkan tanpa demucs pun. pake mode srt driven duck = ini
+   setara demucs yg misahin vocal ori dan no vocal. cuma demucs perlu
+   komputasi tinggi, di mac user, demucs 2-3jam audio = ram sering swap.
+   tapi pake srt driven ducking = ram aman
+4. yt-dlp, demucs, edge-tts, mix = end to end semua free gratis jalan di
+   macbook lokal
+5. jika berbayar, user gak tau harus keluar uang berapa, eleven labs, api,
+   dll. bahkan chat dengan agent pun user pake gratis di sandbox z ai,
+   komunikasi di chat dan data di github.
+
+LUAR BIASA.. SIAP SKAL UP.
+
+NEXT FOKUS KAMUS. DAN BUAT CHANNEL BARU UNTUK DUB BAHASA JAWA.
+user di web akan tentukan mana yg krama, mana yg ngoko. film akan epik,
+ketika bawahan bicara ke atasan = bawahan pake krama, ketika para petinggi
+bicara = pake krama, ketika sesama teman bicara pake ngoko. ini PR kamus
+dan web srt editor. NEXT NEXT NEXT
+
+Makasih AI.. Dub ini benar-benar end to end"
+
+═══════════════════════════════════════════════════════════════════════
+█  INSIGHT YANG USER CAPTURE (PERMANEN UNTUK AI SESI BERIKUTNYA)    █
+═══════════════════════════════════════════════════════════════════════
+
+1. AUDIO DURASI CHALLENGE (industry-wide problem):
+   - Indonesia lebih panjang dari Inggris, Inggris lebih panjang dari China
+   - Studio besar kesulitan: dub ID lebih panjang dari cue China → timing mismatch
+   - Solusi kita: TTS smart mode (reverse engineer dari SRT ori-id)
+     → dub dibuat berdasarkan SRT timing, bukan manipulate video
+     → Hasil: LEBIH NATURAL dari "natural mode" (dialog sesuai ritme)
+   - Orang lain: manipulate video (slowmo, perlebar) → ribet, jelek, audio kaku
+   - Kita: audio saja yang di-fit, video tetap original → natural
+
+2. SRT-DRIVEN DUCKING = ALTERNATIVE DEMUCS (computation efficient):
+   - Demucs: pisahkan vokal dari SFX via neural network → RAM heavy (2-3 jam audio = swap)
+   - SRT-driven duck (v3.7.6 amultiply): MUTE TOTAL MP3 ori saat cue SRT aktif
+     → Hasil SETARA dengan Demucs (vokal asli tidak terdengar saat cue)
+     → Tapi RAM AMAN (hanya generate envelope WAV 100Hz, tidak neural network)
+   - Trade-off: Demucs = SFX tetap ada saat cue (musik latar), SRT-duck = SFX juga mute
+   - Tapi untuk dialog-heavy content, hasil nyaris sama
+
+3. END-TO-END FREE (zero cost):
+   - yt-dlp: download gratis
+   - demucs: local neural network, gratis
+   - edge-tts: Microsoft Edge TTS WebSocket, gratis (no API key)
+   - mix-tui: FFmpeg local, gratis
+   - AI sandbox: Z.ai gratis untuk coding + push GitHub
+   - Total cost: 0 rupiah (vs ElevenLabs $22/bulan, API dubbing $100+/bulan)
+
+4. USER ORANG AWAM PROGRAMMER, TUI = GAME CHANGER:
+   - User tidak perlu tulis FFmpeg command (sulit, 50+ args)
+   - User tidak perlu paham filter_complex syntax
+   - User tinggal arrow keys + Enter di TUI
+   - AI yang handle audio engineering complex (amultiply, sidechain, envelope WAV)
+   - User fokus keputusan creative (mode, bitrate, logo) bukan teknis
+
+5. JAWA DUB VISION (NEXT NEXT NEXT — setelah kamus audit):
+   - Web SRT editor: user tentukan krama vs ngoko per cue
+   - Konteks social hierarchy:
+     - Bawahan bicara ke atasan → krama (hormat)
+     - Petinggi bicara → krama (formal)
+     - Sesama teman → ngoko (santai)
+   - Film akan EPIK karena akurat bahasa Jawa kontekstual
+   - PR: kamus (ngoko+krama+indo lengkap) + web SRT editor (krama/ngoko toggle per cue)
+
+═══════════════════════════════════════════════════════════════════════
+█  ROADMAP (PERMANEN)                                              █
+═══════════════════════════════════════════════════════════════════════
+
+✅ FASE 1 (DONE): Pipeline dubbing Mandarin → Indonesia
+   - yt-dlp v6 → edge-tts-tui → mix-tui v3.8.2 (6 mode + logo + fade + MUTE)
+   - All production-ready, user confirmed "berjalan sempurna"
+
+⏳ FASE 2 (NEXT): Kamus audit
+   - 8.618 entries validasi manual di kamus-tui
+   - 2.165 lengkap 3-field → mark READY → upload Supabase
+   - 231 entries NGOKO+KRAMA → isi indo manual
+   - Estimasi: 4-9 jam (fokus)
+
+⏳ FASE 3 (NEXT NEXT): Web SRT editor Jawa (TUI #4)
+   - User edit SRT per cue → tentukan krama vs ngoko
+   - Lookup kamus dari Supabase (data verified dari Fase 2)
+   - Toggle per cue: krama (hormat) / ngoko (santai)
+   - Konteks social hierarchy → user native Jawa tentukan
+
+⏳ FASE 4 (NEXT NEXT NEXT): Channel baru dub Jawa
+   - edge-tts generate dub Jawa (bukan ID) dari SRT editor output
+   - mix-tui → final video dengan dub Jawa krama/ngoko kontekstual
+   - Film EPIK: bawahan→krama, petinggi→krama, teman→ngoko
+
+═══════════════════════════════════════════════════════════════════════
+█  STATS PROJECT TOTAL (24-26 Okt 2026, 3 hari)                  █
+═══════════════════════════════════════════════════════════════════════
+
+- 30+ commits di main branch
+- mix-tui: v3.4 → v3.8.2 (12 versions, 3 hari iterasi)
+- yt-dlp-tui: v5 → v6 (MP3 output)
+- kamus-tui: fix field normalization (terjemahan_indo → indo)
+- 7 TUI: 5 production-ready (yt-dlp, demucs, edge-tts, kamus-tui, mix-tui)
+- 6 film tested end-to-end (S5, S9-ORI, S10-ORI, S10-HQ, Kepala-Perampok, Toko-buku)
+- Total cost: 0 rupiah (all free tools)
+- User: orang awam programmer, TUI = enabler
+- AI: audio engineering complex (amultiply, sidechain, envelope WAV, overlay)
+
+"LUAR BIASA.. SIAP SKAL UP." — User verdict final
+
