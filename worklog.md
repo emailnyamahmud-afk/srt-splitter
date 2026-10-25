@@ -3770,3 +3770,89 @@ Stage Summary:
 - FFmpeg filter: volume='if(between(t,start,end),0.0625,if(...,1.0))':eval=frame
 - User akan test v3.7 dengan S9-ORI (1080p) → 2 SRT files (Mandarin duck + Indonesia burn)
 - Skala produksi besar: skip Demucs, pakai Original mode, hemat ~16 menit/film
+
+---
+Task ID: mix-tui-v3.7.1-1-srt-simplifikasi
+Agent: main
+Task: User feedback setelah v3.7 — SRT Mandarin tidak relevan, pakai SRT Indonesia saja (1 SRT untuk duck + burn)
+
+User feedback (PERMANEN):
+"SRT mandarin tak relevan, karena SRT id juga identik timesmapnya dengan SRT mandarin,
+jadi pake SRT id saja. SRT yg sekaligus burn ke video."
+
+Alasan user:
+- SRT Indonesia timestamps IDENTIK dengan SRT Mandarin (translation dari source yang sama)
+- Cue 1 ID sama dengan cue 1 Mandarin waktu mulai/berakhir
+- Jadi duck window dari SRT Indonesia = duck window yang sama dengan kalau pakai SRT Mandarin
+- User tidak perlu download 2 SRT terpisah — cukup 1 SRT Indonesia
+
+Implementasi v3.7.1 SIMPLIFIKASI:
+
+1. Hapus Step 4.55 (SRT Mandarin prompt):
+   - Sebelumnya: Original mode wajib 2 SRT (Mandarin untuk duck + Indonesia untuk burn)
+   - Sekarang: 1 SRT Indonesia untuk duck + burn
+
+2. Update Step 4.6 conditional:
+   - Sebelumnya: hanya muncul kalau burn_srt (untuk burn)
+   - Sekarang: muncul kalau (original_mode ATAU burn_srt)
+     - Mode E (Original + Stream): SRT untuk ducking saja (no burn, no Step 4.7/4.8)
+     - Mode F (Original + Burn): 1 SRT untuk ducking + burn (Step 4.6 + 4.7 + 4.8)
+     - Mode B/D (Burn SRT saja): SRT untuk burn saja
+     - Mode A/C (Stream copy): no SRT needed
+
+3. Prompt label dinamis (Step 4.6):
+   - Mode F: 'File SRT Indonesia (untuk ducking + burn subtitle)'
+   - Mode E: 'File SRT Indonesia (untuk ducking MP3 ori)'
+   - Mode B/D: 'File SRT Indonesia (untuk burn subtitle)'
+
+4. Parse SRT → duck segments pakai srt_path yang sama:
+   - Setelah SRT Indonesia dipilih, parse → segments (kalau original_mode)
+   - Gunakan segments untuk build_srt_ducking_filter (sama seperti v3.7)
+
+5. Step 4.7 + Step 4.8 di dalam `if burn_srt:` block:
+   - Step 4.7 (posisi SRT) hanya untuk burn (hardsub position)
+   - Step 4.8 (video bitrate) hanya untuk burn (re-encode)
+   - Mode E (Stream copy) tidak butuh Step 4.7/4.8
+
+6. Update Step 1.5 info Original mode:
+   - Sebelumnya: 'Butuh 2 SRT: SRT Mandarin (untuk duck) + SRT Indonesia (untuk burn, kalau Burn SRT mode)'
+   - Sekarang: '1 SRT Indonesia dipakai untuk: ducking (saat cue aktif) + burn subtitle (kalau Burn SRT mode)'
+
+7. Update Step 4 info Original mode:
+   - Sebelumnya: 'SRT Mandarin dipilih di Step 4.55 (nanti)'
+   - Sekarang: 'SRT Indonesia dipilih di Step 4.6 (nanti) — dipakai untuk duck + burn (kalau Burn SRT)'
+
+8. Update ringkasan Step 6:
+   - Sebelumnya: 2 bar terpisah (SRT duck + SRT burn)
+   - Sekarang: 1 SRT bar dengan label dinamis:
+     - 'SRT duck+burn' (Mode F)
+     - 'SRT duck  ' (Mode E)
+     - 'SRT burn  ' (Mode B/D)
+
+9. Update docstring v3.7 → v3.7.1 dengan section SIMPLIFIKASI
+
+Verify:
+- python3 -m py_compile scripts/mix-tui.py → OK
+- Cek sisa referensi srt_path_duck → 0 (semua dihapus)
+- Cek Step 4.55 → 0 (semua dihapus, hanya comment history)
+- Test 6 kombinasi logic:
+  - A (Full+Stream): no SRT needed
+  - B (Full+Burn): SRT for burn only
+  - C (Simple+Stream): no SRT needed
+  - D (Simple+Burn): SRT for burn only
+  - E (Original+Stream): SRT for duck only (no Step 4.7/4.8)
+  - F (Original+Burn): SRT for duck+burn (1 SRT untuk 2 tujuan)
+- Backward compatible: A/B/C/D tidak ada perubahan (mode burn masih butuh SRT seperti sebelumnya)
+
+Update dokumentasi:
+- README.md: section 5 v3.7.1 dengan simplifikasi 1 SRT + verdict user
+- AGENTS.md: mix-tui v3.7.1 section dengan Step 4.6 logic table
+- PROJECT_RULES.md: Pipeline section v3.7.1 dengan catatan simplifikasi
+- scripts/README.md: status table v3.7.1, Original mode 1 SRT, 6 mode table
+
+Stage Summary:
+- v3.7.1: 1 SRT Indonesia cukup untuk duck + burn (simplifikasi dari v3.7 yang butuh 2 SRT)
+- User feedback: SRT Indonesia timestamps identik dengan SRT Mandarin
+- Workflow Original mode sekarang lebih simple: download 1 SRT Indonesia saja via yt-dlp
+- Mode E (Original + Stream copy) sekarang butuh SRT (untuk duck), sebelumnya v3.7 pakai SRT Mandarin terpisah
+- Mode F (Original + Burn) cuma 1 SRT (sebelumnya v3.7 pakai 2 SRT terpisah)

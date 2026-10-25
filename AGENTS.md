@@ -17,7 +17,7 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 | 4 | Web app | Translate SRT Indonesia → Jawa (pakai kamus Supabase) | ⚠ Prototype (perlu penyesuaian) |
 | 5 | SRT editor | Sementara pakai SRT Indonesia (SRT Jawa = nunggu kamus + web selesai) | ⏳ Pending |
 | 6 | edge-tts-tui.py | Generate audio dub dari SRT (5000+ cue, 2-5 jam durasi) | ✅ Jalan |
-| 7 | mix-tui.py v3.7 | Mix MP4 + audio → final video (6 mode + SRT-driven ducking + bitrate) | ✅ Production-ready (A/B/C/D tested) |
+| 7 | mix-tui.py v3.7.1 | Mix MP4 + audio → final video (6 mode + SRT-driven ducking + bitrate) | ✅ Production-ready (A/B/C/D tested) |
 
 ## Struktur Folder
 
@@ -50,7 +50,7 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 | `scripts/yt-dlp-tui.py` | Download video/audio |
 | `scripts/demucs-tui.py` | Vocal separation |
 | `scripts/edge-tts-tui.py` | TTS generation |
-| `scripts/mix-tui.py` | Final mix video (v3.7 — 6 mode + SRT-driven ducking + pilihan bitrate) |
+| `scripts/mix-tui.py` | Final mix video (v3.7.1 — 6 mode + SRT-driven ducking + pilihan bitrate, 1 SRT) |
 | `scripts/upload-supabase.py` | Upload kamus ke DB |
 | `scripts/parse-jv-wiktionary-v2.py` | Parser jv.wiktionary XML |
 
@@ -68,40 +68,46 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 - edge-tts v7.3.1: ✅ 4565 cue tested (Toko-buku, ~3 jam generate)
 - mix-tui v3.3 → v3.4 (24 Okt): 5 film sukses pakai Full + Stream copy
 
-### mix-tui v3.7 (24 Okt 2026, commit feat v3.7 — SRT-driven ducking fix Original mode)
+### mix-tui v3.7.1 (24 Okt 2026, commit feat v3.7.1 — 1 SRT untuk duck + burn)
+- v3.7.1 SIMPLIFIKASI: 1 SRT Indonesia cukup untuk duck + burn (timestamps identik dengan SRT Mandarin)
+  - User feedback v3.7: "SRT mandarin tak relevan, karena SRT id juga identik timesmapnya"
+  - Fix: hapus Step 4.55 (SRT Mandarin prompt) → 1 SRT Indonesia di Step 4.6 untuk 2 tujuan
+  - Original mode (E/F): SRT Indonesia = sumber ducking window + burn subtitle (kalau Burn SRT)
+  - Mode F (Original + Burn): 1 SRT untuk 2 tujuan (duck + burn), bukan 2 SRT terpisah
 - v3.7 UPDATE: Original mode (E/F) REKOMENDASI lagi (fix v3.6 vokal asli bocor)
   - User feedback v3.6: "suara asli tetap muncul bahkan saat dub bicara"
   - Penyebab v3.6: sidechain compress CUMA turunkan volume, TIDAK hilangkan vokal Mandarin
-  - v3.7 fix: pakai SRT Mandarin (ori) sebagai pedoman ducking window
-    - Setiap cue SRT Mandarin = window duck MP3 ori (volume 6.25% = -24 dB, hampir mute)
+  - v3.7 fix: pakai SRT Indonesia (timestamps identik SRT Mandarin) sebagai pedoman ducking window
+    - Setiap cue SRT = window duck MP3 ori (volume 6.25% = -24 dB, hampir mute)
     - Lead 100ms + tail 100ms (smooth transition, avoid click artifact)
     - SFX/musik latar tetap normal di gap antar dialog (volume 100%)
   - FFmpeg filter: volume='if(between(t,start,end),0.0625,if(...,1.0))':eval=frame
-  - 2 SRT files untuk Original + Burn SRT (Mode F):
-    - SRT Mandarin (untuk ducking MP3 ori) → Step 4.55 NEW
-    - SRT Indonesia (untuk burn subtitle) → Step 4.6 (existing)
-  - Original + Stream copy (Mode E): hanya butuh SRT Mandarin (no burn)
 - Verdict user final (3 mode semua REKOMENDASI):
   - Full (A/B) = proper, clean sempurna (REKOMENDASI) — pakai no_vocals dari Demucs
   - Simple (C/D) = cepat (REKOMENDASI) — no SFX layer
-  - Original (E/F) = cepat + ducking proper (REKOMENDASI v3.7) — skip Demucs, SRT-driven duck
+  - Original (E/F) = cepat + ducking proper (REKOMENDASI v3.7.1) — skip Demucs, SRT-driven duck, 1 SRT
 - 6 kombinasi mode (3 input × 2 output):
   - ✅ A. Full + Stream copy → `{prefix}-id-final.mp4` (5 film sukses, ~350 MB)
   - ⚠ B. Full + Burn SRT → `{prefix}-id-final-sub.mp4` (low risk, belum user test)
   - ✅ C. Simple + Stream copy → `{prefix}-id-simple.mp4` (sync 100%)
   - ✅ D. Simple + Burn SRT → `{prefix}-id-simple-sub.mp4` (1 Mbps user confirmed > ori)
-  - ⚠ E. Original + Stream copy → `{prefix}-id-orig.mp4` (v3.7 baru, user akan test)
-  - ⚠ F. Original + Burn SRT → `{prefix}-id-orig-sub.mp4` (v3.7 baru, user akan test)
+  - ⚠ E. Original + Stream copy → `{prefix}-id-orig.mp4` (v3.7.1 baru, user akan test)
+  - ⚠ F. Original + Burn SRT → `{prefix}-id-orig-sub.mp4` (v3.7.1 baru, 1 SRT untuk duck+burn, user akan test)
+- Step 4.6 logic (1 SRT untuk duck + burn):
+  - Original mode + Stream copy (E): SRT untuk ducking saja (no burn, no Step 4.7/4.8)
+  - Original mode + Burn SRT (F): 1 SRT untuk ducking + burn (Step 4.6 + 4.7 + 4.8)
+  - Full/Simple + Burn SRT (B/D): SRT untuk burn saja (Step 4.6 + 4.7 + 4.8)
+  - Full/Simple + Stream copy (A/C): no SRT needed (skip Step 4.6)
 - Ducking strategy 3 jenis:
   - Full mode: sidechain compress (pilih 6/12/18 dB, default 12)
-  - Original mode v3.7: SRT-driven volume expression (-24 dB fixed, lead/tail 100ms)
+  - Original mode v3.7.1: SRT-driven volume expression (-24 dB fixed, lead/tail 100ms, 1 SRT Indonesia)
   - Simple mode: no ducking (no SFX)
-- v3.5: Step 4.8 — pilih video bitrate untuk Mode B & D (burn SRT wajib re-encode):
+- v3.5: Step 4.8 — pilih video bitrate untuk Mode B & D & F (burn SRT wajib re-encode):
   - 1 Mbps → ~1.2 GB/2jam (USER CONFIRMED OK, kualitas > ori, hemat 51%)
   - 1.5 Mbps → ~1.8 GB/2jam (default v3.5, seimbang)
   - 2 Mbps → ~2.3 GB/2jam (v3.4 behavior, subtitle paling sharp)
   - 4 Mbps → ~4.5 GB/2jam (HD-ready, user test S9-ORI 1080p 14m 48s @ 10x speed)
-  - Mode A & C (stream copy) tidak perlu prompt — bitrate ikut MP4 ori
+  - Mode A & C & E (stream copy) tidak perlu prompt — bitrate ikut MP4 ori
 - M1 VideoToolbox 32-33x speed (480p), 10x speed (1080p @ 4 Mbps)
 - User confirmed: pipeline Simple mode end-to-end = sync 1000000%, tidak perlu DaVinci Resolve
 

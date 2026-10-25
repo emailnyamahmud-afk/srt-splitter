@@ -12,7 +12,7 @@ Python TUI untuk workflow dubbing + kamus Jawa.
 | 4 | Web app | ⚠ Prototype | Live di Vercel |
 | 5 | SRT editor | ⏳ Pending | Pakai SRT Indonesia sementara |
 | 6 | edge-tts-tui.py | ✅ Production | 4565 cue tested |
-| 7 | mix-tui.py v3.7 | ✅ Production-ready | A/B/C/D tested; E/F baru v3.7 (SRT-driven) |
+| 7 | mix-tui.py v3.7.1 | ✅ Production-ready | A/B/C/D tested; E/F baru v3.7.1 (SRT-driven, 1 SRT) |
 
 ## Pipeline (2 alur produksi)
 
@@ -26,15 +26,15 @@ yt-dlp-tui.py → edge-tts-tui.py → mix-tui.py (Mode C/D)
 
 Cocok untuk: preview cepat, film dialog dominan, audio dub Jawa yang sudah clean.
 
-### Original mode — v3.7 NEW, MP4 + MP3 ori + Dub dengan SRT-driven ducking
+### Original mode — v3.7.1, MP4 + MP3 ori + Dub dengan SRT-driven ducking (1 SRT)
 
 ```
 yt-dlp-tui.py → edge-tts-tui.py → mix-tui.py (Mode E/F)
 → ~350 MB stream copy / ~1.2-4.5 GB burn SRT
-→ skip Demucs (~16 menit), ducking SRT-driven (SRT Mandarin = window duck)
+→ skip Demucs (~16 menit), ducking SRT-driven (1 SRT Indonesia untuk duck + burn)
 ```
 
-**v3.7 REKOMENDASI** (sebelumnya v3.6 NOT RECOMMENDED, sekarang fix). Pakai SRT Mandarin (ori) sebagai pedoman ducking: setiap cue = MP3 ori volume turun ke 6.25% (-24 dB), SFX/musik latar tetap normal di gap antar dialog. Butuh 2 SRT files untuk Mode F: SRT Mandarin (duck) + SRT Indonesia (burn). Cocok untuk produksi cepat skala besar (skip Demucs ~16 menit/film).
+**v3.7.1 REKOMENDASI** (simplifikasi dari v3.7 yang awalnya butuh 2 SRT terpisah). User feedback: SRT Indonesia timestamps identik dengan SRT Mandarin (translation dari source sama), jadi 1 SRT Indonesia cukup untuk ducking + burn. Cocok untuk produksi cepat skala besar (skip Demucs ~16 menit/film). Ducking: setiap cue = MP3 ori volume turun ke 6.25% (-24 dB), SFX/musik latar tetap normal di gap antar dialog.
 
 ### Full mode — proper, dengan SFX
 
@@ -55,7 +55,7 @@ Cocok untuk: film action, musik latar penting, produksi "proper".
 | yt-dlp-tui.py | Download video/audio + SRT Indonesia | HDD/input/ |
 | demucs-tui.py | Vocal separation (M1 MPS, segment RAM aman) | HDD/demucs/ |
 | edge-tts-tui.py | TTS generation (100% lokal, 5000+ cue) | HDD/tts/ |
-| mix-tui.py v3.7 | Final mix video (6 mode + SRT-driven ducking + pilihan bitrate) | HDD/mix/ |
+| mix-tui.py v3.7.1 | Final mix video (6 mode + SRT-driven ducking + pilihan bitrate) | HDD/mix/ |
 
 ### Kamus
 
@@ -73,7 +73,7 @@ Cocok untuk: film action, musik latar penting, produksi "proper".
 |------|-----|
 | tutor-demucs-setup.md | Setup Demucs M1 MPS |
 
-## mix-tui v3.7 — 6 mode (semua REKOMENDASI, A/B proper, C/D/E/F cepat)
+## mix-tui v3.7.1 — 6 mode (semua REKOMENDASI, A/B proper, C/D/E/F cepat)
 
 | # | Mode Input | Mode Output | Output filename | Status |
 |---|------------|-------------|-----------------|--------|
@@ -81,8 +81,8 @@ Cocok untuk: film action, musik latar penting, produksi "proper".
 | B | Full (MP4+SFX+Dub) | Burn SRT | `{prefix}-id-final-sub.mp4` | ✅ REKOMENDASI proper + hardsub |
 | C | Simple (MP4+Dub) | Stream copy | `{prefix}-id-simple.mp4` | ✅ REKOMENDASI cepat |
 | D | Simple (MP4+Dub) | Burn SRT | `{prefix}-id-simple-sub.mp4` | ✅ REKOMENDASI cepat + hardsub |
-| E | Original (MP4+MP3 ori+Dub) | Stream copy | `{prefix}-id-orig.mp4` | ✅ REKOMENDASI cepat (v3.7 SRT-driven) |
-| F | Original (MP4+MP3 ori+Dub) | Burn SRT | `{prefix}-id-orig-sub.mp4` | ✅ REKOMENDASI cepat + hardsub (v3.7 SRT-driven) |
+| E | Original (MP4+MP3 ori+Dub) | Stream copy | `{prefix}-id-orig.mp4` | ✅ REKOMENDASI cepat (v3.7.1 SRT-driven) |
+| F | Original (MP4+MP3 ori+Dub) | Burn SRT | `{prefix}-id-orig-sub.mp4` | ✅ REKOMENDASI cepat + hardsub (v3.7.1 SRT-driven) |
 
 ### Pilihan bitrate (Mode B & D & F, v3.5 NEW)
 

@@ -29,7 +29,7 @@ Kamus (sambil kerja, parallel):
 | 4 | Web app | Translate SRT Indonesia → Jawa (kamus Supabase) | ⚠ Prototype |
 | 5 | SRT editor | Sementara pakai SRT Indonesia (Jawa nunggu kamus+web) | ⏳ Pending |
 | 6 | edge-tts-tui | Generate audio dub dari SRT (5000+ cue) | ✅ Jalan |
-| 7 | mix-tui v3.7 | Mix MP4 + audio → final video (6 mode + SRT-driven ducking + bitrate) | ✅ Production-ready (A/B/C/D tested) |
+| 7 | mix-tui v3.7.1 | Mix MP4 + audio → final video (6 mode + SRT-driven ducking + bitrate) | ✅ Production-ready (A/B/C/D tested) |
 
 ## Struktur Folder
 
@@ -53,23 +53,24 @@ Kamus (sambil kerja, parallel):
 - R-73: Cross-ref penulisan + keterangan, BUKAN register
 - R-22: GIGO — AI tidak merujuk raw untuk audit/fix
 
-### Pipeline (mix-tui v3.7)
+### Pipeline (mix-tui v3.7.1)
 - Mode A: Full + Stream copy → ~3 menit, ~350 MB (no_vocals + ducking) — REKOMENDASI proper
 - Mode B: Full + Burn SRT → ~5 menit, ~1.2-4.5 GB (pilih bitrate) — REKOMENDASI proper
 - Mode C: Simple + Stream copy → ~1 menit, ~350 MB (USER confirmed sync 100%) — REKOMENDASI cepat
 - Mode D: Simple + Burn SRT → ~5 menit, ~1.2-4.5 GB (USER confirmed: 1 Mbps > ori) — REKOMENDASI cepat
-- Mode E: Original + Stream copy → ~3 menit, ~350 MB (v3.7 SRT-driven ducking) — REKOMENDASI cepat
-- Mode F: Original + Burn SRT → ~5 menit, ~1.2-4.5 GB (v3.7 SRT-driven + hardsub) — REKOMENDASI cepat
+- Mode E: Original + Stream copy → ~3 menit, ~350 MB (v3.7.1 SRT-driven ducking) — REKOMENDASI cepat
+- Mode F: Original + Burn SRT → ~5 menit, ~1.2-4.5 GB (v3.7.1 SRT-driven + hardsub) — REKOMENDASI cepat
 - Default mode input = Full (backward compatible)
 - Default bitrate (Mode B/D/F) = 1.5 Mbps (seimbang); 1 Mbps user-confirmed viable
-- Ducking strategy 3 jenis (v3.7):
+- Ducking strategy 3 jenis (v3.7.1):
   - Full mode: sidechain compress (pilih 6/12/18 dB) — duck no_vocals saat dub bicara
-  - Original mode v3.7: SRT-driven volume expression (-24 dB, lead/tail 100ms) — duck MP3 ori saat cue SRT Mandarin aktif
+  - Original mode v3.7.1: SRT-driven volume expression (-24 dB, lead/tail 100ms) — duck MP3 ori saat cue SRT Indonesia aktif
   - Simple mode: no ducking (no SFX layer)
-- v3.7 fix Original mode: pakai SRT Mandarin (ori) sebagai pedoman ducking window
-  - Saat cue SRT Mandarin aktif → MP3 ori volume turun ke 6.25% (-24 dB, hampir mute)
+- v3.7.1 SIMPLIFIKASI: 1 SRT Indonesia untuk duck + burn (timestamps identik dengan SRT Mandarin)
+  - User feedback: "SRT mandarin tak relevan, karena SRT id juga identik timesmapnya"
+  - Hapus Step 4.55 (SRT Mandarin prompt) → 1 SRT Indonesia di Step 4.6 untuk 2 tujuan
+  - Saat cue SRT Indonesia aktif → MP3 ori volume turun ke 6.25% (-24 dB, hampir mute)
   - SFX/musik latar tetap normal di gap antar dialog
-  - 2 SRT files untuk Mode F: SRT Mandarin (duck) + SRT Indonesia (burn)
 
 ### Data
 - jv.wiktionary.json = SOURCE OF TRUTH (44.585 entries dari XML dump)

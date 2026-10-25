@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-mix-tui.py v3.7 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn)
+mix-tui.py v3.7.1 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn)
 
 Workflow produksi (4 fase, bersih — sesuai v6 yt-dlp + edge-tts-tui):
   Fase 1: yt-dlp v6      → {name}.mp4 (video) + {name}-audio.mp3 (via yt-dlp convert) + {name}.id.srt
@@ -28,17 +28,19 @@ Workflow produksi (4 fase, bersih — sesuai v6 yt-dlp + edge-tts-tui):
       E. Original + Stream copy → {prefix}-id-orig.mp4      (~3 menit, ~350 MB, MP3 ori+ducking)  ← v3.6 NEW
       F. Original + Burn SRT    → {prefix}-id-orig-sub.mp4  (~5 menit, ~1.2-4.5 GB, hardsub, MP3 ori+ducking) ← v3.6 NEW
 
+v3.7.1 SIMPLIFIKASI: 1 SRT Indonesia cukup untuk duck + burn (timestamps identik dengan SRT Mandarin).
+  - User feedback v3.7: "SRT mandarin tak relevan, karena SRT id juga identik timesmapnya"
+  - Fix: hapus Step 4.55 (SRT Mandarin prompt) → 1 SRT Indonesia di Step 4.6 untuk 2 tujuan
+  - Original mode (E/F): SRT Indonesia = sumber ducking window + burn subtitle (kalau Burn SRT)
+  - Mode F (Original + Burn): 1 SRT untuk 2 tujuan (duck + burn), bukan 2 SRT terpisah
+
 v3.7 NEW: SRT-driven ducking untuk Original mode (fix masalah vokal asli v3.6).
   - User feedback v3.6: "suara asli tetap muncul bahkan saat dub bicara" — sidechain compress
     cuma turunkan volume, tidak hilangkan vokal Mandarin asli.
-  - v3.7 fix: pakai SRT Mandarin (ori) sebagai pedoman ducking window
-    - Setiap cue SRT Mandarin = window duck MP3 ori (volume turun ke 6.25% = -24 dB)
+  - v3.7 fix: pakai SRT Indonesia (timestamps identik SRT Mandarin) sebagai pedoman ducking window
+    - Setiap cue SRT = window duck MP3 ori (volume turun ke 6.25% = -24 dB)
     - Lead 100ms sebelum cue + tail 100ms setelah cue (smooth transition)
     - SFX/musik latar tetap normal di gap antar dialog (volume 100%)
-  - 2 SRT files untuk Original + Burn SRT (Mode F):
-    - SRT Mandarin (untuk ducking MP3 ori) → Step 4.55
-    - SRT Indonesia (untuk burn subtitle) → Step 4.6 (existing)
-  - Original + Stream copy (Mode E): hanya butuh SRT Mandarin (no burn)
   - FFmpeg filter: volume='if(between(t,start,end),0.0625,if(...,1.0))':eval=frame
     - eval=frame: per-frame evaluation untuk smooth transition (avoid click artifact)
   - Cocok untuk: produksi cepat skala besar (skip Demucs ~16 menit, tetap ada ducking proper)
@@ -555,11 +557,12 @@ def main():
         mode_label_display = 'Full (MP4 + SFX + Dub)'
     print(f'  ✓ {mode_label_display}')
     if original_mode:
-        # v3.7: Original mode sekarang REKOMENDASI (SRT-driven ducking fix vokal issue)
-        print('  ℹ  v3.7: Original mode pakai SRT-driven ducking (SRT Mandarin = window duck).')
-        print('      Saat dialog Mandarin aktif (cue SRT) → MP3 ori volume turun ke 6.25% (-24 dB).')
+        # v3.7.1: Original mode sekarang REKOMENDASI (SRT-driven ducking fix v3.6 vokal issue)
+        # v3.7.1 SIMPLIFIKASI: 1 SRT Indonesia cukup untuk duck + burn (timestamps identik dengan SRT Mandarin)
+        print('  ℹ  v3.7.1: Original mode pakai SRT-driven ducking (SRT Indonesia = window duck).')
+        print('      Saat dialog aktif (cue SRT) → MP3 ori volume turun ke 6.25% (-24 dB, hampir mute).')
         print('      SFX/musik latar tetap normal di gap antar dialog.')
-        print('      Butuh 2 SRT: SRT Mandarin (untuk duck) + SRT Indonesia (untuk burn, kalau Burn SRT mode).')
+        print('      1 SRT Indonesia dipakai untuk: ducking (saat cue aktif) + burn subtitle (kalau Burn SRT mode).')
     print()
 
     # Step 2: SFX/audio input — tergantung mode
@@ -607,20 +610,21 @@ def main():
     print('  ✓ Semua file valid')
     print()
 
-    # Step 4: Ducking — skip kalau Simple (no SFX) ATAU Original (SRT-driven, prompt di Step 4.55)
+    # Step 4: Ducking — skip kalau Simple (no SFX) ATAU Original (SRT-driven, prompt SRT di Step 4.6)
     # v3.6: Original mode pakai ducking (sama dengan Full)
-    # v3.7: Original mode sekarang SRT-driven (Step 4.55), bukan sidechain prompt di Step 4
+    # v3.7: Original mode SRT-driven (Step 4.6, SRT Indonesia untuk duck + burn), bukan sidechain prompt
+    # v3.7.1: 1 SRT Indonesia untuk duck + burn (timestamps identik dengan SRT Mandarin)
     ducking_db = 0
     if simple_mode:
         print(f'▶ Step 4/{total}: [SKIP] Simple mode — no ducking (dub copy as-is)')
         print()
     elif original_mode:
-        # v3.7: Original mode pakai SRT-driven ducking, level fixed (-24 dB)
-        # Tidak prompt ducking level di Step 4, prompt SRT Mandarin di Step 4.55
-        print(f'▶ Step 4/{total}: [v3.7] Original mode pakai SRT-driven ducking (-24 dB fixed)')
-        print('  Duck level fixed: 6.25% volume (-24 dB) saat cue SRT Mandarin aktif')
+        # v3.7.1: Original mode pakai SRT-driven ducking, level fixed (-24 dB)
+        # SRT Indonesia (Step 4.6 nanti) = sumber ducking window (timestamps identik dengan SRT Mandarin)
+        print(f'▶ Step 4/{total}: [v3.7.1] Original mode pakai SRT-driven ducking (-24 dB fixed)')
+        print('  Duck level fixed: 6.25% volume (-24 dB) saat cue SRT Indonesia aktif')
         print('  Lead 100ms + tail 100ms untuk smooth transition')
-        print('  SRT Mandarin dipilih di Step 4.55 (nanti)')
+        print('  SRT Indonesia dipilih di Step 4.6 (nanti) — dipakai untuk duck + burn (kalau Burn SRT)')
         print()
     else:
         # Full mode: prompt ducking level (existing behavior, sidechain compress)
@@ -643,92 +647,101 @@ def main():
     print(f'  ✓ {"Burn SRT (encode ulang video)" if burn_srt else "Stream copy (3 menit)"}')
     print()
 
-    # Step 4.55: SRT Mandarin untuk ducking (v3.7 NEW, Original mode only)
-    # Original mode pakai SRT-driven ducking: cue SRT Mandarin = window duck MP3 ori
-    # Full mode & Simple mode: pakai sidechain compress (existing), tidak butuh SRT duck
-    srt_path_duck = None  # SRT untuk ducking (Mandarin ori)
-    if original_mode:
-        print(f'▶ Step 4.55/{total}: Pilih SRT Mandarin (untuk ducking)')
-        print('  v3.7: SRT Mandarin → window duck MP3 ori. Setiap cue = MP3 ori di-mute (-24 dB).')
-        print('  Lead 100ms + tail 100ms untuk smooth transition.')
-        srt_path_duck = select_file('File SRT Mandarin (mis. S9.zh.srt):', ['srt'], search_dir=str(INPUT_DIR) if ensure_hdd() else None)
-        if not srt_path_duck:
-            print('Batal. SRT Mandarin wajib untuk Original mode v3.7.')
-            sys.exit(0)
-        validate_input_file(srt_path_duck, 'SRT Mandarin (ducking)')
-        print(f'  ✓ {srt_path_duck}')
-        # Parse SRT → segments untuk ducking
-        duck_segments = parse_srt_for_ducking(srt_path_duck, lead_ms=100, tail_ms=100)
-        print(f'  ℹ Parsed {len(duck_segments)} cues dari SRT Mandarin → ducking windows')
-        if not duck_segments:
-            print('  ⚠ Warning: Tidak ada cue di SRT. Ducking tidak akan bekerja (MP3 ori penuh).')
-        print()
-    else:
-        duck_segments = None  # Full/Simple mode: tidak pakai SRT ducking
-
-    # Step 4.6: Kalau burn SRT, pilih SRT file + posisi (SRT Indonesia untuk burn)
-    srt_path = None  # SRT untuk burn subtitle (Indonesia)
-    srt_position = 'top'  # default top supaya tidak overlap SRT Mandarin
-    if burn_srt:
-        print(f'▶ Step 4.6/{total}: Pilih SRT Indonesia untuk burn')
-        srt_path = select_file('File SRT Indonesia (mis. S5-ori.id.srt):', ['srt'], search_dir=str(INPUT_DIR) if ensure_hdd() else None)
+    # Step 4.6: SRT Indonesia untuk ducking (Original mode) dan/atau burn (Mode B/D/F)
+    # v3.7.1 SIMPLIFIKASI: 1 SRT Indonesia cukup untuk 2 tujuan (duck + burn)
+    #   - SRT Indonesia timestamps identik dengan SRT Mandarin (translation dari source sama)
+    #   - Jadi duck window dari SRT Indonesia = duck window yang sama dengan kalau pakai SRT Mandarin
+    #   - User feedback: "SRT mandarin tak relevan, karena SRT id juga identik timesmapnya"
+    # Logic:
+    #   - Original mode (Mode E/F): wajib SRT Indonesia (untuk ducking)
+    #   - burn_srt (Mode B/D/F): wajib SRT Indonesia (untuk burn subtitle)
+    #   - Original + Burn SRT (Mode F): SRT yang sama untuk duck + burn
+    #   - Simple + Stream copy (Mode C): tidak butuh SRT
+    #   - Full + Stream copy (Mode A): tidak butuh SRT
+    srt_path = None  # SRT Indonesia (untuk duck + burn)
+    duck_segments = None  # Segments untuk SRT-driven ducking (Original mode only)
+    srt_position = 'top'  # default top supaya tidak overlap SRT Mandarin (kalau ada di video ori)
+    video_bitrate = None  # Bitrate untuk burn SRT (Mode B/D/F only)
+    need_srt_for_duck = original_mode  # Original mode butuh SRT untuk ducking
+    need_srt_for_burn = burn_srt       # Burn SRT butuh SRT untuk hardsub
+    if need_srt_for_duck or need_srt_for_burn:
+        # Tentukan label prompt berdasarkan use case
+        if need_srt_for_duck and need_srt_for_burn:
+            # Mode F: Original + Burn SRT → 1 SRT untuk 2 tujuan
+            prompt_label = 'File SRT Indonesia (untuk ducking + burn subtitle)'
+        elif need_srt_for_duck:
+            # Mode E: Original + Stream copy → SRT untuk ducking saja (no burn)
+            prompt_label = 'File SRT Indonesia (untuk ducking MP3 ori)'
+        else:
+            # Mode B/D: Burn SRT saja (Full atau Simple), SRT untuk burn
+            prompt_label = 'File SRT Indonesia (untuk burn subtitle)'
+        print(f'▶ Step 4.6/{total}: Pilih SRT Indonesia')
+        srt_path = select_file(prompt_label, ['srt'], search_dir=str(INPUT_DIR) if ensure_hdd() else None)
         if not srt_path:
             print('Batal.'); sys.exit(0)
         validate_input_file(srt_path, 'SRT Indonesia')
         print(f'  ✓ {srt_path}')
+
+        # Parse SRT → duck segments kalau Original mode (untuk SRT-driven ducking)
+        if original_mode:
+            duck_segments = parse_srt_for_ducking(srt_path, lead_ms=100, tail_ms=100)
+            print(f'  ℹ Parsed {len(duck_segments)} cues → ducking windows (untuk MP3 ori ducking)')
+            if not duck_segments:
+                print('  ⚠ Warning: Tidak ada cue di SRT. Ducking tidak akan bekerja (MP3 ori penuh).')
         print()
 
-        print(f'▶ Step 4.7/{total}: Pilih posisi SRT Indonesia')
-        # v3.3: Opsi A (di bawah Mandarin) + Opsi D (overlay di atas Mandarin)
-        # Plus Justify=2 (center horizontal, fix bug rata kiri di Alignment=5)
-        # SRT Mandarin biasanya hard-burn di bottom video ori (1-2 line)
-        pos_choice = questionary.select(
-            'Posisi SRT Indonesia:',
-            choices=[
-                'Opsi A: Bawah Mandarin — Indonesia di paling bawah (REKOMENDASI)',
-                'Opsi D: Overlay atas Mandarin — Indonesia langsung di atas SRT Mandarin (offset 60px)',
-                'Opsi B: Atas frame — Indonesia di atas, jauh dari Mandarin',
-                'Opsi C: Tengah video — Indonesia di middle frame (bisa nutup wajah)',
-                'Custom margin (input manual MarginV pixel)',
-            ],
-            default='Opsi A: Bawah Mandarin — Indonesia di paling bawah (REKOMENDASI)',
-        ).ask()
-        if 'Opsi A' in pos_choice:
-            # Indonesia di paling bawah, SRT Mandarin di atasnya (di bottom video ori)
-            # Alignment=2 (bottom), MarginV=20 (menempel ke bawah)
-            # Risk: jika SRT Mandarin 2 line, Indonesia bisa overlap. Tapi video ori
-            # biasanya SRT Mandarin tidak terlalu ke bawah (ada margin built-in).
-            srt_position = 'bottom:20'
-        elif 'Opsi D' in pos_choice:
-            # Indonesia langsung di atas Mandarin (overlay, di bottom region tapi offset)
-            # Alignment=2 (bottom), MarginV=60 (turun lebih, di atas Mandarin)
-            srt_position = 'bottom:60'
-        elif 'Opsi B' in pos_choice:
-            # Indonesia di atas frame, jauh dari Mandarin
-            # Alignment=5 (top), MarginV=50 (buffer dari atas)
-            srt_position = 'top:50'
-        elif 'Opsi C' in pos_choice:
-            # Middle video
-            srt_position = 'middle'
-        else:
-            margin_v = questionary.text('MarginV (pixel, default 40):', default='40').ask()
-            try:
-                srt_position = f'custom:{int(margin_v)}'
-            except ValueError:
-                srt_position = 'custom:40'
-        print(f'  ✓ {srt_position}')
-        print()
+        # Step 4.7: Posisi SRT — hanya kalau burn_srt (untuk hardsub position)
+        if burn_srt:
+            print(f'▶ Step 4.7/{total}: Pilih posisi SRT Indonesia')
+            # v3.3: Opsi A (di bawah Mandarin) + Opsi D (overlay di atas Mandarin)
+            # Plus Justify=2 (center horizontal, fix bug rata kiri di Alignment=5)
+            # SRT Mandarin biasanya hard-burn di bottom video ori (1-2 line)
+            pos_choice = questionary.select(
+                'Posisi SRT Indonesia:',
+                choices=[
+                    'Opsi A: Bawah Mandarin — Indonesia di paling bawah (REKOMENDASI)',
+                    'Opsi D: Overlay atas Mandarin — Indonesia langsung di atas SRT Mandarin (offset 60px)',
+                    'Opsi B: Atas frame — Indonesia di atas, jauh dari Mandarin',
+                    'Opsi C: Tengah video — Indonesia di middle frame (bisa nutup wajah)',
+                    'Custom margin (input manual MarginV pixel)',
+                ],
+                default='Opsi A: Bawah Mandarin — Indonesia di paling bawah (REKOMENDASI)',
+            ).ask()
+            if 'Opsi A' in pos_choice:
+                # Indonesia di paling bawah, SRT Mandarin di atasnya (di bottom video ori)
+                # Alignment=2 (bottom), MarginV=20 (menempel ke bawah)
+                # Risk: jika SRT Mandarin 2 line, Indonesia bisa overlap. Tapi video ori
+                # biasanya SRT Mandarin tidak terlalu ke bawah (ada margin built-in).
+                srt_position = 'bottom:20'
+            elif 'Opsi D' in pos_choice:
+                # Indonesia langsung di atas Mandarin (overlay, di bottom region tapi offset)
+                # Alignment=2 (bottom), MarginV=60 (turun lebih, di atas Mandarin)
+                srt_position = 'bottom:60'
+            elif 'Opsi B' in pos_choice:
+                # Indonesia di atas frame, jauh dari Mandarin
+                # Alignment=5 (top), MarginV=50 (buffer dari atas)
+                srt_position = 'top:50'
+            elif 'Opsi C' in pos_choice:
+                # Middle video
+                srt_position = 'middle'
+            else:
+                margin_v = questionary.text('MarginV (pixel, default 40):', default='40').ask()
+                try:
+                    srt_position = f'custom:{int(margin_v)}'
+                except ValueError:
+                    srt_position = 'custom:40'
+            print(f'  ✓ {srt_position}')
+            print()
 
-        # Step 4.8: Video bitrate (NEW v3.5) — muncul kalau burn_srt=True (Mode B & D)
-        # Burn SRT wajib re-encode video → user pilih bitrate untuk hemat size
-        # Mode A & C (stream copy) tidak perlu prompt — bitrate ikut MP4 ori
-        print(f'▶ Step 4.8/{total}: Pilih video bitrate (untuk burn SRT)')
-        video_bitrate = prompt_video_bitrate()
-        print(f'  ✓ {video_bitrate}')
-        print()
-    else:
-        # Stream copy mode — bitrate ikut MP4 ori, tidak perlu prompt
-        video_bitrate = None  # unused, stream copy pakai -c:v copy
+            # Step 4.8: Video bitrate (v3.5) — muncul kalau burn_srt=True (Mode B/D/F)
+            # Burn SRT wajib re-encode video → user pilih bitrate untuk hemat size
+            # Mode A/C/E (stream copy) tidak perlu prompt — bitrate ikut MP4 ori
+            print(f'▶ Step 4.8/{total}: Pilih video bitrate (untuk burn SRT)')
+            video_bitrate = prompt_video_bitrate()
+            print(f'  ✓ {video_bitrate}')
+            print()
+    # else: Mode A/C/E (Stream copy) — tidak ada Step 4.6/4.7/4.8 (no SRT needed for A/C, SRT only for duck in E)
+    # Catatan: Mode E (Original + Stream copy) sudah dapat SRT di Step 4.6 untuk ducking, no need Step 4.7/4.8
 
     # Step 5: Output — default derive dari MP4 prefix (Bug #1 fix)
     # v3.4: suffix berdasarkan mode input (Full/Simple) + mode output (Stream/Burn)
@@ -809,12 +822,18 @@ def main():
     mode_output_label = f'Burn SRT {srt_position}' if burn_srt else 'Stream copy'
     mode_label = f'{mode_input_label} | {mode_output_label}'
     print(f'║  Mode     : {mode_label[:46]:<46}║')
-    if original_mode and srt_path_duck:
-        # v3.7: tampilkan SRT Mandarin untuk ducking (Original mode)
-        print(f'║  SRT duck : {os.path.basename(srt_path_duck)[:46]:<46}║')
-    if burn_srt and srt_path:
-        print(f'║  SRT burn : {os.path.basename(srt_path)[:46]:<46}║')
-        # v3.5: tampilkan video bitrate kalau burn SRT (Mode B & D)
+    # v3.7.1: 1 SRT Indonesia untuk duck + burn (kalau Original mode atau burn_srt)
+    if srt_path:
+        # Tentukan label berdasarkan use case
+        if original_mode and burn_srt:
+            srt_label = 'SRT duck+burn'
+        elif original_mode:
+            srt_label = 'SRT duck  '
+        else:
+            srt_label = 'SRT burn  '
+        print(f'║  {srt_label}: {os.path.basename(srt_path)[:46]:<46}║')
+    if burn_srt and video_bitrate:
+        # v3.5: tampilkan video bitrate kalau burn SRT (Mode B/D/F)
         bitrate_display = f'{video_bitrate} (target bitrate)'
         print(f'║  Bitrate  : {bitrate_display[:46]:<46}║')
     print(f'║  MP4 dur  : {format_duration(mp4_dur):<46}║')
