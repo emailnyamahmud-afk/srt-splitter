@@ -3910,3 +3910,76 @@ Stage Summary:
 - 4857 cues → filter 171 KB → file temp mode → FFmpeg bisa parse
 - User bisa test ulang Mode E/F dengan S9-ORI (4857 cues)
 - Mode A/B/C/D tidak ada perubahan (filter kecil, inline OK)
+
+---
+Task ID: mix-tui-v3.7.3-envelope-wav-approach
+Agent: main
+Task: User test v3.7.2 masih gagal exit code 8 — nested if 4857 levels FFmpeg gagal parse
+
+User error (v3.7.2):
+- Mode F (Original + Burn SRT) dengan S9-ORI
+- 4857 cues → filter expression 182 KB (via file temp)
+- FFmpeg exit code 8 (filter parse error)
+- Progress kosong → FFmpeg gagal saat inisialisasi
+
+Root cause:
+- Nested if dengan 4857 levels terlalu dalam untuk FFmpeg parser
+- FFmpeg volume filter dengan expression 'if(between(...),0.0625,if(...,1.0))' 4857 nested levels → parse error
+- Bukan OS arg limit (sudah solved v3.7.2 via file temp), tapi FFmpeg internal parser limit
+
+Fix (v3.7.3): envelope WAV approach
+- Generate WAV envelope mono (100 Hz) berdasarkan SRT segments
+  - envelope = 1.0 (loud) saat cue aktif → trigger sidechain compress → MP3 ori di-duck
+  - envelope = 0.0 (silent) saat gap → MP3 ori normal
+  - Fade in/out 10ms di boundary untuk smooth transition (avoid click)
+- FFmpeg pakai sidechaincompress dengan envelope sebagai sidechain input
+  - [1:a][3:a]sidechaincompress=threshold=0.5:ratio=20:attack=5:release=300[sfx_ducked]
+  - Input index: 0=mp4, 1=sfx_wav (MP3 ori), 2=audio_dub, 3=envelope_wav
+- No expression size limit, no parse issue, works untuk any number of cues
+
+Implementasi:
+1. Function baru generate_duck_envelope_wav():
+   - Generate mono WAV (100 Hz, 16-bit PCM) dengan value 0.0/1.0 berdasarkan segments
+   - Fade in/out 10ms (1 sample @ 100 Hz) untuk smooth transition
+   - Save sebagai WAV file via wave module
+   - Return path file (caller cleanup setelah FFmpeg)
+
+2. Update audio_filter build untuk Original mode:
+   - Hapus nested if expression approach (build_srt_ducking_filter tidak dipakai untuk audio_filter)
+   - Generate envelope WAV (kalau segments ada)
+   - audio_filter = sidechaincompress dengan envelope sebagai sidechain input
+   - Fallback: no ducking kalau envelope generate gagal
+
+3. Update cmd build:
+   - Mode E (Stream copy): 4 input (mp4 + sfx + dub + envelope)
+   - Mode F (Burn SRT): 4 input + subtitle_filter
+   - Hapus filter_file_path logic (tidak perlu lagi, audio_filter kecil inline)
+   - Cleanup envelope WAV setelah FFmpeg selesai (success/fail/KeyboardInterrupt)
+
+4. Tambah verbose error handling:
+   - Saat FFmpeg gagal, jalankan ulang dengan capture stderr
+   - Print 30 baris terakhir stderr supaya user bisa lihat error message sebenarnya
+   - Bantu debug untuk masalah depan
+
+5. Update docstring v3.7.1 → v3.7.3 dengan section FIX envelope WAV approach
+
+Verify:
+- python3 -m py_compile scripts/mix-tui.py → OK
+- Test generate_duck_envelope_wav dengan 3 cues → 39 KB file, 100 Hz mono, 201s duration
+- Test generate_duck_envelope_wav dengan 4857 cues → 2.3 MB file, generated dalam 0.77s
+- Test FFmpeg sidechaincompress dengan envelope → exit code 0, works!
+- Semua test pass, no expression size issue, no parse issue
+
+Kelebihan envelope WAV approach:
+- No expression size limit (file WAV, bukan string)
+- No FFmpeg parse issue (sidechaincompress adalah standard filter)
+- Works untuk any number of cues (1 cue atau 100k cues sama saja)
+- Smooth transition via fade in/out 10ms di envelope
+- Cleanup otomatis setelah FFmpeg selesai
+
+Stage Summary:
+- v3.7.3: SRT-driven ducking pakai envelope WAV + sidechain compress (robust approach)
+- Solve FFmpeg nested if parse error untuk 4857 cues
+- User bisa test ulang Mode E/F dengan S9-ORI (4857 cues)
+- Mode A/B/C/D tidak ada perubahan (existing sidechain compress + no-ducking)
+- Verbose error handling bantu debug kalau ada masalah lain

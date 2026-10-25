@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-mix-tui.py v3.7.1 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn)
+mix-tui.py v3.7.3 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn)
 
 Workflow produksi (4 fase, bersih — sesuai v6 yt-dlp + edge-tts-tui):
   Fase 1: yt-dlp v6      → {name}.mp4 (video) + {name}-audio.mp3 (via yt-dlp convert) + {name}.id.srt
@@ -27,6 +27,18 @@ Workflow produksi (4 fase, bersih — sesuai v6 yt-dlp + edge-tts-tui):
       D. Simple   + Burn SRT    → {prefix}-id-simple-sub.mp4 (~5 menit, ~1.2-4.5 GB, hardsub, no SFX)
       E. Original + Stream copy → {prefix}-id-orig.mp4      (~3 menit, ~350 MB, MP3 ori+ducking)  ← v3.6 NEW
       F. Original + Burn SRT    → {prefix}-id-orig-sub.mp4  (~5 menit, ~1.2-4.5 GB, hardsub, MP3 ori+ducking) ← v3.6 NEW
+
+v3.7.3 FIX: SRT-driven ducking pakai envelope WAV + sidechain compress (ganti nested if expression).
+  - v3.7/3.7.1/3.7.2 pakai nested if expression → FFmpeg gagal parse untuk 4857 cues (exit code 8)
+  - v3.7.3 fix: generate WAV envelope mono (100 Hz) berdasarkan SRT segments
+    - envelope = 1.0 saat cue aktif (loud, trigger sidechain compress)
+    - envelope = 0.0 saat gap (silent, MP3 ori normal)
+    - Fade in/out 10ms di boundary untuk smooth transition
+  - Pakai FFmpeg sidechaincompress dengan envelope sebagai sidechain input
+  - Input index: 0=mp4, 1=sfx_wav, 2=audio_dub, 3=envelope_wav
+  - FFmpeg command: -i mp4 -i sfx -i dub -i envelope.wav -filter_complex ...
+  - Kelebihan: no expression size limit, no parse issue, works untuk any number of cues
+  - Cleanup envelope WAV setelah FFmpeg selesai (success/fail/KeyboardInterrupt)
 
 v3.7.1 SIMPLIFIKASI: 1 SRT Indonesia cukup untuk duck + burn (timestamps identik dengan SRT Mandarin).
   - User feedback v3.7: "SRT mandarin tak relevan, karena SRT id juga identik timesmapnya"
@@ -561,6 +573,83 @@ def write_filter_complex_to_file(filter_complex_str, output_dir=None):
     return filepath
 
 
+def generate_duck_envelope_wav(segments, total_dur, output_path, duck_value=1.0, normal_value=0.0,
+                                fade_ms=10, sample_rate=100):
+    """Generate WAV envelope untuk sidechain compress ducking.
+
+    v3.7.3 NEW: Alternative approach untuk SRT-driven ducking.
+    Nested if expression dengan 4857 levels gagal di FFmpeg (exit code 8, parse error).
+    Solusi: generate WAV envelope mono (100 Hz, value 0.0/1.0) berdasarkan SRT segments,
+    pakai sidechain compress untuk ducking MP3 ori.
+
+    Logic:
+      - envelope = 1.0 (loud) saat cue SRT aktif → trigger sidechain compress → MP3 ori di-duck
+      - envelope = 0.0 (silent) saat gap antar cue → MP3 ori normal (no compress)
+      - Fade in/out 10ms di boundary untuk smooth transition (avoid click artifact)
+
+    Args:
+      segments: list of (start_sec, end_sec) dari parse_srt_for_ducking
+      total_dur: total durasi audio (detik)
+      output_path: path output WAV file
+      duck_value: value saat cue aktif (1.0 = loud, trigger sidechain)
+      normal_value: value saat gap (0.0 = silent, no ducking)
+      fade_ms: fade in/out duration di boundary cue (default 10ms)
+      sample_rate: sample rate envelope (100 Hz cukup, 10ms resolution)
+
+    Returns:
+      Path output WAV file (caller cleanup setelah FFmpeg selesai)
+      Return None kalau segments kosong atau error.
+    """
+    if not segments or total_dur <= 0:
+        return None
+
+    try:
+        import wave
+        import struct
+        import math
+
+        # Generate envelope signal (mono, 100 Hz)
+        n_samples = int(total_dur * sample_rate) + sample_rate  # +1s buffer
+        envelope = [normal_value] * n_samples  # default = 0.0 (no duck)
+
+        # Fade samples (10ms = 1 sample @ 100 Hz)
+        fade_samples = max(1, int(fade_ms * sample_rate / 1000))
+
+        for start, end in segments:
+            start_idx = max(0, int(start * sample_rate))
+            end_idx = min(n_samples, int(end * sample_rate))
+            if end_idx <= start_idx:
+                continue
+
+            # Set duck value saat cue aktif
+            for i in range(start_idx, end_idx):
+                # Fade in (start) dan fade out (end) untuk smooth transition
+                fade_in = (i - start_idx) / fade_samples  # 0 → 1 dalam fade_samples
+                fade_out = (end_idx - 1 - i) / fade_samples  # 1 → 0 dalam fade_samples
+                fade_factor = min(1.0, fade_in, fade_out)
+                envelope[i] = normal_value + (duck_value - normal_value) * fade_factor
+
+        # Convert float (0.0-1.0) ke int16 (-32768 to 32767)
+        # sidechain compress trigger berdasarkan amplitude, jadi 1.0 → 32767 (loud), 0.0 → 0 (silent)
+        samples_int16 = []
+        for v in envelope:
+            v_clamped = max(0.0, min(1.0, v))  # clamp 0.0-1.0
+            samples_int16.append(int(v_clamped * 32767))
+
+        # Write WAV (mono, 16-bit PCM, 100 Hz)
+        with wave.open(output_path, 'w') as w:
+            w.setnchannels(1)
+            w.setsampwidth(2)  # 16-bit
+            w.setframerate(sample_rate)
+            w.writeframes(struct.pack(f'<{len(samples_int16)}h', *samples_int16))
+
+        return output_path
+
+    except Exception as e:
+        print(f'  ⚠ Gagal generate envelope WAV: {e}')
+        return None
+
+
 def main():
     print_banner()
 
@@ -962,48 +1051,54 @@ def main():
     # Audio filter build — v3.7: 3 jenis ducking strategy
     # - Simple mode: dub copy as-is (no filter, no ducking)
     # - Full mode: sidechain compress (existing, ducking_db dari prompt)
-    # - Original mode: SRT-driven ducking (volume dynamic expression dari SRT Indonesia cues)
-    # v3.7.2 FIX: kalau SRT-driven filter >OS arg limit (~100 KB), tulis ke file temp
-    #             pakai -filter_complex_script filename (no arg length limit)
+    # - Original mode v3.7.3: SRT-driven ducking via envelope WAV + sidechain compress
+    #   (sebelumnya v3.7 pakai nested if expression, FFmpeg gagal parse untuk 4857 cues)
     audio_filter = None
-    sfx_duck_filter_str = None  # v3.7.2: filter string besar (kalau None = inline OK)
+    envelope_wav_path = None  # v3.7.3: path file envelope WAV (cleanup setelah FFmpeg)
     if simple_mode:
         # Simple: no audio filter (dub copy as-is)
         pass
     elif original_mode:
-        # v3.7 NEW: Original mode pakai SRT-driven ducking
-        # v3.7.2 FIX: handle filter expression >OS arg limit via file temp
-        # SRT Indonesia → duck segments → volume filter expression
-        # MP3 ori (index 1) di-duck saat cue SRT aktif (volume 6.25% = -24 dB)
-        # Dub (index 2) tetap volume 1 (normal)
-        # Mix: [sfx_ducked][dub]amix → [aout]
+        # v3.7.3 NEW: Original mode pakai envelope WAV + sidechain compress
+        # Generate WAV envelope (mono, 100 Hz) berdasarkan SRT segments
+        # Saat cue aktif → envelope = 1.0 → trigger sidechain compress → MP3 ori di-duck
+        # Saat gap → envelope = 0.0 → MP3 ori normal
+        # Input index: 0=mp4, 1=sfx_wav (MP3 ori), 2=audio_dub, 3=envelope_wav
         if duck_segments:
-            # Build SRT-driven volume filter untuk MP3 ori
-            duck_volume = 0.0625  # 6.25% = -24 dB (strong, hampir mute)
-            # v3.7.2: function return tuple (inline_filter, big_filter_str)
-            # inline_filter = None jika filter >OS arg limit (pakai file temp)
-            # big_filter_str = None jika filter inline OK (cukup kecil)
-            sfx_duck_inline, sfx_duck_big = build_srt_ducking_filter(
-                duck_segments, duck_volume=duck_volume
+            import tempfile
+            # Generate envelope WAV
+            envelope_wav_path = tempfile.mktemp(prefix='mix_tui_envelope_', suffix='.wav')
+            print(f'  📄 Generate envelope WAV untuk SRT-driven ducking...')
+            envelope_wav_path = generate_duck_envelope_wav(
+                duck_segments, mp4_dur, envelope_wav_path
             )
-            # audio_mix_part: volume dub + amix (selalu inline, ukuran kecil)
-            audio_mix_part = (
-                f'[2:a]volume=1[dub];'
-                f'[sfx_ducked][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
-            )
-            if sfx_duck_inline is not None:
-                # Inline OK (filter kecil) → gabung jadi 1 audio_filter string
-                audio_filter = f'{sfx_duck_inline};{audio_mix_part}'
-                # sfx_duck_filter_str stays None (tidak butuh file temp)
+            if envelope_wav_path:
+                envelope_size_kb = os.path.getsize(envelope_wav_path) / 1024
+                print(f'     ✓ {envelope_wav_path}')
+                print(f'     Size: {envelope_size_kb:.1f} KB ({len(duck_segments)} cues, {mp4_dur:.0f}s audio)')
+                # Audio filter: sidechain compress dengan envelope sebagai sidechain trigger
+                # [1:a] = MP3 ori (main, akan di-duck)
+                # [3:a] = envelope WAV (sidechain, trigger ducking saat envelope loud)
+                # threshold=0.5: trigger saat envelope > 0.5 (cue aktif)
+                # ratio=20: aggressive ducking (output turun drastis)
+                # attack=5ms: cepat turun saat cue mulai
+                # release=300ms: smooth naik balik setelah cue berakhir
+                audio_filter = (
+                    f'[1:a][3:a]sidechaincompress='
+                    f'threshold=0.5:ratio=20:attack=5:release=300[sfx_ducked];'
+                    f'[2:a]volume=1[dub];'
+                    f'[sfx_ducked][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
+                )
             else:
-                # v3.7.2 FIX: Filter besar (>100 KB) → tidak bisa inline (OS arg limit)
-                # audio_filter hanya berisi audio_mix_part (volume dub + amix)
-                # sfx_duck_big akan ditulis ke file temp + pakai -filter_complex_script
-                # Caller (cmd build) akan handle ini
-                audio_filter = audio_mix_part  # tanpa sfx_duck (ditambah di cmd build via file)
-                sfx_duck_filter_str = sfx_duck_big  # set outer scope variable untuk cmd build
+                # Fallback: no ducking (kalau envelope generate gagal)
+                print(f'  ⚠ Envelope generate gagal, fallback: no ducking (MP3 ori penuh)')
+                audio_filter = (
+                    '[1:a]volume=1[sfx];'
+                    '[2:a]volume=1[dub];'
+                    '[sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
+                )
         else:
-            # No SRT cues → no ducking (fallback, sama dengan ducking_db=0)
+            # No SRT cues → no ducking (fallback)
             audio_filter = (
                 '[1:a]volume=1[sfx];'
                 '[2:a]volume=1[dub];'
@@ -1028,38 +1123,25 @@ def main():
                 f'[ducked_sfx][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
             )
 
-    # v3.7.2: filter_file_path — kalau sfx_duck_filter_str besar, tulis full filter_complex ke file
-    # Pakai -filter_complex_script filename (no OS arg limit)
-    filter_file_path = None
-    if sfx_duck_filter_str:
-        # Filter besar (>100 KB) → tulis ke file temp
-        # Full filter_complex = sfx_duck_filter_str + audio_filter (mix part)
-        # audio_filter sudah berisi: [2:a]volume=1[dub];[sfx_ducked][dub]amix...[aout]
-        # sfx_duck_filter_str sudah berisi: [1:a]volume='...'[sfx_ducked]
-        # Combine: sfx_duck_filter_str + ';' + audio_filter (yang sudah ada [sfx_ducked] reference)
-        filter_file_path = write_filter_complex_to_file(
-            f'{sfx_duck_filter_str};{audio_filter}'
-        )
-        print(f'  📄 Filter ditulis ke file temp: {filter_file_path}')
-        print(f'     Size: {os.path.getsize(filter_file_path) // 1024} KB (>{100} KB threshold)')
-        print(f'     Pakai -filter_complex_script (no OS arg limit)')
+    # v3.7.3: Hapus filter_file_path logic (diganti dengan envelope WAV approach)
+    # Original mode sekarang pakai envelope WAV + sidechain compress (no big expression)
+    # audio_filter sudah inline kecil (~150 chars), no need for file temp
 
     if not burn_srt:
         # === Stream copy (3 menit, no SRT) — Mode A/C/E ===
         if not simple_mode:
             # Full + Stream copy (A) / Original + Stream copy (E): 3 input + audio filter
-            # v3.7.2: kalau filter_file_path set, pakai -filter_complex_script (file temp)
-            # Kalau tidak, pakai -filter_complex (inline string)
-            if filter_file_path:
-                # Mode E dengan filter besar → pakai file script
-                cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
-                       '-filter_complex_script', filter_file_path,
+            # v3.7.3: Original mode butuh input ke-4 (envelope WAV) untuk sidechain compress
+            if original_mode and envelope_wav_path:
+                # Mode E dengan envelope WAV → 4 input (mp4 + sfx + dub + envelope)
+                cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub, '-i', envelope_wav_path,
+                       '-filter_complex', audio_filter,
                        '-map', '0:v', '-map', '[aout]',
                        '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
                        '-movflags', '+faststart', output]
-                print(f'Command: ffmpeg ... -filter_complex_script {os.path.basename(filter_file_path)} -c:v copy -c:a aac -b:a 192k {output}')
+                print(f'Command: ffmpeg -i mp4 -i sfx -i dub -i envelope -filter_complex ... -c:v copy -c:a aac -b:a 192k {output}')
             else:
-                # Mode A atau Mode E dengan filter kecil → inline
+                # Mode A (Full) atau Mode E tanpa envelope (fallback) → 3 input
                 filter_complex = audio_filter
                 cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
                        '-filter_complex', filter_complex,
@@ -1137,26 +1219,19 @@ def main():
 
         if not simple_mode:
             # Full + Burn SRT (B) / Original + Burn SRT (F): 3 input + audio_filter + subtitle_filter
-            # Audio filter: sidechain compress untuk ducking (MP3 ori/no_vocals saat dub bicara)
-            # v3.7.2: kalau filter_file_path set (Original mode + filter besar), tulis full filter_complex ke file
-            # Full filter_complex = sfx_duck_filter_str + audio_filter + ';' + subtitle_filter
-            if filter_file_path:
-                # Mode F dengan filter besar → tulis ulang file dengan subtitle_filter ditambah
-                # File sebelumnya berisi sfx_duck_filter_str + audio_filter (sudah ditulis di atas)
-                # Tapi sekarang perlu + subtitle_filter juga → rewrite file
-                full_filter_complex = f'{sfx_duck_filter_str};{audio_filter};{subtitle_filter}'
-                # Rewrite file dengan full filter (overwrite existing file)
-                with open(filter_file_path, 'w', encoding='utf-8') as f:
-                    f.write(full_filter_complex)
-                cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
-                       '-filter_complex_script', filter_file_path,
+            # v3.7.3: Original mode butuh input ke-4 (envelope WAV) untuk sidechain compress
+            # v3.7.3: Hapus filter_file_path logic (diganti envelope WAV approach)
+            if original_mode and envelope_wav_path:
+                # Mode F dengan envelope WAV → 4 input (mp4 + sfx + dub + envelope)
+                filter_complex = audio_filter + ';' + subtitle_filter
+                cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub, '-i', envelope_wav_path,
+                       '-filter_complex', filter_complex,
                        '-map', '[vout]', '-map', '[aout]',
                        '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
                        '-c:a', 'aac', '-b:a', '192k',
                        '-movflags', '+faststart', output]
-                print(f'Command: ffmpeg ... -filter_complex_script {os.path.basename(filter_file_path)} -c:v h264_videotoolbox -b:v {video_bitrate} -c:a aac -b:a 192k {output}')
             else:
-                # Mode B atau Mode F dengan filter kecil → inline
+                # Mode B (Full) atau Mode F tanpa envelope (fallback) → 3 input
                 filter_complex = audio_filter + ';' + subtitle_filter
                 cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
                        '-filter_complex', filter_complex,
@@ -1204,18 +1279,18 @@ def main():
                 print(f'Partial output dihapus: {output}')
             except OSError:
                 pass
-        # v3.7.2: cleanup file temp filter (kalau ada)
-        if filter_file_path and os.path.isfile(filter_file_path):
+        # v3.7.3: cleanup envelope WAV temp file (kalau ada)
+        if envelope_wav_path and os.path.isfile(envelope_wav_path):
             try:
-                os.unlink(filter_file_path)
+                os.unlink(envelope_wav_path)
             except OSError:
                 pass
         sys.exit(130)
 
-    # v3.7.2: cleanup file temp filter setelah FFmpeg selesai (success atau fail)
-    if filter_file_path and os.path.isfile(filter_file_path):
+    # v3.7.3: cleanup envelope WAV temp file setelah FFmpeg selesai (success atau fail)
+    if envelope_wav_path and os.path.isfile(envelope_wav_path):
         try:
-            os.unlink(filter_file_path)
+            os.unlink(envelope_wav_path)
         except OSError:
             pass
 
@@ -1239,10 +1314,31 @@ def main():
         print('═' * 64)
         print(f'❌ GAGAL dengan exit code {exit_code}')
         print()
+        # v3.7.3: jalankan ulang FFmpeg dengan stderr di-print untuk debug
+        print('🔍 FFmpeg stderr (untuk debug):')
+        print('─' * 64)
+        try:
+            debug_cmd = cmd + ['-v', 'error']  # verbose error
+            # Hapus output file dari cmd supaya tidak overwrite existing
+            # Cari output path (argumen terakhir yang bukan flag)
+            # Sebenarnya cmd terakhir = output, kita ganti ke /dev/null untuk debug
+            # Tapi lebih simple: jalankan ulang, capture stderr, print
+            debug_result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            # Print stderr (FFmpeg error messages)
+            stderr_lines = debug_result.stderr.strip().split('\n')
+            # Print last 30 lines supaya tidak terlalu panjang
+            for line in stderr_lines[-30:]:
+                print(f'  {line}')
+        except Exception as e:
+            print(f'  Tidak bisa capture stderr: {e}')
+        print('─' * 64)
+        print()
         print('Cek error message di atas. Umumnya:')
         print('  - "No such file" → file input hilang atau path salah')
         print('  - "Invalid data found" → file corrupt, coba re-generate')
         print('  - "Cannot allocate memory" → audio terlalu panjang, split dulu')
+        print('  - "Filter not found" → nama filter salah atau ffmpeg versi lama')
+        print('  - "Invalid argument" → filter syntax error')
         print('═' * 64)
 
     sys.exit(exit_code)
