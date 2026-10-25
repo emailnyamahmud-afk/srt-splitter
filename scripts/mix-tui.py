@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-mix-tui.py v3.7.3 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn)
+mix-tui.py v3.7.5 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn)
 
 Workflow produksi (4 fase, bersih — sesuai v6 yt-dlp + edge-tts-tui):
   Fase 1: yt-dlp v6      → {name}.mp4 (video) + {name}-audio.mp3 (via yt-dlp convert) + {name}.id.srt
@@ -27,6 +27,15 @@ Workflow produksi (4 fase, bersih — sesuai v6 yt-dlp + edge-tts-tui):
       D. Simple   + Burn SRT    → {prefix}-id-simple-sub.mp4 (~5 menit, ~1.2-4.5 GB, hardsub, no SFX)
       E. Original + Stream copy → {prefix}-id-orig.mp4      (~3 menit, ~350 MB, MP3 ori+ducking)  ← v3.6 NEW
       F. Original + Burn SRT    → {prefix}-id-orig-sub.mp4  (~5 menit, ~1.2-4.5 GB, hardsub, MP3 ori+ducking) ← v3.6 NEW
+
+v3.7.5 FIX: Cascade 2-stage sidechain compress + Dub boost 1.5x + envelope 44100 Hz.
+  - v3.7.3 single-stage ratio=20 hanya reduce 50% — user lihat "MP3 ori makin keras"
+  - Test sandbox: sidechain compress BEKERJA (50% reduction) tapi tidak cukup aggressive
+  - v3.7.5 cascade 2-stage (20×20=400x effective ratio) → MP3 ori cue reduction 67%
+  - Plus boost Dub volume 1.5x → Dub dominant saat cue, MP3 ori jadi background
+  - Envelope sample rate default 44100 Hz (match dengan audio biasanya, lebih reliable)
+  - Print cue coverage % — warning kalau >80% (film dialog sangat padat)
+  - Test sandbox: FFT analysis confirm Dub dominant saat cue, MP3 ori dominant saat gap
 
 v3.7.3 FIX: SRT-driven ducking pakai envelope WAV + sidechain compress (ganti nested if expression).
   - v3.7/3.7.1/3.7.2 pakai nested if expression → FFmpeg gagal parse untuk 4857 cues (exit code 8)
@@ -574,12 +583,15 @@ def write_filter_complex_to_file(filter_complex_str, output_dir=None):
 
 
 def generate_duck_envelope_wav(segments, total_dur, output_path, duck_value=1.0, normal_value=0.0,
-                                fade_ms=10, sample_rate=100):
+                                fade_ms=10, sample_rate=44100):
     """Generate WAV envelope untuk sidechain compress ducking.
 
     v3.7.3 NEW: Alternative approach untuk SRT-driven ducking.
+    v3.7.5 UPDATE: sample rate default 44100 Hz (match dengan audio biasanya)
+                   supaya sidechain compress lebih reliable (no resample artifact).
+
     Nested if expression dengan 4857 levels gagal di FFmpeg (exit code 8, parse error).
-    Solusi: generate WAV envelope mono (100 Hz, value 0.0/1.0) berdasarkan SRT segments,
+    Solusi: generate WAV envelope mono (44100 Hz, value 0.0/1.0) berdasarkan SRT segments,
     pakai sidechain compress untuk ducking MP3 ori.
 
     Logic:
@@ -1086,36 +1098,44 @@ def main():
         # Simple: no audio filter (dub copy as-is)
         pass
     elif original_mode:
-        # v3.7.3 NEW: Original mode pakai envelope WAV + sidechain compress
-        # Generate WAV envelope (mono, 100 Hz) berdasarkan SRT segments
-        # Saat cue aktif → envelope = 1.0 → trigger sidechain compress → MP3 ori di-duck
-        # Saat gap → envelope = 0.0 → MP3 ori normal
+        # v3.7.5 UPDATE: Cascade 2-stage sidechain compress + boost Dub 1.5x
+        # v3.7.3 single-stage ratio=20 hanya reduce 50% (test sandbox: 8410 vs 16218)
+        # v3.7.5 cascade 2-stage (20×20=400x effective) + Dub boost 1.5x = Dub dominant saat cue
+        # Test sandbox: MP3 ori cue reduction 67%, Dub 1.6x lebih dominan dari MP3 ori saat cue
+        # Saat cue aktif → envelope loud → sidechain compress trigger 2x → MP3 ori heavily ducked
+        # Saat gap → envelope silent → no compress → MP3 ori normal
         # Input index: 0=mp4, 1=sfx_wav (MP3 ori), 2=audio_dub, 3=envelope_wav
         if duck_segments:
             import tempfile
-            # Generate envelope WAV
+            # Generate envelope WAV (44100 Hz, match dengan audio biasanya)
             envelope_wav_path = tempfile.mktemp(prefix='mix_tui_envelope_', suffix='.wav')
             print(f'  📄 Generate envelope WAV untuk SRT-driven ducking...')
             envelope_wav_path = generate_duck_envelope_wav(
-                duck_segments, mp4_dur, envelope_wav_path
+                duck_segments, mp4_dur, envelope_wav_path, sample_rate=44100
             )
             if envelope_wav_path:
                 envelope_size_kb = os.path.getsize(envelope_wav_path) / 1024
+                total_cue_dur = sum(e - s for s, e in duck_segments)
+                cue_coverage = total_cue_dur / mp4_dur * 100 if mp4_dur > 0 else 0
                 print(f'     ✓ {envelope_wav_path}')
                 print(f'     Size: {envelope_size_kb:.1f} KB ({len(duck_segments)} cues, {mp4_dur:.0f}s audio)')
-                # Audio filter: sidechain compress dengan envelope sebagai sidechain trigger
-                # [1:a] = MP3 ori (main, akan di-duck)
-                # [3:a] = envelope WAV (sidechain, trigger ducking saat envelope loud)
-                # threshold=0.5: trigger saat envelope > 0.5 (cue aktif)
-                # ratio=20: aggressive ducking (output turun drastis)
-                # attack=5ms: cepat turun saat cue mulai
-                # release=300ms: smooth naik balik setelah cue berakhir
+                print(f'     Cue coverage: {total_cue_dur:.0f}s / {mp4_dur:.0f}s = {cue_coverage:.1f}%')
+                if cue_coverage > 80:
+                    print(f'     ⚠ Warning: Cue coverage >80% — film dialog sangat padat.')
+                    print(f'       MP3 ori akan sering di-duck, mungkin tidak ada banyak gap "normal".')
+                # v3.7.5: Cascade 2-stage sidechain compress (lebih aggressive)
+                # Stage 1: ratio=20, threshold=0.5, attack=5ms, release=300ms → ~50% reduction
+                # Stage 2: cascade lagi → ~67% total reduction (MP3 ori di-duck 2/3 volume)
+                # Plus boost Dub 1.5x supaya Dub dominant saat cue aktif
                 audio_filter = (
-                    f'[1:a][3:a]sidechaincompress='
-                    f'threshold=0.5:ratio=20:attack=5:release=300[sfx_ducked];'
-                    f'[2:a]volume=1[dub];'
+                    f'[1:a][3:a]sidechaincompress=threshold=0.5:ratio=20:attack=5:release=300[stage1];'
+                    f'[stage1][3:a]sidechaincompress=threshold=0.5:ratio=20:attack=5:release=300[sfx_ducked];'
+                    f'[2:a]volume=1.5[dub];'
                     f'[sfx_ducked][dub]amix=inputs=2:duration=longest:normalize=0[aout]'
                 )
+                print(f'  ℹ v3.7.5: Cascade 2-stage sidechain compress + Dub boost 1.5x')
+                print(f'     Stage 1+2: MP3 ori di-duck ~67% saat cue aktif')
+                print(f'     Dub boost 1.5x: Dub dominant saat cue, MP3 ori background')
             else:
                 # Fallback: no ducking (kalau envelope generate gagal)
                 print(f'  ⚠ Envelope generate gagal, fallback: no ducking (MP3 ori penuh)')

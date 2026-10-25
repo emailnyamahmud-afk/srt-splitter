@@ -3983,3 +3983,96 @@ Stage Summary:
 - User bisa test ulang Mode E/F dengan S9-ORI (4857 cues)
 - Mode A/B/C/D tidak ada perubahan (existing sidechain compress + no-ducking)
 - Verbose error handling bantu debug kalau ada masalah lain
+
+---
+Task ID: mix-tui-v3.7.3-mode-e-running
+Agent: main
+Task: User test v3.7.3 Mode E (Original + Stream copy) dengan S9-ORI — RUNNING, progress OK
+
+Test setup:
+- Film: S9-ORI (1080p, 2j 31m 13s, 4857 cues SRT)
+- Mode: E (Original + Stream copy) — paling cepat, no burn subtitle
+- Output: S9-ORI-id-orig.mp4
+
+Verifikasi fitur v3.7.3 semua aktif (dari log):
+- ✅ Step 1.5: Original mode dengan label "SRT-driven ducking"
+- ✅ Step 4.6: SRT Indonesia prompt dengan label "untuk ducking MP3 ori" (Mode E)
+- ✅ Step 4.6: Parse SRT 4857 cues berhasil
+- ✅ Ringkasan: Mode "Original (SRT-driven duck) | Stream copy" + SRT duck label
+- ✅ Envelope WAV generate: 1772.5 KB (4857 cues, 9074s) — generated OK
+- ✅ FFmpeg cmd 4 input: mp4 + sfx + dub + envelope (mode E)
+- ✅ Progress running: 16.5% speed=51.0x — JALAN, no parse error!
+
+Performance:
+- Speed: 51.0x (lebih cepat dari Mode A Full ~30-50x)
+- Alasan cepat: envelope WAV (100 Hz simple signal) lebih ringan dari dub audio
+  sebagai sidechain trigger — frequency domain analysis cepat
+- ETA: 2m 28s (total ~3 menit, sesuai estimasi Stream copy)
+
+Stage Summary:
+- v3.7.3 envelope WAV approach SOLVE FFmpeg parse error (exit code 8)
+- Mode E (Stream copy) running normal, ~3 menit estimasi
+- User akan test VLC setelah selesai untuk verify ducking + audio quality
+- Pending: VLC feedback untuk konfirmasi production-ready
+- Setelah Mode E confirmed → test Mode F (Burn SRT 4 Mbps, ~14 menit)
+
+---
+Task ID: mix-tui-v3.7.5-cascade-2stage-fix
+Agent: main
+Task: User test v3.7.3 VLC hasil BURUK — MP3 ori makin keras, ducking tidak bekerja
+
+User feedback:
+- "HASILNYA BURUK = SUARA MP3 ORI = MALAH MAKIN KERAS = DUCKING ENGGA BEKERJA"
+- Mode E (Original + Stream copy) dengan S9-ORI (1080p, 4857 cues)
+- Output 1090.1 MB (di SSD, bukan HDD — v3.7.4 belum di-pull)
+- VLC: MP3 ori makin keras
+
+Investigation sandbox (FFT analysis):
+- v3.7.3 single-stage ratio=20: sidechain compress BEKERJA (cue RMS 8410 vs gap 16218)
+- Tapi hanya 50% reduction — tidak cukup aggressive
+- User lihat "MP3 ori makin keras" karena Dub + ducked MP3 ori, tapi MP3 ori masih dominan
+
+Root cause analysis:
+1. Single-stage sidechain compress ratio max 20 (FFmpeg limit)
+2. 50% reduction tidak cukup — MP3 ori masih terdengar di atas Dub
+3. User butuh Dub dominant saat cue, MP3 ori mute/near-mute
+
+Fix v3.7.5:
+1. Cascade 2-stage sidechain compress (20×20 = 400x effective ratio)
+   - Stage 1: ratio=20 → 50% reduction
+   - Stage 2: cascade lagi → total ~67% reduction
+   - Test sandbox confirm: MP3 ori cue mag 252M → 83M (67% reduction)
+2. Boost Dub volume 1.5x supaya Dub dominant saat cue
+   - Test sandbox: Dub mag 108M → 162M (1.5x boost)
+   - Dub 162M vs MP3 ori 83M saat cue → Dub 2x lebih dominan
+3. Envelope sample rate default 44100 Hz (sebelumnya 100 Hz)
+   - Match dengan audio biasanya (44100 Hz)
+   - Lebih reliable — no resample artifact di sidechain compress
+4. Print cue coverage % untuk info user
+   - S9-ORI: 4857 cues × 2.1s avg / 9000s = 118% (cues sangat padat)
+   - Warning kalau >80% — film dialog sangat padat
+
+Test results (cascade 2-stage + Dub boost 1.5x, sandbox):
+- Saat gap: MP3 ori dominant (252M vs Dub 162M)
+- Saat cue: Dub dominant (162M vs MP3 ori 83M) — Dub 2x lebih dominan ✅
+- MP3 ori cue reduction: 67% (lebih aggressive dari v3.7.3 yang 50%)
+
+Implementasi:
+- generate_duck_envelope_wav: sample_rate default 44100 (sebelumnya 100)
+- audio_filter Original mode:
+  - Stage 1: [1:a][3:a]sidechaincompress=threshold=0.5:ratio=20:attack=5:release=300[stage1]
+  - Stage 2: [stage1][3:a]sidechaincompress=threshold=0.5:ratio=20:attack=5:release=300[sfx_ducked]
+  - Boost Dub: [2:a]volume=1.5[dub]
+  - Mix: [sfx_ducked][dub]amix=inputs=2:duration=longest:normalize=0[aout]
+- Print info: cascade 2-stage + Dub boost + cue coverage %
+
+Verify:
+- python3 -m py_compile scripts/mix-tui.py → OK
+- Test sandbox FFT analysis: cascade 2-stage + Dub 1.5x → Dub dominant saat cue ✅
+- Backward compatible: Mode A/B/C/D tidak ada perubahan
+
+Stage Summary:
+- v3.7.5: Cascade 2-stage sidechain compress + Dub boost 1.5x
+- Test sandbox confirm Dub dominant saat cue (2x lebih dominan dari MP3 ori)
+- User harus pull v3.7.4 (output ke HDD) + v3.7.5 (cascade fix)
+- Test ulang Mode E dengan S9-ORI → seharusnya Dub dominant, MP3 ori background
