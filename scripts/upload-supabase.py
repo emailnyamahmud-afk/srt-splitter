@@ -16,12 +16,12 @@ R-21 + R-26 compliance:
     `lemma_words`, `mendeley_id`, `dasanama_count` TIDAK di-upload (DB tidak punya).
   - Field `register` + `krama_inggil` DROPPED dari JSON (R-26: register 100% 'umum' tidak
     informatif, krama_inggil kosong by R-17). DB tidak punya kolom ini.
-  - Hanya upload: ngoko, aksara, krama, arti, keterangan (R-18: pertahankan konteks),
+  - Hanya upload: ngoko, aksara, krama, indo, keterangan (R-18: pertahankan konteks),
     sumber, status.
 
 DB Supabase struktur (10 Okt 2026, post-R-26 standardisasi):
   Table `kamus` (10 kolom):
-    id (uuid, auto-gen), ngoko, aksara, krama, arti, keterangan,
+    id (uuid, auto-gen), ngoko, aksara, krama, indo, keterangan,
     sumber, status, created_at, updated_at
   Total rows saat ini: 1 (sample test 9 Okt, akan di-drop saat standardisasi DB)
 
@@ -69,7 +69,7 @@ def collect_ready_entries(data):
     Returns:
         list of dict (DB-ready rows) — hanya entries dengan:
         - status == 'ready' (USER EXPLICIT mark via menu "Mark READY/DRAFT bulk")
-        - ngoko + krama + arti SEMUA terisi (3-field lengkap)
+        - ngoko + krama + indo SEMUA terisi (3-field lengkap)
     """
     ready = []
     skipped_draft = 0
@@ -152,7 +152,7 @@ def confirm_upload(ready_entries, stats, url):
     for i, row in enumerate(ready_entries[:5], 1):
         print(f"    {i}. ngoko:  {row['ngoko'][:35]!r}")
         print(f"       krama: {row['krama'][:35]!r}")
-        print(f"       arti:  {row['indo'][:35]!r}")
+        print(f"       indo:  {row['indo'][:35]!r}")
         print(f"       sumber: {row['sumber'][:30]!r}")
         print()
 
