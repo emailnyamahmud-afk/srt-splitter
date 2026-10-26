@@ -2,7 +2,7 @@
 
 Python TUI untuk workflow dubbing + kamus Jawa.
 
-## 7 TUI
+## 9 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -10,10 +10,11 @@ Python TUI untuk workflow dubbing + kamus Jawa.
 | 2 | demucs-tui.py (M1 MPS) | ✅ Production |
 | 3 | kamus-tui.py v16 | ✅ Production (audit) |
 | 4 | Web app | ⚠ Prototype |
-| 5 | SRT editor | ⏳ Pending (pakai SRT ID) |
+| 5 | SRT editor (web, pakai SRT ID) | ⏳ Pending |
 | 6 | edge-tts-tui.py v7.3.1 | ✅ Production |
 | 7 | mix-tui.py v3.8.2 | ✅ Production (all tested + logo + fade) |
-| 8 | whisper-tui.py v1.1 | 🆕 New (testing) |
+| 8 | whisper-tui.py v1.1 (faster-whisper) | ✅ Production (SRT quality 90-95%) |
+| 9 | srt-editor-tui.py v1.0 (fix typo SRT hasil translate) | 🆕 New |
 
 ## Pipeline (3 alur)
 
@@ -115,8 +116,51 @@ python3 demucs-tui.py
 python3 edge-tts-tui.py
 python3 mix-tui.py     # Mode A (Stream) / B (Burn)
 
+# Fix SRT hasil editsub.com / Google Translate (sebelum edge-tts)
+python3 srt-editor-tui.py subs.id.srt
+# Output: subs.id.final.srt  → pakai ini untuk edge-tts-tui
+
 # Kamus (parallel)
 python3 kamus-tui.py
+```
+
+## srt-editor-tui.py v1.0
+
+TUI editor untuk SRT hasil Google Translate / editsub.com. Buka SRT → browse per
+halaman → edit inline → mark reviewed / flag → glossary bulk replace → save final.
+
+```bash
+# Pakai default glossary (19 entries dari review S2-FB-Mandarin.id.srt)
+python3 srt-editor-tui.py subs.id.srt
+
+# Pakai glossary sendiri
+python3 srt-editor-tui.py subs.id.srt --glossary my-glossary.json
+```
+
+**Output:**
+- `subs.id.final.srt` — output final (pakai untuk edge-tts / mix-tui)
+- `subs.id.srt.bak` — backup original (1x saat save pertama)
+- `subs.id.working.json` — auto-save state (resume kapan saja)
+
+**Fitur:**
+- Browse cues per halaman (20 cues/page), edit inline (single-line atau $EDITOR untuk multi-line)
+- Mark reviewed / flag bermasalah
+- Glossary JSON: edit satu canonical → semua variant ter-replace otomatis (case-insensitive)
+- Search, jump-to-cue, find&replace
+- Auto-save working JSON setiap save / quit
+
+**Default glossary** (19 entries, dari review S2-FB-Mandarin.id.srt):
+- Names: Lin Zhao, Xie Changfeng, Wang Haochuan, Ma Zhenbang, Chen Su, Qin Hongying, Mu En, Yao Sihai, Zhou Lizheng, Qin Fenglu, Li Kui
+- Terms: Xiangjun, panah otomatis, obat luka emas, Jiedushi, menarik pelatuk, laras meledak, pembalasan, akademi
+
+**Format glossary JSON:**
+```json
+{
+  "version": 1,
+  "entries": [
+    {"canonical": "Lin Zhao", "variants": ["Lin Yanya", "Peti mati Lin"], "scope": "names"}
+  ]
+}
 ```
 
 ## Struktur Path

@@ -5078,3 +5078,58 @@ Stage Summary:
 - GitHub PAT tetap di remote origin config (tidak perlu setup ulang next time)
 - Backup branch backup-before-rebase-1793016554 tetap ada untuk recovery kalau perlu (155 commit lama)
 - Roadmap Phase 4+ di README: voice assignment per cue, merge short cues, regex find&replace, multi-file batch
+
+---
+Task ID: 5
+Agent: main
+Task: Fix struktur folder salah (srt-editor-tui harus di scripts/, bukan root). Baca semua docs dulu sebelum kerja.
+
+Work Log:
+- User tegur: "AI mengacaukan struktur folder karena amnesia, tui seharusnya di folder script. Baca semua dokumentasi, jangan halu"
+- Baca AGENTS.md, PROJECT_RULES.md, README.md (root), scripts/README.md untuk paham struktur project:
+  * Pattern: single-file `*-tui.py` di `scripts/` folder, pakai questionary (BUKAN textual)
+  * Semua TUI: yt-dlp-tui.py, demucs-tui.py, kamus-tui.py (2085 baris!), edge-tts-tui.py, mix-tui.py, whisper-tui.py — semua single-file questionary
+  * Tidak ada satu pun TUI pakai folder package atau textual
+  * SSD ~/Dubbing/ = scripts + venv, HDD /Volumes/HDD/Dubbing/ = data
+- Hapus folder `srt-editor-tui/` di root (12 file, sudah ke-push ke GitHub sebelumnya): git rm -r srt-editor-tui/
+- Hapus deliverable lama di download/ (folder package + zip)
+- Buat ulang sebagai `scripts/srt-editor-tui.py` single-file pakai questionary (ikut pattern kamus-tui.py):
+  * Total 791 baris (kamus-tui 2085, edge-tts 943 — srt-editor simpler, masuk akal)
+  * Parser SRT (BOM/CRLF tolerant, multi-encoding)
+  * GlossaryEntry dengan regex case-INSENSITIVE (re.IGNORECASE) — fix bug "Payung emas" vs "payung emas"
+  * Glossary default inline 19 entries (dari review S2-FB-Mandarin.id.srt)
+  * Editor class: browse per halaman (20 cues/page), view detail, edit (single-line atau $EDITOR untuk multi-line), mark/flag, glossary apply (selected/all), search, jump, find&replace
+  * Save: final.srt + .bak backup + working.json (resume state)
+  * Auto-save working JSON saat KeyboardInterrupt (Ctrl-C)
+- Test smoke test (test-srt-editor-tui.py, 9 test cases):
+  * Parser: 9 cues loaded OK (sample SRT buatan)
+  * Round-trip serialize: preserved
+  * Default glossary: 19 entries OK
+  * Scan variants: 5 entries match sample
+  * Apply 'menarik pelatuk': "Teruslah melakukan cumming" → "Teruslah menarik pelatuk" ✓
+  * Apply ALL: 8 replacements, 7 auto-fixed cues
+  * Verify per-cue: payung emas → obat luka emas, ayam panah → panah otomatis, Bulan → Mu En, Aokawa → Wang Haochuan ✓
+  * Save + reload: 'cumming' gone, 'menarik pelatuk' present
+  * Resume from working JSON: state preserved
+  * Revert: cue back to original
+  * All 9 tests PASSED
+- Test TUI interaktif (auto-input): menu render OK, pagination OK, status bar OK
+- Update docs (semua 4 file):
+  * scripts/README.md: 7 TUI → 9 TUI (whisper-tui naik ke production, srt-editor-tui new), tambah section "srt-editor-tui.py v1.0" lengkap dengan workflow + format glossary
+  * README.md (root): 7 TUI → 9 TUI, TUI #5 rename jadi "SRT editor (web)" untuk bedain dengan TUI #9
+  * AGENTS.md: 7 TUI → 9 TUI, update whisper-tui status dari "🆕 New" ke "✅ Production", add srt-editor-tui
+  * PROJECT_RULES.md: 7 TUI → 9 TUI, same updates
+
+Stage Summary:
+- Struktur folder FIXED: srt-editor-tui sekarang single-file `scripts/srt-editor-tui.py` 791 baris pakai questionary, konsisten dengan semua TUI lain
+- Folder `srt-editor-tui/` di root sudah `git rm` (akan di-push deletion ke GitHub)
+- Glossary sekarang case-INSENSITIVE — fix bug "Payung emas" vs "payung emas" (di SRT asli S2-FB-Mandarin.id.srt cue 2022 ada "Payung tempat tidur emas" dengan capital P)
+- Default glossary inline 19 entries tetap pakai (no separate JSON file), tapi user bisa override dengan --glossary file.json
+- TUI #9 added to all 4 docs (root README, AGENTS.md, PROJECT_RULES.md, scripts/README.md)
+- Pipeline dubbing sekarang lengkap: yt-dlp → whisper (optional) → **srt-editor-tui (fix typo)** → edge-tts → mix-tui
+- File berubah:
+  * HAPUS: srt-editor-tui/ (12 file, root)
+  * BUAT: scripts/srt-editor-tui.py (791 baris, single-file)
+  * BUAT: scripts/test-srt-editor-tui.py (smoke test, 9 cases)
+  * UPDATE: scripts/README.md, README.md, AGENTS.md, PROJECT_RULES.md
+- Pending: commit & push ke GitHub (sandbox masih ada PAT di origin config)

@@ -12,7 +12,7 @@
 Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 ```
 
-## 7 TUI
+## 9 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -20,10 +20,11 @@ Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 | 2 | demucs-tui | ✅ Production |
 | 3 | kamus-tui v16 | ✅ Production (audit) |
 | 4 | Web app | ⚠ Prototype |
-| 5 | SRT editor | ⏳ Pending (pakai SRT ID) |
+| 5 | SRT editor (web, pakai SRT ID) | ⏳ Pending |
 | 6 | edge-tts-tui v7.3.1 | ✅ Production |
 | 7 | mix-tui v3.8.2 | ✅ Production (all tested + logo + fade) |
-| 8 | whisper-tui v1.1 | 🆕 New (testing) |
+| 8 | whisper-tui v1.1 | ✅ Production (SRT quality 90-95%) |
+| 9 | srt-editor-tui v1.0 | 🆕 New (fix typo SRT hasil translate) |
 
 ## Struktur Folder
 
