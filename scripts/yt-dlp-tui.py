@@ -90,10 +90,38 @@ def main():
     print(f'yt-dlp: {ytdlp}\n')
 
     # Step 1: URL
-    url = questionary.text('URL YouTube:').ask()
+    url = questionary.text('URL video (YouTube/Facebook/TikTok/dll):').ask()
     if not url or not url.strip():
         sys.exit(0)
     url = url.strip()
+
+    # Step 1.5: Cookie detection (v6.1 NEW)
+    # YouTube tidak butuh cookie. Platform lain (FB, IG, TikTok) mungkin butuh login.
+    cookie_args = []
+    is_youtube = 'youtube.com' in url or 'youtu.be' in url
+    if not is_youtube:
+        print(f'\n  ℹ URL bukan YouTube — mungkin butuh login (cookies) untuk download.')
+        print(f'    Pastikan sudah login ke platform tersebut di browser pilihan.\n')
+        cookie_choice = questionary.select(
+            'Pakai cookies dari browser?',
+            choices=[
+                'Brave (default — login FB/IG di Brave dulu)',
+                'Chrome',
+                'Safari',
+                'Firefox',
+                'Skip (no cookies — mungkin gagal kalau butuh login)',
+            ],
+            default='Brave (default — login FB/IG di Brave dulu)',
+        ).ask()
+        if 'Brave' in cookie_choice:
+            cookie_args = ['--cookies-from-browser', 'brave']
+        elif 'Chrome' in cookie_choice:
+            cookie_args = ['--cookies-from-browser', 'chrome']
+        elif 'Safari' in cookie_choice:
+            cookie_args = ['--cookies-from-browser', 'safari']
+        elif 'Firefox' in cookie_choice:
+            cookie_args = ['--cookies-from-browser', 'firefox']
+        print()
 
     # Step 2: Resolusi
     res = questionary.select('Pilih resolusi:', choices=[
@@ -186,7 +214,7 @@ def main():
     # Download video (MP4, tanpa audio)
     print('▶ Download video (MP4, tanpa audio)...')
     cmd_video = [ytdlp, '-f', video_fmt, '-o', video_template,
-                 '--no-playlist', '--newline', url]
+                 '--no-playlist', '--newline'] + cookie_args + [url]
     try:
         subprocess.run(cmd_video)
     except KeyboardInterrupt:
@@ -205,7 +233,7 @@ def main():
                  '-x', '--audio-format', 'mp3',
                  '--audio-quality', '0',  # 0 = VBR best quality (~190 kbps)
                  '-o', audio_template,
-                 '--no-playlist', '--newline', url]
+                 '--no-playlist', '--newline'] + cookie_args + [url]
     try:
         subprocess.run(cmd_audio)
     except KeyboardInterrupt:
@@ -227,7 +255,7 @@ def main():
                        '--sub-format', 'srt', '--convert-subs', 'srt',
                        '--skip-download',
                        '-o', srt_template,
-                       '--no-playlist', url]
+                       '--no-playlist'] + cookie_args + [url]
             try:
                 subprocess.run(cmd_srt)
             except KeyboardInterrupt:
