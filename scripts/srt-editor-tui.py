@@ -16,28 +16,31 @@ TUI ini ngebantu:
   - Search, jump-to-cue, find&replace
   - Auto-save working JSON (resume kapan saja)
 
-Install:
-  pip3 install questionary
+Cara pakai (Mac, setelah clone ke ~/Dubbing/):
 
-Usage:
-  python3 srt-editor-tui.py <srt-file>
-  python3 srt-editor-tui.py <srt-file> --glossary glossary.json
+  cd ~/Dubbing
+  source venv/bin/activate
+  python3 srt-editor-tui.py                           # interaktif, pilih dari list
+  python3 srt-editor-tui.py /Volumes/HDD/Dubbing/input/S2-FB-Mandarin.id.srt
+  python3 srt-editor-tui.py subs.id.srt --glossary my-glossary.json
 
-Output:
-  <stem>.final.srt      — output final (pakai ini untuk edge-tts / mix-tui)
-  <stem>.srt.bak        — backup original (dibuat sekali saat save pertama)
+Output (di folder yang sama dengan input):
+  <stem>.final.srt      — output final (pakai untuk edge-tts / mix-tui)
+  <stem>.srt.bak        — backup original (1x saat save pertama)
   <stem>.working.json   — auto-save state untuk resume
 
-Note:
-  Glossary default sudah inline di script (19 entries dari review S2-FB-Mandarin.id.srt).
-  Kalau punya glossary sendiri, pakai --glossary file.json.
-  Format glossary JSON:
-    {
-      "version": 1,
-      "entries": [
-        {"canonical": "Lin Zhao", "variants": ["Lin Yanya", "Peti mati Lin"], "scope": "names"}
-      ]
-    }
+Glossary default sudah inline di script (19 entries dari review S2-FB-Mandarin.id.srt).
+Kalau punya glossary sendiri, pakai --glossary file.json.
+Format glossary JSON:
+  {
+    "version": 1,
+    "entries": [
+      {"canonical": "Lin Zhao", "variants": ["Lin Yanya", "Peti mati Lin"], "scope": "names"}
+    ]
+  }
+
+Install:
+  pip3 install questionary   # biasanya sudah ada di venv Dubbing
 """
 
 import os
@@ -747,6 +750,84 @@ class Editor:
                 print(f"  ⚠️  Auto-save failed: {e}")
 
 
+# === File picker (interaktif, kalau tanpa arg) ===
+
+def find_srt_files() -> List[Path]:
+    """Glob file SRT dari beberapa lokasi umum:
+    - cwd (~/Dubbing/)
+    - /Volumes/HDD/Dubbing/input/
+    - /Volumes/HDD/Dubbing/
+    Return list of Paths (sorted by mtime DESC).
+    """
+    candidates_dirs = [
+        Path.cwd(),
+        Path("/Volumes/HDD/Dubbing/input"),
+        Path("/Volumes/HDD/Dubbing"),
+        Path.home() / "Dubbing",
+    ]
+    seen = set()
+    files: List[Path] = []
+    for d in candidates_dirs:
+        if not d.exists() or not d.is_dir():
+            continue
+        try:
+            for f in d.glob("*.srt"):
+                if f.is_file() and f not in seen:
+                    seen.add(f)
+                    files.append(f)
+        except (PermissionError, OSError):
+            continue
+    # Sort by mtime DESC (terbaru di atas)
+    files.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    return files
+
+
+def interactive_pick_srt() -> Optional[Path]:
+    """Tampilkan list SRT, user pilih. Return Path atau None (cancel)."""
+    print("\n📁 Mencari file SRT...")
+    files = find_srt_files()
+    if not files:
+        print("❌ Tidak ada file .srt ditemukan di:")
+        print("   - cwd (folder sekarang)")
+        print("   - /Volumes/HDD/Dubbing/input/")
+        print("   - /Volumes/HDD/Dubbing/")
+        print("   - ~/Dubbing/")
+        print("\nCara pakai:")
+        print("  python3 srt-editor-tui.py /path/ke/file.srt")
+        return None
+
+    print(f"   Ditemukan {len(files)} file SRT.\n")
+    choices = []
+    for f in files[:30]:
+        mtime = time.strftime("%Y-%m-%d %H:%M", time.localtime(f.stat().st_mtime))
+        size_kb = f.stat().st_size / 1024
+        label = f"  {f.name}  ({size_kb:.0f} KB, {mtime})"
+        choices.append(questionary.Choice(label, value=f))
+    if len(files) > 30:
+        choices.append(questionary.Choice(
+            f"... +{len(files)-30} more (gunakan arg path eksplisit)", value=None))
+    choices.append(questionary.Choice("⌨  Ketik path manual", value="manual"))
+    choices.append(questionary.Choice("🚪  Cancel", value="cancel"))
+
+    sel = questionary.select(
+        "Pilih SRT untuk di-edit:", choices=choices, use_arrow_keys=True
+    ).ask()
+
+    if sel is None or sel == "cancel":
+        return None
+    elif sel == "manual":
+        path_str = questionary.text("Path file SRT:").ask()
+        if not path_str:
+            return None
+        p = Path(path_str).expanduser().resolve()
+        if not p.exists():
+            print(f"❌ File tidak ditemukan: {p}")
+            return None
+        return p
+    else:
+        return sel
+
+
 # === Argparse + main ===
 
 def main():
@@ -754,30 +835,50 @@ def main():
         description=f"srt-editor-tui v{VERSION} — TUI editor untuk file SRT hasil translate",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Contoh:
-  python3 srt-editor-tui.py subs.id.srt
+Cara pakai (tanpa arg, interaktif):
+  python3 srt-editor-tui.py
+  → tampilkan list SRT dari cwd + /Volumes/HDD/Dubbing/input/, pilih via menu
+
+Cara pakai (eksplisit):
+  python3 srt-editor-tui.py S2-FB-Mandarin.id.srt
+  python3 srt-editor-tui.py /Volumes/HDD/Dubbing/input/S2-FB-Mandarin.id.srt
   python3 srt-editor-tui.py subs.id.srt --glossary my-glossary.json
 
-Output:
-  <stem>.final.srt      — output final
+Output (di folder yang sama dengan input):
+  <stem>.final.srt      — output final (pakai untuk edge-tts / mix-tui)
   <stem>.srt.bak        — backup original (1x saat save pertama)
   <stem>.working.json   — auto-save state untuk resume
+
+Default glossary (19 entries) sudah inline di script. Pakai --glossary untuk override.
 """,
     )
-    parser.add_argument("srt", help="Path file SRT untuk di-edit")
+    parser.add_argument(
+        "srt",
+        nargs="?",
+        default=None,
+        help="(opsional) Path file SRT. Kalau kosong, pilih interaktif dari list."
+    )
     parser.add_argument(
         "--glossary",
         help="Path file glossary JSON (opsional, kalau kosong pakai default inline)"
     )
     args = parser.parse_args()
 
-    srt = Path(args.srt).expanduser().resolve()
-    if not srt.exists():
-        print(f"❌ File tidak ditemukan: {srt}")
-        sys.exit(1)
-
     print(f"\n🎬 srt-editor-tui v{VERSION}")
-    print(f"📄 {srt.name}\n")
+
+    # Resolve SRT path: arg atau interactive picker
+    if args.srt:
+        srt = Path(args.srt).expanduser().resolve()
+        if not srt.exists():
+            print(f"❌ File tidak ditemukan: {srt}")
+            sys.exit(1)
+    else:
+        srt = interactive_pick_srt()
+        if srt is None:
+            print("👋 Cancel.")
+            sys.exit(0)
+
+    print(f"📄 {srt}\n")
 
     glossary_path = None
     if args.glossary:

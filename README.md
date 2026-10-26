@@ -35,6 +35,7 @@ SSD ~/Dubbing/                       ← scripts + venv + jv.wiktionary.json (ce
 ├── edge-tts-tui.py
 ├── mix-tui.py
 ├── kamus-tui.py
+├── srt-editor-tui.py                ← fix typo SRT hasil translate (new)
 ├── config.py                        ← base path (SSD vs HDD)
 └── venv/
 
@@ -45,6 +46,17 @@ HDD /Volumes/HDD/Dubbing/            ← data (besar)
 ├── mix/                             ← final MP4 (output langsung ke sini, v3.7.4)
 └── .env                             ← Supabase credentials
 ```
+
+## srt-editor-tui v1.0 — fix typo SRT hasil translate
+
+```bash
+cd ~/Dubbing && source venv/bin/activate
+python3 srt-editor-tui.py                                     # interaktif, pilih SRT dari list
+python3 srt-editor-tui.py /Volumes/HDD/Dubbing/input/S2-FB-Mandarin.id.srt
+# Output: S2-FB-Mandarin.id.final.srt → pakai untuk edge-tts-tui
+```
+
+Detail lengkap: lihat [scripts/README.md](scripts/README.md#srt-editor-tui-v10).
 
 ## mix-tui v3.8.2 — 6 mode + logo + smooth fade
 

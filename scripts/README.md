@@ -129,39 +129,104 @@ python3 kamus-tui.py
 TUI editor untuk SRT hasil Google Translate / editsub.com. Buka SRT → browse per
 halaman → edit inline → mark reviewed / flag → glossary bulk replace → save final.
 
-```bash
-# Pakai default glossary (19 entries dari review S2-FB-Mandarin.id.srt)
-python3 srt-editor-tui.py subs.id.srt
+### Cara pakai
 
-# Pakai glossary sendiri
-python3 srt-editor-tui.py subs.id.srt --glossary my-glossary.json
+```bash
+cd ~/Dubbing
+source venv/bin/activate
+
+# Mode interaktif (pilih SRT dari list — glob dari cwd + HDD)
+python3 srt-editor-tui.py
+
+# Mode eksplisit (path SRT beneran)
+python3 srt-editor-tui.py /Volumes/HDD/Dubbing/input/S2-FB-Mandarin.id.srt
+
+# Pakai glossary sendiri (override default inline)
+python3 srt-editor-tui.py /Volumes/HDD/Dubbing/input/S2-FB-Mandarin.id.srt \
+    --glossary ~/Dubbing/my-glossary.json
 ```
 
-**Output:**
-- `subs.id.final.srt` — output final (pakai untuk edge-tts / mix-tui)
-- `subs.id.srt.bak` — backup original (1x saat save pertama)
-- `subs.id.working.json` — auto-save state (resume kapan saja)
+### Workflow di pipeline dubbing
 
-**Fitur:**
-- Browse cues per halaman (20 cues/page), edit inline (single-line atau $EDITOR untuk multi-line)
-- Mark reviewed / flag bermasalah
-- Glossary JSON: edit satu canonical → semua variant ter-replace otomatis (case-insensitive)
-- Search, jump-to-cue, find&replace
-- Auto-save working JSON setiap save / quit
+```bash
+# Setelah dapet SRT Indonesia dari editsub.com / Google Translate
+python3 srt-editor-tui.py /Volumes/HDD/Dubbing/input/S2-FB-Mandarin.id.srt
+# → di TUI: F2 (glossary) → Apply ALL → review manual cue-cue problem → Ctrl-C / Save
+# → output: /Volumes/HDD/Dubbing/input/S2-FB-Mandarin.id.final.srt
 
-**Default glossary** (19 entries, dari review S2-FB-Mandarin.id.srt):
-- Names: Lin Zhao, Xie Changfeng, Wang Haochuan, Ma Zhenbang, Chen Su, Qin Hongying, Mu En, Yao Sihai, Zhou Lizheng, Qin Fenglu, Li Kui
-- Terms: Xiangjun, panah otomatis, obat luka emas, Jiedushi, menarik pelatuk, laras meledak, pembalasan, akademi
+# Pakai final.srt untuk edge-tts
+python3 edge-tts-tui.py
+# → pilih file: S2-FB-Mandarin.id.final.srt
+```
 
-**Format glossary JSON:**
+### Output (di folder yang sama dengan input)
+
+| File | Tujuan |
+|------|--------|
+| `<stem>.final.srt` | **Output final** — pakai untuk edge-tts / mix-tui |
+| `<stem>.srt.bak` | Backup original (dibuat 1x saat save pertama) |
+| `<stem>.working.json` | Auto-save state — resume kapan saja |
+
+### Menu TUI
+
+| Key | Aksi |
+|-----|------|
+| ↑/↓ | Pilih cue (dalam browse mode) |
+| Enter | View cue detail |
+| `e` | Edit text (single-line, atau buka $EDITOR untuk multi-line) |
+| `r` | Revert ke original |
+| `m` | Toggle "reviewed" (sudah diperiksa) |
+| `f` | Toggle "flagged" (tandai bermasalah) |
+| `n` | Lompat ke cue berikutnya yang belum di-review |
+
+### Status icons
+
+| Icon | Arti |
+|------|------|
+| ` ` (kosong) | Belum disentuh |
+| `✓` | Reviewed |
+| `!` | Flagged (masalah) |
+| `*` | Changed (text berubah) |
+| `@` | Auto-fixed by glossary |
+
+### Glossary default (inline, 19 entries)
+
+Dari review S2-FB-Mandarin.id.srt (5162 cues):
+
+- **Names** (11): Lin Zhao, Xie Changfeng, Wang Haochuan, Ma Zhenbang, Chen Su,
+  Qin Hongying, Mu En, Yao Sihai, Zhou Lizheng, Qin Fenglu, Li Kui
+- **Terms** (8): Xiangjun, panah otomatis, obat luka emas, Jiedushi,
+  menarik pelatuk, laras meledak, pembalasan, akademi
+
+Match case-insensitive (regex IGNORECASE), jadi "Payung emas" dan "payung emas"
+sama-sama ter-replace.
+
+### Format glossary JSON (untuk override)
+
 ```json
 {
   "version": 1,
   "entries": [
-    {"canonical": "Lin Zhao", "variants": ["Lin Yanya", "Peti mati Lin"], "scope": "names"}
+    {
+      "canonical": "Lin Zhao",
+      "variants": ["Lin Yanya", "Peti mati Lin"],
+      "scope": "names"
+    }
   ]
 }
 ```
+
+- `canonical`: bentuk yang diinginkan (final)
+- `variants`: bentuk-bentuk salah yang akan diganti dengan canonical
+- `scope`: info saja, tidak mempengaruhi behavior ("names" / "terms" / "all")
+
+### Resume (kalau quit tanpa save)
+
+TUI auto-save ke `.working.json` setiap save / Ctrl-C. Buka lagi file SRT yang
+sama → auto-resume (progress tidak hilang).
+
+Mau mulai dari awal (reset progress)? Hapus `<stem>.working.json`, TUI akan load
+dari `.srt` original.
 
 ## Struktur Path
 
