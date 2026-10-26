@@ -6,13 +6,14 @@ Python TUI untuk workflow dubbing + kamus Jawa.
 
 | # | TUI | Status |
 |---|-----|--------|
-| 1 | yt-dlp-tui.py v6 (MP3) | ✅ Production |
+| 1 | yt-dlp-tui.py v6.1 (MP3 + cookies) | ✅ Production (FB confirmed) |
 | 2 | demucs-tui.py (M1 MPS) | ✅ Production |
 | 3 | kamus-tui.py v16 | ✅ Production (audit) |
 | 4 | Web app | ⚠ Prototype |
 | 5 | SRT editor | ⏳ Pending (pakai SRT ID) |
 | 6 | edge-tts-tui.py v7.3.1 | ✅ Production |
 | 7 | mix-tui.py v3.8.2 | ✅ Production (all tested + logo + fade) |
+| 8 | whisper-tui.py v1.1 | 🆕 New (testing) |
 
 ## Pipeline (3 alur)
 

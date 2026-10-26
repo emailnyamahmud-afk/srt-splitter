@@ -8,13 +8,14 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 
 | # | TUI | Tugas | Status |
 |---|-----|-------|--------|
-| 1 | yt-dlp-tui.py v6 | Download MP4 + MP3 + SRT Indonesia | ✅ Production |
+| 1 | yt-dlp-tui.py v6.1 | Download MP4 + MP3 + SRT (YouTube/FB/TikTok + cookies) | ✅ Production (FB confirmed) |
 | 2 | demucs-tui.py | Split audio → no_vocals.mp3 (SFX bersih) | ✅ Production |
 | 3 | kamus-tui.py | User edit kamus JSON manual (sebelum DB) | ✅ Production (audit) |
 | 4 | Web app | Translate SRT Indonesia → Jawa (kamus Supabase) | ⚠ Prototype |
 | 5 | SRT editor | Pakai SRT Indonesia (Jawa nunggu kamus+web) | ⏳ Pending |
 | 6 | edge-tts-tui.py | Generate audio dub (5000+ cue, 2-5 jam) | ✅ Production |
 | 7 | mix-tui.py v3.8.2 | Mix MP4 + audio → final video (6 mode + logo + fade) | ✅ Production (all tested) |
+| 8 | whisper-tui.py v1.1 | Generate SRT dari audio (faster-whisper, M1) | 🆕 New (v1.1 running, user testing) |
 
 ## Pipeline
 
@@ -96,7 +97,7 @@ Auto-detect logo PNG transparan, burn ke top-right (100×100 px, 10px margin) be
 ```bash
 cd ~/Dubbing
 source venv/bin/activate
-pip3 install questionary edge-tts yt-dlp torchaudio demucs numpy
+pip3 install questionary edge-tts yt-dlp torchaudio demucs numpy faster-whisper
 brew install ffmpeg
 ```
 
@@ -134,5 +135,6 @@ curl -L -o demucs-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/s
 curl -L -o edge-tts-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/edge-tts-tui.py"
 curl -L -o mix-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/mix-tui.py"
 curl -L -o kamus-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/kamus-tui.py"
+curl -L -o whisper-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/whisper-tui.py"
 curl -L -o upload-supabase.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py"
 ```

@@ -4922,3 +4922,58 @@ Makasih AI.. Dub ini benar-benar end to end"
 
 "LUAR BIASA.. SIAP SKAL UP." — User verdict final
 
+
+---
+Task ID: whisper-tui-v1.1-running-confirmed
+Agent: main
+Task: User test whisper-tui v1.1 — RUNNING, no error (av library bypass works)
+
+User test S2-FB-Mandarin (212.2 MB, 2j 33m 50s Mandarin audio):
+- ✅ Model medium loaded (1.5 GB download OK)
+- ✅ Audio decoded via ffmpeg: 147,695,630 samples, 9231.0s @ 16kHz mono
+- ✅ Transcribe running: estimasi ~108 menit
+- ✅ NO av library error (v1.1 fix confirmed)
+
+v1.1 fix details:
+- Bypass av library (av 19.x incompatible dengan faster-whisper on Python 3.14)
+- Decode audio via ffmpeg → numpy float32 array (16kHz mono)
+- Pass numpy array to model.transcribe() (not file path)
+- Sandbox test confirmed: works without av library
+
+Estimasi:
+- 2j 33m 50s audio @ medium model @ M1 CPU int8 = ~108 menit
+- Progress: print setiap 50 cues + elapsed time
+- RAM: ~1-3 GB (aman, no swap)
+
+Expected output:
+- S2-FB-Mandarin.zh.srt (Mandarin SRT, ~3500 cues, ~50-100 KB)
+- User translate manual via Google Translate → S2-FB-Mandarin.id.srt
+- Lanjut edge-tts + mix-tui workflow
+
+Stage Summary:
+- whisper-tui v1.1 running, av library bypass confirmed
+- User tinggal tunggu ~108 menit untuk transcribe selesai
+- Setelah SRT Mandarin ready → Google Translate → edge-tts → mix-tui
+- Pipeline end-to-end: FB video → SRT ori → translate → dub → final video
+
+
+---
+Task ID: docs-update-whisper-cookie-final
+Agent: main
+Task: Update semua dokumentasi dengan whisper-tui v1.1 + yt-dlp cookie v6.1
+
+Updated 4 files:
+- README.md: TUI #8 whisper-tui v1.1, yt-dlp v6.1 (FB cookies), install faster-whisper, download command
+- AGENTS.md: TUI #8, yt-dlp v6.1, status
+- PROJECT_RULES.md: TUI #8, yt-dlp v6.1
+- scripts/README.md: TUI #8, yt-dlp v6.1, pipeline table
+
+8 TUI status:
+1. yt-dlp-tui v6.1 (MP3 + cookies FB/TikTok/IG) — ✅ Production (FB confirmed)
+2. demucs-tui — ✅ Production
+3. kamus-tui v16 — ✅ Production (audit)
+4. Web app — ⚠ Prototype
+5. SRT editor — ⏳ Pending
+6. edge-tts-tui v7.3.1 — ✅ Production
+7. mix-tui v3.8.2 (6 mode + logo + fade + MUTE) — ✅ Production
+8. whisper-tui v1.1 (faster-whisper, SRT from audio) — 🆕 New (testing)
