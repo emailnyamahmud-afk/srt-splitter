@@ -6,7 +6,7 @@ Python TUI untuk workflow dubbing + kamus Jawa.
 
 | # | TUI | Status |
 |---|-----|--------|
-| 1 | yt-dlp-tui.py v6.1 (MP3 + cookies) | ✅ Production (FB confirmed) |
+| 1 | yt-dlp-tui.py v6.2 (MP4+MP3+SRT, cookies anti-bot YT/FB/TikTok/IG) | ✅ Production (FB+YT confirmed) |
 | 2 | demucs-tui.py (M1 MPS) | ✅ Production |
 | 3 | kamus-tui.py v16 | ✅ Production (audit) |
 | 4 | Web app | ⚠ Prototype |
@@ -49,7 +49,7 @@ yt-dlp → edge-tts → mix Original (E/F)
 
 | Script | Fungsi | Output |
 |--------|--------|--------|
-| yt-dlp-tui.py v6 | Download MP4 + MP3 + SRT Indonesia | HDD/input/ |
+| yt-dlp-tui.py v6.2 | Download MP4 + MP3 + SRT Indonesia | HDD/input/ |
 | demucs-tui.py | Vocal separation (M1 MPS) | HDD/demucs/ |
 | edge-tts-tui.py | TTS generation (5000+ cue) | HDD/tts/ |
 | mix-tui.py v3.7.6 | Final mix (6 mode, MUTE COMPLETE) | HDD/mix/ |

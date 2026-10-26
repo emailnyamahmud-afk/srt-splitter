@@ -8,7 +8,7 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 
 | # | TUI | Tugas | Status |
 |---|-----|-------|--------|
-| 1 | yt-dlp-tui.py v6.1 | Download MP4 + MP3 + SRT (YouTube/FB/TikTok + cookies) | ✅ Production (FB confirmed) |
+| 1 | yt-dlp-tui.py v6.2 | Download MP4 + MP3 + SRT (YT/FB/TikTok/IG + cookies anti-bot) | ✅ Production (FB+YT confirmed) |
 | 2 | demucs-tui.py | Split audio → no_vocals.mp3 (SFX bersih) | ✅ Production |
 | 3 | kamus-tui.py | User edit kamus JSON manual (sebelum DB) | ✅ Production (audit) |
 | 4 | Web app | Translate SRT Indonesia → Jawa (kamus Supabase) | ⚠ Prototype |

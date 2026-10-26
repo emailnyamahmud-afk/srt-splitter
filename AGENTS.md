@@ -11,7 +11,7 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 
 | # | TUI | Status |
 |---|-----|--------|
-| 1 | yt-dlp-tui v6.1 (MP3 + cookies untuk FB/TikTok/IG) | ✅ Production (FB confirmed) |
+| 1 | yt-dlp-tui v6.2 (MP4+MP3+SRT, cookies anti-bot YT/FB/TikTok/IG) | ✅ Production (FB+YT confirmed) |
 | 2 | demucs-tui | ✅ Production |
 | 3 | kamus-tui v16 | ✅ Production (audit pending) |
 | 4 | Web app | ⚠ Prototype |
@@ -79,7 +79,7 @@ Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no m
 - User validasi manual di kamus-tui, mark READY, upload Supabase
 
 ### Pipeline produksi (6 film tested, 6 mode production-ready)
-- yt-dlp v6 MP3 output: ✅
+- yt-dlp v6.2 MP3 output: ✅
 - demucs v2 (segment 4, MPS): ✅
 - edge-tts v7.3.1 (4565 cue tested): ✅
 - mix-tui v3.7.6: 6 mode production-ready

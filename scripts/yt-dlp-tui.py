@@ -1,16 +1,22 @@
 #!/usr/bin/env python3
 """
-yt-dlp-tui.py v6 — TUI download YouTube: video + audio + SRT
+yt-dlp-tui.py v6.2 — TUI download YouTube/Facebook/TikTok/IG: video + audio + SRT
 
-Pilihan resolusi: 480p, 720p, 1080p, best
-Output: 2 file = MP4 (video only) + MP3 (audio only, via yt-dlp convert)
-SRT: list subtitle dari JSON metadata, user pilih Indonesia / lain / skip
+Perubahan v6.2 (26 Okt 2026):
+  FIX: YouTube sekarang sering kena "Sign in to confirm you're not a bot" (HTTP 429).
+       V6 lama skip cookies untuk YouTube → rusak. V6.2 SELALU pakai cookies untuk
+       SEMUA platform (YT, FB, IG, TikTok). Default Brave (user pakai Brave).
+       Auto-detect browser yang tersedia, fallback ke Skip kalau ga ada.
 
 v6 update: Output audio = MP3 (sebelumnya M4A native).
   - Pakai yt-dlp `-x --audio-format mp3` → download audio terbaik → convert MP3
   - Butuh ffmpeg terinstall (sudah di repo: `brew install ffmpeg`)
   - Quality: VBR best (~190 kbps), sedikit lebih rendah dari M4A tapi cukup untuk dubbing
   - Kompatibel dengan lebih banyak tool + ringkas
+
+Pilihan resolusi: 480p, 720p, 1080p, best
+Output: 2 file = MP4 (video only) + MP3 (audio only, via yt-dlp convert)
+SRT: list subtitle dari JSON metadata, user pilih Indonesia / lain / skip
 
 Install: pip3 install yt-dlp questionary
 Usage: python3 yt-dlp-tui.py
@@ -21,6 +27,7 @@ import sys
 import subprocess
 import re
 import json
+import shutil
 from pathlib import Path
 
 try:
@@ -30,8 +37,20 @@ except ImportError:
     sys.exit(1)
 
 
+VERSION = 'v6.2'
+
+# Browser support matrix (urutan = prioritas)
+# Brave dipertama karena user pakai Brave (FB confirmed working)
+SUPPORTED_BROWSERS = [
+    ('Brave',   'brave',   '~/Library/Application Support/BraveSoftware/Brave-Browser'),
+    ('Chrome',  'chrome',  '~/Library/Application Support/Google/Chrome'),
+    ('Firefox', 'firefox', '~/Library/Application Support/Firefox'),
+    ('Safari',  'safari',  '~/Library/Safari'),
+    ('Edge',    'edge',    '~/Library/Application Support/Microsoft Edge'),
+]
+
+
 def check_ytdlp():
-    import shutil
     path = shutil.which('yt-dlp') or shutil.which('yt-dlp.exe')
     if path:
         return path
@@ -41,15 +60,29 @@ def check_ytdlp():
     return None
 
 
+def detect_installed_browsers():
+    """Return list of (display_name, browser_id) yang profile-nya terdeteksi di Mac.
+    Yt-dlp baca cookies dari profile path ini.
+    """
+    installed = []
+    for display, browser_id, profile_path in SUPPORTED_BROWSERS:
+        p = os.path.expanduser(profile_path)
+        if os.path.exists(p):
+            installed.append((display, browser_id))
+    return installed
+
+
 def sanitize_filename(name):
     name = re.sub(r'[\\/:*?"<>|]', '', name).strip()
     return name[:200] if len(name) > 200 else (name or 'video')
 
 
-def list_subtitles(ytdlp, url):
-    """Ambil daftar subtitle dari YouTube via --dump-json. Return [(code, name), ...]."""
+def list_subtitles(ytdlp, url, cookie_args):
+    """Ambil daftar subtitle dari YouTube via --dump-json. Return [(code, name), ...].
+    Sekarang pass cookie_args supaya bisa ambil subs dari video yang butuh login.
+    """
     print('\n▶ Cek subtitle tersedia...')
-    cmd = [ytdlp, '--dump-json', '--no-playlist', '--skip-download', url]
+    cmd = [ytdlp, '--dump-json', '--no-playlist', '--skip-download'] + cookie_args + [url]
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
         if result.returncode != 0 or not result.stdout.strip():
@@ -58,27 +91,80 @@ def list_subtitles(ytdlp, url):
     except Exception:
         return []
 
-    # Hitung bahasa unik dari subtitles + automatic_captions
     seen = {}
     for key in ('subtitles', 'automatic_captions'):
         for lang_code, tracks in data.get(key, {}).items():
             if lang_code and lang_code not in seen:
-                # Ambil nama bahasa dari track pertama jika ada, fallback ke code
                 name = lang_code
                 if tracks and isinstance(tracks, list):
-                    ext = tracks[0].get('ext', '') if isinstance(tracks[0], dict) else ''
-                    # Coba ambil name dari data track (kalau ada 'name' field)
                     track_name = tracks[0].get('name', '') if isinstance(tracks[0], dict) else ''
                     name = track_name or lang_code
                 seen[lang_code] = name
     return list(seen.items())
 
 
+def pick_cookies(url):
+    """Prompt user untuk pilih cookies browser. Auto-detect yang terinstall.
+
+    v6.2: SELALU prompt (untuk semua URL, termasuk YouTube).
+    Default = browser pertama yang terdeteksi (Brave diprioritas).
+
+    Return: list of args ['--cookies-from-browser', 'brave'] atau [] kalau Skip.
+    """
+    installed = detect_installed_browsers()
+    is_yt = 'youtube.com' in url or 'youtu.be' in url
+
+    if is_yt:
+        print('\n  ℹ URL YouTube terdeteksi.')
+        print('    YouTube sekarang sering kena "Sign in to confirm you\'re not a bot" (HTTP 429).')
+        print('    FIX: login YouTube di browser dulu, lalu pakai cookies dari browser itu.\n')
+    else:
+        print('\n  ℹ URL non-YouTube — kemungkinan butuh login (cookies) untuk download.')
+        print('    Pastikan sudah login ke platform tersebut di browser pilihan.\n')
+
+    if not installed:
+        print('  ⚠ Tidak ada browser terdeteksi di path Mac standar.')
+        print('    Pilih Skip, atau ketik browser manual (brave/chrome/safari/firefox/edge).\n')
+        choices = [
+            'Skip (no cookies — YouTube mungkin gagal, FB/IG/TikTok pasti gagal)',
+            'Ketik manual (mis. brave, chrome)',
+        ]
+    else:
+        choices = []
+        for display, browser_id in installed:
+            # Default pilihan pertama (Brave diprioritas di SUPPORTED_BROWSERS)
+            suffix = ' (default — login YT/FB/IG di sini dulu)' if browser_id == 'brave' else ''
+            choices.append(f'{display}{suffix}')
+        choices.append('Skip (no cookies — YouTube mungkin gagal, FB/IG/TikTok pasti gagal)')
+
+    sel = questionary.select(
+        'Pakai cookies dari browser?',
+        choices=choices,
+        default=choices[0],
+    ).ask()
+
+    if not sel or 'Skip' in sel:
+        return []
+
+    if 'Ketik manual' in sel:
+        manual = questionary.text('Browser ID (brave/chrome/safari/firefox/edge):').ask()
+        if manual and manual.strip():
+            return ['--cookies-from-browser', manual.strip().lower()]
+        return []
+
+    # Match display name → browser_id
+    for display, browser_id, _profile in SUPPORTED_BROWSERS:
+        if sel.startswith(display):
+            return ['--cookies-from-browser', browser_id]
+
+    return []
+
+
 def main():
     os.system('clear' if os.name != 'nt' else 'cls')
     print('╔' + '═' * 64 + '╗')
-    print('║  📺 YouTube Downloader v6 (TUI)' + ' ' * 31 + '║')
-    print('║  Resolusi + MP4 + MP3 terpisah + SRT Indonesia' + ' ' * 14 + '║')
+    print('║  📺 Downloader ' + VERSION + ' (TUI)' + ' ' * (44 - len(VERSION)) + '║')
+    print('║  MP4 + MP3 + SRT • YouTube/FB/TikTok/IG (cookies)       ║')
     print('╚' + '═' * 64 + '╝')
     print()
 
@@ -95,33 +181,13 @@ def main():
         sys.exit(0)
     url = url.strip()
 
-    # Step 1.5: Cookie detection (v6.1 NEW)
-    # YouTube tidak butuh cookie. Platform lain (FB, IG, TikTok) mungkin butuh login.
-    cookie_args = []
-    is_youtube = 'youtube.com' in url or 'youtu.be' in url
-    if not is_youtube:
-        print(f'\n  ℹ URL bukan YouTube — mungkin butuh login (cookies) untuk download.')
-        print(f'    Pastikan sudah login ke platform tersebut di browser pilihan.\n')
-        cookie_choice = questionary.select(
-            'Pakai cookies dari browser?',
-            choices=[
-                'Brave (default — login FB/IG di Brave dulu)',
-                'Chrome',
-                'Safari',
-                'Firefox',
-                'Skip (no cookies — mungkin gagal kalau butuh login)',
-            ],
-            default='Brave (default — login FB/IG di Brave dulu)',
-        ).ask()
-        if 'Brave' in cookie_choice:
-            cookie_args = ['--cookies-from-browser', 'brave']
-        elif 'Chrome' in cookie_choice:
-            cookie_args = ['--cookies-from-browser', 'chrome']
-        elif 'Safari' in cookie_choice:
-            cookie_args = ['--cookies-from-browser', 'safari']
-        elif 'Firefox' in cookie_choice:
-            cookie_args = ['--cookies-from-browser', 'firefox']
-        print()
+    # Step 1.5: Cookies — SELALU prompt (v6.2 fix)
+    cookie_args = pick_cookies(url)
+    if cookie_args:
+        print(f'  → Cookies: {cookie_args[1]}')
+    else:
+        print('  → Cookies: Skip (rawak untuk YouTube sekarang)')
+    print()
 
     # Step 2: Resolusi
     res = questionary.select('Pilih resolusi:', choices=[
@@ -132,8 +198,11 @@ def main():
     ], default='480p (file kecil, cepat, aman untuk Demucs)').ask()
 
     # Step 3: Output dir (default: HDD)
-    from config import INPUT_DIR, ensure_hdd
-    default_dir = str(INPUT_DIR) if ensure_hdd() else os.path.expanduser('~/Dubbing')
+    try:
+        from config import INPUT_DIR, ensure_hdd
+        default_dir = str(INPUT_DIR) if ensure_hdd() else os.path.expanduser('~/Dubbing')
+    except ImportError:
+        default_dir = os.path.expanduser('~/Dubbing')
     output_dir = questionary.text('Output dir:', default=default_dir).ask()
     if not output_dir:
         output_dir = default_dir
@@ -141,25 +210,23 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
 
     # Step 4: Nama file
-    custom_name = questionary.text('Nama custom (kosong = judul YouTube):', default='').ask()
+    custom_name = questionary.text('Nama custom (kosong = judul asli):', default='').ask()
     if custom_name and custom_name.strip():
         custom_name = sanitize_filename(custom_name.strip())
     else:
         custom_name = None
 
     # Step 5: SRT Indonesia
-    subs = list_subtitles(ytdlp, url)
+    subs = list_subtitles(ytdlp, url, cookie_args)
 
     srt_choice = 'Skip (download SRT dari eksternal)'
     if subs:
-        # Cari Indonesia (kode: id, in, ind)
         id_subs = [s for s in subs if s[0].lower() in ('id', 'in', 'ind')]
         sub_choices = []
         if id_subs:
             sub_choices.append(f'Download SRT Indonesia ({id_subs[0][0]})')
         sub_choices.append('Skip (download SRT dari eksternal)')
         sub_choices.append('Pilih subtitle lain:')
-        # Default: Indonesia kalau ada, kalau tidak skip
         default_idx = 0 if id_subs else 1
         srt_choice = questionary.select(
             f'Subtitle tersedia ({len(subs)} bahasa):',
@@ -176,7 +243,7 @@ def main():
             else:
                 srt_choice = 'Skip'
     else:
-        print('  ⚠ Tidak ada subtitle di YouTube. Download SRT dari eksternal.')
+        print('  ⚠ Tidak ada subtitle tersedia. Download SRT dari eksternal.')
         srt_choice = 'Skip (download SRT dari eksternal)'
 
     # Build format strings
@@ -198,6 +265,8 @@ def main():
     print('║  📋 Ringkasan:' + ' ' * 49 + '║')
     print('╠' + '═' * 64 + '╣')
     print(f'║  Resolusi: {res[:48]:<48}║')
+    cookie_label = cookie_args[1] if cookie_args else 'Skip'
+    print(f'║  Cookies : {cookie_label[:48]:<48}║')
     print('║  Output  : MP4 (video) + MP3 (audio) terpisah' + ' ' * 8 + '║')
     print(f'║  SRT     : {srt_choice[:48]:<48}║')
     print(f'║  URL     : {url[:48]:<48}║')
@@ -222,16 +291,10 @@ def main():
         sys.exit(130)
 
     # Download audio (MP3, via yt-dlp post-process convert)
-    # v2 update: User minta output MP3 (bukan M4A native) supaya compatible dengan
-    # lebih banyak tool + ringkas. yt-dlp pakai -x --audio-format mp3 → download
-    # audio terbaik → convert ke MP3 otomatis via ffmpeg (yang wajib terinstall).
-    # Catatan: quality MP3 sedikit lebih rendah dari M4A (lossy → lossy transcode),
-    # tapi untuk workflow dubbing tidak masalah (audio dipakai untuk Demucs yang
-    # convert ulang ke MP3 320kbps juga).
     print('\n▶ Download audio (MP3 via yt-dlp convert)...')
     cmd_audio = [ytdlp, '-f', 'bestaudio/best',
                  '-x', '--audio-format', 'mp3',
-                 '--audio-quality', '0',  # 0 = VBR best quality (~190 kbps)
+                 '--audio-quality', '0',
                  '-o', audio_template,
                  '--no-playlist', '--newline'] + cookie_args + [url]
     try:
@@ -264,29 +327,24 @@ def main():
                 print(f'\n⚠ Gagal download SRT: {e}')
                 print('   Download SRT dari eksternal (mis. subscene.com, opensubtitles.org)')
 
-    # Hasil — pakai base_name spesifik (bukan "file terbaru"), supaya tidak salah tampil
+    # Hasil
     print('\n' + '═' * 64)
     print('✅ SELESAI!\n')
 
-    # Cari file berdasarkan base_name yang dipakai. Kalau custom_name None, kita tidak
-    # tahu judul asli — fallback ke "file terbaru" tapi filter ekstensi.
-    # v2: audio output sekarang .mp3 (sebelumnya .m4a)
     found_video = found_audio = found_srt = None
     if custom_name:
-        # Filter exact match by base_name
         v_match = list(Path(output_dir).glob(f'{custom_name}.mp4'))
         a_match = list(Path(output_dir).glob(f'{custom_name}-audio.mp3')) + \
                   list(Path(output_dir).glob(f'{custom_name}-audio.m4a')) + \
-                  list(Path(output_dir).glob(f'{custom_name}-audio.webm'))  # fallback kalau MP3 convert gagal
+                  list(Path(output_dir).glob(f'{custom_name}-audio.webm'))
         s_match = list(Path(output_dir).glob(f'{custom_name}*.srt'))
         if v_match: found_video = max(v_match, key=os.path.getmtime)
         if a_match: found_audio = max(a_match, key=os.path.getmtime)
         if s_match: found_srt = max(s_match, key=os.path.getmtime)
     else:
-        # Fallback: file terbaru per ekstensi
         mp4 = sorted(Path(output_dir).glob('*.mp4'), key=os.path.getmtime, reverse=True)
         aud = sorted(list(Path(output_dir).glob('*.mp3')) + list(Path(output_dir).glob('*.m4a')),
-                     key=os.path.getmtime, reverse=True)  # MP3 primary, M4A fallback
+                     key=os.path.getmtime, reverse=True)
         srt = sorted(Path(output_dir).glob('*.srt'), key=os.path.getmtime, reverse=True)
         if mp4: found_video = mp4[0]
         if aud: found_audio = aud[0]
@@ -313,9 +371,10 @@ def main():
         print('   - https://goblinsub.com')
 
     print('\n🎬 Langkah berikutnya:')
-    print('   1. Demucs:   python3 demucs-tui.py')
-    print('   2. TTS:     python3 edge-tts-tui.py')
-    print('   3. Mix:     python3 mix-tui.py')
+    print('   1. Demucs:    python3 demucs-tui.py')
+    print('   2. SRT edit:  python3 srt-editor-tui.py  (fix typo kalau dari translate)')
+    print('   3. TTS:       python3 edge-tts-tui.py')
+    print('   4. Mix:       python3 mix-tui.py')
     print('═' * 64)
 
 

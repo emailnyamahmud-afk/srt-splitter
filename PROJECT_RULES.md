@@ -16,7 +16,7 @@ Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 
 | # | TUI | Status |
 |---|-----|--------|
-| 1 | yt-dlp-tui v6.1 | ✅ Production (FB confirmed) |
+| 1 | yt-dlp-tui v6.2 | ✅ Production (FB+YT confirmed) |
 | 2 | demucs-tui | ✅ Production |
 | 3 | kamus-tui v16 | ✅ Production (audit) |
 | 4 | Web app | ⚠ Prototype |
