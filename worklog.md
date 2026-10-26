@@ -5163,3 +5163,49 @@ Stage Summary:
 - Sync state sebelum commit: HEAD = origin/main = be26d6c (clean)
 - Worklog Task 6 entry pertama (di atas) menjelaskan implementasi v6.2
 - Worklog Task 6 addendum ini menjelaskan strategi push yang berhasil
+
+---
+Task ID: 7
+Agent: main
+Task: Update semua dokumentasi (README, AGENTS, PROJECT_RULES, scripts/README) sync dengan state terbaru
+
+Work Log:
+- Setelah Task 6 (yt-dlp v6.2 push) + user test YouTube confirm jalan, user minta "Update semua dokumentasi"
+- Cek state docs: yt-dlp v6.2 sudah updated di Task 6 commit a8e1ce5, tapi:
+  * srt-editor-tui masih ditulis v1.0 (seharusnya v1.0.1, latest commit be26d6c)
+  * Pipeline diagram (PROPER/CEPAT/MUTE) belum include srt-editor-tui sebagai step
+  * Workflow section di README/scripts belum ada srt-editor step
+  * Download section di README belum ada curl srt-editor-tui.py
+  * AGENTS.md "Pipeline produksi" section belum mention srt-editor
+  * PROJECT_RULES.md "Pipeline (mix-tui v3.7.6)" heading → v3.8.2
+- Update README.md (root):
+  * Tabel 9 TUI: srt-editor-tui v1.0 → v1.0.1, status 🆕 New → ✅ Production
+  * Pipeline diagram: yt-dlp → demucs → srt-editor → edge-tts → mix (untuk semua 3 alur)
+  * Section heading "srt-editor-tui v1.0" → v1.0.1, anchor link ke scripts/README.md#srt-editor-tui-v101
+  * Workflow section: tambah srt-editor-tui.py sebagai step 2 di kedua alur (CEPAT + PROPER)
+  * Download section: tambah curl srt-editor-tui.py
+- Update AGENTS.md:
+  * Pipeline mention: "yt-dlp → Demucs → edge-tts → SRT editor (web) → mix-tui" → "yt-dlp → Demucs → srt-editor-tui → edge-tts → mix-tui"
+  * Tabel 9 TUI: srt-editor-tui v1.0 → v1.0.1, status 🆕 New → ✅ Production
+  * Pipeline produksi section: tambah line "srt-editor-tui v1.0.1: ✅ (glossary 19 entries, 144 replacement di S2-FB-Mandarin)"
+  * "mix-tui v3.7.6: 6 mode production-ready" → "mix-tui v3.8.2: 6 mode production-ready + logo + fade 100ms"
+- Update PROJECT_RULES.md:
+  * Tabel 9 TUI: srt-editor-tui v1.0 → v1.0.1, status 🆕 New → ✅ Production
+  * Pipeline heading "### Pipeline (mix-tui v3.7.6)" → "### Pipeline (mix-tui v3.8.2 — based on v3.7.6 MUTE base)"
+- Update scripts/README.md:
+  * Tabel 9 TUI: srt-editor-tui v1.0 → v1.0.1, status 🆕 New → ✅ Production
+  * Workflow section: tambah srt-editor-tui sebagai step 2 (di CEPAT) dan step 2 (di PROPER)
+  * Section heading "## srt-editor-tui.py v1.0" → v1.0.1
+- File berubah: README.md, AGENTS.md, PROJECT_RULES.md, scripts/README.md (4 docs sync)
+
+Stage Summary:
+- Semua 4 docs sync dengan state terbaru:
+  * yt-dlp v6.2 (cookies anti-bot, FB+YT confirmed)
+  * srt-editor-tui v1.0.1 (interactive picker, glossary bulk replace)
+  * mix-tui v3.8.2 (logo + fade)
+  * 9 TUI total, semua Production kecuali #4 Web (Prototype) dan #5 SRT editor web (Pending)
+- Pipeline diagram sekarang lengkap: yt-dlp → [srt-editor] → [demucs] → edge-tts → mix
+- Workflow section di README + scripts/README konsisten (langkah 1-4 CEPAT, langkah 1-5 PROPER)
+- Download section di README root sekarang lengkap untuk semua 9 TUI
+- Tidak ada perubahan kode, cuma docs sync
+- Pending: commit + push (akan dilakukan setelah entry ini)

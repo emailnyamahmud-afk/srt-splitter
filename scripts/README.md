@@ -14,7 +14,7 @@ Python TUI untuk workflow dubbing + kamus Jawa.
 | 6 | edge-tts-tui.py v7.3.1 | ✅ Production |
 | 7 | mix-tui.py v3.8.2 | ✅ Production (all tested + logo + fade) |
 | 8 | whisper-tui.py v1.1 (faster-whisper) | ✅ Production (SRT quality 90-95%) |
-| 9 | srt-editor-tui.py v1.0 (fix typo SRT hasil translate) | 🆕 New |
+| 9 | srt-editor-tui.py v1.0.1 (fix typo SRT hasil translate) | ✅ Production |
 
 ## Pipeline (3 alur)
 
@@ -106,25 +106,23 @@ cd ~/Dubbing
 source venv/bin/activate
 
 # Alur CEPAT + MUTE (skip Demucs)
-python3 yt-dlp-tui.py
-python3 edge-tts-tui.py
-python3 mix-tui.py     # Mode E (Stream) / F (Burn)
+python3 yt-dlp-tui.py         # 1. MP4 + MP3 + SRT (cookies anti-bot YT/FB/TikTok/IG)
+python3 srt-editor-tui.py      # 2. Fix typo SRT hasil translate (opsional, kalau dari editsub/Google Translate)
+python3 edge-tts-tui.py        # 3. Generate dub dari .final.srt (atau SRT asli kalau sudah clean)
+python3 mix-tui.py             # 4. Mix Mode E (Stream) / F (Burn)
 
 # Alur PROPER (pakai Demucs)
 python3 yt-dlp-tui.py
-python3 demucs-tui.py
+python3 srt-editor-tui.py      # fix typo SRT dulu kalau perlu
+python3 demucs-tui.py          # 3. Split vokal dari SFX
 python3 edge-tts-tui.py
-python3 mix-tui.py     # Mode A (Stream) / B (Burn)
-
-# Fix SRT hasil editsub.com / Google Translate (sebelum edge-tts)
-python3 srt-editor-tui.py subs.id.srt
-# Output: subs.id.final.srt  → pakai ini untuk edge-tts-tui
+python3 mix-tui.py             # 5. Mix Mode A (Stream) / B (Burn)
 
 # Kamus (parallel)
 python3 kamus-tui.py
 ```
 
-## srt-editor-tui.py v1.0
+## srt-editor-tui.py v1.0.1
 
 TUI editor untuk SRT hasil Google Translate / editsub.com. Buka SRT → browse per
 halaman → edit inline → mark reviewed / flag → glossary bulk replace → save final.

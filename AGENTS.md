@@ -4,7 +4,7 @@
 
 ## Project: SRT Splitter + Dubbing Jawa
 
-Pipeline: yt-dlp → Demucs → edge-tts → SRT editor (web) → mix-tui
+Pipeline: yt-dlp → Demucs → srt-editor-tui → edge-tts → mix-tui
 Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 
 ## 9 TUI
@@ -19,7 +19,7 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 | 6 | edge-tts-tui v7.3.1 | ✅ Production |
 | 7 | mix-tui v3.8.2 (6 mode, MUTE + logo + fade 100ms) | ✅ Production (all tested) |
 | 8 | whisper-tui v1.1 (faster-whisper, SRT from audio) | ✅ Production (SRT quality 90-95%) |
-| 9 | srt-editor-tui v1.0 (fix typo SRT hasil translate, glossary bulk replace) | 🆕 New |
+| 9 | srt-editor-tui v1.0.1 (fix typo SRT hasil translate, glossary bulk replace) | ✅ Production |
 
 ## Struktur Folder
 
@@ -79,10 +79,11 @@ Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no m
 - User validasi manual di kamus-tui, mark READY, upload Supabase
 
 ### Pipeline produksi (6 film tested, 6 mode production-ready)
-- yt-dlp v6.2 MP3 output: ✅
+- yt-dlp v6.2 MP3 output: ✅ (FB+YT confirmed, cookies anti-bot)
 - demucs v2 (segment 4, MPS): ✅
 - edge-tts v7.3.1 (4565 cue tested): ✅
-- mix-tui v3.7.6: 6 mode production-ready
+- srt-editor-tui v1.0.1: ✅ (glossary 19 entries, 144 replacement di S2-FB-Mandarin)
+- mix-tui v3.8.2: 6 mode production-ready + logo + fade 100ms
 
 ### Test results (PERMANEN — all 6 mode production-ready + logo + fade)
 - A (Full + Stream): 5 film sukses (sebelum v3.7)

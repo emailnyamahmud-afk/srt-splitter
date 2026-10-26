@@ -24,7 +24,7 @@ Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 | 6 | edge-tts-tui v7.3.1 | ✅ Production |
 | 7 | mix-tui v3.8.2 | ✅ Production (all tested + logo + fade) |
 | 8 | whisper-tui v1.1 | ✅ Production (SRT quality 90-95%) |
-| 9 | srt-editor-tui v1.0 | 🆕 New (fix typo SRT hasil translate) |
+| 9 | srt-editor-tui v1.0.1 | ✅ Production (fix typo SRT translate) |
 
 ## Struktur Folder
 
@@ -44,7 +44,7 @@ Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 - R-69: Register (ngoko/krama) = tugas user native Jawa, AI gak bisa
 - R-22: GIGO — AI tidak merujuk raw untuk audit/fix
 
-### Pipeline (mix-tui v3.7.6)
+### Pipeline (mix-tui v3.8.2 — based on v3.7.6 MUTE base)
 - Mode A/B (Full): sidechain compress ducking (gradual, pakai no_vocals Demucs)
 - Mode C/D (Simple): no ducking (Dub copy as-is)
 - Mode E/F (Original v3.7.6): amultiply MUTE COMPLETE (skip Demucs)

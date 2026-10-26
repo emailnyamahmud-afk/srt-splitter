@@ -16,15 +16,17 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 | 6 | edge-tts-tui.py | Generate audio dub (5000+ cue, 2-5 jam) | ✅ Production |
 | 7 | mix-tui.py v3.8.2 | Mix MP4 + audio → final video (6 mode + logo + fade) | ✅ Production (all tested) |
 | 8 | whisper-tui.py v1.1 | Generate SRT dari audio (faster-whisper, M1) | ✅ Production (SRT quality 90-95%) |
-| 9 | srt-editor-tui.py v1.0 | Fix typo/konteks SRT hasil translate (glossary + bulk replace) | 🆕 New |
+| 9 | srt-editor-tui.py v1.0.1 | Fix typo/konteks SRT hasil translate (glossary + bulk replace) | ✅ Production |
 
 ## Pipeline
 
 ```
-[Alur PROPER]  yt-dlp → demucs → edge-tts → mix Full (A/B)        ~350 MB / ~2-4.5 GB
-[Alur CEPAT]   yt-dlp → edge-tts → mix Simple (C/D)               ~350 MB / ~2-4.5 GB
-[Alur MUTE]    yt-dlp → edge-tts → mix Original v3.7.6 (E/F)     ~1 GB / ~4.5 GB
+[Alur PROPER]  yt-dlp → demucs → srt-editor → edge-tts → mix Full (A/B)    ~350 MB / ~2-4.5 GB
+[Alur CEPAT]   yt-dlp → srt-editor → edge-tts → mix Simple (C/D)           ~350 MB / ~2-4.5 GB
+[Alur MUTE]    yt-dlp → srt-editor → edge-tts → mix Original v3.7.6 (E/F)  ~1 GB / ~4.5 GB
 ```
+
+> **srt-editor-tui.py** (new TUI #9) untuk fix typo/konteks SRT hasil translate sebelum masuk edge-tts. Opsional kalau SRT ori sudah clean.
 
 ## Struktur Folder
 
@@ -47,7 +49,7 @@ HDD /Volumes/HDD/Dubbing/            ← data (besar)
 └── .env                             ← Supabase credentials
 ```
 
-## srt-editor-tui v1.0 — fix typo SRT hasil translate
+## srt-editor-tui v1.0.1 — fix typo SRT hasil translate
 
 ```bash
 cd ~/Dubbing && source venv/bin/activate
@@ -56,7 +58,7 @@ python3 srt-editor-tui.py /Volumes/HDD/Dubbing/input/S2-FB-Mandarin.id.srt
 # Output: S2-FB-Mandarin.id.final.srt → pakai untuk edge-tts-tui
 ```
 
-Detail lengkap: lihat [scripts/README.md](scripts/README.md#srt-editor-tui-v10).
+Detail lengkap: lihat [scripts/README.md](scripts/README.md#srt-editor-tui-v101).
 
 ## mix-tui v3.8.2 — 6 mode + logo + smooth fade
 
@@ -118,15 +120,17 @@ brew install ffmpeg
 
 ```bash
 # Alur CEPAT (skip Demucs, MUTE COMPLETE)
-python3 yt-dlp-tui.py        # 1. MP4 + MP3 + SRT
-python3 edge-tts-tui.py      # 2. Dub dari SRT
-python3 mix-tui.py           # 3. Mix Mode E/F (MUTE saat cue)
+python3 yt-dlp-tui.py         # 1. MP4 + MP3 + SRT (cookies anti-bot)
+python3 srt-editor-tui.py     # 2. Fix typo/konteks SRT (opsional, kalau dari translate)
+python3 edge-tts-tui.py       # 3. Dub dari SRT (pakai .final.srt kalau ada)
+python3 mix-tui.py            # 4. Mix Mode E/F (MUTE saat cue)
 
 # Alur PROPER (pakai Demucs, clean sempurna)
 python3 yt-dlp-tui.py
-python3 demucs-tui.py        # 2. Split vokal dari SFX
+python3 srt-editor-tui.py     # fix typo SRT dulu kalau perlu
+python3 demucs-tui.py        # 3. Split vokal dari SFX
 python3 edge-tts-tui.py
-python3 mix-tui.py           # 4. Mix Mode A/B
+python3 mix-tui.py            # 5. Mix Mode A/B
 
 # Kamus (parallel)
 python3 kamus-tui.py
@@ -149,5 +153,6 @@ curl -L -o edge-tts-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk
 curl -L -o mix-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/mix-tui.py"
 curl -L -o kamus-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/kamus-tui.py"
 curl -L -o whisper-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/whisper-tui.py"
+curl -L -o srt-editor-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/srt-editor-tui.py"
 curl -L -o upload-supabase.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py"
 ```
