@@ -342,13 +342,13 @@ def main():
 
     # === Step 1: Pick JSON timestamps ===
     print('▶ Step 1/4: Pilih file JSON timestamps (dari ChatGPT/Claude/Gemini)')
-    # Search di cwd + HDD root + HDD/shorts/ + HDD/mix/
+    # Search di cwd + HDD/shorts/ + HDD/mix/ (taruh JSON di HDD/shorts/ supaya rapi)
     from config import MIX_DIR, SHORTS_DIR, ensure_hdd, HDD_BASE
     hdd_ok = ensure_hdd()
 
+    # Search JSON prioritas: cwd → SHORTS_DIR → MIX_DIR (HDD_BASE root dibuang, biar rapi)
     json_search_dirs = [os.getcwd()]
     if hdd_ok:
-        json_search_dirs.append(str(HDD_BASE))
         json_search_dirs.append(str(SHORTS_DIR))
         json_search_dirs.append(str(MIX_DIR))
 

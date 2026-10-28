@@ -5347,3 +5347,34 @@ Stage Summary:
 - All tests pass: JSON parser, validator, ffmpeg cut (stream copy + re-encode), durasi presisi
 - AI halu prevention: user kontrol kualitas lewat prompt di ChatGPT, TUI cuma kerjakan ffmpeg cut
 - Pending: commit + push ke GitHub
+
+---
+Task ID: 10
+Agent: main
+Task: Fix lokasi save JSON timestamps — pindah dari HDD/Dubbing/ (root, bikin rapi) ke HDD/shorts/ (folder yang sama dgn output MP4, rapi)
+
+Work Log:
+- User kritik: "save json kenapa di folder dubbing? ini bikin engga rapi, kenapa engga di input saja? atau di folder shorts?"
+- Aku putuskan: JSON taruh di HDD/shorts/ (folder yang sama dengan output MP4)
+- Alasan: semua shorts-related files (JSON input + MP4 output) di satu folder, ga campur folder lain
+- Format: HDD/shorts/{film}.timestamps.json (JSON) + HDD/shorts/{film}/short-001.mp4 (output)
+- Update tutor-shorts-prompt.md:
+  * Baris 13: save ke /Volumes/HDD/Dubbing/shorts/{film}.timestamps.json
+  * Baris 177 (workflow example): save ke /Volumes/HDD/Dubbing/shorts/{film}.timestamps.json
+- Update shorts-tui.py:
+  * Hapus HDD_BASE dari json_search_dirs (jangan cari JSON di HDD root, biar rapi)
+  * Search JSON di cwd + SHORTS_DIR + MIX_DIR (prioritas: cwd → shorts/ → mix/)
+- Update README.md (root):
+  * Section "shorts-tui v1.0": save JSON ke HDD/Dubbing/shorts/{film}.timestamps.json
+  * Struktur folder HDD: shorts/ ← "JSON timestamps + output MP4 (subfolder per film)"
+- Update scripts/README.md:
+  * Section workflow: save JSON ke HDD/shorts/{film}.timestamps.json
+  * Section "Output structure": tampilkan JSON + subfolder MP4 di struktur folder
+  * Tambah note: "JSON + output MP4 di folder yang sama (shorts/), ga campur folder lain"
+
+Stage Summary:
+- JSON timestamps sekarang taruh di HDD/shorts/ (folder yang sama dengan output MP4), bukan HDD/Dubbing/ root
+- Semua shorts-related files terkonsolidasi di satu folder, rapi
+- shorts-tui.py search JSON prioritas: cwd → SHORTS_DIR → MIX_DIR (HDD root dibuang)
+- File berubah: tutor-shorts-prompt.md, shorts-tui.py, README.md, scripts/README.md
+- Pending: commit + push ke GitHub

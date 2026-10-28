@@ -288,7 +288,7 @@ Shorts/TikTok/Reels. Pakai JSON timestamps dari ChatGPT/Claude/Gemini sebagai
 ```
 1. User paste SRT ke ChatGPT → minta "pilih 30 segment menarik untuk Shorts"
 2. ChatGPT return JSON array: [{start, end, title}, ...]
-3. User save JSON ke /Volumes/HDD/Dubbing/{film}.timestamps.json
+3. User save JSON ke /Volumes/HDD/Dubbing/shorts/{film}.timestamps.json (folder yang sama dgn output, rapi)
 4. python3 shorts-tui.py
    → pilih JSON + MP4 final (dari HDD/mix/) + output dir
    → TUI ffmpeg cut per segment (stream copy, ~0.5s per short)
@@ -343,13 +343,16 @@ HDD/Dubbing/
 ├── demucs/       ← no_vocals
 ├── tts/          ← dub WAV
 ├── mix/          ← MP4 final (input untuk shorts-tui)
-└── shorts/        ← NEW: output shorts-tui
-    └── S2-FB-Mandarin/   ← subfolder per film
+└── shorts/        ← shorts-tui: JSON + MP4 output
+    ├── S2-FB-Mandarin.timestamps.json   ← JSON timestamps (input dari AI)
+    └── S2-FB-Mandarin/                  ← subfolder per film (output MP4)
         ├── S2-FB-Mandarin-short-001.mp4
         ├── S2-FB-Mandarin-short-002.mp4
         ├── ...
         └── S2-FB-Mandarin-short-030.mp4
 ```
+
+JSON + output MP4 di folder yang sama (`shorts/`), ga campur folder lain.
 
 ### Validasi (yang TUI cek)
 

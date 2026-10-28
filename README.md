@@ -47,7 +47,7 @@ HDD /Volumes/HDD/Dubbing/            ← data (besar)
 ├── demucs/                          ← no_vocals (300MB+)
 ├── tts/                             ← dub wav + cache
 ├── mix/                             ← final MP4 (output langsung ke sini, v3.7.4)
-├── shorts/                          ← shorts-tui output (subfolder per film)
+├── shorts/                          ← shorts-tui: JSON timestamps + output MP4 (subfolder per film)
 └── .env                             ← Supabase credentials
 ```
 
@@ -69,7 +69,7 @@ cd ~/Dubbing && source venv/bin/activate
 
 # 1. User paste SRT ke ChatGPT/Claude/Gemini → minta "pilih 30 segment menarik"
 #    → AI return JSON: [{"start": 12.5, "end": 65.3, "title": "..."}, ...]
-#    → save ke /Volumes/HDD/Dubbing/{film}.timestamps.json
+#    → save ke /Volumes/HDD/Dubbing/shorts/{film}.timestamps.json (folder yang sama dgn output, rapi)
 #    (prompt template: tutor-shorts-prompt.md)
 
 # 2. Pecah MP4 final jadi 30 shorts

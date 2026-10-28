@@ -10,7 +10,7 @@ Template ini untuk user yang mau generate JSON timestamps dari SRT Indonesia
 3. **Paste SRT Indonesia** di akhir prompt
 4. **Send**, tunggu AI generate JSON
 5. **Copy JSON** hasil AI
-6. **Save ke file**, misalnya `/Volumes/HDD/Dubbing/S2-FB-Mandarin.timestamps.json`
+6. **Save ke file**, misalnya `/Volumes/HDD/Dubbing/shorts/S2-FB-Mandarin.timestamps.json`
 7. **Jalankan `shorts-tui.py`**, pilih file JSON itu
 
 ---
@@ -174,7 +174,7 @@ Atau langsung jalankan shorts-tui.py — dia akan validasi otomatis.
 # 1. User copy SRT dari /Volumes/HDD/Dubbing/input/S2-FB-Mandarin.id.srt
 # 2. User paste ke ChatGPT dengan Prompt 1 di atas
 # 3. ChatGPT return JSON 30 segments
-# 4. User save ke /Volumes/HDD/Dubbing/S2-FB-Mandarin.timestamps.json
+# 4. User save ke /Volumes/HDD/Dubbing/shorts/S2-FB-Mandarin.timestamps.json
 # 5. User jalankan shorts-tui:
 
 cd ~/Dubbing
