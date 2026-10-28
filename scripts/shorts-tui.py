@@ -3,16 +3,16 @@
 shorts-tui.py v1.0 — Pecah MP4 final jadi N shorts (vertical, hardsub, sudah ada).
 
 Workflow:
-  1. User paste SRT Indonesia ke ChatGPT/Claude/Gemini → minta pilih 30 segment
+  1. User paste SRT Indonesia ke ChatGPT/Claude/Gemini/Dola AI → minta pilih 60 segment
      menarik untuk Shorts (max 60 detik per segment, mulai di awal cue)
      → AI return JSON array [{start, end, title}]
-     → User save ke file, mis. HDD/shorts-source.json
+     → User save ke file, mis. HDD/shorts/S5-HQ.timestamps.json
   2. User jalankan shorts-tui.py:
      - Pick JSON timestamps (dari cwd + HDD)
      - Pick MP4 final (sudah vertikal 9:16, sudah hardsub Indonesia)
      - Pick output dir (default: HDD/shorts/{film-name}/)
      - TUI ffmpeg cut per segment (stream copy, super cepat)
-  3. Output: 30 MP4 di folder per-film, siap upload YouTube Shorts/TikTok/Reels
+  3. Output: N MP4 di folder per-film (default 60), siap upload YouTube Shorts/TikTok/Reels
 
 Input MP4 harus SUDAH:
 - Vertikal 9:16 (1080×1920 atau 720×1280)
@@ -20,7 +20,7 @@ Input MP4 harus SUDAH:
 
 Output per short:
 - Stream copy (-c copy) — no re-encode, super cepat (~0.5 detik per short)
-- 30 shorts × 0.5s = ~15 detik total
+- 60 shorts × 0.5s = ~2 menit total (default production: 60 shorts per film)
 
 Format JSON (yang user kasih dari ChatGPT):
   [

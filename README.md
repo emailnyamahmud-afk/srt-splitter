@@ -67,16 +67,16 @@ Detail lengkap: lihat [scripts/README.md](scripts/README.md#srt-editor-tui-v101)
 ```bash
 cd ~/Dubbing && source venv/bin/activate
 
-# 1. User paste SRT ke ChatGPT/Claude/Gemini → minta "pilih 30 segment menarik"
+# 1. User paste SRT ke ChatGPT/Claude/Gemini/Dola AI → minta "pilih 60 segment menarik"
 #    → AI return JSON: [{"start": 12.5, "end": 65.3, "title": "..."}, ...]
 #    → save ke /Volumes/HDD/Dubbing/shorts/{film}.timestamps.json (folder yang sama dgn output, rapi)
 #    (prompt template: tutor-shorts-prompt.md)
 
-# 2. Pecah MP4 final jadi 30 shorts
+# 2. Pecah MP4 final jadi 60 shorts
 python3 shorts-tui.py
 # → pilih JSON timestamps + MP4 final (dari HDD/mix/, sudah vertikal+hardsub)
-# → output: HDD/shorts/{film-name}/short-001.mp4 s/d short-030.mp4
-# ~15 detik untuk 30 shorts (stream copy, no re-encode)
+# → output: HDD/shorts/{film-name}/short-001.mp4 s/d short-060.mp4
+# ~2 menit untuk 60 shorts (stream copy, no re-encode)
 ```
 
 Detail lengkap: lihat [scripts/README.md](scripts/README.md#shorts-tui-v10) + [tutor-shorts-prompt.md](scripts/tutor-shorts-prompt.md).

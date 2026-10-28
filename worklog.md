@@ -5415,3 +5415,41 @@ Stage Summary:
 - Pipeline end-to-end production: yt-dlp → srt-editor → demucs → edge-tts (paralel) → mix-tui → shorts-tui (via Dola skill)
 - Skala produksi feasible: 1 malam = 2 film full (paralel TTS) → 2 MP4 final (mix-tui) → 60 shorts (2× shorts-tui)
 - Pending: commit + push ke GitHub
+
+---
+Task ID: 12
+Agent: main
+Task: Update default shorts dari 30 → 60 per film (user mau lebih banyak shorts untuk skala produksi)
+
+Work Log:
+- User feedback: "skill dola akan saya perbaharui = 1 film = 60 shorts, 30 shorts terlalu sedikit"
+- Update tutor-shorts-prompt.md:
+  * Prompt 1 heading: "30 shorts" → "60 shorts dari film 2-3 jam"
+  * Prompt 1 body: "Tolong pilih 30 segment" → "Tolong pilih 60 segment"
+  * Prompt 2 heading: "Custom jumlah shorts (mis. 20 atau 50)" → "Custom jumlah shorts (default 60, bisa 20/30/100/dst)"
+  * Prompt 2 note: tambah "Default production: 60 (1 film 2-3 jam → 60 shorts ≈ 1 jam konten Shorts). Alternatif: 20 (sedikit, selektif), 30 (sedang), 100 (banyak, untuk channel besar)."
+  * Prompt 3 body: "Tolong pilih 30 segment" → "Tolong pilih 60 segment"
+  * Workflow example: "ChatGPT return JSON 30 segments" → "60 segments"
+- Update shorts-tui.py header:
+  * Line 6: "pilih 30 segment" → "pilih 60 segment"
+  * Line 15: "30 MP4" → "N MP4 (default 60)"
+  * Line 23: "30 shorts × 0.5s = ~15 detik total" → "60 shorts × 0.5s = ~2 menit total (default production: 60 shorts per film)"
+- Update README.md:
+  * Section shorts-tui v1.0: "30 segment menarik" → "60 segment menarik", "30 shorts" → "60 shorts", "~15 detik" → "~2 menit", "short-030" → "short-060"
+  * Mention Dola AI sebagai source JSON (sebelumnya cuma ChatGPT/Claude/Gemini)
+- Update scripts/README.md:
+  * Section workflow: "30 segment menarik" → "60 segment menarik", mention Dola AI
+  * Section "Output: {prefix}-short-030.mp4" → "{prefix}-short-N.mp4 (N = jumlah segment, default 60)"
+  * Section "Prompt template untuk AI": "default 30 shorts" → "default 60 shorts", mention Dola AI
+  * Cut mode table: "30 shorts = 15 detik" → "60 shorts = ~2 menit", "30 shorts = ~3 menit" → "60 shorts = ~5 menit"
+  * Output structure: "short-030.mp4" → "short-060.mp4"
+- shorts-tui.py code GA berubah behavior (masih fleksibel, baca len(segments) dari JSON). Hanya comment docs yang update.
+- Test result historis "30/30 sukses" tetap di docs (jangan diubah, itu yang terjadi saat test pertama)
+
+Stage Summary:
+- Default shorts production: 30 → 60 per film (1 film 2-3 jam → 60 shorts ≈ 1 jam konten Shorts)
+- shorts-tui.py tetap fleksibel (baca N dari JSON, ga hardcode 30 atau 60)
+- Dola skill `shorts-json` user akan perbaharui jadi default 60 juga (matching tutor)
+- Skala produksi baru: 1 malam = 2 film (paralel TTS) → 2 MP4 final (mix-tui) → 120 shorts (2× shorts-tui dengan 60 each) → 2 jam konten Shorts
+- File berubah: tutor-shorts-prompt.md, shorts-tui.py (comments only), README.md, scripts/README.md
+- Pending: commit + push ke GitHub

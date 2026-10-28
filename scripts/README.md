@@ -293,13 +293,13 @@ sebagai "peta" potongan.
 ### Workflow
 
 ```
-1. User paste SRT ke ChatGPT → minta "pilih 30 segment menarik untuk Shorts"
+1. User paste SRT ke ChatGPT/Claude/Gemini/Dola AI → minta "pilih 60 segment menarik untuk Shorts"
 2. ChatGPT return JSON array: [{start, end, title}, ...]
 3. User save JSON ke /Volumes/HDD/Dubbing/shorts/{film}.timestamps.json (folder yang sama dgn output, rapi)
 4. python3 shorts-tui.py
    → pilih JSON + MP4 final (dari HDD/mix/) + output dir
    → TUI ffmpeg cut per segment (stream copy, ~0.5s per short)
-   → 30 MP4 di HDD/shorts/{film-name}/short-001.mp4 s/d short-030.mp4
+   → 60 MP4 di HDD/shorts/{film-name}/short-001.mp4 s/d short-060.mp4
 5. Upload ke YouTube Shorts/TikTok/Reels
 ```
 
@@ -313,13 +313,13 @@ python3 shorts-tui.py
 # Step 2: pilih MP4 final (dari HDD/mix/)
 # Step 3: output dir (default: HDD/shorts/{film-name}/ — subfolder per film)
 # Step 4: mode cut (default: stream copy, super cepat)
-# Output: {prefix}-short-001.mp4 s/d {prefix}-short-030.mp4
+# Output: {prefix}-short-001.mp4 s/d {prefix}-short-N.mp4 (N = jumlah segment di JSON, default 60)
 ```
 
 ### Prompt template untuk AI
 
-Lihat `tutor-shorts-prompt.md` — 3 prompt templates (default 30 shorts,
-custom jumlah, tema spesifik). Tinggal copy paste ke ChatGPT/Claude/Gemini.
+Lihat `tutor-shorts-prompt.md` — 3 prompt templates (default 60 shorts,
+custom jumlah, tema spesifik). Tinggal copy paste ke ChatGPT/Claude/Gemini/Dola AI.
 
 ### Format JSON (input dari AI)
 
@@ -339,8 +339,8 @@ custom jumlah, tema spesifik). Tinggal copy paste ke ChatGPT/Claude/Gemini.
 
 | Mode | Kecepatan | Kualitas | Default |
 |------|-----------|----------|---------|
-| **Stream copy** (`-c copy`) | ~0.5s per short, 30 shorts = 15 detik | Mungkin ada keyframe glitch di detik 1 | ✅ Ya |
-| Re-encode (`libx264 -crf 23`) | ~3-5s per short, 30 shorts = ~3 menit | Clean cut, no glitch | |
+| **Stream copy** (`-c copy`) | ~0.5s per short, 60 shorts = ~2 menit | Mungkin ada keyframe glitch di detik 1 | ✅ Ya |
+| Re-encode (`libx264 -crf 23`) | ~3-5s per short, 60 shorts = ~5 menit | Clean cut, no glitch | |
 
 ### Output structure
 
@@ -356,7 +356,7 @@ HDD/Dubbing/
         ├── S2-FB-Mandarin-short-001.mp4
         ├── S2-FB-Mandarin-short-002.mp4
         ├── ...
-        └── S2-FB-Mandarin-short-030.mp4
+        └── S2-Melintas-Zaman-short-060.mp4
 ```
 
 JSON + output MP4 di folder yang sama (`shorts/`), ga campur folder lain.

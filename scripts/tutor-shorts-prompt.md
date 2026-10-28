@@ -23,11 +23,11 @@ Singkatnya: input Indonesia, output Indonesia. Aku (AI) ga pusing soal Mandarin,
 
 ---
 
-## Prompt 1: Default — 30 shorts dari film 2-3 jam
+## Prompt 1: Default — 60 shorts dari film 2-3 jam
 
 ```
 Saya punya SRT Indonesia dari film Mandarin (durasi 2-3 jam).
-Tolong pilih 30 segment paling menarik untuk dijadikan YouTube Shorts / TikTok / Reels.
+Tolong pilih 60 segment paling menarik untuk dijadikan YouTube Shorts / TikTok / Reels.
 
 Kriteria segment:
 1. Durasi MAX 60 detik per segment (YouTube Shorts strict)
@@ -54,7 +54,7 @@ Berikut SRT Indonesia:
 
 ---
 
-## Prompt 2: Custom jumlah shorts (mis. 20 atau 50)
+## Prompt 2: Custom jumlah shorts (default 60, bisa 20/30/100/dst)
 
 ```
 Saya punya SRT Indonesia dari film Mandarin (durasi 2-3 jam).
@@ -70,7 +70,7 @@ Berikut SRT:
 [PASTE SRT]
 ```
 
-Ganti `[JUMLAH]` dengan angka yang diinginkan (20, 50, dst).
+Ganti `[JUMLAH]` dengan angka yang diinginkan. Default production: **60** (1 film 2-3 jam → 60 shorts ≈ 1 jam konten Shorts). Alternatif: 20 (sedikit, selektif), 30 (sedang), 100 (banyak, untuk channel besar).
 
 ---
 
@@ -78,7 +78,7 @@ Ganti `[JUMLAH]` dengan angka yang diinginkan (20, 50, dst).
 
 ```
 Saya punya SRT Indonesia dari film Mandarin (durasi 2-3 jam).
-Tolong pilih 30 segment untuk YouTube Shorts dengan tema: [TEMA].
+Tolong pilih 60 segment untuk YouTube Shorts dengan tema: [TEMA].
 
 Tema: adegan action / momen komedi / plot twist / adegan romantis / dst.
 
@@ -182,7 +182,7 @@ Atau langsung jalankan shorts-tui.py — dia akan validasi otomatis.
 # 1. User copy SRT Bahasa Indonesia dari /Volumes/HDD/Dubbing/input/S2-Melintas-Zaman.id.srt
 #    (SRT ini BAHASA INDONESIA — hasil translate dari Mandarin, bukan Mandarin asli)
 # 2. User paste ke ChatGPT dengan Prompt 1 di atas
-# 3. ChatGPT return JSON 30 segments
+# 3. ChatGPT return JSON 60 segments
 # 4. User save ke /Volumes/HDD/Dubbing/shorts/S2-Melintas-Zaman.timestamps.json
 # 5. User jalankan shorts-tui:
 
