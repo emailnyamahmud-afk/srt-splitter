@@ -5378,3 +5378,40 @@ Stage Summary:
 - shorts-tui.py search JSON prioritas: cwd → SHORTS_DIR → MIX_DIR (HDD root dibuang)
 - File berubah: tutor-shorts-prompt.md, shorts-tui.py, README.md, scripts/README.md
 - Pending: commit + push ke GitHub
+
+---
+Task ID: 11
+Agent: main
+Task: User uji shorts-tui v1.0 + edge-tui v7.4 paralel 2 TTS — semua sukses. Update docs.
+
+Work Log:
+- User uji shorts-tui.py v1.0 dengan S5 (5 Tentara Modern di Dynasty Song S5):
+  * JSON dari Dola skill `shorts-json` (30 segment, valid 0 warning)
+  * MP4 final dari HDD/mix/ (2.1 GB, durasi 8179.8s = 136.3 menit)
+  * Stream copy mode
+  * Hasil: 30/30 sukses, total 56.5 detik (~1.9 detik per short)
+  * Output: 235.8 MB total, avg 7.9 MB/short
+  * Folder: HDD/shorts/5_Tentara_Modern_di_Dinasty_Song_S5/ (auto-create dari nama MP4)
+- User juga uji edge-tui v7.4 paralel 2 TTS di VS Code (2 split terminal):
+  * Terminal 1: S4 Melintas Zaman Batu (PID 47982, 3531 cue, 2j 6m)
+  * Terminal 2: Diasingkan di awal, sistem absen panggil jenderal hebat satukan seluruh dunia! (PID 48172, 4044 cue, 2j 12m)
+  * Lock file acquired berbeda prefix → zero collision
+  * PID display berbeda (47982 vs 48172)
+  * Activity Monitor: hijau, RAM ~1.4 GB total (695 MB + 728 MB buffer)
+  * Mac 16GB: aman paralel 2
+  * Saat ini masih running (ETA T1 ~3j 50m, T2 ~5j 25m)
+- Update docs (4 file):
+  * README.md: tabel 10 TUI, shorts-tui status 🆕 New → ✅ Production (test 30/30 sukses, stream copy ~1.9s/short)
+  * AGENTS.md: tabel 10 TUI update status, Pipeline produksi section tambah line "shorts-tui v1.0: ✅ (30/30 sukses test, stream copy ~1.9s/short, JSON dari Dola skill)"
+  * PROJECT_RULES.md: tabel 10 TUI update status
+  * scripts/README.md: tabel 10 TUI update status, section "shorts-tui.py v1.0" tambah "Test Result (28 Okt 2026)" dengan 5 bullet points, mention Dola AI sebagai source JSON
+- File berubah: README.md, AGENTS.md, PROJECT_RULES.md, scripts/README.md
+
+Stage Summary:
+- shorts-tui v1.0 PRODUCTION CONFIRMED — 30/30 sukses, stream copy 56.5 detik, 235.8 MB total
+- edge-tui v7.4 paralel 2 TTS RUNNING (lock file + PID display + 429 retry semua jalan)
+- Dola skill `shorts-json` tested — generate JSON valid, langsung kompatibel dengan shorts-tui.py
+- 10 TUI semua Production (kecuali #4 Web app Prototype, #5 SRT editor web Pending)
+- Pipeline end-to-end production: yt-dlp → srt-editor → demucs → edge-tts (paralel) → mix-tui → shorts-tui (via Dola skill)
+- Skala produksi feasible: 1 malam = 2 film full (paralel TTS) → 2 MP4 final (mix-tui) → 60 shorts (2× shorts-tui)
+- Pending: commit + push ke GitHub
