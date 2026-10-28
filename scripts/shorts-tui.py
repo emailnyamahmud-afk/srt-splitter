@@ -768,7 +768,11 @@ def main():
     print('🎬 Langkah berikutnya:')
     print(f'   1. Cek hasil di: {output_dir}')
     print(f'   2. Upload ke YouTube Shorts / TikTok / Reels')
-    print(f'   3. Title suggestion dari JSON: {os.path.basename(json_path)}')
+    # v1.1: Part mode → ga ada JSON, cek source_label
+    if is_part_mode:
+        print(f'   3. Title: {file_suffix}-001 s/d {file_suffix}-{len(segments):03d} (auto dari SRT split)')
+    else:
+        print(f'   3. Title suggestion dari JSON: {os.path.basename(json_path)}')
     print('═' * 64)
 
 
