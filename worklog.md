@@ -5549,3 +5549,49 @@ Stage Summary:
   * edge-tui v7.4 paralel-safe (lock file + 429 retry)
   * Skala produksi: 1 malam = 2 film (paralel TTS) → 120 shorts (60 × 2 films)
 - Pending: commit + push ke GitHub
+
+---
+Task ID: 15
+Agent: main
+Task: shorts-tui.py v1.1 — tambah Part mode (SRT auto-split, no AI, untuk TikTok playlist 4-5 menit per part)
+
+Work Log:
+- User request: tambah mode baru di shorts-tui — Part mode (SRT auto-split, no AI, 4-5 menit per part untuk TikTok playlist)
+- User specify: 1. default 4 menit (240s, cut di cue boundary), 2. folder HDD/Dubbing/parts/ (sejajar shorts/mix/tts), 3. title = "Part NNN - {film_name}" (bukan dari cue text), 4. part gak perlu CSV
+- Update config.py: tambah PARTS_DIR = HDD_BASE / 'parts', include di ensure_hdd() mkdir
+- Update shorts-tui.py v1.0 → v1.1:
+  * Tambah import re (bug: TS_RE pakai re tapi belum di-import)
+  * Tambah SRT parser: parse_srt_to_cues(srt_path) — tolerates BOM, CRLF, missing index
+  * Tambah auto_split_srt(cues, target_duration=240, film_name) — walk cue, accumulate time, cut di END cue terdekat (ga motong cue), title = "Part NNN - {film_name}"
+  * Tambah source mode picker (Step 0): "Shorts mode (JSON dari Dola AI)" atau "Part mode (SRT auto-split)"
+  * Part mode flow: pick SRT → set target durasi (default 240s = 4 menit, opsi 180/300/600s) → auto-split → segments
+  * Output dir: Part mode → HDD/parts/{film}/, Shorts mode → HDD/shorts/{film}/
+  * Filename: Part mode → {prefix}-part-001.mp4, Shorts mode → {prefix}-short-001.mp4
+  * Summary: mention mode (Part/Shorts + stream copy/re-encode)
+  * Bug fix: json_path ga defined di Part mode → ganti ke source_label (SRT atau JSON)
+  * Update print_banner: subtitle "Shorts (AI JSON) + Part (SRT auto-split) — stream copy"
+- Test sandbox (python3.13):
+  * Syntax check: OK
+  * SRT parser: 3 cues parsed correctly (start/end/text)
+  * Auto-split (5s target, 10 cues × 2s): 4 segments (6s, 6s, 6s, 2s) — cut di cue boundary ✓
+  * Auto-split (240s target, 3600 cues × 2s = 2 jam): 31 parts, avg 240s (4 menit), title "Part 001 - S5" s/d "Part 031 - S5" ✓
+  * Title format: "Part NNN - {film_name}" ✓
+  * All tests PASSED
+- Update docs (4 file):
+  * README.md: shorts-tui v1.0 → v1.1, struktur folder +parts/, section heading v1.1
+  * AGENTS.md: shorts-tui v1.0 → v1.1, Pipeline produksi section update
+  * PROJECT_RULES.md: shorts-tui v1.0 → v1.1
+  * scripts/README.md: shorts-tui v1.0 → v1.1
+- File berubah: scripts/shorts-tui.py (v1.0 → v1.1, +150 baris), scripts/config.py (+2 lines), README.md, AGENTS.md, PROJECT_RULES.md, scripts/README.md
+
+Stage Summary:
+- shorts-tui v1.1 production-ready: 2 mode (Shorts + Part)
+  * Shorts mode: JSON dari Dola AI, 60 segment, max 60s, output HDD/shorts/{film}/short-001.mp4
+  * Part mode: SRT auto-split, no AI, ~30 part (4 menit each), output HDD/parts/{film}/part-001.mp4
+- Part mode algorithm: walk cue, accumulate time, cut di END cue terdekat (ga motong pembicaraan)
+- Title: "Part NNN - {film_name}" (indexed, bukan dari cue text)
+- Target durasi configurable: 3/4/5/10 menit (default 4 menit = 240s)
+- Stream copy untuk kedua mode (sama seperti v1.0)
+- Shorts mode TIDAK berubah (backward compatible, Dola JSON tetap jalan)
+- 11 TUI status: 9 Production + 2 non-TUI (Web app Prototype, SRT editor web Pending)
+- Pending: commit + push ke GitHub

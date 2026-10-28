@@ -39,6 +39,7 @@ Usage:
 
 import os
 import sys
+import re
 import json
 import subprocess
 import shutil
@@ -52,7 +53,7 @@ except ImportError:
     sys.exit(1)
 
 
-VERSION = 'v1.0'
+VERSION = 'v1.1'
 
 # Maximum duration untuk Shorts/TikTok/Reels (detik)
 # YouTube Shorts: 60s, TikTok: 90s, Instagram Reels: 90s
@@ -220,6 +221,134 @@ def validate_segments(segments: List[Dict], video_duration: Optional[float] = No
 
 
 # ============================================================
+# SRT parser + auto-split (v1.1 — Part mode, no AI)
+# ============================================================
+
+TS_RE = re.compile(
+    r'(\d{2}):(\d{2}):(\d{2})[,.](\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})[,.](\d{3})'
+)
+
+
+def _ts_to_seconds(h, m, s, ms):
+    """HH:MM:SS,mmm → detik (float)."""
+    return int(h) * 3600 + int(m) * 60 + int(s) + int(ms) / 1000.0
+
+
+def parse_srt_to_cues(srt_path: str) -> List[Dict]:
+    """Parse SRT → list of {start, end, text}. Reuse pattern dari srt-editor-tui.
+
+    Tolerates BOM, CRLF, blank lines, missing index.
+    """
+    for enc in ('utf-8-sig', 'utf-8', 'latin-1'):
+        try:
+            text = open(srt_path, 'r', encoding=enc).read()
+            break
+        except UnicodeDecodeError:
+            continue
+
+    text = text.replace('\r\n', '\n').replace('\r', '\n')
+    blocks = re.split(r'\n\s*\n', text.strip())
+
+    cues = []
+    for block in blocks:
+        block = block.strip()
+        if not block:
+            continue
+        lines = block.split('\n')
+        ts_line_idx = 0
+        # Skip index line kalau ada
+        try:
+            int(lines[0].strip())
+            ts_line_idx = 1
+        except ValueError:
+            ts_line_idx = 0
+
+        if ts_line_idx >= len(lines):
+            continue
+
+        ts_match = TS_RE.search(lines[ts_line_idx])
+        if not ts_match:
+            continue
+
+        g = ts_match.groups()
+        start = _ts_to_seconds(g[0], g[1], g[2], g[3])
+        end = _ts_to_seconds(g[4], g[5], g[6], g[7])
+
+        text_lines = lines[ts_line_idx + 1:]
+        cue_text = ' '.join(text_lines).strip()
+
+        cues.append({
+            'start': start,
+            'end': end,
+            'text': cue_text,
+        })
+
+    return cues
+
+
+def auto_split_srt(cues: List[Dict], target_duration: float = 240.0,
+                   film_name: str = '') -> List[Dict]:
+    """Split SRT cues jadi segments berdasarkan target durasi.
+
+    Algoritma:
+    - Walk cue, accumulate time
+    - Kalau accumulate >= target → cut di END cue terdekat (ga motong cue)
+    - Segment start = cue[0].start, end = cue[last].end
+    - Title = "Part NNN - {film_name}"
+    - Return: list of {start, end, title, duration} (sama format seperti JSON Dola)
+    """
+    if not cues:
+        return []
+
+    segments = []
+    seg_start = cues[0]['start']
+    accumulated = 0.0
+    part_num = 0
+    last_cue_end = cues[0]['end']
+
+    for i, cue in enumerate(cues):
+        cue_dur = cue['end'] - cue['start']
+        accumulated += cue_dur
+        last_cue_end = cue['end']
+
+        # Kalau accumulate >= target → cut di sini (END cue terdekat)
+        if accumulated >= target_duration:
+            part_num += 1
+            seg_end = cue['end']
+            title = f'Part {part_num:03d}'
+            if film_name:
+                title = f'Part {part_num:03d} - {film_name}'
+
+            segments.append({
+                'start': seg_start,
+                'end': seg_end,
+                'title': title,
+                'duration': seg_end - seg_start,
+            })
+
+            # Reset untuk segment berikutnya
+            if i + 1 < len(cues):
+                seg_start = cues[i + 1]['start']
+                accumulated = 0.0
+
+    # Sisa cue terakhir (kalau belum cut)
+    if accumulated > 0 and seg_start < last_cue_end:
+        part_num += 1
+        title = f'Part {part_num:03d}'
+        if film_name:
+            title = f'Part {part_num:03d} - {film_name}'
+
+        segments.append({
+            'start': seg_start,
+            'end': last_cue_end,
+            'title': title,
+            'duration': last_cue_end - seg_start,
+        })
+
+    return segments
+
+
+# ============================================================
 # ffprobe untuk durasi video
 # ============================================================
 
@@ -321,7 +450,7 @@ def print_banner():
     pad_title = max(0, 66 - len(title) - 2)
     print('╔' + '═' * 64 + '╗')
     print('║  ' + title + ' ' * pad_title + '║')
-    print('║  Pecah MP4 final jadi N shorts (stream copy, cepat)    ║')
+    print('║  Shorts (AI JSON) + Part (SRT auto-split) — stream copy ║')
     print('╚' + '═' * 64 + '╝')
     print()
 
@@ -340,53 +469,122 @@ def main():
     print(f'ffprobe: {ffprobe or "(tidak ada — skip cek durasi)"}')
     print()
 
-    # === Step 1: Pick JSON timestamps ===
-    print('▶ Step 1/4: Pilih file JSON timestamps (dari ChatGPT/Claude/Gemini)')
-    # Search di cwd + HDD/shorts/ + HDD/mix/ (taruh JSON di HDD/shorts/ supaya rapi)
-    from config import MIX_DIR, SHORTS_DIR, ensure_hdd, HDD_BASE
-    hdd_ok = ensure_hdd()
-
-    # Search JSON prioritas: cwd → SHORTS_DIR → MIX_DIR (HDD_BASE root dibuang, biar rapi)
-    json_search_dirs = [os.getcwd()]
-    if hdd_ok:
-        json_search_dirs.append(str(SHORTS_DIR))
-        json_search_dirs.append(str(MIX_DIR))
-
-    json_choices_dirs = json_search_dirs
-    json_path = None
-    json_choice = questionary.select(
-        'Cari JSON di folder mana?',
-        choices=json_choices_dirs + ['[Ketik path manual]'],
-        default=json_choices_dirs[0],
+    # === Step 0: Source mode (v1.1 — Shorts atau Part) ===
+    source_mode = questionary.select(
+        'Source mode:',
+        choices=[
+            'Shorts mode (JSON dari Dola AI — kurasi 60 segment, max 60s)',
+            'Part mode (SRT auto-split — no AI, semua cue, ~4 menit per part)',
+        ],
+        default='Shorts mode (JSON dari Dola AI — kurasi 60 segment, max 60s)',
     ).ask()
 
-    if json_choice == '[Ketik path manual]':
-        json_path = questionary.text('Path JSON:').ask()
-    else:
-        json_path = select_file('Pilih JSON timestamps:', ['json'], search_dir=json_choice)
-
-    if not json_path:
-        print('Batal.')
-        sys.exit(0)
-
-    json_path = os.path.expanduser(json_path)
-    if not os.path.isfile(json_path):
-        print(f'❌ File tidak ditemukan: {json_path}')
-        sys.exit(1)
-
-    print(f'  ✓ {os.path.basename(json_path)}')
-
-    # Parse + validate JSON
-    try:
-        segments = parse_timestamps_json(json_path)
-    except ValueError as e:
-        print(f'\n❌ JSON parse gagal: {e}')
-        print(f'   Format yang diharapkan:')
-        print(f'   [{{"start": 12.5, "end": 65.3, "title": "..."}}, ...]')
-        sys.exit(1)
-
-    print(f'  ✓ {len(segments)} segment ditemukan')
+    is_part_mode = 'Part mode' in source_mode
+    print(f'  ✓ {"Part mode" if is_part_mode else "Shorts mode"}')
     print()
+
+    # === Step 1: Pick JSON atau SRT ===
+    from config import MIX_DIR, SHORTS_DIR, PARTS_DIR, ensure_hdd, HDD_BASE, INPUT_DIR
+    hdd_ok = ensure_hdd()
+
+    if is_part_mode:
+        # Part mode: pick SRT
+        print('▶ Step 1/4: Pilih SRT (untuk auto-split, no AI)')
+        srt_search_dirs = [os.getcwd()]
+        if hdd_ok:
+            srt_search_dirs.append(str(INPUT_DIR))
+            srt_search_dirs.append(str(MIX_DIR))
+
+        srt_choice = questionary.select(
+            'Cari SRT di folder mana?',
+            choices=srt_search_dirs + ['[Ketik path manual]'],
+            default=srt_search_dirs[0],
+        ).ask()
+
+        if srt_choice == '[Ketik path manual]':
+            srt_path = questionary.text('Path SRT:').ask()
+        else:
+            srt_path = select_file('Pilih SRT:', ['srt'], search_dir=srt_choice)
+
+        if not srt_path:
+            print('Batal.')
+            sys.exit(0)
+
+        srt_path = os.path.expanduser(srt_path)
+        if not os.path.isfile(srt_path):
+            print(f'❌ File tidak ditemukan: {srt_path}')
+            sys.exit(1)
+
+        print(f'  ✓ {os.path.basename(srt_path)}')
+
+        # Parse SRT → cues
+        cues = parse_srt_to_cues(srt_path)
+        print(f'  ✓ {len(cues)} cue ditemukan')
+        if not cues:
+            print('❌ SRT kosong atau tidak valid.')
+            sys.exit(1)
+
+        # Step 1.5: target durasi per part
+        target_dur = questionary.select(
+            'Target durasi per part:',
+            choices=['4 menit (240s)', '5 menit (300s)', '3 menit (180s)', '10 menit (600s)'],
+            default='4 menit (240s)',
+        ).ask()
+        target_seconds = int(target_dur.split('(')[1].rstrip('s)'))
+        print(f'  ✓ Target: {target_seconds}s per part')
+        print()
+
+        # Auto-split SRT → segments
+        # Film name dari SRT filename
+        srt_film_name = Path(srt_path).stem
+        segments = auto_split_srt(cues, target_duration=float(target_seconds),
+                                  film_name=srt_film_name)
+        print(f'  ✓ Auto-split: {len(segments)} part')
+        avg_dur = sum(s['duration'] for s in segments) / len(segments) if segments else 0
+        print(f'  ✓ Avg durasi: {avg_dur:.1f}s ({avg_dur/60:.1f} menit)')
+        print()
+
+    else:
+        # Shorts mode: pick JSON (existing flow)
+        print('▶ Step 1/4: Pilih file JSON timestamps (dari Dola AI)')
+        json_search_dirs = [os.getcwd()]
+        if hdd_ok:
+            json_search_dirs.append(str(SHORTS_DIR))
+            json_search_dirs.append(str(MIX_DIR))
+
+        json_choice = questionary.select(
+            'Cari JSON di folder mana?',
+            choices=json_search_dirs + ['[Ketik path manual]'],
+            default=json_search_dirs[0],
+        ).ask()
+
+        if json_choice == '[Ketik path manual]':
+            json_path = questionary.text('Path JSON:').ask()
+        else:
+            json_path = select_file('Pilih JSON timestamps:', ['json'], search_dir=json_choice)
+
+        if not json_path:
+            print('Batal.')
+            sys.exit(0)
+
+        json_path = os.path.expanduser(json_path)
+        if not os.path.isfile(json_path):
+            print(f'❌ File tidak ditemukan: {json_path}')
+            sys.exit(1)
+
+        print(f'  ✓ {os.path.basename(json_path)}')
+
+        # Parse + validate JSON
+        try:
+            segments = parse_timestamps_json(json_path)
+        except ValueError as e:
+            print(f'\n❌ JSON parse gagal: {e}')
+            print(f'   Format yang diharapkan:')
+            print(f'   [{{"start": 12.5, "end": 65.3, "title": "..."}}, ...]')
+            sys.exit(1)
+
+        print(f'  ✓ {len(segments)} segment ditemukan')
+        print()
 
     # === Step 2: Pick MP4 final ===
     print('▶ Step 2/4: Pilih MP4 final (sudah vertikal 9:16, sudah hardsub)')
@@ -437,13 +635,14 @@ def main():
             sys.exit(0)
         print()
 
-    # === Step 3: Output dir (default: HDD/shorts/{film-name}/) ===
+    # === Step 3: Output dir (default: HDD/shorts/{film-name}/ atau HDD/parts/{film-name}/) ===
     print('▶ Step 3/4: Pilih output dir')
     film_name = sanitize_dirname(Path(mp4_path).stem)
-    if hdd_ok:
-        default_output_dir = os.path.join(str(SHORTS_DIR), film_name)
+    if is_part_mode:
+        default_base = str(PARTS_DIR) if hdd_ok else os.path.join(os.getcwd(), 'parts')
     else:
-        default_output_dir = os.path.join(os.getcwd(), 'shorts', film_name)
+        default_base = str(SHORTS_DIR) if hdd_ok else os.path.join(os.getcwd(), 'shorts')
+    default_output_dir = os.path.join(default_base, film_name)
     output_dir = questionary.text(
         'Output dir (default: subfolder per film):',
         default=default_output_dir,
@@ -471,12 +670,14 @@ def main():
     print()
 
     title_prefix = questionary.text(
-        'Title prefix untuk output file (default: nama MP4):',
+        f'Title prefix untuk output file (default: nama MP4):',
         default=film_name,
     ).ask()
     if not title_prefix:
         title_prefix = film_name
-    print(f'  ✓ {title_prefix}')
+    # v1.1: Part mode pakai "part", Shorts mode pakai "short"
+    file_suffix = 'part' if is_part_mode else 'short'
+    print(f'  ✓ {title_prefix} (output: {file_suffix}-001.mp4, {file_suffix}-002.mp4, ...)')
     print()
 
     # === Summary + confirm ===
@@ -484,11 +685,13 @@ def main():
     print('╔' + '═' * 64 + '╗')
     print('║  📋 Ringkasan:' + ' ' * 49 + '║')
     print('╠' + '═' * 64 + '╣')
-    print(f'║  JSON    : {os.path.basename(json_path)[:46]:<46}║')
+    source_label = os.path.basename(srt_path) if is_part_mode else os.path.basename(json_path)
+    print(f'║  Source  : {source_label[:46]:<46}║')
     print(f'║  MP4     : {os.path.basename(mp4_path)[:46]:<46}║')
     print(f'║  Segments: {len(segments):<46}║')
     print(f'║  Total   : {total_dur:.1f}s ({total_dur/60:.1f} menit){" " * (46-len(f"{total_dur:.1f}s ({total_dur/60:.1f} menit)"))}║')
-    print(f'║  Mode    : {"stream copy" if is_stream_copy else "re-encode"}{" " * (46-len("stream copy" if is_stream_copy else "re-encode"))}║')
+    mode_label = f'{"Part" if is_part_mode else "Shorts"} {"stream copy" if is_stream_copy else "re-encode"}'
+    print(f'║  Mode    : {mode_label[:46]:<46}║')
     print(f'║  Dir     : {os.path.basename(output_dir)[:46]:<46}║')
     print(f'║  Prefix  : {title_prefix[:46]:<46}║')
     print('╚' + '═' * 64 + '╝')
@@ -512,7 +715,7 @@ def main():
     for i, seg in enumerate(segments):
         idx = i + 1
         # Output filename: {prefix}-short-{NNN}.mp4 (3-digit padding)
-        output_file = os.path.join(output_dir, f'{title_prefix}-short-{idx:03d}.mp4')
+        output_file = os.path.join(output_dir, f'{title_prefix}-{file_suffix}-{idx:03d}.mp4')
 
         # Estimate ETA
         elapsed = time_mod.time() - start_time
@@ -548,7 +751,7 @@ def main():
     # List output files
     if success_count > 0:
         print(f'📁 Output di: {output_dir}')
-        output_files = sorted(Path(output_dir).glob(f'{title_prefix}-short-*.mp4'))
+        output_files = sorted(Path(output_dir).glob(f'{title_prefix}-{file_suffix}-*.mp4'))
         total_size_mb = sum(f.stat().st_size for f in output_files) / 1024 / 1024
         print(f'   {len(output_files)} file, total {total_size_mb:.1f} MB')
         if len(output_files) <= 5:

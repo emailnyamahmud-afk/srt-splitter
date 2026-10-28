@@ -17,7 +17,7 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 | 7 | mix-tui.py v3.8.2 | Mix MP4 + audio → final video (6 mode + logo + fade) | ✅ Production (all tested) |
 | 8 | whisper-tui.py v1.1 | Generate SRT dari audio (faster-whisper, M1) | ✅ Production (SRT quality 90-95%) |
 | 9 | srt-editor-tui.py v1.0.1 | Fix typo/konteks SRT hasil translate (glossary + bulk replace) | ✅ Production |
-| 10 | shorts-tui.py v1.0 | Pecah MP4 final jadi N shorts (JSON timestamps dari AI) | ✅ Production (60/60 sukses, stream copy ~1.6s/short, 94s total) |
+| 10 | shorts-tui.py v1.1 | Pecah MP4 final jadi N shorts (JSON dari AI) atau N parts (SRT auto-split) | ✅ Production (Shorts 60/60 + Part mode auto-split) |
 | 11 | shorts-csv-tui.py v1.0 | Generate metadata CSV + manifest untuk YouTube Studio | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
 
 ## Pipeline
@@ -51,7 +51,8 @@ HDD /Volumes/HDD/Dubbing/            ← data (besar)
 ├── demucs/                          ← no_vocals (300MB+)
 ├── tts/                             ← dub wav + cache
 ├── mix/                             ← final MP4 (output langsung ke sini, v3.7.4)
-├── shorts/                          ← shorts-tui + shorts-csv-tui: JSON + MP4 + CSV + manifest (subfolder per film)
+├── shorts/                          ← shorts-tui Shorts: JSON + MP4 (subfolder per film)
+├── parts/                           ← shorts-tui Part: MP4 4-5 min per part (TikTok playlist)
 └── .env                             ← Supabase credentials
 ```
 
@@ -66,7 +67,7 @@ python3 srt-editor-tui.py /Volumes/HDD/Dubbing/input/S2-FB-Mandarin.id.srt
 
 Detail lengkap: lihat [scripts/README.md](scripts/README.md#srt-editor-tui-v101).
 
-## shorts-tui v1.0 — pecah MP4 final jadi N shorts
+## shorts-tui v1.1 — pecah MP4 jadi Shorts (AI JSON) atau Parts (SRT auto-split)
 
 ```bash
 cd ~/Dubbing && source venv/bin/activate
