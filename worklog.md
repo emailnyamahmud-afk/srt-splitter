@@ -5209,3 +5209,84 @@ Stage Summary:
 - Download section di README root sekarang lengkap untuk semua 9 TUI
 - Tidak ada perubahan kode, cuma docs sync
 - Pending: commit + push (akan dilakukan setelah entry ini)
+
+---
+Task ID: 8
+Agent: main
+Task: edge-tui v7.4 — paralel support (lock file + auto-suggest prefix + 429 retry + PID display) supaya user bisa generate 2 TTS paralel di Mac 16GB
+
+Work Log:
+- User minta: kerjakan paralel 2 TTS, kerjakan teliti, jangan terburu2
+- Strategi yang dipilih: FLAT output (tetap di TTS_DIR root, BUKAN subfolder per-SRT)
+  * Alasan: mix-tui.py v3.8.1 pakai glob non-recursive `TTS_DIR/*.wav` → kalau pindah ke subfolder, harus update mix-tui juga (effort lebih besar)
+  * Flat dengan unique prefix = backward compatible, mix-tui ga perlu diubah
+- Baca mix-tui.py untuk paham input pattern:
+  * `find_files_in_dir(TTS_DIR, ['wav'])` → glob `*.wav` non-recursive
+  * `select_file` → user pilih dari list di TTS_DIR root
+  * Konfirmasi: flat strategy = backward compatible dengan mix-tui
+- Backup v7.3.1 ke /tmp/edge-tts-tui-v7.3.1-backup.py sebelum modifikasi
+- Implementasi v7.4 di scripts/edge-tts-tui.py:
+  * Header docstring update: tambah section "PARALEL WORKFLOW" + RAM estimasi + v7.4 changelog
+  * Tambah module constants: VERSION='v7.4', RATE_LIMIT_BACKOFF=[30, 60, 120], _ACTIVE_LOCK=None
+  * Tambah helper functions:
+    - _pid_alive(pid): cross-platform (Mac/Linux) pakai os.kill(pid, 0)
+    - lock_path_for(output_dir, prefix): return '{output_dir}/.{prefix}.lock'
+    - acquire_lock(output_dir, prefix): cek lock file, cek PID alive, tulis lock baru, set _ACTIVE_LOCK
+    - release_lock(output_dir, prefix): hapus lock kalau PID match, clear _ACTIVE_LOCK
+    - suggest_unique_prefix(output_dir, prefix): cari prefix-2, -3, dst sampai kosong
+  * Update generate_cue_tts: tambah param `cue_idx`, 429 retry dengan backoff
+    - Detect rate limit via string match: '429', 'rate limit', 'too many requests', 'throttle'
+    - Bukan 429 → langsung fail (no retry)
+    - 429 → tunggu 30s/60s/120s, retry, gagal semua → skip + log
+  * Update smart_fit_cue: tambah param `cue_idx`, pass ke generate_cue_tts
+  * Update print_banner: tampilkan VERSION + PID di header (tracking paralel di Activity Monitor)
+  * Update Step 6 (Prefix): setelah user input prefix, acquire_lock check
+    - Kalau prefix dipakai process lain (PID alive) → tampilkan warning + suggest_unique_prefix
+    - User konfirmasi "Ganti jadi {prefix}-2?" → Enter saja (recommended)
+    - Kalau user paksa pakai prefix sama → exit (jangan overwrite)
+    - Stale lock (PID mati) → auto-cleanup, lanjut acquire
+  * Update __main__ exception handler:
+    - KeyboardInterrupt → release_lock(_ACTIVE_LOCK) sebelum exit
+    - Exception/crash → release_lock juga (crash safety)
+  * Update success path: release_lock(output_dir, prefix) di akhir main()
+- Test comprehensive (sandbox Linux, pakai python3.13):
+  * Syntax check: py_compile OK
+  * Module load: all functions callable (_pid_alive, lock_path_for, acquire_lock, release_lock, suggest_unique_prefix)
+  * _pid_alive: self PID True, PID 99999 False
+  * Lock flow test:
+    - acquire 1: success=True
+    - acquire 2 (prefix sama, PID alive): success=False, holder_pid benar
+    - suggest_unique_prefix: return 'my-prefix-2' (sesuai harapan)
+    - acquire suggested: success=True
+    - release: lock file dihapus
+    - acquire setelah release: success=True
+  * Stale lock test: lock dengan PID palsu (99999) → acquire sukses (stale cleanup jalan)
+  * Paralel 2-instance workflow simulation: kedua instance dapat prefix berbeda, lock files terpisah, release bersih
+  * 429 retry test (RATE_LIMIT_BACKOFF override [1,2,3]): total elapsed 6.0s, result=False
+  * Non-429 error test (Network refused): elapsed 0.00s (no retry), result=False (fail fast)
+  * generate_cue_tts signature: cue_idx param ada, smart_fit_cue signature: cue_idx param ada
+- Update docs (4 file):
+  * README.md (root): tabel 9 TUI #6 → edge-tui v7.4 (paralel-safe, lock file, 429 retry)
+  * AGENTS.md: tabel 9 TUI #6 → v7.4, Pipeline produksi section: edge-tts v7.4 (paralel-safe, lock file + 429 retry)
+  * PROJECT_RULES.md: tabel 9 TUI #6 → v7.4
+  * scripts/README.md: tabel 9 TUI #6 → v7.4, tambah section baru "edge-tui v7.4 — Paralel Support"
+    - Cara paralel (2 terminal)
+    - Yang baru di v7.4 (tabel 5 fitur)
+    - RAM per instance (tabel untuk Mac 16GB dan 8GB)
+    - Compatibility dengan mix-tui.py (tetap flat, backward compatible)
+    - Cek RAM free sebelum paralel
+- File berubah: scripts/edge-tts-tui.py (943 → ~1170 baris), 4 docs sync
+
+Stage Summary:
+- edge-tui v7.4 production-ready untuk paralel 2-3 instance di Mac 16GB
+- Strategi flat (no subfolder) = backward compatible dengan mix-tui.py v3.8.1
+- Lock file mechanism: collision detection + auto-suggest prefix-2 + stale cleanup
+- 429 retry: 30s/60s/120s backoff, fail fast kalau non-429 error
+- Crash safety: lock di-release walau ada KeyboardInterrupt/exception
+- All tests pass di sandbox (lock flow, 429 retry, paralel simulation, stale lock)
+- Workflow user sekarang:
+  * Terminal 1: python3 edge-tui.py → SRT A → prefix A (auto dari nama SRT)
+  * Terminal 2: python3 edge-tui.py → SRT B → prefix B (auto dari nama SRT)
+  * Kalau SRT sama di 2 terminal: TUI auto-suggest prefix-2 → Enter saja
+  * Output: 2 file {prefix}-audio-id-dub.wav di tts/, mix-tui langsung nemu keduanya
+- Pending: commit + push ke GitHub

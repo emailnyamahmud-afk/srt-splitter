@@ -11,7 +11,7 @@ Python TUI untuk workflow dubbing + kamus Jawa.
 | 3 | kamus-tui.py v16 | ✅ Production (audit) |
 | 4 | Web app | ⚠ Prototype |
 | 5 | SRT editor (web, pakai SRT ID) | ⏳ Pending |
-| 6 | edge-tts-tui.py v7.3.1 | ✅ Production |
+| 6 | edge-tts-tui.py v7.4 (paralel-safe, lock file + 429 retry) | ✅ Production |
 | 7 | mix-tui.py v3.8.2 | ✅ Production (all tested + logo + fade) |
 | 8 | whisper-tui.py v1.1 (faster-whisper) | ✅ Production (SRT quality 90-95%) |
 | 9 | srt-editor-tui.py v1.0.1 (fix typo SRT hasil translate) | ✅ Production |
@@ -120,6 +120,54 @@ python3 mix-tui.py             # 5. Mix Mode A (Stream) / B (Burn)
 
 # Kamus (parallel)
 python3 kamus-tui.py
+```
+
+## edge-tui v7.4 — Paralel Support
+
+Generate 2-3 TTS sekaligus di terminal berbeda. Cocok untuk workflow "malam
+tinggal generate → tidur → pagi ready 2 file dub".
+
+### Cara paralel (zero code change)
+
+```bash
+# Terminal 1:
+cd ~/Dubbing && source venv/bin/activate
+python3 edge-tts-tui.py
+# → pilih SRT A → pilih output dir → prefix default = nama SRT A
+
+# Terminal 2 (tab baru atau window baru):
+python3 edge-tts-tui.py
+# → pilih SRT B (BEDA file SRT!) → prefix default = nama SRT B
+# → kalau SRT sama, TUI auto-suggest prefix-2 → Enter saja
+```
+
+### Yang baru di v7.4
+
+| Fitur | Manfaat |
+|-------|---------|
+| **Lock file** (`tts/.{prefix}.lock`) | Detect kalau prefix lagi dipakai process lain |
+| **Prefix auto-suggest** | Kalau collision → tanya "ganti jadi {prefix}-2?" → Enter saja |
+| **PID display** di header | Tracking paralel di Activity Monitor (PID xxxxx) |
+| **429 retry** | Auto-recover kalau Microsoft throttle (30s → 60s → 120s → skip) |
+| **Stale lock cleanup** | PID mati → lock file lama dihapus otomatis |
+
+### RAM per instance (untuk 4 jam audio)
+
+| Instance paralel | RAM total | Mac 16GB | Mac 8GB |
+|------------------|----------|----------|---------|
+| 1 | ~1.6 GB | Aman | Aman |
+| 2 (recommended) | ~3.2 GB | Aman (sisa ~13 GB) | Riskan |
+| 3 | ~4.8 GB | Aman (sisa ~11 GB) | Bahaya |
+
+### Compatibility dengan mix-tui.py
+
+Output tetap di `tts/{prefix}-audio-id-dub.wav` (flat di TTS_DIR root, BUKAN
+subfolder). `mix-tui.py` cari dub pakai glob non-recursive → langsung nemu.
+
+Cek RAM free sebelum paralel:
+```bash
+vm_stat | head -5  # Mac
+# atau buka Activity Monitor → Memory
 ```
 
 ## srt-editor-tui.py v1.0.1

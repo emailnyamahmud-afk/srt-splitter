@@ -1,33 +1,52 @@
 #!/usr/bin/env python3
 """
-edge-tts-tui.py — TUI Generate TTS dari SRT dengan Edge TTS (lokal, gratis)
+edge-tts-tui.py v7.4 — TUI Generate TTS dari SRT dengan Edge TTS (lokal, gratis)
 
-Pengganti Mode ON di web app untuk audio panjang (>30 menit).
-Web app Vercel punya limit:
-- maxDuration 60s per request
-- Microsoft Edge TTS rate-limit kalau banyak request cepat (429)
-- ZIP building OOM di browser
-- Tidak bisa resume kalau tab crash
+v7.4 update (26 Okt 2026) — Paralel support:
+  FIX: User mau generate 2 TTS paralel di Mac 16GB (jam 22:00 → pagi ready 2 file).
+  Solusi: lock file + prefix auto-suggest + 429 retry + PID display.
 
-Script ini jalan 100% lokal di Mac. Tidak ada rate-limit, tidak ada ZIP,
-bisa pause/resume (per-cue cache di folder).
+  Strategi tetap flat di TTS_DIR (backward compatible dengan mix-tui.py v3.8.1
+  yang cari dub di TTS_DIR root dengan glob non-recursive).
 
-Algorithm (port dari web app src/lib/tts.ts narrateEntries Mode ON + Smart Fit):
-1. Parse SRT → entries (start, end, text)
-2. Per cue: generate natural TTS (rate +0%)
-3. Trim silence (asymmetric, voicertool pattern)
-4. Hitung need = naturalDur / cueDur
-5. Kalau need <= 1.0 → pakai natural
-6. Kalau need > 1.0 → re-generate dengan rate = min(need, cap)*100%
-   - Pitch preserved (Edge TTS server-side rate, bukan atempo robot)
-7. Peak normalize -2 dBFS
-8. Stitch ke buffer pada cue.start (mix additive)
-9. Crossfade 150ms kalau audio overflow cue next
-10. Output: WAV 24kHz mono 16-bit
+  Yang baru di v7.4:
+  - Lock file: tts/.{prefix}.lock dengan PID — detect kalau prefix dipakai process lain
+  - Prefix auto-suggest: kalau collision → tanya "ganti jadi {prefix}-2?"
+  - PID display di header (tracking paralel di Activity Monitor)
+  - 429 retry: 30s → 60s → 120s → skip + log (auto-recover kalau Microsoft throttle)
+  - Lock file stale detection: kalau PID mati, hapus lock otomatis
 
-Per-cue cache di {output_dir}/.cache/{prefix}-cue-{NNN}.mp3
+v7.3.1 (sebelumnya):
+  Pengganti Mode ON di web app untuk audio panjang (>30 menit).
+  Web app Vercel punya limit:
+  - maxDuration 60s per request
+  - Microsoft Edge TTS rate-limit kalau banyak request cepat (429)
+  - ZIP building OOM di browser
+  - Tidak bisa resume kalau tab crash
+
+  Algorithm (port dari web app src/lib/tts.ts narrateEntries Mode ON + Smart Fit):
+  1. Parse SRT → entries (start, end, text)
+  2. Per cue: generate natural TTS (rate +0%)
+  3. Trim silence (asymmetric, voicertool pattern)
+  4. Hitung need = naturalDur / cueDur
+  5. Kalau need <= 1.0 → pakai natural
+  6. Kalau need > 1.0 → re-generate dengan rate = min(need, cap)*100%
+  7. Peak normalize -2 dBFS
+  8. Stitch ke buffer pada cue.start (mix additive)
+  9. Crossfade 150ms kalau audio overflow cue next
+  10. Output: WAV 24kHz mono 16-bit
+
+Per-cue cache di {output_dir}/.cache/{prefix}-cue-{NNN}-{hash}.mp3
 - Kalau cache ada + text sama → skip generate (resume support)
 - Kalau text beda → hapus cache lama, generate baru
+
+PARALEL WORKFLOW (v7.4):
+  2 instance dengan SRT berbeda → masing-masing punya prefix unik → aman
+  2 instance dengan SRT sama → TUI auto-suggest prefix-2 → user tinggal Enter
+
+  RAM per instance ~1.6 GB (untuk 4 jam audio)
+  Mac 16GB: aman untuk 3 paralel (sisa ~11GB untuk OS + browser)
+  Mac 8GB: batasi 2 paralel
 
 Install:
   pip3 install edge-tts questionary
@@ -40,6 +59,7 @@ Usage:
 Output:
   {output_dir}/{prefix}-audio-id-dub.wav   (WAV 24kHz mono 16-bit)
   {output_dir}/.cache/{prefix}-cue-*.mp3   (per-cue cache, bisa dihapus)
+  {output_dir}/.{prefix}.lock              (lock file, auto-delete saat selesai)
 """
 
 import os
@@ -54,6 +74,16 @@ import wave
 import struct
 from pathlib import Path
 from datetime import datetime, timedelta
+
+# === Version + paralel constants ===
+VERSION = 'v7.4'
+# 429 retry backoff schedule (detik). Total max ~3.5 menit per cue kalau semua gagal.
+RATE_LIMIT_BACKOFF = [30, 60, 120]
+
+# v7.4: Module-level lock state — di-set saat acquire_lock sukses,
+# di-release saat main() selesai normal ATAU KeyboardInterrupt/exception.
+# Format: (output_dir, prefix) atau None kalau belum acquire.
+_ACTIVE_LOCK = None
 
 # Track missing deps untuk pesan error komprehensif
 _MISSING_DEPS = []
@@ -411,19 +441,52 @@ def format_edge_rate(ratio: float) -> str:
 # Generate 1 cue via Edge TTS (lokal)
 # ============================================================
 
-def generate_cue_tts(text: str, voice: str, rate: str, pitch: str, output_mp3: str) -> bool:
-    """Generate 1 cue via edge_tts Python → MP3 file. Return True sukses."""
-    try:
-        communicate = edge_tts.Communicate(text, voice, rate=rate, pitch=pitch)
-        # sync save (bukan async) — pakai asyncio.run
-        import asyncio
-        async def _save():
-            await communicate.save(output_mp3)
-        asyncio.run(_save())
-        return os.path.isfile(output_mp3) and os.path.getsize(output_mp3) > 0
-    except Exception as e:
-        print(f'  ⚠ Edge TTS gagal: {e}')
-        return False
+def generate_cue_tts(text: str, voice: str, rate: str, pitch: str, output_mp3: str,
+                     cue_idx: int = 0) -> bool:
+    """Generate 1 cue via edge_tts Python → MP3 file. Return True sukses.
+
+    v7.4: Auto-retry kalau kena 429 (rate limit Microsoft).
+    Backoff schedule: 30s → 60s → 120s → skip + log.
+    """
+    import asyncio
+
+    last_error = None
+    for attempt in range(len(RATE_LIMIT_BACKOFF) + 1):  # 1 initial + 3 retries
+        try:
+            communicate = edge_tts.Communicate(text, voice, rate=rate, pitch=pitch)
+            async def _save():
+                await communicate.save(output_mp3)
+            asyncio.run(_save())
+            if os.path.isfile(output_mp3) and os.path.getsize(output_mp3) > 0:
+                return True
+            # File kosong/gagal tapi no exception → treat as error
+            raise RuntimeError('output MP3 kosong atau tidak terbentuk')
+        except Exception as e:
+            last_error = e
+            err_str = str(e).lower()
+            # Detect rate limit (429) — Edge TTS Python pakai berbagai pesan
+            is_rate_limit = (
+                '429' in err_str or
+                'rate limit' in err_str or
+                'too many requests' in err_str or
+                'throttle' in err_str
+            )
+            if not is_rate_limit:
+                # Bukan rate limit → jangan retry, langsung fail
+                print(f'  ⚠ Edge TTS gagal cue {cue_idx}: {e}')
+                return False
+            # Rate limit → retry dengan backoff
+            if attempt < len(RATE_LIMIT_BACKOFF):
+                wait_s = RATE_LIMIT_BACKOFF[attempt]
+                print(f'  ⏸ Cue {cue_idx} kena rate limit (429). Tunggu {wait_s}s, retry {attempt+1}/{len(RATE_LIMIT_BACKOFF)}...')
+                time.sleep(wait_s)
+                continue
+            else:
+                print(f'  ⚠ Edge TTS gagal cue {cue_idx} setelah {len(RATE_LIMIT_BACKOFF)} retry: {last_error}')
+                return False
+
+    print(f'  ⚠ Edge TTS gagal cue {cue_idx}: {last_error}')
+    return False
 
 
 # ============================================================
@@ -438,6 +501,7 @@ def smart_fit_cue(
     cap: float,
     cache_path: str,
     cache_key: str,
+    cue_idx: int = 0,
 ) -> 'np.ndarray':
     """
     Smart Fit untuk 1 cue:
@@ -452,9 +516,9 @@ def smart_fit_cue(
 
     # === Pass 1: natural ===
     if not (os.path.isfile(natural_mp3) and os.path.getsize(natural_mp3) > 0):
-        ok = generate_cue_tts(text, voice, '+0%', pitch, natural_mp3)
+        ok = generate_cue_tts(text, voice, '+0%', pitch, natural_mp3, cue_idx=cue_idx)
         if not ok:
-            raise RuntimeError(f'Pass 1 gagal untuk cue')
+            raise RuntimeError(f'Pass 1 gagal untuk cue {cue_idx}')
 
     audio1 = decode_mp3_to_pcm(natural_mp3, OUTPUT_SAMPLE_RATE)
     natural_audio = trim_silence_asymmetric(audio1, OUTPUT_SAMPLE_RATE)
@@ -470,10 +534,10 @@ def smart_fit_cue(
     # Cache key untuk smart: text + rate
     smart_cache_key = cache_key + f'_r{rate_str}'
     if not (os.path.isfile(smart_mp3) and os.path.getsize(smart_mp3) > 0):
-        ok = generate_cue_tts(text, voice, rate_str, pitch, smart_mp3)
+        ok = generate_cue_tts(text, voice, rate_str, pitch, smart_mp3, cue_idx=cue_idx)
         if not ok:
             # Fallback: pakai natural
-            print(f'  ⚠ Pass 2 gagal (rate={rate_str}), pakai natural')
+            print(f'  ⚠ Pass 2 gagal cue {cue_idx} (rate={rate_str}), pakai natural')
             return peak_normalize(natural_audio)
     audio2 = decode_mp3_to_pcm(smart_mp3, OUTPUT_SAMPLE_RATE)
     smart_audio = trim_silence_asymmetric(audio2, OUTPUT_SAMPLE_RATE)
@@ -580,9 +644,13 @@ def clear_screen():
 
 def print_banner():
     clear_screen()
+    # v7.4: tampilkan version + PID untuk tracking paralel
+    pid_str = f'PID {os.getpid()}'
+    title = f'🎙️  Edge TTS Lokal {VERSION} ({pid_str})'
+    pad_title = max(0, 66 - len(title) - 2)
     print('╔' + '═' * 64 + '╗')
-    print('║  🎙️  Edge TTS Lokal (TUI) — Mode ON + Smart Fit' + ' ' * 9 + '║')
-    print('║  100% lokal di Mac | no Vercel limit | no rate-limit' + ' ' * 4 + '║')
+    print('║  ' + title + ' ' * pad_title + '║')
+    print('║  Mode ON + Smart Fit | 100% lokal | paralel-safe (v7.4)' + ' ' * 2 + '║')
     print('╚' + '═' * 64 + '╝')
     print()
 
@@ -601,6 +669,119 @@ def compute_cache_key(text: str, voice: str, pitch: str) -> str:
     """Hash text + voice + pitch → cache key (untuk validasi cache)."""
     h = hashlib.md5(f'{text}|{voice}|{pitch}'.encode()).hexdigest()[:12]
     return h
+
+
+# ============================================================
+# Lock file helpers (v7.4 — paralel support)
+# ============================================================
+
+def _pid_alive(pid: int) -> bool:
+    """Cek apakah process PID masih berjalan. Cross-platform (Mac/Linux)."""
+    if pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)  # signal 0 = cek existence, no kill
+        return True
+    except (ProcessLookupError, PermissionError):
+        return False
+    except OSError:
+        return False
+
+
+def lock_path_for(output_dir: str, prefix: str) -> str:
+    """Path ke lock file: {output_dir}/.{prefix}.lock"""
+    return os.path.join(output_dir, f'.{prefix}.lock')
+
+
+def acquire_lock(output_dir: str, prefix: str) -> tuple:
+    """Coba acquire lock untuk prefix di output_dir.
+
+    Return (success: bool, lock_path: str, holder_pid: int).
+    holder_pid = PID pemegang lock saat ini (kalau success=False).
+
+    Side effect: kalau success, set module-level _ACTIVE_LOCK supaya
+    KeyboardInterrupt handler bisa release di cleanup.
+    """
+    global _ACTIVE_LOCK
+    lock_path = lock_path_for(output_dir, prefix)
+
+    # Cek apakah lock file ada
+    if os.path.isfile(lock_path):
+        try:
+            with open(lock_path, 'r') as f:
+                content = f.read().strip()
+            holder_pid = int(content.split('\n')[0]) if content else 0
+        except (ValueError, IOError):
+            holder_pid = 0
+
+        # Cek apakah PID holder masih alive
+        if holder_pid and _pid_alive(holder_pid):
+            return (False, lock_path, holder_pid)
+
+        # PID mati → stale lock, hapus
+        try:
+            os.remove(lock_path)
+        except OSError:
+            pass
+
+    # Tulis lock file baru dengan PID + timestamp
+    try:
+        with open(lock_path, 'w') as f:
+            f.write(f'{os.getpid()}\n{int(time.time())}\n')
+        _ACTIVE_LOCK = (output_dir, prefix)  # v7.4: register untuk cleanup
+        return (True, lock_path, os.getpid())
+    except OSError as e:
+        print(f'  ⚠ Gagal tulis lock file: {e}')
+        return (False, lock_path, 0)
+
+
+def release_lock(output_dir: str, prefix: str) -> None:
+    """Hapus lock file kalau masih punya kita (PID match)."""
+    global _ACTIVE_LOCK
+    lock_path = lock_path_for(output_dir, prefix)
+    if not os.path.isfile(lock_path):
+        _ACTIVE_LOCK = None
+        return
+    try:
+        with open(lock_path, 'r') as f:
+            content = f.read().strip()
+        holder_pid = int(content.split('\n')[0]) if content else 0
+    except (ValueError, IOError):
+        holder_pid = 0
+
+    # Hanya hapus kalau PID match (jangan hapus lock milik process lain)
+    if holder_pid == os.getpid():
+        try:
+            os.remove(lock_path)
+        except OSError:
+            pass
+    _ACTIVE_LOCK = None
+
+
+def suggest_unique_prefix(output_dir: str, prefix: str, max_attempts: int = 99) -> str:
+    """Cari prefix unik dengan suffix -2, -3, -4... sampai lock kosong.
+
+    Return prefix yang available (atau prefix-asli kalau ga ada collision).
+    """
+    candidate = prefix
+    n = 2
+    while n <= max_attempts:
+        lock_path = lock_path_for(output_dir, candidate)
+        if not os.path.isfile(lock_path):
+            return candidate
+        # Lock ada, cek apakah PID alive
+        try:
+            with open(lock_path, 'r') as f:
+                holder_pid = int(f.read().strip().split('\n')[0])
+            if not _pid_alive(holder_pid):
+                # Stale lock, candidate tersedia
+                return candidate
+        except (ValueError, IOError):
+            return candidate
+        # PID alive → coba suffix berikutnya
+        candidate = f'{prefix}-{n}'
+        n += 1
+    return f'{prefix}-{int(time.time())}'  # Fallback unik dengan timestamp
 
 
 # ============================================================
@@ -709,7 +890,7 @@ def main():
     print(f'  ✓ cap={cap}, smart_fit={smart_fit}')
     print()
 
-    # Step 6: Prefix
+    # Step 6: Prefix (dengan lock file check — v7.4 paralel-safe)
     print('▶ Step 6/6: Prefix nama file')
     base_name = Path(srt_path).stem
     prefix = questionary.text(
@@ -719,6 +900,29 @@ def main():
     if not prefix:
         prefix = base_name
     print(f'  ✓ {prefix}')
+
+    # v7.4: Lock file check — kalau prefix lagi dipakai process lain, auto-suggest unik
+    success, lock_path, holder_pid = acquire_lock(output_dir, prefix)
+    if not success:
+        suggested = suggest_unique_prefix(output_dir, prefix)
+        print(f'\n  ⚠ Prefix "{prefix}" lagi dipakai process lain (PID {holder_pid}).')
+        print(f'    Kalau dipaksa → 2 instance akan saling overwrite file output + cache rusak.')
+        use_suggested = questionary.confirm(
+            f'  Ganti prefix jadi "{suggested}"? (recommended untuk paralel)',
+            default=True,
+        ).ask()
+        if use_suggested:
+            prefix = suggested
+            # Acquire lock untuk prefix baru
+            success, lock_path, holder_pid = acquire_lock(output_dir, prefix)
+            if not success:
+                print(f'  ❌ Prefix "{suggested}" juga dipakai. Batal.')
+                sys.exit(1)
+            print(f'  ✓ Prefix: {prefix}')
+        else:
+            print('  ❌ Batal. Pakai prefix lain atau tunggu process lain selesai.')
+            sys.exit(1)
+    print(f'  🔒 Lock acquired: {os.path.basename(lock_path)} (PID {os.getpid()})')
     print()
 
     # === Parse SRT ===
@@ -837,10 +1041,10 @@ def main():
             # Generate
             try:
                 if smart_fit:
-                    final_audio = smart_fit_cue(text, cue_dur, voice, pitch, cap, cache_path, cache_key)
+                    final_audio = smart_fit_cue(text, cue_dur, voice, pitch, cap, cache_path, cache_key, cue_idx=cue_idx)
                 else:
                     if not (os.path.isfile(cache_path) and os.path.getsize(cache_path) > 0):
-                        if not generate_cue_tts(text, voice, '+0%', pitch, cache_path):
+                        if not generate_cue_tts(text, voice, '+0%', pitch, cache_path, cue_idx=cue_idx):
                             raise RuntimeError('Edge TTS gagal')
                     audio1 = decode_mp3_to_pcm(cache_path, OUTPUT_SAMPLE_RATE)
                     natural_audio = trim_silence_asymmetric(audio1, OUTPUT_SAMPLE_RATE)
@@ -929,15 +1133,32 @@ def main():
     print(f'     → Output: {prefix}-id-final.mp4')
     print('═' * 64)
 
+    # v7.4: Release lock file (normal exit)
+    release_lock(output_dir, prefix)
+
 
 if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
         print('\n\n⏹ Dibatalkan user.')
+        # v7.4: Release lock file kalau ada
+        if _ACTIVE_LOCK:
+            try:
+                release_lock(_ACTIVE_LOCK[0], _ACTIVE_LOCK[1])
+                print(f'  🔒 Lock file di-release.')
+            except Exception:
+                pass
         sys.exit(130)
     except Exception as e:
         print(f'\n❌ Error: {e}', file=sys.stderr)
         import traceback
         print(f'\nStack trace:\n{traceback.format_exc()[:2000]}', file=sys.stderr)
+        # v7.4: Release lock file kalau ada (crash safety)
+        if _ACTIVE_LOCK:
+            try:
+                release_lock(_ACTIVE_LOCK[0], _ACTIVE_LOCK[1])
+                print(f'  🔒 Lock file di-release (crash cleanup).', file=sys.stderr)
+            except Exception:
+                pass
         sys.exit(1)
