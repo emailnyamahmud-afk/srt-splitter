@@ -21,7 +21,7 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 ## Pipeline
 
 ```
-[Alur PROPER]  yt-dlp → demucs → srt-editor → edge-tts → mix Full (A/B)    ~350 MB / ~2-4.5 GB
+[Alur PROPER]  yt-dlp → srt-editor → demucs → edge-tts → mix Full (A/B)  ~350 MB / ~2-4.5 GB
 [Alur CEPAT]   yt-dlp → srt-editor → edge-tts → mix Simple (C/D)           ~350 MB / ~2-4.5 GB
 [Alur MUTE]    yt-dlp → srt-editor → edge-tts → mix Original v3.7.6 (E/F)  ~1 GB / ~4.5 GB
 ```

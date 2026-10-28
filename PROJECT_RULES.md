@@ -5,12 +5,14 @@
 ## Pipeline
 
 ```
-[PROPER] yt-dlp → demucs → edge-tts → mix Full (A/B)         clean sempurna
-[CEPAT]  yt-dlp → edge-tts → mix Simple (C/D)                no SFX
-[MUTE]   yt-dlp → edge-tts → mix Original v3.7.6 (E/F)       skip Demucs, MUTE COMPLETE
+[PROPER] yt-dlp → srt-editor → demucs → edge-tts → mix Full (A/B)     clean sempurna
+[CEPAT]  yt-dlp → srt-editor → edge-tts → mix Simple (C/D)            no SFX
+[MUTE]   yt-dlp → srt-editor → edge-tts → mix Original v3.7.6 (E/F)   skip Demucs, MUTE COMPLETE
 
 Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 ```
+
+> srt-editor-tui (TUI #9, opsional): fix typo/konteks SRT hasil translate sebelum masuk edge-tts. Skip kalau SRT ori sudah clean.
 
 ## 9 TUI
 

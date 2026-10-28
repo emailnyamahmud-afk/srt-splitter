@@ -21,7 +21,7 @@ Python TUI untuk workflow dubbing + kamus Jawa.
 ### PROPER — clean sempurna (pakai Demucs)
 
 ```
-yt-dlp → demucs → edge-tts → mix Full (A/B)
+yt-dlp → srt-editor → demucs → edge-tts → mix Full (A/B)
 → ~350 MB stream / ~2-4.5 GB burn
 → clean sempurna (no_vocals dari Demucs + ducking sidechain)
 ```
@@ -29,7 +29,7 @@ yt-dlp → demucs → edge-tts → mix Full (A/B)
 ### CEPAT — dialog dominan (skip Demucs, no SFX)
 
 ```
-yt-dlp → edge-tts → mix Simple (C/D)
+yt-dlp → srt-editor → edge-tts → mix Simple (C/D)
 → ~350 MB stream / ~2-4.5 GB burn
 → no SFX layer, Dub copy as-is
 ```
@@ -37,11 +37,13 @@ yt-dlp → edge-tts → mix Simple (C/D)
 ### MUTE — skip Demucs, MUTE COMPLETE (v3.7.6)
 
 ```
-yt-dlp → edge-tts → mix Original (E/F)
+yt-dlp → srt-editor → edge-tts → mix Original (E/F)
 → ~1 GB stream / ~4.5 GB burn
 → MP3 ori MUTE TOTAL saat cue (amultiply + SRT-driven envelope)
 → SFX/musik latar normal di gap
 ```
+
+> **srt-editor-tui.py** (TUI #9, opsional) untuk fix typo/konteks SRT hasil translate sebelum masuk edge-tts. Skip kalau SRT ori sudah clean.
 
 ## Scripts
 
@@ -51,7 +53,7 @@ yt-dlp → edge-tts → mix Original (E/F)
 |--------|--------|--------|
 | yt-dlp-tui.py v6.2 | Download MP4 + MP3 + SRT Indonesia | HDD/input/ |
 | demucs-tui.py | Vocal separation (M1 MPS) | HDD/demucs/ |
-| edge-tts-tui.py | TTS generation (5000+ cue) | HDD/tts/ |
+| edge-tts-tui.py v7.4 | TTS generation (paralel-safe, lock file + 429 retry) | HDD/tts/ |
 | mix-tui.py v3.7.6 | Final mix (6 mode, MUTE COMPLETE) | HDD/mix/ |
 
 ### Kamus
