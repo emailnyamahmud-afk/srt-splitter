@@ -14,7 +14,7 @@ Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 
 > srt-editor-tui (TUI #9, opsional): fix typo/konteks SRT hasil translate sebelum masuk edge-tts. Skip kalau SRT ori sudah clean.
 
-## 9 TUI
+## 10 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -27,6 +27,7 @@ Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 | 7 | mix-tui v3.8.2 | ✅ Production (all tested + logo + fade) |
 | 8 | whisper-tui v1.1 | ✅ Production (SRT quality 90-95%) |
 | 9 | srt-editor-tui v1.0.1 | ✅ Production (fix typo SRT translate) |
+| 10 | shorts-tui v1.0 | 🆕 New (pecah MP4 jadi N shorts via AI timestamps) |
 
 ## Struktur Folder
 

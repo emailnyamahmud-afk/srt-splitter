@@ -5290,3 +5290,60 @@ Stage Summary:
   * Kalau SRT sama di 2 terminal: TUI auto-suggest prefix-2 → Enter saja
   * Output: 2 file {prefix}-audio-id-dub.wav di tts/, mix-tui langsung nemu keduanya
 - Pending: commit + push ke GitHub
+
+---
+Task ID: 9
+Agent: main
+Task: shorts-tui v1.0 — TUI baru #10 untuk pecah MP4 final jadi N shorts via JSON timestamps dari AI (ChatGPT/Claude/Gemini)
+
+Work Log:
+- User diskusi: butuh TUI untuk produksi skala besar — 1 video full 2-3 jam → 30 shorts untuk upload ke YouTube Shorts/TikTok/Reels
+- 3 opsi user kasih: AI pilih detik, global split, atau AI bikin timeline DaVinci
+- Setelah diskusi, pilih strategi hybrid: USER pakai AI eksternal (ChatGPT/Claude/Gemini) untuk pilih segment dari SRT → JSON timestamps → TUI baca JSON + ffmpeg cut MP4
+- User specify: input MP4 sudah vertikal 9:16 + sudah hardsub Indonesia (dari mix-tui Mode B/D/F)
+- User confirm: 1. Stream copy (cepat), 2. Subfolder per film (rapi)
+- Update config.py: tambah SHORTS_DIR = HDD_BASE / 'shorts', include di ensure_hdd() mkdir
+- Tulis shorts-tui.py v1.0 single-file questionary (ikut pattern TUI lain):
+  * Header docstring: workflow lengkap, format JSON, install, usage
+  * Helper functions: find_ffmpeg, find_ffprobe, sanitize_dirname, find_files_in_dir, select_file
+  * parse_timestamps_json: support array di root ATAU wrapper dict {"segments": [...] / "shorts": [...] / "timestamps": [...]}
+  * validate_segments: warn untuk >60s, overlap, end > video duration
+  * get_video_duration: ffprobe check
+  * cut_segment_stream_copy: ffmpeg -i video -ss start -to end -c copy -avoid_negative_ts (stream copy, ~0.5s)
+  * cut_segment_reencode: ffmpeg -i video -ss start -to end -c:v libx264 -crf 23 (re-encode, clean cut)
+  * Main flow: Step 1 pick JSON, Step 2 pick MP4, Step 3 output dir, Step 4 cut mode + prefix, konfirmasi, eksekusi per segment dengan progress + ETA, summary akhir dengan list file
+- BUG ditemukan saat test: ffmpeg `-ss` sebelum `-i` interpretasi `-to` jadi offset dari seek, bukan timestamp absolut. Fix: pindah `-i` ke depan, `-ss -to` setelahnya.
+- Test comprehensive (sandbox Linux, pakai python3.13):
+  * Syntax check OK
+  * Module load: semua 11 functions callable
+  * parse_timestamps_json: array biasa, dict wrapper, empty, missing end, end<=start — semua handle benar
+  * validate_segments: detect >60s dengan benar
+  * find_ffmpeg/ffprobe: detect di sandbox
+  * get_video_duration: ambil 10s dari test video dengan benar
+  * cut_segment_stream_copy: 2-5s → durasi output 3.00s (presisi benar setelah fix -i depan)
+  * cut_segment_reencode: 3-7s → durasi output 4.00s
+  * 3 cuts sequential: masing-masing 2.00s (presisi benar)
+- Tulis tutor-shorts-prompt.md: 3 prompt templates untuk user upload SRT ke ChatGPT/Claude/Gemini:
+  * Prompt 1: default 30 shorts dari film 2-3 jam (kriteria 8 poin)
+  * Prompt 2: custom jumlah shorts (20, 50, dst)
+  * Prompt 3: fokus tema (action, komedi, twist, romantis)
+  * Tips pilih AI (Claude vs ChatGPT vs Gemini), handle SRT panjang, validasi sebelum pakai
+  * Format JSON yang diterima + contoh end-to-end workflow
+- Update docs (4 file):
+  * README.md (root): 9 TUI → 10 TUI, tambah section "shorts-tui v1.0" dengan workflow + link ke scripts/README + tutor-shorts-prompt.md, struktur folder tambah `shorts/`, Download section tambah curl shorts-tui.py + tutor-shorts-prompt.md
+  * AGENTS.md: 9 TUI → 10 TUI, tambah baris #10 shorts-tui v1.0 (🆕 New)
+  * PROJECT_RULES.md: 9 TUI → 10 TUI, tambah baris #10 shorts-tui v1.0 (🆕 New)
+  * scripts/README.md: 9 TUI → 10 TUI, tambah section detail "shorts-tui.py v1.0" (workflow, cara pakai, prompt template, format JSON, cut mode table, output structure, validasi), update Struktur Path untuk include shorts/
+- File berubah: scripts/shorts-tui.py (NEW, 480 baris), scripts/tutor-shorts-prompt.md (NEW, ~150 baris), scripts/config.py (+1 line SHORTS_DIR), 4 docs sync
+
+Stage Summary:
+- shorts-tui v1.0 production-ready, 10 TUI total di pipeline
+- Workflow user end-to-end:
+  1. SRT → ChatGPT/Claude/Gemini (paste + prompt dari tutor-shorts-prompt.md) → JSON timestamps
+  2. python3 shorts-tui.py → pilih JSON + MP4 final → 30 MP4 di HDD/shorts/{film-name}/
+  3. Upload ke YouTube Shorts/TikTok/Reels
+- Performance: 30 shorts × ~0.5s = ~15 detik total (stream copy, no re-encode)
+- ffmpeg bug fix penting: -i sebelum -ss -to (kalau salah urutan, durasi output jadi offset dari seek, bukan timestamp absolut)
+- All tests pass: JSON parser, validator, ffmpeg cut (stream copy + re-encode), durasi presisi
+- AI halu prevention: user kontrol kualitas lewat prompt di ChatGPT, TUI cuma kerjakan ffmpeg cut
+- Pending: commit + push ke GitHub

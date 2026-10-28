@@ -4,7 +4,7 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 
 **Live:** https://srt-splitter.vercel.app/
 
-## 9 TUI
+## 10 TUI
 
 | # | TUI | Tugas | Status |
 |---|-----|-------|--------|
@@ -17,6 +17,7 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 | 7 | mix-tui.py v3.8.2 | Mix MP4 + audio → final video (6 mode + logo + fade) | ✅ Production (all tested) |
 | 8 | whisper-tui.py v1.1 | Generate SRT dari audio (faster-whisper, M1) | ✅ Production (SRT quality 90-95%) |
 | 9 | srt-editor-tui.py v1.0.1 | Fix typo/konteks SRT hasil translate (glossary + bulk replace) | ✅ Production |
+| 10 | shorts-tui.py v1.0 | Pecah MP4 final jadi N shorts (JSON timestamps dari AI) | 🆕 New |
 
 ## Pipeline
 
@@ -46,6 +47,7 @@ HDD /Volumes/HDD/Dubbing/            ← data (besar)
 ├── demucs/                          ← no_vocals (300MB+)
 ├── tts/                             ← dub wav + cache
 ├── mix/                             ← final MP4 (output langsung ke sini, v3.7.4)
+├── shorts/                          ← shorts-tui output (subfolder per film)
 └── .env                             ← Supabase credentials
 ```
 
@@ -59,6 +61,25 @@ python3 srt-editor-tui.py /Volumes/HDD/Dubbing/input/S2-FB-Mandarin.id.srt
 ```
 
 Detail lengkap: lihat [scripts/README.md](scripts/README.md#srt-editor-tui-v101).
+
+## shorts-tui v1.0 — pecah MP4 final jadi N shorts
+
+```bash
+cd ~/Dubbing && source venv/bin/activate
+
+# 1. User paste SRT ke ChatGPT/Claude/Gemini → minta "pilih 30 segment menarik"
+#    → AI return JSON: [{"start": 12.5, "end": 65.3, "title": "..."}, ...]
+#    → save ke /Volumes/HDD/Dubbing/{film}.timestamps.json
+#    (prompt template: tutor-shorts-prompt.md)
+
+# 2. Pecah MP4 final jadi 30 shorts
+python3 shorts-tui.py
+# → pilih JSON timestamps + MP4 final (dari HDD/mix/, sudah vertikal+hardsub)
+# → output: HDD/shorts/{film-name}/short-001.mp4 s/d short-030.mp4
+# ~15 detik untuk 30 shorts (stream copy, no re-encode)
+```
+
+Detail lengkap: lihat [scripts/README.md](scripts/README.md#shorts-tui-v10) + [tutor-shorts-prompt.md](scripts/tutor-shorts-prompt.md).
 
 ## mix-tui v3.8.2 — 6 mode + logo + smooth fade
 
@@ -154,5 +175,7 @@ curl -L -o mix-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-
 curl -L -o kamus-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/kamus-tui.py"
 curl -L -o whisper-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/whisper-tui.py"
 curl -L -o srt-editor-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/srt-editor-tui.py"
+curl -L -o shorts-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/shorts-tui.py"
+curl -L -o tutor-shorts-prompt.md "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/tutor-shorts-prompt.md"
 curl -L -o upload-supabase.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py"
 ```

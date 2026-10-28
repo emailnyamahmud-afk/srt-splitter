@@ -2,7 +2,7 @@
 
 Python TUI untuk workflow dubbing + kamus Jawa.
 
-## 9 TUI
+## 10 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -15,6 +15,7 @@ Python TUI untuk workflow dubbing + kamus Jawa.
 | 7 | mix-tui.py v3.8.2 | ✅ Production (all tested + logo + fade) |
 | 8 | whisper-tui.py v1.1 (faster-whisper) | ✅ Production (SRT quality 90-95%) |
 | 9 | srt-editor-tui.py v1.0.1 (fix typo SRT hasil translate) | ✅ Production |
+| 10 | shorts-tui.py v1.0 (pecah MP4 jadi N shorts via JSON timestamps AI) | 🆕 New |
 
 ## Pipeline (3 alur)
 
@@ -276,11 +277,94 @@ sama → auto-resume (progress tidak hilang).
 Mau mulai dari awal (reset progress)? Hapus `<stem>.working.json`, TUI akan load
 dari `.srt` original.
 
+## shorts-tui.py v1.0
+
+Pecah MP4 final (sudah vertikal + hardsub) jadi N shorts untuk YouTube
+Shorts/TikTok/Reels. Pakai JSON timestamps dari ChatGPT/Claude/Gemini sebagai
+"peta" potongan.
+
+### Workflow
+
+```
+1. User paste SRT ke ChatGPT → minta "pilih 30 segment menarik untuk Shorts"
+2. ChatGPT return JSON array: [{start, end, title}, ...]
+3. User save JSON ke /Volumes/HDD/Dubbing/{film}.timestamps.json
+4. python3 shorts-tui.py
+   → pilih JSON + MP4 final (dari HDD/mix/) + output dir
+   → TUI ffmpeg cut per segment (stream copy, ~0.5s per short)
+   → 30 MP4 di HDD/shorts/{film-name}/short-001.mp4 s/d short-030.mp4
+5. Upload ke YouTube Shorts/TikTok/Reels
+```
+
+### Cara pakai
+
+```bash
+cd ~/Dubbing
+source venv/bin/activate
+python3 shorts-tui.py
+# Step 1: pilih JSON timestamps (dari cwd + HDD)
+# Step 2: pilih MP4 final (dari HDD/mix/)
+# Step 3: output dir (default: HDD/shorts/{film-name}/ — subfolder per film)
+# Step 4: mode cut (default: stream copy, super cepat)
+# Output: {prefix}-short-001.mp4 s/d {prefix}-short-030.mp4
+```
+
+### Prompt template untuk AI
+
+Lihat `tutor-shorts-prompt.md` — 3 prompt templates (default 30 shorts,
+custom jumlah, tema spesifik). Tinggal copy paste ke ChatGPT/Claude/Gemini.
+
+### Format JSON (input dari AI)
+
+```json
+[
+  {"start": 12.5, "end": 65.3, "title": "Lin Zhao tiba di Qin family"},
+  {"start": 145.2, "end": 198.7, "title": "Konfrontasi paman"},
+  ...
+]
+```
+
+- `start`, `end`: detik (float)
+- `title`: opsional (default: "Short N" kalau kosong)
+- Wrapper alternatif: `{"segments": [...]}` juga diterima
+
+### Cut mode
+
+| Mode | Kecepatan | Kualitas | Default |
+|------|-----------|----------|---------|
+| **Stream copy** (`-c copy`) | ~0.5s per short, 30 shorts = 15 detik | Mungkin ada keyframe glitch di detik 1 | ✅ Ya |
+| Re-encode (`libx264 -crf 23`) | ~3-5s per short, 30 shorts = ~3 menit | Clean cut, no glitch | |
+
+### Output structure
+
+```
+HDD/Dubbing/
+├── input/        ← yt-dlp output (MP4 + MP3 + SRT)
+├── demucs/       ← no_vocals
+├── tts/          ← dub WAV
+├── mix/          ← MP4 final (input untuk shorts-tui)
+└── shorts/        ← NEW: output shorts-tui
+    └── S2-FB-Mandarin/   ← subfolder per film
+        ├── S2-FB-Mandarin-short-001.mp4
+        ├── S2-FB-Mandarin-short-002.mp4
+        ├── ...
+        └── S2-FB-Mandarin-short-030.mp4
+```
+
+### Validasi (yang TUI cek)
+
+- JSON valid + punya `start` dan `end` (number)
+- `end > start` (kalau salah → error)
+- Durasi segment ≤ 60s (warning, tetap lanjut dengan konfirmasi)
+- Segment overlap dengan sebelumnya (warning)
+- End > durasi video total (warning)
+- MP4 file ada dan tidak corrupt (ffprobe check)
+
 ## Struktur Path
 
 ```
 SSD ~/Dubbing/           → scripts + venv + jv.wiktionary.json
-HDD /Volumes/HDD/Dubbing/ → input/ demucs/ tts/ mix/ .env
+HDD /Volumes/HDD/Dubbing/ → input/ demucs/ tts/ mix/ shorts/ .env
 ```
 
 config.py handle path:
