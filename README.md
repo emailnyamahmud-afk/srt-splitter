@@ -18,7 +18,7 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 | 8 | whisper-tui.py v1.1 | Generate SRT dari audio (faster-whisper, M1) | ✅ Production (SRT quality 90-95%) |
 | 9 | srt-editor-tui.py v1.0.1 | Fix typo/konteks SRT hasil translate (glossary + bulk replace) | ✅ Production |
 | 10 | shorts-tui.py v1.0 | Pecah MP4 final jadi N shorts (JSON timestamps dari AI) | ✅ Production (60/60 sukses, stream copy ~1.6s/short, 94s total) |
-| 11 | shorts-csv-tui.py v1.0 | Generate metadata CSV + manifest untuk YouTube Studio | 🆕 New |
+| 11 | shorts-csv-tui.py v1.0 | Generate metadata CSV + manifest untuk YouTube Studio | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
 
 ## Pipeline
 

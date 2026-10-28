@@ -22,7 +22,7 @@ Shorts: Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON
 | 8 | whisper-tui v1.1 (faster-whisper, SRT from audio) | ✅ Production (SRT quality 90-95%) |
 | 9 | srt-editor-tui v1.0.1 (fix typo SRT hasil translate, glossary bulk replace) | ✅ Production |
 | 10 | shorts-tui v1.0 (pecah MP4 final jadi N shorts via JSON timestamps AI) | ✅ Production (60/60 sukses, 94s total, stream copy) |
-| 11 | shorts-csv-tui v1.0 (metadata CSV + manifest untuk YouTube Studio) | 🆕 New |
+| 11 | shorts-csv-tui v1.0 (metadata CSV + manifest untuk YouTube Studio) | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
 
 ## Struktur Folder
 
@@ -88,7 +88,7 @@ Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no m
 - srt-editor-tui v1.0.1: ✅ (glossary 19 entries, 144 replacement di S2-FB-Mandarin)
 - mix-tui v3.8.2: 6 mode production-ready + logo + fade 100ms
 - shorts-tui v1.0: ✅ (60/60 sukses test, stream copy 94s total, JSON dari Dola skill shorts-json)
-- shorts-csv-tui v1.0: ✅ (metadata CSV + manifest untuk YouTube Studio, test dengan S5 JSON 60 segment)
+- shorts-csv-tui v1.0: ✅ (metadata CSV + manifest untuk YouTube Studio, test 60 segment S5, CSV 19.8 KB + manifest 30.4 KB)
 
 ### Test results (PERMANEN — all 6 mode production-ready + logo + fade)
 - A (Full + Stream): 5 film sukses (sebelum v3.7)

@@ -16,7 +16,7 @@ Python TUI untuk workflow dubbing + kamus Jawa.
 | 8 | whisper-tui.py v1.1 (faster-whisper) | ✅ Production (SRT quality 90-95%) |
 | 9 | srt-editor-tui.py v1.0.1 (fix typo SRT hasil translate) | ✅ Production |
 | 10 | shorts-tui.py v1.0 (pecah MP4 jadi N shorts via JSON timestamps AI) | ✅ Production (60/60 sukses, 94s total) |
-| 11 | shorts-csv-tui.py v1.0 (metadata CSV + manifest untuk YouTube Studio) | 🆕 New |
+| 11 | shorts-csv-tui.py v1.0 (metadata CSV + manifest untuk YouTube Studio) | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
 
 ## Pipeline (3 alur)
 

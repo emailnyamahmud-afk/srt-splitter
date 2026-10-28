@@ -31,7 +31,7 @@ Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 | 8 | whisper-tui v1.1 | ✅ Production (SRT quality 90-95%) |
 | 9 | srt-editor-tui v1.0.1 | ✅ Production (fix typo SRT translate) |
 | 10 | shorts-tui v1.0 | ✅ Production (60/60 sukses, stream copy 94s) |
-| 11 | shorts-csv-tui v1.0 | 🆕 New (metadata CSV + manifest untuk YouTube Studio) |
+| 11 | shorts-csv-tui v1.0 | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
 
 ## Struktur Folder
 
