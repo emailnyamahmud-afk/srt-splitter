@@ -624,7 +624,18 @@ def main():
     print()
 
     # === Validate segments vs video duration ===
-    warnings = validate_segments(segments, video_duration)
+    # v1.1: Part mode skip cek durasi >60s (Part target 4-5 menit, bukan Shorts)
+    if is_part_mode:
+        # Part mode: hanya cek end > video duration, skip cek >60s
+        warnings = []
+        if video_duration:
+            for i, seg in enumerate(segments):
+                if seg['end'] > video_duration:
+                    warnings.append((i + 1, f"End {seg['end']} > durasi video {video_duration}"))
+    else:
+        # Shorts mode: full validate (durasi >60s, overlap, end > video)
+        warnings = validate_segments(segments, video_duration)
+
     if warnings:
         print('  ⚠ Warnings:')
         for idx, msg in warnings:
@@ -741,8 +752,9 @@ def main():
     total_elapsed = time_mod.time() - start_time
     print('\n' + '═' * 64)
     print('✅ SELESAI!\n')
-    print(f'  Sukses: {success_count}/{len(segments)} shorts')
-    print(f'  Gagal:  {fail_count}/{len(segments)} shorts')
+    label = 'parts' if is_part_mode else 'shorts'
+    print(f'  Sukses: {success_count}/{len(segments)} {label}')
+    print(f'  Gagal:  {fail_count}/{len(segments)} {label}')
     print(f'  Waktu:  {total_elapsed:.1f}s')
     if first_error:
         print(f'  Error pertama: {first_error[:80]}')
@@ -767,7 +779,10 @@ def main():
     print()
     print('🎬 Langkah berikutnya:')
     print(f'   1. Cek hasil di: {output_dir}')
-    print(f'   2. Upload ke YouTube Shorts / TikTok / Reels')
+    if is_part_mode:
+        print(f'   2. Upload ke TikTok (playlist, {file_suffix}-001 s/d {file_suffix}-{len(segments):03d})')
+    else:
+        print(f'   2. Upload ke YouTube Shorts / TikTok / Reels')
     # v1.1: Part mode → ga ada JSON, cek source_label
     if is_part_mode:
         print(f'   3. Title: {file_suffix}-001 s/d {file_suffix}-{len(segments):03d} (auto dari SRT split)')
