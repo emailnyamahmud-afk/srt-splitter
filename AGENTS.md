@@ -4,8 +4,9 @@
 
 ## Project: SRT Splitter + Dubbing Jawa
 
-Pipeline: yt-dlp → Demucs → srt-editor-tui → edge-tts → mix-tui
+Pipeline: yt-dlp → Demucs → srt-editor-tui → edge-tts → mix-tui → shorts-tui → shorts-csv-tui → YouTube Studio
 Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
+Shorts: Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON 60 segment)
 
 ## 11 TUI
 
@@ -87,6 +88,7 @@ Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no m
 - srt-editor-tui v1.0.1: ✅ (glossary 19 entries, 144 replacement di S2-FB-Mandarin)
 - mix-tui v3.8.2: 6 mode production-ready + logo + fade 100ms
 - shorts-tui v1.0: ✅ (60/60 sukses test, stream copy 94s total, JSON dari Dola skill shorts-json)
+- shorts-csv-tui v1.0: ✅ (metadata CSV + manifest untuk YouTube Studio, test dengan S5 JSON 60 segment)
 
 ### Test results (PERMANEN — all 6 mode production-ready + logo + fade)
 - A (Full + Stream): 5 film sukses (sebelum v3.7)
@@ -101,6 +103,7 @@ Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no m
 
 - User: kamus audit (8.618 entries) → mark READY → upload Supabase
 - User: workflow film berikutnya (pilih 1 dari 3 alur: PROPER/CEPAT/MUTE)
+- User: Shorts pipeline (Dola → shorts-tui → shorts-csv-tui → YouTube Studio upload)
 - AI: web app Jawa (TUI #4) — penyesuaian lookup kamus dari Supabase
 - AI (optional): bug cosmetic (filename double `-id`, progress bar `ETA=?ss` glitch)
 

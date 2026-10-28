@@ -24,11 +24,14 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 
 ```
 [Alur PROPER]  yt-dlp → srt-editor → demucs → edge-tts → mix Full (A/B)  ~350 MB / ~2-4.5 GB
-[Alur CEPAT]   yt-dlp → srt-editor → edge-tts → mix Simple (C/D)           ~350 MB / ~2-4.5 GB
+[Alur CEPAT]   yt-dlp → srt-editor → edge-tts → mix Simple (C/D)     ~350 MB / ~2-4.5 GB
 [Alur MUTE]    yt-dlp → srt-editor → edge-tts → mix Original v3.7.6 (E/F)  ~1 GB / ~4.5 GB
+[Alur SHORTS]  mix-tui → shorts-tui (via Dola JSON) → shorts-csv-tui → YouTube Studio  ~15 detik / ~2 menit
 ```
 
-> **srt-editor-tui.py** (new TUI #9) untuk fix typo/konteks SRT hasil translate sebelum masuk edge-tts. Opsional kalau SRT ori sudah clean.
+> **srt-editor-tui.py** (TUI #9, opsional) untuk fix typo/konteks SRT hasil translate sebelum masuk edge-tts. Skip kalau SRT ori sudah clean.
+>
+> **Shorts pipeline** (TUI #10 + #11): mix-tui output → Dola AI skill `shorts-json` (upload SRT, ketik "buat shorts", dapat 60 segment JSON) → shorts-tui.py (pecah MP4, ~94s) → shorts-csv-tui.py (metadata CSV + manifest untuk YouTube Studio).
 
 ## Struktur Folder
 
@@ -48,7 +51,7 @@ HDD /Volumes/HDD/Dubbing/            ← data (besar)
 ├── demucs/                          ← no_vocals (300MB+)
 ├── tts/                             ← dub wav + cache
 ├── mix/                             ← final MP4 (output langsung ke sini, v3.7.4)
-├── shorts/                          ← shorts-tui: JSON timestamps + output MP4 (subfolder per film)
+├── shorts/                          ← shorts-tui + shorts-csv-tui: JSON + MP4 + CSV + manifest (subfolder per film)
 └── .env                             ← Supabase credentials
 ```
 
@@ -81,6 +84,25 @@ python3 shorts-tui.py
 ```
 
 Detail lengkap: lihat [scripts/README.md](scripts/README.md#shorts-tui-v10) + [tutor-shorts-prompt.md](scripts/tutor-shorts-prompt.md).
+
+## shorts-csv-tui v1.0 — metadata CSV + manifest untuk YouTube Studio
+
+```bash
+cd ~/Dubbing && source venv/bin/activate
+python3 shorts-csv-tui.py
+# → Step 1: pilih JSON timestamps (dari Dola)
+# → Step 2: pilih folder MP4 (dari shorts-tui output)
+# → Step 3-7: film name, template, tags, schedule, output
+# → Output: {film}.metadata.csv (untuk Excel) + {film}.manifest.txt (copy-paste YouTube)
+```
+
+Workflow end-to-end Shorts:
+1. Dola: upload SRT → ketik "buat shorts" → JSON 60 segment
+2. `shorts-tui.py` → 60 MP4 (~94 detik, stream copy)
+3. `shorts-csv-tui.py` → CSV + manifest (BARU)
+4. Drag 60 MP4 ke YouTube Studio + copy-paste metadata dari manifest
+
+Detail lengkap: lihat [scripts/README.md](scripts/README.md#shorts-csv-tui-v10).
 
 ## mix-tui v3.8.2 — 6 mode + logo + smooth fade
 
@@ -143,9 +165,15 @@ brew install ffmpeg
 ```bash
 # Alur CEPAT (skip Demucs, MUTE COMPLETE)
 python3 yt-dlp-tui.py         # 1. MP4 + MP3 + SRT (cookies anti-bot)
-python3 srt-editor-tui.py     # 2. Fix typo/konteks SRT (opsional, kalau dari translate)
-python3 edge-tts-tui.py       # 3. Dub dari SRT (pakai .final.srt kalau ada)
+python3 srt-editor-tui.py     # 2. Fix typo/konteks SRT (opsional)
+python3 edge-tts-tui.py       # 3. Dub dari SRT (paralel 2 TTS di VS Code)
 python3 mix-tui.py            # 4. Mix Mode E/F (MUTE saat cue)
+
+# Alur SHORTS (setelah mix selesai)
+# 1. Upload SRT ke Dola AI → ketik "buat shorts" → download JSON
+# 2. python3 shorts-tui.py     # → 60 MP4 (~94 detik)
+# 3. python3 shorts-csv-tui.py # → CSV + manifest (metadata untuk YouTube)
+# 4. Drag 60 MP4 ke YouTube Studio + copy-paste dari manifest
 
 # Alur PROPER (pakai Demucs, clean sempurna)
 python3 yt-dlp-tui.py
@@ -177,6 +205,7 @@ curl -L -o kamus-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/sr
 curl -L -o whisper-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/whisper-tui.py"
 curl -L -o srt-editor-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/srt-editor-tui.py"
 curl -L -o shorts-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/shorts-tui.py"
+curl -L -o shorts-csv-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/shorts-csv-tui.py"
 curl -L -o tutor-shorts-prompt.md "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/tutor-shorts-prompt.md"
 curl -L -o upload-supabase.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py"
 ```

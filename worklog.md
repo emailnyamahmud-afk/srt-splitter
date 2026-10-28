@@ -5500,3 +5500,52 @@ Stage Summary:
 - Template custom: description + tags + category bisa user edit di TUI
 - Output: {film-name}.metadata.csv (untuk Excel/Numbers) + {film-name}.manifest.txt (untuk copy-paste)
 - Pending: commit + push ke GitHub
+
+---
+Task ID: 14
+Agent: main
+Task: Update semua dokumentasi — sync pipeline + workflow + Dola AI + shorts-csv-tui ke semua docs (anti-amnesia untuk sesi berikutnya)
+
+Work Log:
+- User minta update semua docs supaya AI sesi berikutnya ga amnesia dan paham konteks terbaru
+- State terbaru:
+  * 11 TUI (10 production + 1 new shorts-csv-tui)
+  * Dola skill shorts-json updated ke default 60 shorts (user update di Dola)
+  * edge-tui v7.4 paralel-safe, lagi running 2 TTS
+  * shorts-tui v1.0 production (60/60 sukses, 94s)
+  * shorts-csv-tui v1.0 (TUI #11 baru, generate CSV + manifest)
+- Update README.md (root):
+  * Pipeline diagram: tambah [Alur SHORTS] line (mix-tui → Dola → shorts-tui → shorts-csv-tui → YouTube Studio)
+  * Pipeline note: tambah "Shorts pipeline (TUI #10 + #11)" dengan Dola workflow description
+  * Struktur folder: shorts/ ← "shorts-tui + shorts-csv-tui: JSON + MP4 + CSV + manifest"
+  * Tambah section "shorts-csv-tui v1.0" dengan workflow end-to-end Shorts
+  * Workflow section: tambah "Alur SHORTS" (Dola → shorts-tui → shorts-csv-tui → YouTube Studio)
+  * Download section: tambah curl shorts-csv-tui.py
+- Update AGENTS.md:
+  * Pipeline mention: tambah "shorts-tui → shorts-csv-tui → YouTube Studio"
+  * Tambah line "Shorts: Dola AI skill shorts-json (upload SRT → ketik 'buat shorts' → JSON 60 segment)"
+  * Pipeline produksi: tambah line shorts-csv-tui v1.0
+  * Next section: tambah "User: Shorts pipeline (Dola → shorts-tui → shorts-csv-tui → YouTube Studio upload)"
+- Update PROJECT_RULES.md:
+  * Pipeline diagram: tambah [SHORTS] line (mix-tui → Dola AI → shorts-tui → shorts-csv-tui → YouTube Studio)
+  * Pipeline note: tambah "Shorts pipeline (TUI #10 + #11)" dengan Dola workflow description
+- Update scripts/README.md:
+  * Pipeline (3 alur → 4 alur): tambah "### SHORTS — pecah MP4 final jadi 60 shorts (v1.0)"
+  * Workflow section: tambah "Alur SHORTS" (Dola → shorts-tui → shorts-csv-tui → YouTube Studio)
+  * Tambah section detail "shorts-csv-tui.py v1.0" (workflow, cara pakai, output table, custom yang bisa set)
+  * Struktur Path: config.py mention tambah "shorts" di subfolder list
+- File berubah: README.md, AGENTS.md, PROJECT_RULES.md, scripts/README.md, worklog.md
+
+Stage Summary:
+- Semua 4 docs sync dengan state terbaru (11 TUI + Dola AI + shorts pipeline)
+- Pipeline diagram sekarang 4 alur: PROPER, CEPAT, MUTE, SHORTS
+- Workflow section di README + scripts/README konsisten (CEPAT + PROPER + SHORTS + Kamus)
+- Dola AI skill `shorts-json` mentioned di semua docs (upload SRT → ketik "buat shorts" → JSON 60 segment)
+- shorts-csv-tui.py mentioned di download section, pipeline, workflow, detail section
+- AI sesi berikutnya yang baca AGENTS.md/PROJECT_RULES/README akan langsung paham:
+  * 11 TUI total, semua Production kecuali #4 Web (Prototype) dan #5 SRT editor web (Pending)
+  * Pipeline end-to-end: yt-dlp → srt-editor → demucs → edge-tts (paralel) → mix-tui → shorts-tui → shorts-csv-tui → YouTube Studio
+  * Shorts workflow: Dola AI → JSON → shorts-tui (60 MP4) → shorts-csv-tui (CSV + manifest) → YouTube Studio upload manual
+  * edge-tui v7.4 paralel-safe (lock file + 429 retry)
+  * Skala produksi: 1 malam = 2 film (paralel TTS) → 120 shorts (60 × 2 films)
+- Pending: commit + push ke GitHub

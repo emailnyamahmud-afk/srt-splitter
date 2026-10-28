@@ -8,11 +8,14 @@
 [PROPER] yt-dlp → srt-editor → demucs → edge-tts → mix Full (A/B)     clean sempurna
 [CEPAT]  yt-dlp → srt-editor → edge-tts → mix Simple (C/D)            no SFX
 [MUTE]   yt-dlp → srt-editor → edge-tts → mix Original v3.7.6 (E/F)   skip Demucs, MUTE COMPLETE
+[SHORTS] mix-tui → Dola AI (skill shorts-json) → shorts-tui → shorts-csv-tui → YouTube Studio
 
 Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 ```
 
 > srt-editor-tui (TUI #9, opsional): fix typo/konteks SRT hasil translate sebelum masuk edge-tts. Skip kalau SRT ori sudah clean.
+>
+> Shorts pipeline (TUI #10 + #11): Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON 60 segment) → shorts-tui.py (pecah MP4, ~94s) → shorts-csv-tui.py (metadata CSV + manifest untuk YouTube Studio).
 
 ## 11 TUI
 

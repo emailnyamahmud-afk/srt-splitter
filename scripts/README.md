@@ -45,6 +45,16 @@ yt-dlp → srt-editor → edge-tts → mix Original (E/F)
 → SFX/musik latar normal di gap
 ```
 
+### SHORTS — pecah MP4 final jadi 60 shorts (v1.0)
+
+```
+mix-tui output → Dola AI (skill shorts-json) → shorts-tui → shorts-csv-tui → YouTube Studio
+→ Upload SRT ke Dola, ketik "buat shorts", dapat 60 segment JSON
+→ shorts-tui: 60 MP4 (~94 detik, stream copy)
+→ shorts-csv-tui: CSV + manifest (metadata untuk copy-paste YouTube)
+→ User drag 60 MP4 ke YouTube Studio + copy-paste dari manifest
+```
+
 > **srt-editor-tui.py** (TUI #9, opsional) untuk fix typo/konteks SRT hasil translate sebelum masuk edge-tts. Skip kalau SRT ori sudah clean.
 
 ## Scripts
@@ -112,7 +122,7 @@ source venv/bin/activate
 # Alur CEPAT + MUTE (skip Demucs)
 python3 yt-dlp-tui.py         # 1. MP4 + MP3 + SRT (cookies anti-bot YT/FB/TikTok/IG)
 python3 srt-editor-tui.py      # 2. Fix typo SRT hasil translate (opsional, kalau dari editsub/Google Translate)
-python3 edge-tts-tui.py        # 3. Generate dub dari .final.srt (atau SRT asli kalau sudah clean)
+python3 edge-tts-tui.py        # 3. Generate dub dari .final.srt (paralel 2 TTS di VS Code)
 python3 mix-tui.py             # 4. Mix Mode E (Stream) / F (Burn)
 
 # Alur PROPER (pakai Demucs)
@@ -121,6 +131,12 @@ python3 srt-editor-tui.py      # fix typo SRT dulu kalau perlu
 python3 demucs-tui.py          # 3. Split vokal dari SFX
 python3 edge-tts-tui.py
 python3 mix-tui.py             # 5. Mix Mode A (Stream) / B (Burn)
+
+# Alur SHORTS (setelah mix selesai)
+# 1. Upload SRT ke Dola AI → ketik "buat shorts" → download JSON (60 segment)
+python3 shorts-tui.py         # 2. Pecah MP4 jadi 60 shorts (~94 detik, stream copy)
+python3 shorts-csv-tui.py     # 3. Generate CSV + manifest (metadata untuk YouTube)
+# 4. Drag 60 MP4 ke YouTube Studio + copy-paste dari manifest
 
 # Kamus (parallel)
 python3 kamus-tui.py
@@ -372,6 +388,52 @@ JSON + output MP4 di folder yang sama (`shorts/`), ga campur folder lain.
 - End > durasi video total (warning)
 - MP4 file ada dan tidak corrupt (ffprobe check)
 
+## shorts-csv-tui.py v1.0
+
+Generate metadata CSV + manifest text dari JSON timestamps (Dola output) untuk
+copy-paste saat upload manual di YouTube Studio.
+
+### Workflow
+
+```
+1. Dola skill shorts-json → JSON (60 segment + title, dari SRT Indonesia)
+2. shorts-tui.py → 60 MP4 di HDD/shorts/{film}/
+3. shorts-csv-tui.py (TUI ini) → CSV + manifest text
+4. User drag 60 MP4 ke YouTube Studio (upload paralel)
+5. User copy-paste metadata dari manifest ke form YouTube per video
+```
+
+### Cara pakai
+
+```bash
+cd ~/Dubbing
+source venv/bin/activate
+python3 shorts-csv-tui.py
+# Step 1: pilih JSON timestamps (dari HDD/shorts/)
+# Step 2: pilih folder MP4 (dari shorts-tui output)
+# Step 3: nama film (untuk template description)
+# Step 4: description template (placeholder {film_name}, {title})
+# Step 5: tags + category (default: drama,mandarin,shorts + Entertainment)
+# Step 6: schedule (default: besok 12:00, interval 1 jam)
+# Step 7: output CSV + manifest
+```
+
+### Output
+
+| File | Format | Tujuan |
+|------|--------|--------|
+| `{film}.metadata.csv` | CSV (filename, title, description, tags, category, schedule) | Buka di Excel/Numbers |
+| `{film}.manifest.txt` | Plain text, copy-paste friendly | Copy-paste di YouTube Studio per video |
+
+### Custom yang user bisa set
+
+- **Film name** (untuk description template)
+- **Description template** (placeholder `{film_name}`, `{title}`)
+- **Tags** (default: `drama, mandarin, shorts, dubbing, indonesia`)
+- **Category** (Entertainment / Film & Animation / People & Blogs / Comedy / Education)
+- **Schedule start** (default: besok 12:00)
+- **Interval** (30 menit / 1 jam / 2 jam / 3 jam / 6 jam / 1 hari)
+
 ## Struktur Path
 
 ```
@@ -380,6 +442,6 @@ HDD /Volumes/HDD/Dubbing/ → input/ demucs/ tts/ mix/ shorts/ .env
 ```
 
 config.py handle path:
-- `ensure_hdd()` — cek HDD ter-colok, buat subfolder
+- `ensure_hdd()` — cek HDD ter-colok, buat subfolder (input, demucs, tts, mix, **shorts**)
 - `ensure_kamus()` — cek jv.wiktionary.json ada
 - `load_env()` — load .env dari HDD
