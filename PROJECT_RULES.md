@@ -27,7 +27,7 @@ Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 | 7 | mix-tui v3.8.2 | ✅ Production (all tested + logo + fade) |
 | 8 | whisper-tui v1.1 | ✅ Production (SRT quality 90-95%) |
 | 9 | srt-editor-tui v1.0.1 | ✅ Production (fix typo SRT translate) |
-| 10 | shorts-tui v1.0 | ✅ Production (30/30 sukses, stream copy ~1.9s/short) |
+| 10 | shorts-tui v1.0 | ✅ Production (60/60 sukses, stream copy 94s) |
 
 ## Struktur Folder
 

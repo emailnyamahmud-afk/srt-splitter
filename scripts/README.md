@@ -15,7 +15,7 @@ Python TUI untuk workflow dubbing + kamus Jawa.
 | 7 | mix-tui.py v3.8.2 | ✅ Production (all tested + logo + fade) |
 | 8 | whisper-tui.py v1.1 (faster-whisper) | ✅ Production (SRT quality 90-95%) |
 | 9 | srt-editor-tui.py v1.0.1 (fix typo SRT hasil translate) | ✅ Production |
-| 10 | shorts-tui.py v1.0 (pecah MP4 jadi N shorts via JSON timestamps AI) | ✅ Production (30/30 sukses, stream copy ~1.9s/short) |
+| 10 | shorts-tui.py v1.0 (pecah MP4 jadi N shorts via JSON timestamps AI) | ✅ Production (60/60 sukses, 94s total) |
 
 ## Pipeline (3 alur)
 
@@ -284,11 +284,12 @@ Shorts/TikTok/Reels. Pakai JSON timestamps dari ChatGPT/Claude/Gemini/Dola AI
 sebagai "peta" potongan.
 
 ### Test Result (28 Okt 2026)
-- ✅ Test 30/30 sukses di Mac user (M1, 16GB)
-- ✅ Stream copy ~1.9 detik per short (lebih cepat dari estimasi 0.5s)
-- ✅ Total 56.5 detik untuk 30 shorts (S5: 8179.8s durasi film)
-- ✅ Total output 235.8 MB (avg 7.9 MB/short)
-- ✅ JSON dari Dola skill `shorts-json` (skill Dola juga tested, valid 30 segment, 0 warning)
+- ✅ Test 1: 30/30 sukses (film S5, 56.5s total, 235.8 MB output)
+- ✅ Test 2: 60/60 sukses (film S5, 94.1s total, 803.8 MB output) — default production
+- ✅ Stream copy ~1.6 detik per short (lebih cepat dari estimasi 0.5s)
+- ✅ Avg durasi 50.7s/short (maksimum mendekati 60s, optimize untuk retention tinggi)
+- ✅ Stream copy glitch: tidak ada (VLC-validated user)
+- ✅ JSON dari Dola skill `shorts-json` (60 segment, 0 warning, hook di awal kalimat)
 
 ### Workflow
 

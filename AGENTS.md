@@ -20,7 +20,7 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 | 7 | mix-tui v3.8.2 (6 mode, MUTE + logo + fade 100ms) | ✅ Production (all tested) |
 | 8 | whisper-tui v1.1 (faster-whisper, SRT from audio) | ✅ Production (SRT quality 90-95%) |
 | 9 | srt-editor-tui v1.0.1 (fix typo SRT hasil translate, glossary bulk replace) | ✅ Production |
-| 10 | shorts-tui v1.0 (pecah MP4 final jadi N shorts via JSON timestamps AI) | ✅ Production (30/30 sukses, stream copy ~1.9s/short) |
+| 10 | shorts-tui v1.0 (pecah MP4 final jadi N shorts via JSON timestamps AI) | ✅ Production (60/60 sukses, 94s total, stream copy) |
 
 ## Struktur Folder
 
@@ -85,7 +85,7 @@ Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no m
 - edge-tts v7.4 (paralel-safe, lock file + 429 retry): ✅
 - srt-editor-tui v1.0.1: ✅ (glossary 19 entries, 144 replacement di S2-FB-Mandarin)
 - mix-tui v3.8.2: 6 mode production-ready + logo + fade 100ms
-- shorts-tui v1.0: ✅ (30/30 sukses test, stream copy ~1.9s/short, JSON dari Dola skill)
+- shorts-tui v1.0: ✅ (60/60 sukses test, stream copy 94s total, JSON dari Dola skill shorts-json)
 
 ### Test results (PERMANEN — all 6 mode production-ready + logo + fade)
 - A (Full + Stream): 5 film sukses (sebelum v3.7)
