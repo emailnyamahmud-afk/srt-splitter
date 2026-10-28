@@ -3,14 +3,22 @@
 Template ini untuk user yang mau generate JSON timestamps dari SRT Indonesia
 (lengkap, hasil whisper-tui atau dari editsub.com), lalu pakai di `shorts-tui.py`.
 
+## Penting dipahami
+
+- **SRT yang dipaste ke ChatGPT/Claude/Gemini** = SRT Bahasa Indonesia (hasil translate dari Mandarin)
+- **MP4 final yang dipakai di shorts-tui** = film Mandarin dengan dub Bahasa Indonesia + hardsub Bahasa Indonesia (output dari mix-tui Mode B/D/F)
+- **Output shorts** = potongan MP4 yang sudah dub + hardsub Bahasa Indonesia → siap upload ke YouTube Shorts/TikTok/Reels
+
+Singkatnya: input Indonesia, output Indonesia. Aku (AI) ga pusing soal Mandarin, cuma butuh konteks "ini film Mandarin" untuk pilih scene yang menarik.
+
 ## Cara pakai
 
 1. **Buka ChatGPT/Claude/Gemini** (web atau app)
 2. **Copy salah satu prompt di bawah** (pilih sesuai kebutuhan)
-3. **Paste SRT Indonesia** di akhir prompt
+3. **Paste SRT Bahasa Indonesia** di akhir prompt
 4. **Send**, tunggu AI generate JSON
 5. **Copy JSON** hasil AI
-6. **Save ke file**, misalnya `/Volumes/HDD/Dubbing/shorts/S2-FB-Mandarin.timestamps.json`
+6. **Save ke file**, misalnya `/Volumes/HDD/Dubbing/shorts/S2-Melintas-Zaman.timestamps.json`
 7. **Jalankan `shorts-tui.py`**, pilih file JSON itu
 
 ---
@@ -171,18 +179,20 @@ Atau langsung jalankan shorts-tui.py — dia akan validasi otomatis.
 ## Contoh end-to-end workflow
 
 ```bash
-# 1. User copy SRT dari /Volumes/HDD/Dubbing/input/S2-FB-Mandarin.id.srt
+# 1. User copy SRT Bahasa Indonesia dari /Volumes/HDD/Dubbing/input/S2-Melintas-Zaman.id.srt
+#    (SRT ini BAHASA INDONESIA — hasil translate dari Mandarin, bukan Mandarin asli)
 # 2. User paste ke ChatGPT dengan Prompt 1 di atas
 # 3. ChatGPT return JSON 30 segments
-# 4. User save ke /Volumes/HDD/Dubbing/shorts/S2-FB-Mandarin.timestamps.json
+# 4. User save ke /Volumes/HDD/Dubbing/shorts/S2-Melintas-Zaman.timestamps.json
 # 5. User jalankan shorts-tui:
 
 cd ~/Dubbing
 source venv/bin/activate
 python3 shorts-tui.py
-# → Step 1: pilih JSON (S2-FB-Mandarin.timestamps.json)
-# → Step 2: pilih MP4 (HDD/mix/S2-FB-Mandarin-id-orig-sub.mp4)
-# → Step 3: output dir (default: HDD/shorts/S2-FB-Mandarin/)
+# → Step 1: pilih JSON (S2-Melintas-Zaman.timestamps.json)
+# → Step 2: pilih MP4 (HDD/mix/S2-Melintas-Zaman-id-orig-sub.mp4 — film Mandarin dengan dub + hardsub Bahasa Indonesia, sudah vertikal)
+# → Step 3: output dir (default: HDD/shorts/S2-Melintas-Zaman/)
 # → Step 4: stream copy
-# → 15 detik: 30 MP4 di HDD/shorts/S2-FB-Mandarin/short-001.mp4 s/d short-030.mp4
+# → 15 detik: 30 MP4 di HDD/shorts/S2-Melintas-Zaman/short-001.mp4 s/d short-030.mp4
+#    Semua shorts = Bahasa Indonesia (dub + hardsub), siap upload ke YouTube Shorts/TikTok/Reels
 ```
