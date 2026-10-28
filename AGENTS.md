@@ -7,7 +7,7 @@
 Pipeline: yt-dlp → Demucs → srt-editor-tui → edge-tts → mix-tui
 Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 
-## 10 TUI
+## 11 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -21,6 +21,7 @@ Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 | 8 | whisper-tui v1.1 (faster-whisper, SRT from audio) | ✅ Production (SRT quality 90-95%) |
 | 9 | srt-editor-tui v1.0.1 (fix typo SRT hasil translate, glossary bulk replace) | ✅ Production |
 | 10 | shorts-tui v1.0 (pecah MP4 final jadi N shorts via JSON timestamps AI) | ✅ Production (60/60 sukses, 94s total, stream copy) |
+| 11 | shorts-csv-tui v1.0 (metadata CSV + manifest untuk YouTube Studio) | 🆕 New |
 
 ## Struktur Folder
 

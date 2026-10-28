@@ -5453,3 +5453,50 @@ Stage Summary:
 - Skala produksi baru: 1 malam = 2 film (paralel TTS) → 2 MP4 final (mix-tui) → 120 shorts (2× shorts-tui dengan 60 each) → 2 jam konten Shorts
 - File berubah: tutor-shorts-prompt.md, shorts-tui.py (comments only), README.md, scripts/README.md
 - Pending: commit + push ke GitHub
+
+---
+Task ID: 13
+Agent: main
+Task: shorts-csv-tui.py v1.0 — TUI baru #11, generate metadata CSV + manifest untuk YouTube Studio upload
+
+Work Log:
+- User ACC Opsi 2 (TUI baru baca JSON, output CSV + manifest text), upload JSON asli S5 (60 segment + title Indonesia) sebagai contoh
+- User mau: upload manual di YouTube Studio, tapi CSV/manifest berguna untuk copy-paste judul, deskripsi, dll
+- Tulis shorts-csv-tui.py v1.0 single-file questionary (~530 baris):
+  * Header docstring: workflow lengkap (Dola → shorts-tui → shorts-csv → YouTube Studio)
+  * Helper: find_files_in_dir, select_file, select_dir
+  * parse_timestamps_json: reuse dari shorts-tui (support array + wrapper dict)
+  * generate_schedule: list datetime per segment (interval bisa 30min/1jam/2jam/3jam/6jam/1hari)
+  * render_description: template dengan placeholder {film_name} dan {title}
+  * generate_csv: output CSV (filename, title, description, tags, category, schedule)
+  * generate_manifest: output plain text (copy-paste friendly untuk YouTube Studio)
+  * Main flow: 7 step (JSON → MP4 folder → film name → desc template → tags+category → schedule → output)
+- Bug fix: typo "═ + 64 * '═'[0]" → "═ * 64"
+- Test dengan JSON asli S5 (60 segment dari user):
+  * Parse: 60 segment OK, first="Hari pertama jadi pejabat pasti dipersulit", last="Aku mau rendah hati tapi kemampuan tak izinkan"
+  * Avg duration: 50.7s
+  * Schedule test: start besok 12:00, interval 1 jam → first=2026-10-29 12:00, last=2026-10-31 23:00 (59 jam)
+  * Description render: "Film S5 Tentara Modern - Drama Mandarin Dub Indonesia. {title} #shorts #drama #mandarin #dubbing #indonesia"
+  * CSV generate: 17.7 KB, header [filename, title, description, tags, category, schedule], row 1 OK
+  * Manifest generate: 28.3 KB, format rapi (=== SHORT 001 === Title, Description, Tags, Schedule, Duration)
+  * All tests PASSED
+- Update docs (4 file): 10 TUI → 11 TUI
+  * README.md (root): tabel 11 TUI, tambah #11 shorts-csv-tui v1.0 🆕 New
+  * AGENTS.md: tabel 11 TUI
+  * PROJECT_RULES.md: tabel 11 TUI
+  * scripts/README.md: tabel 11 TUI
+- File berubah: scripts/shorts-csv-tui.py (NEW, 530 baris), README.md, AGENTS.md, PROJECT_RULES.md, scripts/README.md
+
+Stage Summary:
+- shorts-csv-tui.py v1.0 production-ready, 11 TUI total di pipeline
+- Workflow user end-to-end (5 step):
+  1. Dola skill shorts-json → JSON (60 segment + title, dari SRT)
+  2. shorts-tui.py → 60 MP4 di HDD/shorts/{film}/
+  3. shorts-csv-tui.py → CSV + manifest di HDD/shorts/{film}/
+  4. User drag 60 MP4 ke YouTube Studio (upload paralel)
+  5. User copy-paste metadata dari manifest ke form YouTube per video
+- Dola skill TIDAK perlu diubah (tetap output JSON saja, shorts-csv-tui yang handle CSV)
+- Schedule custom: user set mulai kapan + interval (default: besok 12:00, 1 jam)
+- Template custom: description + tags + category bisa user edit di TUI
+- Output: {film-name}.metadata.csv (untuk Excel/Numbers) + {film-name}.manifest.txt (untuk copy-paste)
+- Pending: commit + push ke GitHub
