@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
 """
-fix-merge-audio.py v1.3 — Fix audio output merge-tui v1.7 (audio kacau).
+fix-merge-audio.py v1.4 — Fix audio output merge-tui v1.7 (audio kacau).
 
 User feedback v1.7: 'audio = parah. banyak yg silen dan banyak suara jadi cepat'.
 Output v1.7 resolusi udah seragam (1440x2560), tapi audio kacau (sample rate mismatch).
 
-Fix: ambil video dari output v1.7 (seragam) + concat audio dari file mix (bagus, re-encode normalize).
-Gak perlu merge lagi 4 jam, cuma butuh ~30-45 menit (audio re-encode 1x, video stream copy).
+Fix: ambil video dari output v1.7 (seragam) + concat audio dari file mix (bagus, per-file normalize).
+Gak perlu merge lagi 4 jam, cuma butuh ~30-45 menit (audio re-encode per-file, concat stream copy).
 
-v1.3: Fix questionary default bug — pakai Choice(checked=True) (reliable, bukan default list).
-v1.2: Re-encode audio ke 48000 Hz stereo saat concat (normalize sample rate mismatch).
+v1.4: Per-file normalize + concat stream copy (fix v1.3 bug: concat demuxer + filter gagal).
+  - Bug v1.3: ffmpeg -f concat -i list -c:a aac -ar 48000 -ac 2 = gagal di akhir (exit error)
+    Root cause: concat demuxer + filter audio gak handle channel switch (mono→stereo) clean
+  - Fix v1.4: encode per-file dulu ke 48000 Hz stereo aac 192k, lalu concat stream copy
+    - Per-file: ffmpeg -i input -vn -c:a aac -b:a 192k -ar 48000 -ac 2 part_N.aac
+    - Concat: ffmpeg -f concat -i list -c copy audio_concat.aac (stream copy, super cepat)
+  - Estimasi: ~30-45 menit (sama kayak v1.3, tapi reliable)
+v1.3: questionary Choice(checked=True) fix default list bug.
+v1.2: re-encode audio ke 48000 Hz stereo saat concat (v1.4 strategy per-file lebih reliable).
 v1.1: questionary (auto-detect prefix, gak perlu ketik).
 
 Usage:
@@ -164,8 +171,8 @@ def cleanup(temp_dir, files):
 
 def main():
     print('╔' + '═' * 64 + '╗')
-    print('║  🔧 Fix Merge Audio v1.3 (fix v1.7 audio kacau)            ║')
-    print('║  Mux video v1.7 + audio normalize (re-encode 48000 Hz)    ║')
+    print('║  🔧 Fix Merge Audio v1.4 (fix v1.7 audio kacau)            ║')
+    print('║  Per-file normalize + concat (reliable, fix v1.3 bug)    ║')
     print('╚' + '═' * 64 + '╝')
     print()
 
@@ -310,32 +317,68 @@ def main():
         print('Dibatalkan.')
         return
 
-    # Step 5: Concat audio dari file mix (v1.2: re-encode normalize sample rate)
-    # Bug v1.0: stream copy concat = sample rate campur (24000, 44100, 48000 Hz) → VLC kacau
-    # Fix v1.2: -c:a aac -b:a 192k -ar 48000 -ac 2 (normalize semua file ke konsisten)
-    print('\n▶ Step 5: Concat audio dari file mix (re-encode normalize 48000 Hz stereo)')
+    # Step 5: Per-file normalize audio (v1.4 strategy, fix v1.3 bug)
+    # v1.3 bug: ffmpeg -f concat -i list -c:a aac -ar 48000 -ac 2 = gagal di akhir
+    #   Root cause: concat demuxer + filter audio gak handle channel switch (mono→stereo) clean
+    # v1.4 fix: encode per-file dulu ke 48000 Hz stereo aac 192k, lalu concat stream copy
+    #   - Per-file: ffmpeg -i input -vn -c:a aac -b:a 192k -ar 48000 -ac 2 part_N.aac
+    #   - Concat: ffmpeg -f concat -i list -c copy audio_concat.aac (stream copy, super cepat)
+    print('\n▶ Step 5: Per-file normalize audio (48000 Hz stereo aac 192k)')
     temp_dir = MERGED_DIR.parent / '.merge_tmp'
     temp_dir.mkdir(parents=True, exist_ok=True)
+
+    # Fase A: encode per-file audio ke 48000 Hz stereo aac 192k
+    print(f'  Fase A: Encode per-file audio ({len(mix_files)} file)')
+    print(f'  Estimasi: ~30-45 menit (audio re-encode 24 jam total, per-file)')
+    print()
+    temp_audio_files = []
+    for i, f in enumerate(mix_files, 1):
+        temp_out = temp_dir / f'audio_part_{i:03d}.aac'
+        temp_audio_files.append(temp_out)
+        dur = probe_dur(f)
+        print(f'  [{i}/{len(mix_files)}] {f.name} ({fmt_dur(dur)})')
+        cmd = ['ffmpeg', '-y',
+               '-i', str(f),
+               '-vn',
+               '-c:a', 'aac', '-b:a', '192k',
+               '-ar', '48000', '-ac', '2',
+               '-progress', 'pipe:1', '-nostats',
+               str(temp_out)]
+        if not run_progress(cmd, dur):
+            print(f'\n  ❌ Gagal encode audio file {i}: {f.name}')
+            # v1.4 fix: JANGAN cleanup saat gagal (biar user bisa debug)
+            # Tapi hapus temp yang udah dibuat sebagian
+            for tf in temp_audio_files:
+                if os.path.exists(tf):
+                    os.unlink(tf)
+            try:
+                os.rmdir(temp_dir)
+            except OSError:
+                pass
+            return
+    print()
+
+    # Fase B: concat stream copy (super cepat, gak ada filter, reliable)
+    print('  Fase B: Concat stream copy (super cepat, no filter)')
     audio_list = temp_dir / 'audio_list.txt'
     audio_concat = temp_dir / 'audio_concat.aac'
 
     with open(audio_list, 'w') as f:
-        for mix in mix_files:
-            safe = str(mix).replace("'", r"'\''")
+        for tf in temp_audio_files:
+            safe = str(tf).replace("'", r"'\''")
             f.write(f"file '{safe}'\n")
 
-    print(f'  Concat {len(mix_files)} file audio (re-encode aac 192k 48000 Hz stereo)...')
-    print(f'  Estimasi: ~30-45 menit (audio re-encode 24 jam, single pass)')
     cmd = ['ffmpeg', '-y', '-f', 'concat', '-safe', '0',
            '-i', str(audio_list),
-           '-vn',  # no video
-           '-c:a', 'aac', '-b:a', '192k',  # re-encode normalize
-           '-ar', '48000', '-ac', '2',     # 48000 Hz stereo konsisten
+           '-c', 'copy',  # stream copy, no re-encode (semua udah normalized)
            '-progress', 'pipe:1', '-nostats',
            str(audio_concat)]
     if not run_progress(cmd, total_dur):
         print('\n  ❌ Gagal concat audio')
-        cleanup(temp_dir, [audio_list, audio_concat])
+        # v1.4 fix: jangan hapus temp_audio_files (biar user bisa debug)
+        os.unlink(audio_list) if os.path.exists(audio_list) else None
+        if os.path.exists(audio_concat):
+            os.unlink(audio_concat)
         return
     audio_size = audio_concat.stat().st_size / 1024 / 1024 / 1024
     print(f'  ✓ Audio concat: {audio_concat.name} ({audio_size:.2f} GB, 48000 Hz stereo)')
@@ -355,11 +398,14 @@ def main():
            output_path]
     if not run_progress(cmd, total_dur):
         print('\n  ❌ Gagal mux video + audio')
-        cleanup(temp_dir, [audio_list, audio_concat])
+        # v1.4 fix: jangan hapus temp saat gagal (biar user bisa debug)
         return
 
-    # Step 7: Cleanup
+    # Step 7: Cleanup (hanya kalau Step 5 & 6 sukses)
     print('\n▶ Step 7: Cleanup temp files')
+    for tf in temp_audio_files:
+        if os.path.exists(tf):
+            os.unlink(tf)
     cleanup(temp_dir, [audio_list, audio_concat])
 
     # Hasil
