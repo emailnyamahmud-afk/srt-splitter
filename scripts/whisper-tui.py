@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """
-whisper-tui.py v1.2 — TUI generate SRT dari audio via faster-whisper
+whisper-tui.py v1.3 — TUI generate SRT dari audio via faster-whisper
 
 Tugas: speech-to-text saja (generate SRT ori).
 Translate: USER lakukan manual via Google Translate (bukan tugas Whisper).
 
-v1.2 FIX: Auto-detect Metal (M1 GPU) untuk 2-4x lebih cepat + fan tidak bunyi.
+v1.3 FIX: Metal detection lebih robust — print actual error, secondary check via torch MPS.
+  - Bug v1.2: CTranslate2.get_supported_compute_types("metal") gagal silently
+  - Fix: print actual exception, lalu cek torch.backends.mps.is_available()
+  - Kalau MPS tersedia (demucs proof itu), coba load device=metal langsung
+  - Kalau Metal load gagal, kasih instruksi upgrade CTranslate2
+
+v1.2: Auto-detect Metal (M1 GPU) untuk 2-4x lebih cepat + fan tidak bunyi.
   - CTranslate2 support device="metal" + compute_type="float16" di Apple Silicon
   - Auto-detect: try Metal first, fallback ke CPU kalau gagal
   - Metal: ~3-6x realtime (vs CPU int8: ~1.65x realtime)
@@ -298,44 +304,56 @@ def main():
     print('═' * 64 + '\n')
 
     # Load model
-    # v1.2: Auto-detect Metal (M1 GPU) untuk 2-4x lebih cepat + fan tidak bunyi
+    # v1.3: Metal detection — print actual error, secondary check via torch MPS
     print('▶ Loading model...')
+    device = "cpu"
+    compute_type = "int8"
+
+    # Step 1: Cek CTranslate2 Metal support
     try:
-        # Try Metal first (Apple Silicon)
-        device = "cpu"
-        compute_type = "int8"
-        try:
-            import ctranslate2
-            metal_types = ctranslate2.get_supported_compute_types("metal")
-            if "float16" in metal_types or "float32" in metal_types:
-                device = "metal"
-                compute_type = "float16" if "float16" in metal_types else "float32"
-                print(f'  ✓ Apple Metal terdeteksi — GPU acceleration (device=metal, {compute_type})')
-            else:
-                print(f'  ℹ Metal tidak tersedia — pakai CPU (device=cpu, int8)')
-        except Exception:
-            # Fallback ke CPU jika Metal check gagal
-            print(f'  ℹ Metal check gagal — pakai CPU (device=cpu, int8)')
-
-        # Try load dengan detected device
-        try:
-            model = WhisperModel(model_size, device=device, compute_type=compute_type)
-        except Exception as e:
-            # Fallback: kalau Metal gagal, pakai CPU
-            if device == "metal":
-                print(f'  ⚠ Metal load gagal ({e}), fallback ke CPU...')
-                device = "cpu"
-                compute_type = "int8"
-                model = WhisperModel(model_size, device=device, compute_type=compute_type)
-            else:
-                raise e
-
-        print(f'  ✓ Model {model_size} loaded (device={device}, {compute_type})')
+        import ctranslate2
+        ct2_version = getattr(ctranslate2, '__version__', 'unknown')
+        metal_types = ctranslate2.get_supported_compute_types("metal")
+        if "float16" in metal_types or "float32" in metal_types:
+            device = "metal"
+            compute_type = "float16" if "float16" in metal_types else "float32"
+            print(f'  ✓ Apple Metal terdeteksi — GPU acceleration (device=metal, {compute_type})')
+        else:
+            print(f'  ℹ Metal tersedia tapi tidak ada float16/float32 — pakai CPU')
     except Exception as e:
-        print(f'\n❌ Gagal load model: {e}')
-        print(f'   Kalau first time, model download otomatis (~1.5 GB untuk medium)')
-        print(f'   Cache di ~/.cache/whisper/')
-        sys.exit(1)
+        # Step 2: Secondary check via torch MPS (lebih reliable di M1)
+        print(f'  ℹ CTranslate2 Metal check gagal: {e}')
+        try:
+            import subprocess as _sp
+            _r = _sp.run(
+                [sys.executable, '-c', 'import torch; print("mps" if torch.backends.mps.is_available() else "cpu")'],
+                capture_output=True, text=True, timeout=10
+            )
+            if _r.returncode == 0 and 'mps' in _r.stdout:
+                print(f'  ℹ PyTorch MPS tersedia — M1 GPU terkonfirmasi')
+                print(f'  ℹ Coba load dengan device=metal langsung (skip get_supported_compute_types)...')
+                device = "metal"
+                compute_type = "float16"
+            else:
+                print(f'  ℹ PyTorch MPS juga tidak tersedia — pakai CPU')
+        except Exception as e2:
+            print(f'  ℹ Torch check juga gagal: {e2} — pakai CPU')
+
+    # Step 3: Try load model
+    try:
+        model = WhisperModel(model_size, device=device, compute_type=compute_type)
+    except Exception as e:
+        if device == "metal":
+            print(f'  ⚠ Metal load gagal ({e})')
+            print(f'  ⚠ Coba upgrade CTranslate2: pip3 install ctranslate2 --upgrade')
+            print(f'  ⚠ Fallback ke CPU (device=cpu, int8)...')
+            device = "cpu"
+            compute_type = "int8"
+            model = WhisperModel(model_size, device=device, compute_type=compute_type)
+        else:
+            raise e
+
+    print(f'  ✓ Model {model_size} loaded (device={device}, {compute_type})')
 
     # v1.1 FIX: Decode audio via ffmpeg (bypass av library)
     print(f'\n▶ Decoding audio...')
