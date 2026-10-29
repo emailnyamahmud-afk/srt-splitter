@@ -339,6 +339,21 @@ def main():
         except Exception as e2:
             print(f'  ℹ Torch check juga gagal: {e2} — pakai CPU')
 
+        # v1.3: Print troubleshooting instructions untuk Python 3.14 issue
+        py_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+        if device == "cpu" and py_version >= "3.13":
+            print()
+            print(f'  ⚠ GPU (Metal) TIDAK terpakai — Whisper jalan di CPU (lambat, fan bunyi)')
+            print(f'  ⚠ Penyebab: Python {py_version} terlalu baru — CTranslate2 belum compile Metal untuk versi ini')
+            print(f'  ⚠ Solusi: Recreate venv dengan Python 3.12 (CTranslate2 Metal ready untuk 3.12):')
+            print(f'     brew install python@3.12')
+            print(f'     mv ~/Dubbing/venv ~/Dubbing/venv-backup-py{py_version}')
+            print(f'     /opt/homebrew/bin/python3.12 -m venv ~/Dubbing/venv')
+            print(f'     source ~/Dubbing/venv/bin/activate')
+            print(f'     pip3 install questionary edge-tts yt-dlp torchaudio demucs numpy faster-whisper ctranslate2')
+            print(f'  ⚠ Setelah recreate venv, Whisper akan pakai GPU (Metal) — 2-3x lebih cepat, fan tenang')
+            print()
+
     # Step 3: Try load model
     try:
         model = WhisperModel(model_size, device=device, compute_type=compute_type)
