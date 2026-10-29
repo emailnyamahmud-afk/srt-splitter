@@ -47,7 +47,7 @@ except ImportError:
 sys.path.insert(0, str(Path(__file__).parent))
 from config import ensure_hdd, MIX_DIR, MERGED_DIR
 
-VERSION = 'v1.6'
+VERSION = 'v1.7'
 
 
 # ============================================================
@@ -388,8 +388,63 @@ def pick_output_path(files):
     return output
 
 
+def pick_resolution_with_max_default(files):
+    """Pilih target resolution. Default = MAX res dari files (no downscale, preserve quality).
+
+    Strategi v1.7: kalau ada file 1440p, jangan scale-down ke 1080p. Pakai 1440p sebagai target,
+    biar files yang udah 1440p SKIP encode (stream copy), cuma files lebih kecil yang scale-up.
+
+    Untuk user case (10 files, res campuran 360p-1440p):
+    - v1.6: target 1080p → semua 10 file di-encode (termasuk S1 1440p di-scale DOWN, buang kualitas)
+    - v1.7: target 1440p (MAX) → 5 file SKIP (S1,S4,S5,S7,S8), 5 file encode (S2,S3,S6,S9,S10)
+    """
+    # Detect max res by pixel count
+    res_set = set((f['width'], f['height']) for f in files)
+    if not res_set:
+        return None, None
+    max_res = max(res_set, key=lambda r: r[0] * r[1])
+
+    # Hitung berapa file yang bakal SKIP (res == max_res)
+    skip_count = sum(1 for f in files if f['width'] == max_res[0] and f['height'] == max_res[1])
+    encode_count = len(files) - skip_count
+
+    max_label = (
+        f'{max_res[0]}x{max_res[1]} (MAX dari files — {skip_count}/{len(files)} SKIP, '
+        f'{encode_count} encode) — REKOMENDASI (no downscale, preserve quality)'
+    )
+
+    res = questionary.select(
+        'Pilih target resolution:',
+        choices=[
+            max_label,
+            '1920x1080 (1080p, vertical 1080x1920)',
+            '1280x720 (720p, vertical 720x1280)',
+            '854x480 (480p, vertical 480x854)',
+            'Custom (ketik manual)',
+        ],
+        default=max_label,
+    ).ask()
+
+    if max_label in res:
+        return max_res
+    if '1080' in res:
+        return 1080, 1920
+    if '720' in res:
+        return 720, 1280
+    if '480' in res:
+        return 480, 854
+    try:
+        w = int(questionary.text('Width:').ask())
+        h = int(questionary.text('Height:').ask())
+        if w > 0 and h > 0:
+            return w, h
+    except ValueError:
+        pass
+    return None, None
+
+
 def pick_resolution():
-    """Pilih target resolution untuk re-encode mode."""
+    """Pilih target resolution untuk re-encode mode (no max default, buat mode 3)."""
     res = questionary.select(
         'Pilih target resolution:',
         choices=[
@@ -401,9 +456,8 @@ def pick_resolution():
         default='1920x1080 (1080p, vertical 1080x1920)',
     ).ask()
 
-    # Semua file di HDD/mix/ adalah vertical (9:16), jadi output juga vertical
     if '1080' in res:
-        return 1080, 1920  # vertical
+        return 1080, 1920
     if '720' in res:
         return 720, 1280
     if '480' in res:
@@ -603,10 +657,25 @@ def merge_reencode(files, output, target_w, target_h, bitrate, device, encoder):
     overall_processed = 0
     overall_start_wall = time.time()
 
-    # Fase 1: Encode per-file
-    print(f'▶ Fase 1: Encode per-file ({device_label})')
+    # Pre-compute skip list: file mana yang res == target (stream copy, no encode)
+    skip_count = sum(1 for f in files if f['width'] == target_w and f['height'] == target_h)
+    encode_count = len(files) - skip_count
+    print(f'  → {skip_count} file SKIP (res sama, stream copy), {encode_count} file encode')
+
+    # Fase 1: Encode per-file (atau stream copy kalau res sama)
+    print(f'▶ Fase 1: Encode/Stream-copy per-file ({device_label})')
     print('═' * 64)
     for i, f in enumerate(files, 1):
+        # v1.7: Skip encode kalau res == target (stream copy, no CPU work)
+        if f['width'] == target_w and f['height'] == target_h:
+            # Stream copy — gunakan file asli untuk concat (instant, no encode)
+            print(f'\n  [{i}/{len(files)}] {f["name"]} ({f["width"]}x{f["height"]}) '
+                  f'— SKIP ENCODE (res sama, stream copy) ✅')
+            temp_files.append(f['path'])  # pakai path asli, bukan temp
+            overall_processed += f['duration']
+            continue
+
+        # Re-encode dengan scale
         temp_out = os.path.join(temp_dir, f'part_{i:03d}.mp4')
         temp_files.append(temp_out)
 
@@ -630,16 +699,17 @@ def merge_reencode(files, output, target_w, target_h, bitrate, device, encoder):
             temp_out,
         ]
 
-        print(f'\n  [{i}/{len(files)}] {f["name"]} ({fmt_dur(f["duration"])}, {f["width"]}x{f["height"]})')
+        print(f'\n  [{i}/{len(files)}] {f["name"]} ({fmt_dur(f["duration"])}, '
+              f'{f["width"]}x{f["height"]} → {target_w}x{target_h})')
         if not run_progress(cmd, f['duration'],
                            file_index=i, total_files=len(files),
                            overall_processed=overall_processed,
                            overall_total=total_duration_all,
                            overall_start_wall=overall_start_wall):
             print(f'\n  ❌ Gagal encode file {i}: {f["name"]}')
-            # Cleanup
+            # Cleanup temp files only (jangan hapus path asli)
             for tf in temp_files:
-                if os.path.exists(tf):
+                if os.path.exists(tf) and tf != f['path'] and temp_dir in tf:
                     os.unlink(tf)
             try:
                 os.rmdir(temp_dir)
@@ -678,10 +748,11 @@ def merge_reencode(files, output, target_w, target_h, bitrate, device, encoder):
             pass
         return False
 
-    # Cleanup temp files
+    # Cleanup temp files (v1.7: jangan hapus path asli yang di-skip)
     print('\n  Cleaning up temp files...')
     for tf in temp_files:
-        if os.path.exists(tf):
+        # Hanya hapus file di temp_dir (yang di-encode), JANGAN file asli
+        if os.path.exists(tf) and temp_dir in tf:
             os.unlink(tf)
     try:
         os.rmdir(temp_dir)
@@ -777,7 +848,7 @@ def main():
         print(f'  ✓ {device.upper()} ({encoder})')
 
         if 'Re-encode + pilih target res' in mode:
-            w, h = pick_resolution()
+            w, h = pick_resolution_with_max_default(files)
             if w is None:
                 print('\n❌ Resolusi gak valid.')
                 return

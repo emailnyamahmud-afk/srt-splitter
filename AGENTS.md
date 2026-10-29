@@ -36,7 +36,7 @@ Shorts: Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON
 | 9 | srt-editor-tui v1.0.1 (fix typo SRT hasil translate, glossary bulk replace) | ✅ Production |
 | 10 | shorts-tui v1.1 (pecah MP4: Shorts via AI JSON atau Part via SRT auto-split) | ✅ Production (Shorts 60/60 + Part auto-split) |
 | 11 | shorts-csv-tui v1.0 (metadata CSV + manifest untuk YouTube Studio) | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
-| 12 | merge-tui v1.6 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox, natural sort, hardware detect GPU/CPU, temp di HDD, live ETA) | ✅ Production (stream copy + GPU/CPU re-encode) |
+| 12 | merge-tui v1.7 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox, natural sort, hardware detect GPU/CPU, temp di HDD, live ETA, smart scale skip-if-same) | ✅ Production (stream copy + GPU/CPU re-encode) |
 
 ## Struktur Folder
 
@@ -61,36 +61,33 @@ Shorts: Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON
 12. GT input preference: pakai SRT English (dari whisper-tui) untuk GT English→ID, lebih akurat dari Mandarin→ID.
 13. clean-srt workflow: heuristic dulu untuk 2000+ cue, manual per-cue cuma untuk cue critical.
 
-## merge-tui v1.6 — gabungin multi-video jadi 1 panjang
+## merge-tui v1.7 — gabungin multi-video jadi 1 panjang
 
 TUI #12. Input: `HDD/mix/*.mp4` (output mix-tui, sudah dub ID + burn sub). Output: `HDD/merged/{prefix}-merged.mp4`.
 
 | Mode | Kecepatan | Syarat |
 |------|----------|--------|
 | [1] Stream copy (concat demuxer + `-c copy`) | ⚡ super cepat | codec+res+fps sama |
-| [2] Re-encode + pilih target res | 🐢~⚡ lambat-tengah | res beda |
-| [3] Re-encode pakai res file pertama | 🐢~⚡ lambat-tengah | res beda, ikut file #1 |
+| [2] Re-encode + pilih target res (smart scale) | ⚡ super cepat (kalau banyak file res sama) | res beda |
+| [3] Re-encode pakai res file pertama | 🐢 lambat | res beda, ikut file #1 |
 
 UX sama kayak mix-tui/shorts-tui: questionary checkbox (multi-select file), linear workflow (Step 1→5), auto-detect mode, auto-derive output name.
 
 v1.2: Natural sort — 'S1, S2, ..., S9, S10' urut bener.
 v1.3: Re-encode pakai M1 GPU h264_videotoolbox (bukan CPU).
-v1.4: Hardware detection (konsisten sama whisper-tui/demucs-tui):
-  - `detect_hw_encoder()`: cek ffmpeg support h264_videotoolbox via `ffmpeg -encoders`
-  - Auto-suggest GPU kalau terdeteksi (M1/M2/M3 Apple Silicon)
-  - Auto-fallback ke CPU libx264 kalau gak (non-Mac Apple Silicon)
-  - Step 5a: user pilih device (kayak demucs Step 5)
-  - Print hardware status di banner: `Engine: M1 GPU (h264_videotoolbox) ✅`
-v1.5: **Temp files di HDD** (BUKAN SSD /tmp):
-  - User workflow: scripts di SSD, data di HDD. Temp files = data besar = HDD.
-  - `tempfile.mkdtemp(dir=HDD/.merge_tmp/)` — temp ke `HDD/Dubbing/.merge_tmp/`
-  - SSD aman, gak penuh
-v1.6: **Live ETA** per-file + overall:
-  - Per-file: `[1/10] [bar] 51% (01:16:33/02:30:04) ETA:01:14 (2.0x)`
-  - Overall: `Overall:5% ETA:04:30:00` (across all 10 files)
-  - Speed factor live (e.g., 2.0x realtime)
-  - Done line: `[1/10] [bar] 100% (02:30:04) — done in 01:15:00 (2.0x)`
-  - Real ETA bisa beda dari estimasi awal (mix-tui benchmark 2-3 min/jam itu buat 480p, bukan 1440p — high-res source lebih lambat karena filter scale CPU-bound)
+v1.4: Hardware detection (konsisten sama whisper-tui/demucs-tui).
+v1.5: Temp files di HDD (BUKAN SSD /tmp).
+v1.6: Live ETA per-file + overall.
+v1.7: **SMART SCALE** — auto-pick MAX res + per-file skip-if-same-res:
+  - Default target = MAX res among files (preserve quality, no downscale)
+  - Per-file: if res == target → SKIP ENCODE (stream copy, instant, no CPU)
+  - Per-file: if res != target → re-encode dengan scale (GPU)
+  - Untuk user case (10 files, res campuran 360p-1440p, target 1440p MAX):
+    - 5 file SKIP (S1,S4,S5,S7,S8 = 1440x2560, stream copy instant)
+    - 5 file encode (S2=360p, S3=1438p, S6=1078p, S9=720p, S10=1080p → scale up)
+  - Penghematan ~50% waktu vs v1.6 (encode semua file)
+  - No quality loss: file 1440p TIDAK di-scale-down ke 1080p
+  - Cleanup: hanya hapus temp file yang di-encode, JANGAN file asli yang SKIP
   - Konsistensi hardware source: whisper.cpp (Metal) + demucs (MPS) + mix-tui (VideoToolbox) + merge-tui (VideoToolbox/CPU)
 
 ## mix-tui v3.7.6 — 6 mode
@@ -138,7 +135,7 @@ Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no m
 - srt-editor-tui v1.0.1: ✅ (glossary 19 entries, 144 replacement di S2-FB-Mandarin)
 - mix-tui v3.8.2: 6 mode production-ready + logo + fade 100ms
 - shorts-tui v1.1: ✅ (Shorts 60/60 sukses + Part mode auto-split SRT, stream copy)
-- merge-tui v1.6: ✅ (gabungin multi-video jadi 1 panjang, 3 mode: stream copy/re-encode/res-first, questionary checkbox multi-select, natural sort, hardware detect GPU/CPU fallback, temp files di HDD bukan SSD, live ETA per-file + overall, konsisten sama whisper/demucs/mix-tui pattern)
+- merge-tui v1.7: ✅ (gabungin multi-video jadi 1 panjang, 3 mode: stream copy/re-encode/res-first, questionary checkbox multi-select, natural sort, hardware detect GPU/CPU fallback, temp files di HDD bukan SSD, live ETA per-file + overall, smart scale skip-if-same-res, konsisten sama whisper/demucs/mix-tui pattern)
 - shorts-csv-tui v1.0: ✅ (metadata CSV + manifest untuk YouTube Studio, test 60 segment S5, CSV 19.8 KB + manifest 30.4 KB)
 - clean-srt v1.0 (hybrid): ✅ (manual cues 1-750 + heuristic cues 751-2857, 731/2857 changes, output ke clean-srt/S1_Lima_Tentara.id.clean.srt)
 

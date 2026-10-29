@@ -17,7 +17,7 @@ Python TUI untuk workflow dubbing bahasa eksternal (Mandarin, English, Jepang, I
 | 9 | srt-editor-tui.py v1.0.1 (fix typo SRT hasil translate) | ✅ Production |
 | 10 | shorts-tui.py v1.1 (Shorts via AI JSON atau Part via SRT auto-split) | ✅ Production (Shorts 60/60 + Part auto-split) |
 | 11 | shorts-csv-tui.py v1.0 (metadata CSV + manifest untuk YouTube Studio) | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
-| 12 | merge-tui.py v1.6 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox, natural sort, hardware detect GPU/CPU, temp di HDD, live ETA) | ✅ Production (stream copy + GPU/CPU re-encode) |
+| 12 | merge-tui.py v1.7 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox, natural sort, hardware detect GPU/CPU, temp di HDD, live ETA, smart scale) | ✅ Production (stream copy + GPU/CPU re-encode) |
 
 ## Pipeline (4 alur)
 
@@ -80,7 +80,7 @@ mix-tui output × N → merge-tui → 1 video panjang
 | demucs-tui.py | Vocal separation (M1 MPS) | HDD/demucs/ |
 | edge-tts-tui.py v7.4 | TTS generation (paralel-safe, lock file + 429 retry) | HDD/tts/ |
 | mix-tui.py v3.7.6 | Final mix (6 mode, MUTE COMPLETE) | HDD/mix/ |
-| merge-tui.py v1.6 | Gabungin multi-video jadi 1 panjang (3 mode, questionary checkbox, natural sort, hardware detect, temp di HDD, live ETA) | HDD/merged/ |
+| merge-tui.py v1.7 | Gabungin multi-video jadi 1 panjang (3 mode, questionary checkbox, natural sort, hardware detect, temp di HDD, live ETA, smart scale) | HDD/merged/ |
 
 ### Kamus
 
@@ -312,7 +312,7 @@ sama → auto-resume (progress tidak hilang).
 Mau mulai dari awal (reset progress)? Hapus `<stem>.working.json`, TUI akan load
 dari `.srt` original.
 
-## merge-tui.py v1.6 — TUI #12: gabungin multi-video jadi 1 panjang
+## merge-tui.py v1.7 — TUI #12: gabungin multi-video jadi 1 panjang
 
 Gabungin output mix-tui (sudah dub ID + burn sub ID) dari beberapa film/season
 jadi 1 video panjang.
@@ -352,6 +352,53 @@ python3 merge-tui.py
 - Linear workflow (bukan main menu loop): Step 1 → 2 → 3 → 4 → 5 → 5a → run
 - Auto-derive output name: `S1-ori-id-final-sub.mp4` → `S1-merged.mp4`
 - Auto-detect mode (Step 3): cek res/codec/fps, suggest mode yang cocok
+
+### v1.7: Smart Scale (auto-pick MAX res + per-file skip-if-same-res)
+
+User feedback: 'scale? resolusi 1440p masih di scale? bodoh sekali?'
+
+Masalah v1.6: User case (S1=1440p, S2=360p, dst), default target 1080p:
+- S1 1440p di-scale DOWN ke 1080p = buang kualitas + CPU kerja keras
+- Semua 10 file di-encode walaupun 5 file udah 1440p (wasteful)
+
+v1.7 FIX: Strategi smart scale
+1. **Auto-pick MAX res** sebagai target default:
+   - Detect max res dari semua files (e.g., 1440x2560 dari S1)
+   - Tampilkan: `1440x2560 (MAX dari files — 5/10 SKIP, 5 encode) — REKOMENDASI`
+   - User bisa pilih MAX, atau override ke 1080p/720p/custom
+2. **Per-file skip-if-same-res**:
+   - Kalau file res == target → SKIP ENCODE (stream copy, instant, no CPU)
+   - Kalau file res != target → re-encode dengan scale (GPU)
+   - Gunakan file asli untuk concat (path asli masuk ke list, bukan temp file)
+3. **Cleanup aman**: hanya hapus temp file yang di-encode, JANGAN file asli yang SKIP
+
+Untuk user case (10 files, target 1440p MAX):
+- S1, S4, S5, S7, S8 (1440x2560) → SKIP ENCODE ✅ (instant, no CPU)
+- S3 (1438x2560) → encode (2 pixel scale, fast)
+- S6 (1078x1920), S9 (720x1280), S10 (1080x1920) → encode (scale up)
+- S2 (360x640) → encode (scale up dari 360p)
+
+Penghematan: ~50% waktu vs v1.6 (5 file SKIP vs 10 file encode semua)
+Kualitas: no downscale, file 1440p tetap 1440p
+
+```python
+def pick_resolution_with_max_default(files):
+    # Detect max res
+    max_res = max(res_set, key=lambda r: r[0] * r[1])
+    skip_count = sum(1 for f in files if f['width'] == max_res[0] and f['height'] == max_res[1])
+    encode_count = len(files) - skip_count
+    max_label = f'{max_res[0]}x{max_res[1]} (MAX — {skip_count}/{len(files)} SKIP, {encode_count} encode) — REKOMENDASI'
+    ...
+
+# Di merge_reencode:
+for i, f in enumerate(files, 1):
+    if f['width'] == target_w and f['height'] == target_h:
+        # Stream copy — gunakan file asli (instant, no encode)
+        print(f'  [{i}/{N}] {f["name"]} — SKIP ENCODE (res sama, stream copy) ✅')
+        temp_files.append(f['path'])  # path asli masuk list
+        continue
+    # Re-encode dengan scale...
+```
 
 ### v1.6: Live ETA (per-file + overall)
 
