@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 """
-whisper-tui.py v2.0 — TUI generate SRT dari audio via whisper.cpp (Metal GPU native)
+whisper-tui.py v2.1 — TUI generate SRT dari audio via whisper.cpp (Metal GPU native)
+
+v2.1 NEW: Dual SRT output — source language + English translate
+  - Whisper -tr flag: translate dari source ke English
+  - Output 2 SRT: {base}.zh.srt (Mandarin) + {base}.en.srt (English)
+  - English SRT sebagai referensi untuk translate ke Indonesia via Google Translate
+
+v2.0: Rewrite dari faster-whisper (Python) ke whisper.cpp (C++ CLI)
 
 v2.0 BREAKING: Rewrite dari faster-whisper (Python) ke whisper.cpp (C++ CLI)
   - faster-whisper/CTranslate2 TIDAK support Metal di macOS (hanya iOS)
@@ -42,7 +49,7 @@ except ImportError:
     print('\n❌ pip3 install questionary')
     sys.exit(1)
 
-VERSION = 'v2.0'
+VERSION = 'v2.1'
 
 
 def clear_screen():
@@ -215,6 +222,21 @@ def main():
     print(f'  ✓ {lang_choice}')
     print()
 
+    # v2.1: Dual SRT option (source + English translate)
+    dual_srt = False
+    if lang_code != 'en' and lang_code != 'auto':
+        dual_srt = questionary.confirm(
+            f'  Generate English SRT juga? (translate {lang_code} → English, sebagai referensi)',
+            default=True,
+        ).ask()
+        if dual_srt:
+            print(f'  ✓ Dual SRT: {lang_code} + English')
+        else:
+            print(f'  ✓ Single SRT: {lang_code} only')
+    else:
+        print(f'  ✓ Single SRT (English/auto, no translate needed)')
+    print()
+
     # === Step 3: Pilih model ===
     print('▶ Step 3/5: Pilih model Whisper')
     # Detect available models
@@ -246,14 +268,26 @@ def main():
     print('▶ Step 4/5: Pilih nama output SRT')
     base_name = Path(audio_path).stem
     ext_map = {'zh': '.zh', 'en': '.en', 'id': '.id', 'ja': '.ja', 'ko': '.ko', 'auto': ''}
-    default_output = os.path.join(os.path.dirname(audio_path), f'{base_name}{ext_map.get(lang_code, "")}.srt')
-    output_srt = questionary.text('Output SRT:', default=default_output).ask()
+    lang_ext = ext_map.get(lang_code, '')
+    default_output = os.path.join(os.path.dirname(audio_path), f'{base_name}{lang_ext}.srt')
+    output_srt = questionary.text('Output SRT (source language):', default=default_output).ask()
     if not output_srt:
         output_srt = default_output
     output_srt = os.path.expanduser(output_srt)
-    # whisper.cpp output file (without extension)
     output_base = output_srt.replace('.srt', '')
-    print(f'  ✓ {output_srt}')
+    print(f'  ✓ Source SRT: {output_srt}')
+
+    # v2.1: English SRT path (kalau dual)
+    output_en_srt = None
+    output_en_base = None
+    if dual_srt:
+        default_en = os.path.join(os.path.dirname(audio_path), f'{base_name}.en.srt')
+        output_en_srt = questionary.text('Output SRT (English translate):', default=default_en).ask()
+        if not output_en_srt:
+            output_en_srt = default_en
+        output_en_srt = os.path.expanduser(output_en_srt)
+        output_en_base = output_en_srt.replace('.srt', '')
+        print(f'  ✓ English SRT: {output_en_srt}')
     print()
 
     # === Step 5: Konfirmasi ===
@@ -268,6 +302,8 @@ def main():
     print(f'║  Bahasa  : {lang_choice[:46]:<46}║')
     print(f'║  Model   : {os.path.basename(model_path)[:46]:<46}║')
     print(f'║  Output  : {os.path.basename(output_srt)[:46]:<46}║')
+    if dual_srt:
+        print(f'║  English : {os.path.basename(output_en_srt)[:46]:<46}║')
     print(f'║  Engine  : {"whisper.cpp (auto Metal/CPU)":<46}║')
     # Estimasi: Metal ~3-5x realtime
     if audio_dur > 0:
@@ -286,11 +322,13 @@ def main():
     # === Run whisper.cpp ===
     print()
     print('═' * 64)
-    print(f'🚀 Mulai Whisper... (model: {os.path.basename(model_path)}, bahasa: {lang_choice})')
+    mode_label = f'{lang_code} + English' if dual_srt else lang_code
+    print(f'🚀 Mulai Whisper... (model: {os.path.basename(model_path)}, bahasa: {mode_label})')
     print('═' * 64)
     print()
 
-    # Build whisper-cli command
+    # v2.1: Run 1 = source language transcribe
+    # Build whisper-cli command (pass 1: source language)
     cmd = [
         whisper_cli,
         '-m', model_path,
@@ -302,7 +340,7 @@ def main():
     ]
 
     # Run with real-time output (stream stdout/stderr)
-    print('▶ Running whisper-cli...')
+    print(f'▶ Pass 1/2: Transcribe ({lang_code})...' if dual_srt else '▶ Running whisper-cli...')
     print(f'  Command: {" ".join(cmd[:4])}... -osrt -of {os.path.basename(output_base)}')
     print()
     start_time = time.time()
@@ -358,40 +396,106 @@ def main():
         print(f'\n❌ Error: {e}')
         sys.exit(1)
 
+    # v2.1: Pass 2 — English translate (kalau dual SRT)
+    elapsed_en = 0
+    if dual_srt:
+        print()
+        print('═' * 64)
+        print(f'▶ Pass 2/2: Translate to English...')
+        cmd_en = [
+            whisper_cli,
+            '-m', model_path,
+            '-l', lang_code,
+            '-tr',              # translate to English
+            '-f', audio_path,
+            '-t', '8',
+            '-osrt',
+            '-of', output_en_base,
+        ]
+        print(f'  Command: {" ".join(cmd_en[:4])}... -tr -osrt -of {os.path.basename(output_en_base)}')
+        print()
+
+        start_en = time.time()
+        process_en = None
+        try:
+            process_en = subprocess.Popen(
+                cmd_en,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+            )
+
+            for line in process_en.stdout:
+                line = line.rstrip()
+                if 'metal' in line.lower() and 'ggml_metal_library_compile_all' in line:
+                    continue  # skip verbose
+                elif line.strip():
+                    if 'error' in line.lower():
+                        print(f'  ❌ {line}')
+                    elif line.startswith('[') and '-->' in line:
+                        pass  # skip progress (sudah ada dari pass 1)
+                    else:
+                        print(f'  {line}')
+
+            process_en.wait()
+            elapsed_en = time.time() - start_en
+
+        except KeyboardInterrupt:
+            print('\n\n⏹ Dibatalkan user (Pass 2).')
+            if process_en:
+                process_en.kill()
+            sys.exit(130)
+        except Exception as e:
+            print(f'\n❌ Error (Pass 2): {e}')
+
+    total_elapsed = elapsed + elapsed_en
+
     # === Hasil ===
     print()
     print('═' * 64)
     print('✅ SELESAI!\n')
-    print(f'  Waktu: {format_duration(elapsed)}')
+    print(f'  Waktu: {format_duration(total_elapsed)}')
+    if dual_srt:
+        print(f'    Pass 1 ({lang_code}): {format_duration(elapsed)}')
+        print(f'    Pass 2 (English):   {format_duration(elapsed_en)}')
 
     if metal_detected:
         print(f'  Engine: whisper.cpp (Metal GPU) ✅')
         if audio_dur > 0:
-            realtime_factor = audio_dur / elapsed
+            realtime_factor = audio_dur / total_elapsed
             print(f'  Speed:  {realtime_factor:.1f}x realtime')
     else:
         print(f'  Engine: whisper.cpp (CPU) ⚠ — Metal tidak terdeteksi')
 
-    # Cek output file
+    # Cek output file — source SRT
     if os.path.isfile(output_srt):
         srt_size = os.path.getsize(output_srt) / 1024
-        # Count cues
         with open(output_srt, 'r', encoding='utf-8') as f:
             cue_count = sum(1 for line in f if line.strip().isdigit())
-        print(f'  Output: {output_srt}')
-        print(f'  Size:   {srt_size:.1f} KB, {cue_count} cue')
+        print(f'  Source SRT: {output_srt}')
+        print(f'    {srt_size:.1f} KB, {cue_count} cue')
     else:
-        print(f'  ⚠ Output tidak ditemukan: {output_srt}')
-        # Cek alternative extension
-        alt = output_base + '.srt'
-        if os.path.isfile(alt) and alt != output_srt:
-            print(f'  ℹ Coba: {alt}')
+        print(f'  ⚠ Source SRT tidak ditemukan: {output_srt}')
+
+    # Cek output file — English SRT
+    if dual_srt and output_en_srt:
+        if os.path.isfile(output_en_srt):
+            en_size = os.path.getsize(output_en_srt) / 1024
+            with open(output_en_srt, 'r', encoding='utf-8') as f:
+                en_cues = sum(1 for line in f if line.strip().isdigit())
+            print(f'  English SRT: {output_en_srt}')
+            print(f'    {en_size:.1f} KB, {en_cues} cue')
+        else:
+            print(f'  ⚠ English SRT tidak ditemukan: {output_en_srt}')
 
     print()
     print('🎬 Langkah berikutnya:')
-    print(f'   1. Cek SRT di: {output_srt}')
-    print(f'   2. Translate manual via Google Translate (bukan tugas Whisper)')
-    print(f'   3. edge-tts-tui: python3 edge-tts-tui.py')
+    print(f'   1. Cek SRT di: {os.path.dirname(output_srt)}')
+    if dual_srt:
+        print(f'   2. English SRT = referensi untuk translate ke Indonesia')
+    print(f'   {'3' if dual_srt else '2'}. Translate ke Indonesia via Google Translate')
+    print(f'   {'4' if dual_srt else '3'}. edge-tts-tui: python3 edge-tts-tui.py')
     print('═' * 64)
 
 
