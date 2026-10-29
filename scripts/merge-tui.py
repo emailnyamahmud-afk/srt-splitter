@@ -7,13 +7,9 @@ User workflow:
   python3 merge-tui.py
 
 v1.4: Hardware detection + device selection (konsisten sama whisper-tui/demucs-tui).
-  - Detect h264_videotoolbox (M1 GPU) availability via ffmpeg -encoders
-  - User pilih device: GPU (default kalau terdeteksi) atau CPU (fallback)
-  - Estimasi waktu beda berdasarkan device:
-    GPU: ~10-15 min/jam video (M1 VideoToolbox 35x hardware)
-    CPU: ~50-80 min/jam video (libx264 medium)
-  - Print hardware status di banner (kayak whisper "Engine: Metal GPU ✅")
-  - Auto-fallback ke CPU libx264 kalau VideoToolbox gak ada (non-Mac Apple Silicon)
+v1.5: Temp files di HDD (BUKAN SSD /tmp). User workflow: scripts di SSD, data di HDD.
+  - tempfile.mkdtemp(dir=HDD/.merge_tmp/) — temp files ke HDD, SSD aman
+  - Estimasi waktu realistis pakai mix-tui benchmark (2-3 min/jam GPU, bukan 10-15)
 
 v1.3: Re-encode pakai h264_videotoolbox (M1 GPU), bukan libx264 (CPU).
 v1.2: Natural sort (S1<S2<...<S9<S10)
@@ -50,7 +46,7 @@ except ImportError:
 sys.path.insert(0, str(Path(__file__).parent))
 from config import ensure_hdd, MIX_DIR, MERGED_DIR
 
-VERSION = 'v1.4'
+VERSION = 'v1.5'
 
 
 # ============================================================
@@ -128,18 +124,18 @@ def pick_device(detected_device, detected_encoder):
         device = questionary.select(
             'Device (hardware acceleration):',
             choices=[
-                f'GPU (M1 VideoToolbox, ~10-15 min/jam) — REKOMENDASI (terdeteksi)',
-                'CPU (libx264, ~50-80 min/jam, bunyi kipas)',
+                f'GPU (M1 VideoToolbox, ~2-3 min/jam) — REKOMENDASI (terdeteksi)',
+                'CPU (libx264, ~35 min/jam, bunyi kipas)',
             ],
-            default=f'GPU (M1 VideoToolbox, ~10-15 min/jam) — REKOMENDASI (terdeteksi)',
+            default=f'GPU (M1 VideoToolbox, ~2-3 min/jam) — REKOMENDASI (terdeteksi)',
         ).ask()
     else:
         device = questionary.select(
             'Device (hardware acceleration):',
             choices=[
-                'CPU (libx264, ~50-80 min/jam) — VideoToolbox tidak terdeteksi',
+                'CPU (libx264, ~35 min/jam) — VideoToolbox tidak terdeteksi',
             ],
-            default='CPU (libx264, ~50-80 min/jam) — VideoToolbox tidak terdeteksi',
+            default='CPU (libx264, ~35 min/jam) — VideoToolbox tidak terdeteksi',
         ).ask()
 
     if 'GPU' in device:
@@ -518,7 +514,7 @@ def merge_reencode(files, output, target_w, target_h, bitrate, device, encoder):
       Cleanup: hapus temp files
     """
     device_label = 'M1 GPU (VideoToolbox)' if device == 'gpu' else 'CPU (libx264)'
-    speed_label = '~10-15 min/jam video' if device == 'gpu' else '~50-80 min/jam video'
+    speed_label = '~2-3 min/jam video' if device == 'gpu' else '~35 min/jam video'
 
     print('\n' + '═' * 64)
     print(f'🚀 Merge (re-encode {device_label} + concat)...')
@@ -532,17 +528,21 @@ def merge_reencode(files, output, target_w, target_h, bitrate, device, encoder):
     total = sum(f['duration'] for f in files)
     print(f'  Total dur   : {fmt_dur(total)}')
 
-    # Estimasi waktu
+    # Estimasi waktu (mix-tui benchmark: 2-3 min/jam GPU, 30-40 min/jam CPU)
     hours = total / 3600
     if device == 'gpu':
-        est_min = int(hours * 12)  # 12 min/jam (midpoint 10-15)
+        est_min = max(5, int(hours * 2.5))  # 2.5 min/jam (mix-tui benchmark)
     else:
-        est_min = int(hours * 65)  # 65 min/jam (midpoint 50-80)
+        est_min = int(hours * 35)  # 35 min/jam (libx264 medium, mix-tui experience)
     print(f'\n  ⏱️  Estimasi: ~{est_min} menit ({speed_label})')
     print()
 
-    # Buat temp dir
-    temp_dir = tempfile.mkdtemp(prefix='merge_tmp_')
+    # Buat temp dir di HDD (BUKAN SSD /tmp) — biar SSD gak penuh
+    # User workflow: scripts di SSD, data di HDD. Temp files = data besar = HDD.
+    # Pakai subfolder .merge_tmp/ di parent HDD (gak campur sama output merged/)
+    temp_dir_parent = MERGED_DIR.parent / '.merge_tmp'
+    temp_dir_parent.mkdir(parents=True, exist_ok=True)
+    temp_dir = tempfile.mkdtemp(prefix='merge_tmp_', dir=str(temp_dir_parent))
     temp_files = []
 
     # Build encoder args
@@ -748,14 +748,14 @@ def main():
         print(f'  Encoder : {encoder}')
         print(f'  Bitrate : {bitrate}')
         print(f'  Target  : {target_w}x{target_h}')
-        # Estimasi waktu
+        # Estimasi waktu (mix-tui benchmark)
         hours = total_dur / 3600
         if device == 'gpu':
-            est_min = int(hours * 12)
-            print(f'  Estimasi: ~{est_min} menit (M1 GPU ~10-15 min/jam)')
+            est_min = max(5, int(hours * 2.5))
+            print(f'  Estimasi: ~{est_min} menit (M1 GPU ~2-3 min/jam, mix-tui benchmark)')
         else:
-            est_min = int(hours * 65)
-            print(f'  Estimasi: ~{est_min} menit (CPU ~50-80 min/jam, bunyi kipas)')
+            est_min = int(hours * 35)
+            print(f'  Estimasi: ~{est_min} menit (CPU ~35 min/jam, bunyi kipas)')
 
     if not questionary.confirm('\nLanjut merge?', default=True).ask():
         print('\nDibatalkan.')

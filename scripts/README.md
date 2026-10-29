@@ -17,7 +17,7 @@ Python TUI untuk workflow dubbing bahasa eksternal (Mandarin, English, Jepang, I
 | 9 | srt-editor-tui.py v1.0.1 (fix typo SRT hasil translate) | ✅ Production |
 | 10 | shorts-tui.py v1.1 (Shorts via AI JSON atau Part via SRT auto-split) | ✅ Production (Shorts 60/60 + Part auto-split) |
 | 11 | shorts-csv-tui.py v1.0 (metadata CSV + manifest untuk YouTube Studio) | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
-| 12 | merge-tui.py v1.4 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox, natural sort, hardware detect GPU/CPU) | ✅ Production (stream copy + GPU/CPU re-encode) |
+| 12 | merge-tui.py v1.5 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox, natural sort, hardware detect GPU/CPU, temp di HDD) | ✅ Production (stream copy + GPU/CPU re-encode) |
 
 ## Pipeline (4 alur)
 
@@ -80,7 +80,7 @@ mix-tui output × N → merge-tui → 1 video panjang
 | demucs-tui.py | Vocal separation (M1 MPS) | HDD/demucs/ |
 | edge-tts-tui.py v7.4 | TTS generation (paralel-safe, lock file + 429 retry) | HDD/tts/ |
 | mix-tui.py v3.7.6 | Final mix (6 mode, MUTE COMPLETE) | HDD/mix/ |
-| merge-tui.py v1.4 | Gabungin multi-video jadi 1 panjang (3 mode, questionary checkbox, natural sort, hardware detect) | HDD/merged/ |
+| merge-tui.py v1.5 | Gabungin multi-video jadi 1 panjang (3 mode, questionary checkbox, natural sort, hardware detect, temp di HDD) | HDD/merged/ |
 
 ### Kamus
 
@@ -312,7 +312,7 @@ sama → auto-resume (progress tidak hilang).
 Mau mulai dari awal (reset progress)? Hapus `<stem>.working.json`, TUI akan load
 dari `.srt` original.
 
-## merge-tui.py v1.4 — TUI #12: gabungin multi-video jadi 1 panjang
+## merge-tui.py v1.5 — TUI #12: gabungin multi-video jadi 1 panjang
 
 Gabungin output mix-tui (sudah dub ID + burn sub ID) dari beberapa film/season
 jadi 1 video panjang.
@@ -330,8 +330,9 @@ python3 merge-tui.py
 # Step 4: Pick output path (auto-derive: S1-ori-id-final-sub.mp4 → S1-merged.mp4)
 # Step 5: Pick mode (stream copy / re-encode + target res / re-encode pakai res file #1)
 # Step 5a: Pick device (GPU/CPU) + pick bitrate (2M/4M/6M/8M) untuk re-encode
-# Confirm → run (dengan estimasi waktu berdasarkan device)
+# Confirm → run (dengan estimasi waktu berdasarkan device, mix-tui benchmark)
 # Output: HDD/merged/{prefix}-merged.mp4
+# Temp files: HDD/Dubbing/.merge_tmp/merge_tmp_XXX/ (BUKAN SSD /tmp)
 ```
 
 ### 3 mode
@@ -339,8 +340,8 @@ python3 merge-tui.py
 | Mode | Kecepatan | Syarat | Kapan dipakai |
 |------|----------|--------|--------------|
 | Stream copy (concat demuxer + `-c copy`) | super cepat (no re-encode) | codec+res+fps sama | S1-S4 dari source sama, mix-tui Mode sama |
-| Re-encode + pilih target res (GPU/CPU) | GPU ~10-15 min/jam, CPU ~50-80 min/jam | res beda | S1-S4 dari source beda, mau output standard 1080p/720p |
-| Re-encode pakai res file pertama (GPU/CPU) | GPU ~10-15 min/jam, CPU ~50-80 min/jam | res beda, ikut file #1 | S1-S4 dari source beda, mau ikut res file pertama |
+| Re-encode + pilih target res (GPU/CPU) | GPU ~2-3 min/jam, CPU ~35 min/jam | res beda | S1-S4 dari source beda, mau output standard 1080p/720p |
+| Re-encode pakai res file pertama (GPU/CPU) | GPU ~2-3 min/jam, CPU ~35 min/jam | res beda, ikut file #1 | S1-S4 dari source beda, mau ikut res file pertama |
 
 ### UX (v1.1+2 rewrite, v1.4 hardware detect — konsisten sama mix-tui/shorts-tui)
 
@@ -351,6 +352,22 @@ python3 merge-tui.py
 - Linear workflow (bukan main menu loop): Step 1 → 2 → 3 → 4 → 5 → 5a → run
 - Auto-derive output name: `S1-ori-id-final-sub.mp4` → `S1-merged.mp4`
 - Auto-detect mode (Step 3): cek res/codec/fps, suggest mode yang cocok
+
+### v1.5: Temp files di HDD (BUKAN SSD /tmp)
+
+Masalah v1.4: `tempfile.mkdtemp()` default ke `/tmp` (SSD). User SSD tinggal sedikit, temp files 20 GB = SSD penuh.
+
+v1.5 FIX: Temp files ke HDD (kayak semua TUI lain — data di HDD, scripts di SSD):
+```python
+temp_dir_parent = MERGED_DIR.parent / '.merge_tmp'  # HDD/Dubbing/.merge_tmp/
+temp_dir_parent.mkdir(parents=True, exist_ok=True)
+temp_dir = tempfile.mkdtemp(prefix='merge_tmp_', dir=str(temp_dir_parent))
+```
+
+- Temp files: `HDD/Dubbing/.merge_tmp/merge_tmp_XXXX/` (BUKAN SSD /tmp)
+- Output: `HDD/Dubbing/merged/{prefix}-merged.mp4`
+- SSD aman, gak penuh
+- Konsisten sama workflow: scripts di SSD, data (input/output/temp) di HDD
 
 ### v1.4: Hardware detection (konsisten sama whisper-tui/demucs-tui/mix-tui)
 
@@ -416,7 +433,7 @@ Keuntungan:
 - RAM-friendly: cuma 1 file pada satu waktu, gak banjir
 - GPU dominant: VideoToolbox encode, CPU cuma helper (filter)
 - Laptop gak bunyi kenceng (vs CPU 5+ jam → bunyi kipas terus)
-- Estimasi (M1 GPU): ~10-15 min/jam video (VideoToolbox 35x hardware)
+- Estimasi (M1 GPU): ~2-3 min/jam video (mix-tui benchmark, 35x hardware)
 - Res output konsisten (target_w × target_h, letterbox/pillarbox untuk beda aspect)
 
 ### Bitrate pilihan (Mode 2 & 3, M1 GPU)
