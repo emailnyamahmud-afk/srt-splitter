@@ -4,110 +4,100 @@ Hasil cleaning SRT Indonesia (Google Translate) untuk dubbing film Mandarin **S1
 
 ## File di folder ini
 
-| File | Ukuran | Keterangan |
-|------|--------|-----------|
-| `S1_Lima_Tentara.id.clean.srt` | ~186 KB | **OUTPUT FINAL** — SRT Indonesia yang sudah di-clean, siap untuk dubbing |
-| `S1_Lima_Tentara.id.srt` | ~186 KB | INPUT — SRT Indonesia hasil Google Translate (raw) |
-| `S1_Lima_Tentara.zh.srt` | ~152 KB | REFERENSI — SRT Mandarin asli (sumber terjemahan) |
-| `clean-srt-process.py` | ~6.5 KB | Script Python yang melakukan cleaning deterministic |
+| File | Keterangan |
+|------|-----------|
+| `S1_Lima_Tentara.id.clean.srt` | **OUTPUT FINAL** — SRT Indonesia yang sudah di-clean dengan AI per cue |
+| `S1_Lima_Tentara.id.srt` | INPUT — SRT Indonesia hasil Google Translate (raw) |
+| `S1_Lima_Tentara.zh.srt` | REFERENSI — SRT Mandarin asli (sumber terjemahan) |
+| `clean-srt-process.py` | Script Python lama (deterministic glossary, jangan dipakai lagi) |
 
-## Statistik
+Script cleaning AI: `scripts/clean-srt-ai-batch1.py` (di luar folder ini).
 
-- **Total cue**: 2857
-- **Cue diubah**: 14 (0.49%) — hanya cue dengan mistranslate/name yang terdeteksi otomatis
-- **Timestamps**: SAMA PERSIS dengan input (validated, 0 mismatch)
-- **Cue count**: SAMA (2857 = 2857, validated)
-- **Urutan cue**: SAMA (validated)
+## Cara cleaning (v2 — AI per cue, bukan glossary!)
 
-## Apa yang di-clean (deterministic, oleh script)
+**Pendekatan lama (glossary)**: Hanya 14 cue diubah (string replacement names + istilah). Hasil masih grammar GT yang kaku.
 
-### 1. Standardisasi nama orang (variants → canonical)
+**Pendekatan baru (AI per cue)**: Setiap cue dibaca ID + ZH, lalu AI:
+1. Pahami konteks scene dari Mandarin asli
+2. Perbaiki tatabahasa Indonesia yang kaku → natural
+3. Fix mistranslate (cross-reference Mandarin)
+4. Perpendang kalimat verbose
+5. Preserve nama orang/tempat (Lin Zhao, Xie Changfeng, Chen Su, dll)
+6. **Timestamps/count/order SAMA PERSIS dengan input** (validated, 0 mismatch)
 
-| Original (GT) | Cleaned |
-|---------------|---------|
-| Nona Chen | Chen Su |
-| Nyonya Chen | Chen Su |
-| Dokter Chen | Chen Su |
-| Saudari Chen Su | Chen Su |
-| Chen Xinlang | Chen Su |
-| Elang Merah / Red Eagle | Qin Hongying |
-| Aokawa | Wang Haochuan |
-| Marco / Ma Zhenzhuang | Ma Zhenbang |
-| Peti mati Lin / Lin Yanya / Lin Yasi / Lin Zhou | Lin Zhao |
-| Xie Zangfeng / Xie Chaojin / Xie Dutou / Pelatih Xie | Xie Changfeng |
-| Bulan (sebagai nama, bukan bulan/moon) | Mu En |
-| Zhou Laozhang / Zhou Lao / Paman Zhou | Zhou Lizheng |
-| Butler Yao / Yao Gu / Yao Dadu / Yao Zhong | Yao Sihai |
-| Qin Fengzhan / Qin Fengjun | Qin Fenglu |
+## Progress
 
-### 2. Fix mistranslate jelas
+- Total cue: 2857
+- Sudah di-clean: 500 (17.5%)
+- Diubah dari GT: 460 (92% dari yang di-clean)
+- Bug fix: cues 51-300 awalnya salah offset (sudah di-fix di commit `de581e0`)
 
-| Original (GT) | Cleaned | Mandarin | Note |
-|---------------|---------|----------|------|
-| cumming / melakukan cumming | menarik pelatuk | 扣 (kou) | trigger |
-| payung emas / payung tempat tidur emas | obat luka emas | 金创药 | jin chuang yao |
-| ayam panah / ayam panah otomatis | panah otomatis | 机弩 | ji nu (crossbow) |
-| Tentara Hunan / tentara utang / pemberontak debitur | Xiangjun | 乡军 | bukan Provinsi Hunan |
-| dot polisi / Qin Fenglu dot | Jiedushi | 节度使 | Komisaris Militer |
-| menggoreng permen | laras meledak | 炸膛 | zha tang |
-| retribusi | pembalasan | retribution | bukan "pungutan" |
-| universitas terkemuka / SMP Desa | akademi | — | — |
+## Contoh cleaning (before → after)
 
-### 3. Bulan → Mu En (context-aware)
+| Cue | GT (raw) | Clean |
+|-----|----------|-------|
+| 14 | Apa yang terjadi dengan kopi? | Apa-apaan ini? |
+| 17 | Geng Detektif Ma dan Chen Su belum keluar | Cari orang dulu. Ma Zhenbang dan Chen Su belum keluar |
+| 23 | Sakit kepala | Terdadak di dalam |
+| 29 | Kapten Lin, apakah dia salah naik bus? | Kapten Lin, dia salah naik mobil? |
+| 31 | Kita semua adalah bangsa kita sendiri | Kita semua satu tim |
+| 70 | Beppu Shou | Jangan panah |
+| 88-89 | Saudara laki-laki | Bang |
+| 91 | dimana tempat ini | Tempat apa ini? |
+| 120 | Serangga besar kemungkinan besar akan kita jumpai | Di jalan gampang ketemu harimau |
+| 121 | Berapa banyak dari Anda yang ingin turun gunung? | Kalau mau turun gunung, |
+| 152 | Empat tahun tergantung di sungai | Tahun ke-4 Xuanhe |
+| 156 | Ini adalah Jalan Qinfeng | Ini wilayah Qinfeng |
+| 175 | Ma Zhenbo | Ma Zhenbang |
+| 342 | Jangan main-main dengan pria saat mereka mengambil penis | Laki-laki ambil senjata, jangan ribut |
+| 406 | Semua wanita di desa meneleponmu | Semua wanita desa ikut perintahmu |
+| 428 | Jangan rusak | Jangan berhenti |
+| 468 | kamu kentut | Ngawur kamu |
+| 475 | Kakak ipar pada hari Selasa | Mbak Zhou ke-2 |
+| 482 | Mulut keluargaku hari ini | Suamiku hari ini |
 
-Script hanya mengganti "Bulan" menjadi "Mu En" jika:
-- Bukan diikuti nama bulan (Januari, Februari, ..., Desember)
-- Bukan diikuti kata terkait moon (purnama, sabit, terang, gelap, mati, baru)
-- Bukan didahului kata waktu (tiap, setiap, dalam, pada, di)
+## Cara kerja script AI
 
-## Cara kerja script
+```python
+# scripts/clean-srt-ai-batch1.py
+CLEAN_TEXT = {
+    1: "Kapten, Kapten, Tuan Magong, Saudara Chuan, kalian di mana?",
+    2: "Jangan ribut, aku belum mati. Tetap waspada.",
+    ...
+}
 
-```bash
-python clean-srt-process.py
+# Untuk setiap cue di ID file:
+# - Jika index ada di CLEAN_TEXT: pakai cleaned text
+# - Jika tidak: keep GT original
+# Timestamps diambil dari ID file (TIDAK diubah)
 ```
-
-Script akan:
-1. Parse input `S1_Lima_Tentara.id.srt` → 2857 cue (index, start, end, text)
-2. Untuk setiap cue, apply replacement glossary (case-insensitive)
-3. Apply context-aware "Bulan" → "Mu En" (hanya jika name, bukan month/moon)
-4. Validate: timestamps/count/order SAMA PERSIS dengan input
-5. Output `S1_Lima_Tentara.id.clean.srt`
-
-## Limitations (yang TIDAK dikerjakan script)
-
-Script ini hanya **deterministic replacements** — dia mengenali pattern spesifik dari glossary. Yang TIDAK dikerjakan:
-
-1. **Perbaikan tatabahasa Indonesia** — kalimat kaku/verbose GT tetap apa adanya
-   - Contoh tidak diperbaiki: "Aku bahkan tidak bisa membiarkan tanganku tetap berada di setir"
-2. **Perpendang kalimat verbose** — kalimat berbelit-belit tetap panjang
-3. **Konteks scene verification** — script tidak cross-check dengan Mandarin untuk cue ambigu
-4. **Fix mistranslate baru** — hanya mistranslate yang sudah di-catalog di glossary yang diperbaiki
-5. **Nama baru** — hanya nama yang sudah di glossary yang distandardisasi
-
-Untuk cleaning lebih dalam (grammar, verbose, konteks), perlu manual review per cue oleh AI/human. Skill `clean-srt` di Z.ai bisa dipakai untuk itu, tapi untuk 2857 cue, batch processing deterministic ini adalah baseline yang reliable.
 
 ## Reproducibility
 
 ```bash
-# Dari root repo
-python clean-srt/clean-srt-process.py
-# Output: download/S1_Lima_Tentara.id.clean.srt
+# Generate clean SRT
+python3 scripts/clean-srt-ai-batch1.py
+
+# Validate
+python3 scripts/clean-srt-validate.py
+# Expected: ✅ VALIDATION PASSED (timestamps/count/order 0 mismatch)
 ```
 
-Untuk validasi:
-```bash
-python scripts/clean-srt-validate.py
-# Harus output: ✅ VALIDATION PASSED
-```
+## Limitations
+
+Yang TIDAK dikerjakan:
+- Cues yang belum di-clean (501-2857) — masih GT original
+- Cleaning bergantung pada pemahaman AI per cue — bukan rule-based
+- Untuk cue yang sangat ambigu, AI pilih interpretasi paling natural
 
 ## Source files
 
-- Input ID SRT: `upload/folder/28d69ed4/S1 Lima Tentara.id.srt` (user upload via Z.ai cloud)
-- Input ZH SRT: `upload/folder/d818d15e/S1 Lima Tentara.zh.srt` (user upload via Z.ai cloud)
+- Input ID SRT: `upload/folder/28d69ed4/S1 Lima Tentara.id.srt`
+- Input ZH SRT: `upload/folder/d818d15e/S1 Lima Tentara.zh.srt`
 - Skill reference: `skills/clean-srt/` (atau backup `scripts/skill-clean-srt/`)
 
 ---
 
 Generated: 2026-10-29
-Cleaner: clean-srt-process.py v1.0 (deterministic glossary replacement)
-Validator: clean-srt-validate.py
+Method: AI per-cue cleaning dengan cross-reference Mandarin
+Validator: clean-srt-validate.py (timestamps EXACT)

@@ -2000,23 +2000,23 @@ Mana nggak bisa diterima
 
 501
 00:29:42,160 --> 00:29:44,160
-Saya meminta Anda untuk menyelamatkan hidup saya
+Nyawa kami sudah kalian selamatkan
 
 502
 00:29:44,160 --> 00:29:46,160
-Sepotong bukanlah apa-apa
+Sedikit bukan apa-apa
 
 503
 00:29:46,160 --> 00:29:47,160
-Apakah Anda ingin menerimanya?
+Kalau kalian nggak nerima,
 
 504
 00:29:47,160 --> 00:29:50,160
-Istri saya tidak bisa tidur di malam hari
+Aku orang tua ini nggak bisa tidur malam
 
 505
 00:29:50,160 --> 00:29:58,869
-Saudara Sanhuai
+Bang Sanhuai
 
 506
 00:29:58,869 --> 00:29:59,869
@@ -2024,179 +2024,179 @@ Saudara Lin
 
 507
 00:29:59,869 --> 00:30:00,869
-katamu
+Bilang
 
 508
 00:30:00,869 --> 00:30:02,900
-Berhentilah meminta orang mengirimi Anda barang
+Jangan suruh warga nganter barang lagi
 
 509
 00:30:02,900 --> 00:30:05,059
-Keluarga setiap orang mengalami bencana
+Rumah semua orang kena bencana
 
 510
 00:30:05,059 --> 00:30:07,130
-Saya masih bisa mengeluarkannya saat ini
+Saat ini masih bisa ngeluarin ini
 
 511
 00:30:07,130 --> 00:30:08,130
-Ini sudah menjadi sebuah hubungan
+Udah bareng baik
 
 512
 00:30:08,130 --> 00:30:09,190
-Seseorang datang untuk mengucapkan terima kasih lagi
+Kalau ada yang datang makasih lagi,
 
 513
 00:30:09,190 --> 00:30:10,190
-Anda menghentikannya untuk saya
+Kamu tolakkan buat aku
 
 514
 00:30:10,190 --> 00:30:12,190
-Katakan saja apa yang Anda suka dan kami akan menerimanya
+Bilang aja hati kita terima
 
 515
 00:30:12,190 --> 00:30:13,190
-Segala sesuatunya tidak dapat lagi dikumpulkan
+Barang nggak bisa diterima lagi
 
 516
 00:30:14,190 --> 00:30:15,259
-Kami menyelamatkan orang
+Kita nyelamatin orang
 
 517
 00:30:15,259 --> 00:30:16,259
-Bukan foto-foto ini
+Bukan ngarep ini
 
 518
 00:30:16,259 --> 00:30:18,289
-Desa sedang dalam kekacauan saat ini
+Sekarang desa lagi kacau
 
 519
 00:30:18,289 --> 00:30:19,289
-Terlalu sakit untuk diurus
+Yang luka dirawat
 
 520
 00:30:19,289 --> 00:30:20,289
-Putus asa untuk mati
+Yang mati dikubur
 
 521
 00:30:20,289 --> 00:30:22,380
-Orang yang masih hidup masih perlu makan
+Yang hidup masih butuh makan
 
 522
 00:30:22,380 --> 00:30:24,450
-Ini tidak mudah bagi semua orang
+Setiap rumah nggak gampang
 
 523
 00:30:24,450 --> 00:30:26,450
-Berhentilah meminta mereka mengirimnya ke sini.
+Jangan suruh mereka nganter ke sini lagi
 
 524
 00:30:26,450 --> 00:30:27,859
-Bagus
+Baik
 
 525
 00:30:27,859 --> 00:30:28,859
-aku akan mengatakannya
+Aku bilang ya
 
 526
 00:30:28,859 --> 00:30:50,859
-Menunggu penyelamat
+Nunggu Bapak baik penyelamat,
 
 527
 00:30:50,859 --> 00:30:56,980
-Pertempuran ini
+Perang ini,
 
 528
 00:30:56,980 --> 00:30:57,980
-Tembakan pistol tiga puluh delapan
+Pistol tembak 38
 
 529
 00:30:57,980 --> 00:30:58,980
-Microflush mencapai sembilan
+Micro burst 9
 
 530
 00:30:58,980 --> 00:31:01,329
-Total empat puluh tujuh peluru
+Total 47 peluru
 
 531
 00:31:01,329 --> 00:31:03,029
-Tidak terlalu sedikit
+Nggak sedikit
 
 532
 00:31:03,029 --> 00:31:04,579
-Para prajurit itu berbaris ke arah barat
+Pasukan barat itu
 
 533
 00:31:04,579 --> 00:31:06,579
-Aku memukul paling keras saat aku menyerang.
+Pas ngejar paling banyak tembak
 
 534
 00:31:06,579 --> 00:31:08,670
-Tambang emas jenis ini memakan peluru paling banyak
+Penyerang begini paling makan peluru
 
 535
 00:31:08,670 --> 00:31:09,670
-Kalahkan seperti ini
+Nembak kayak gini
 
 536
 00:31:09,670 --> 00:31:10,670
-Cukup hemat
+Udah lumayan hemat
 
 537
 00:31:10,670 --> 00:31:12,119
-Namun berapa kali lagi konsumsi ini akan terjadi?
+Tapi kalau habis kayak gini beberapa kali lagi
 
 538
 00:31:12,119 --> 00:31:14,119
-Barang-barang di tangan kita hampir habis
+Stok kita bakal abis
 
 539
 00:31:14,119 --> 00:31:16,759
-Jadi meskipun kami memenangkan pertempuran ini
+Jadi walau perang ini menang
 
 540
 00:31:16,759 --> 00:31:17,759
-Harganya tidak sedikit
+Harganya mahal
 
 541
 00:31:17,759 --> 00:31:19,980
-Senjata dan peluru di tangan kita
+Pistol dan peluru kita
 
 542
 00:31:19,980 --> 00:31:20,980
-Ini bukan pertarungan yang panjang
+Bukan buat perang jangka panjang
 
 543
 00:31:20,980 --> 00:31:23,339
-Hal ini sekarang bisa membuat orang takut sampai mati
+Ini sekarang bisa bikin orang takut mati
 
 544
 00:31:23,339 --> 00:31:25,369
-Itu karena mereka belum melihatnya
+Soalnya mereka belum pernah lihat
 
 545
 00:31:25,369 --> 00:31:26,369
-Belum pernah mendengarnya juga
+Belum pernah denger juga
 
 546
 00:31:26,369 --> 00:31:30,579
-Namun begitu pelurunya habis
+Tapi begitu peluru habis
 
 547
 00:31:30,579 --> 00:31:33,059
-Pistolnya menjadi besi yang keras
+Pistol jadi besi keras
 
 548
 00:31:33,059 --> 00:31:35,700
-Mari kita lawan pertempuran ini bersama-sama
+Padahal kita habis kerasan perang ini
 
 549
 00:31:35,700 --> 00:31:37,700
-Ini adalah pertarungan megah yang hanya terjadi satu kali.
+Cuma pamer sekali pakai
 
 550
 00:31:37,700 --> 00:31:38,789
-Tidak megah
+Bukan pamer
 
 551
 00:31:38,789 --> 00:31:39,890
