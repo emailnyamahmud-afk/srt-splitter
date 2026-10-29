@@ -268,7 +268,7 @@ def main():
     print(f'║  Bahasa  : {lang_choice[:46]:<46}║')
     print(f'║  Model   : {os.path.basename(model_path)[:46]:<46}║')
     print(f'║  Output  : {os.path.basename(output_srt)[:46]:<46}║')
-    print(f'║  Engine  : {"whisper.cpp (Metal GPU)":<46}║')
+    print(f'║  Engine  : {"whisper.cpp (auto Metal/CPU)":<46}║')
     # Estimasi: Metal ~3-5x realtime
     if audio_dur > 0:
         est_min = audio_dur / 60 / 3.5  # 3.5x realtime avg
@@ -307,6 +307,7 @@ def main():
     print()
     start_time = time.time()
 
+    process = None
     try:
         process = subprocess.Popen(
             cmd,
@@ -332,7 +333,7 @@ def main():
                     print(f'  ℹ {line}')
             elif 'whisper_model_load' in line or 'system_info' in line:
                 print(f'  ℹ {line}')
-            elif line.startswith('[') and '] ->' in line:
+            elif line.startswith('[') and '-->' in line:
                 # Progress: [00:00:00.000 --> 00:00:10.000]
                 cue_count += 1
                 if cue_count % 50 == 0:
@@ -350,7 +351,8 @@ def main():
 
     except KeyboardInterrupt:
         print('\n\n⏹ Dibatalkan user.')
-        process.kill()
+        if process:
+            process.kill()
         sys.exit(130)
     except Exception as e:
         print(f'\n❌ Error: {e}')
