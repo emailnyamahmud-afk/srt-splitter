@@ -1,10 +1,12 @@
-# SRT Splitter + Dubbing Jawa
+# SRT Splitter + Dubbing Multi-Bahasa
 
-Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
+Pipeline dubbing bahasa eksternal (Mandarin, English, Jepang, Italia, dll) → Indonesia / Jawa / Sunda. Web app + Python TUI.
+
+ID jalan end-to-end (12 TUI production). Jawa/Sunda nunggu kamus Supabase selesai.
 
 **Live:** https://srt-splitter.vercel.app/
 
-## 11 TUI
+## 12 TUI
 
 | # | TUI | Tugas | Status |
 |---|-----|-------|--------|
@@ -19,6 +21,7 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 | 9 | srt-editor-tui.py v1.0.1 | Fix typo/konteks SRT hasil translate (glossary + bulk replace) | ✅ Production |
 | 10 | shorts-tui.py v1.1 | Pecah MP4 final jadi N shorts (JSON dari AI) atau N parts (SRT auto-split) | ✅ Production (Shorts 60/60 + Part mode auto-split) |
 | 11 | shorts-csv-tui.py v1.0 | Generate metadata CSV + manifest untuk YouTube Studio | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
+| 12 | merge-tui.py v1.0 | Gabungin multi-video (S1-S4) jadi 1 video panjang | ✅ Production (stream copy + re-encode) |
 
 ## Pipeline
 
@@ -27,7 +30,10 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 [Alur CEPAT]   yt-dlp → srt-editor → edge-tts → mix Simple (C/D)     ~350 MB / ~2-4.5 GB
 [Alur MUTE]    yt-dlp → srt-editor → edge-tts → mix Original v3.7.6 (E/F)  ~1 GB / ~4.5 GB
 [Alur SHORTS]  mix-tui → shorts-tui (via Dola JSON) → shorts-csv-tui → YouTube Studio  ~15 detik / ~2 menit
+[Alur MERGE]   mix-tui × N → merge-tui → 1 video panjang (stream copy / re-encode)
 ```
+
+> **merge-tui** (TUI #12): gabungin output mix-tui (sudah dub ID + burn sub) dari beberapa film/season jadi 1 video panjang. 3 mode: stream copy (super cepat) / re-encode + target res / re-encode pakai res file pertama.
 
 > **srt-editor-tui.py** (TUI #9, opsional) untuk fix typo/konteks SRT hasil translate sebelum masuk edge-tts. Skip kalau SRT ori sudah clean.
 >
@@ -53,6 +59,7 @@ HDD /Volumes/HDD/Dubbing/            ← data (besar)
 ├── mix/                             ← final MP4 (output langsung ke sini, v3.7.4)
 ├── shorts/                          ← shorts-tui Shorts: JSON + MP4 (subfolder per film)
 ├── parts/                           ← shorts-tui Part: MP4 4-5 min per part (TikTok playlist)
+├── merged/                          ← merge-tui output: 1 video panjang (gabungan S1-S4)
 └── .env                             ← Supabase credentials
 ```
 
@@ -85,6 +92,22 @@ python3 shorts-tui.py
 ```
 
 Detail lengkap: lihat [scripts/README.md](scripts/README.md#shorts-tui-v10) + [tutor-shorts-prompt.md](scripts/tutor-shorts-prompt.md).
+
+## merge-tui v1.0 — gabungin multi-video jadi 1 panjang
+
+```bash
+cd ~/Dubbing && source venv/bin/activate
+python3 merge-tui.py
+# → Input: HDD/mix/*.mp4 (output mix-tui, sudah dub ID + burn sub ID)
+# → Output: HDD/merged/merged_YYYYMMDD_HHMMSS.mp4
+# 3 mode:
+#   [7] Stream copy (super cepat, butuh res+codec sama)
+#   [8] Re-encode + target res (kalau beda)
+#   [9] Re-encode pakai res file pertama
+# Shortcut: ketik "mix" di menu [1] untuk list semua MP4 di HDD/mix/
+```
+
+Detail lengkap: lihat [scripts/README.md](scripts/README.md#merge-tui-v10).
 
 ## shorts-csv-tui v1.0 — metadata CSV + manifest untuk YouTube Studio
 
@@ -176,6 +199,9 @@ python3 mix-tui.py            # 4. Mix Mode E/F (MUTE saat cue)
 # 3. python3 shorts-csv-tui.py # → CSV + manifest (metadata untuk YouTube)
 # 4. Drag 60 MP4 ke YouTube Studio + copy-paste dari manifest
 
+# Alur MERGE (gabungin S1-S4 jadi 1 video panjang)
+python3 merge-tui.py          # Input: HDD/mix/*.mp4 → Output: HDD/merged/merged_*.mp4
+
 # Alur PROPER (pakai Demucs, clean sempurna)
 python3 yt-dlp-tui.py
 python3 srt-editor-tui.py     # fix typo SRT dulu kalau perlu
@@ -209,4 +235,5 @@ curl -L -o shorts-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/s
 curl -L -o shorts-csv-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/shorts-csv-tui.py"
 curl -L -o tutor-shorts-prompt.md "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/tutor-shorts-prompt.md"
 curl -L -o upload-supabase.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py"
+curl -L -o merge-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/merge-tui.py"
 ```

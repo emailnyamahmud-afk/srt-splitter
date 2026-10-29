@@ -25,6 +25,7 @@ TTS_DIR = HDD_BASE / 'tts'                   # edge-tts output (dub.wav, subs.sr
 MIX_DIR = HDD_BASE / 'mix'                   # mix-tui output (final.mp4)
 SHORTS_DIR = HDD_BASE / 'shorts'             # shorts-tui output (subfolder per film)
 PARTS_DIR = HDD_BASE / 'parts'               # shorts-tui Part mode output (subfolder per film, 4-5 min per part)
+MERGED_DIR = HDD_BASE / 'merged'             # merge-tui output (gabungan multi-video, 1 file panjang)
 
 # Kamus + config
 KAMUS_JSON = SSD_HOME / 'jv.wiktionary.json' # Kamus di SSD (kecil, cepat load)
@@ -43,7 +44,7 @@ def ensure_hdd():
         return False
     
     # Buat subfolder kalau belum ada
-    for d in [INPUT_DIR, DEMUCS_DIR, TTS_DIR, MIX_DIR, SHORTS_DIR, PARTS_DIR]:
+    for d in [INPUT_DIR, DEMUCS_DIR, TTS_DIR, MIX_DIR, SHORTS_DIR, PARTS_DIR, MERGED_DIR]:
         d.mkdir(parents=True, exist_ok=True)
     return True
 

@@ -1,8 +1,8 @@
-# Scripts — SRT Splitter + Dubbing
+# Scripts — SRT Splitter + Dubbing Multi-Bahasa
 
-Python TUI untuk workflow dubbing + kamus Jawa.
+Python TUI untuk workflow dubbing bahasa eksternal (Mandarin, English, Jepang, Italia, dll) → Indonesia / Jawa / Sunda.
 
-## 11 TUI
+## 12 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -17,8 +17,9 @@ Python TUI untuk workflow dubbing + kamus Jawa.
 | 9 | srt-editor-tui.py v1.0.1 (fix typo SRT hasil translate) | ✅ Production |
 | 10 | shorts-tui.py v1.1 (Shorts via AI JSON atau Part via SRT auto-split) | ✅ Production (Shorts 60/60 + Part auto-split) |
 | 11 | shorts-csv-tui.py v1.0 (metadata CSV + manifest untuk YouTube Studio) | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
+| 12 | merge-tui.py v1.0 (gabungin multi-video jadi 1 panjang, 3 mode) | ✅ Production (stream copy + re-encode) |
 
-## Pipeline (3 alur)
+## Pipeline (4 alur)
 
 ### PROPER — clean sempurna (pakai Demucs)
 
@@ -57,6 +58,18 @@ mix-tui output → Dola AI (skill shorts-json) → shorts-tui → shorts-csv-tui
 
 > **srt-editor-tui.py** (TUI #9, opsional) untuk fix typo/konteks SRT hasil translate sebelum masuk edge-tts. Skip kalau SRT ori sudah clean.
 
+### MERGE — gabungin multi-video jadi 1 panjang (v1.0)
+
+```
+mix-tui output × N → merge-tui → 1 video panjang
+ Input: HDD/mix/*.mp4 (sudah dub ID + burn sub ID)
+ Output: HDD/merged/merged_YYYYMMDD_HHMMSS.mp4
+ 3 mode: stream copy (super cepat) / re-encode + target res / re-encode pakai res file pertama
+ Shortcut: ketik "mix" di menu [1] untuk list semua MP4 di HDD/mix/
+```
+
+> **merge-tui.py** (TUI #12): gabungin S1+S2+S3+S4 jadi 1 video panjang. Pakai ffmpeg concat demuxer (stream copy) atau re-encode (kalau res beda).
+
 ## Scripts
 
 ### Pipeline
@@ -67,6 +80,7 @@ mix-tui output → Dola AI (skill shorts-json) → shorts-tui → shorts-csv-tui
 | demucs-tui.py | Vocal separation (M1 MPS) | HDD/demucs/ |
 | edge-tts-tui.py v7.4 | TTS generation (paralel-safe, lock file + 429 retry) | HDD/tts/ |
 | mix-tui.py v3.7.6 | Final mix (6 mode, MUTE COMPLETE) | HDD/mix/ |
+| merge-tui.py v1.0 | Gabungin multi-video jadi 1 panjang (3 mode) | HDD/merged/ |
 
 ### Kamus
 
@@ -137,6 +151,10 @@ python3 mix-tui.py             # 5. Mix Mode A (Stream) / B (Burn)
 python3 shorts-tui.py         # 2. Pecah MP4 jadi 60 shorts (~94 detik, stream copy)
 python3 shorts-csv-tui.py     # 3. Generate CSV + manifest (metadata untuk YouTube)
 # 4. Drag 60 MP4 ke YouTube Studio + copy-paste dari manifest
+
+# Alur MERGE (gabungin S1-S4 jadi 1 video panjang)
+python3 merge-tui.py          # Input: HDD/mix/*.mp4 → Output: HDD/merged/merged_*.mp4
+# Ketik "mix" di menu [1] untuk list semua MP4 di HDD/mix/
 
 # Kamus (parallel)
 python3 kamus-tui.py
@@ -294,6 +312,49 @@ sama → auto-resume (progress tidak hilang).
 Mau mulai dari awal (reset progress)? Hapus `<stem>.working.json`, TUI akan load
 dari `.srt` original.
 
+## merge-tui.py v1.0 — TUI #12: gabungin multi-video jadi 1 panjang
+
+Gabungin output mix-tui (sudah dub ID + burn sub ID) dari beberapa film/season
+jadi 1 video panjang. Pakai ffmpeg concat demuxer (stream copy) atau re-encode
+(kalau res beda).
+
+### Cara pakai
+
+```bash
+cd ~/Dubbing
+source venv/bin/activate
+python3 merge-tui.py
+# [1] Tambah file: ketik "mix" untuk list HDD/mix/*.mp4 (auto-glob), atau ketik path manual
+# [6] Auto-detect: cek res/codec/fps semua file, rekomendasi mode
+# [7] Stream copy (super cepat, butuh codec+res+fps sama)
+# [8] Re-encode + pilih target res (1080p/720p/480p/custom) — kalau res beda
+# [9] Re-encode pakai res file pertama
+# Output: HDD/merged/merged_YYYYMMDD_HHMMSS.mp4 (default)
+```
+
+### 3 mode
+
+| Mode | Kecepatan | Syarat | Kapan dipakai |
+|------|----------|--------|--------------|
+| [7] Stream copy (concat demuxer + `-c copy`) | super cepat (no re-encode) | codec+res+fps sama | S1-S4 dari source sama, mix-tui Mode sama |
+| [8] Re-encode + pilih target res | lambat | res beda | S1-S4 dari source beda, mau output standard 1080p/720p |
+| [9] Re-encode pakai res file pertama | lambat | res beda, ikut file #1 | S1-S4 dari source beda, mau ikut res file pertama |
+
+### Auto-detect (menu [6])
+
+Probe semua file, bandingin res/codec/fps:
+- Semua sama → rekomendasi mode [7] stream copy (super cepat, no re-encode)
+- Ada perbedaan → rekomendasi mode [8] atau [9] (re-encode wajib)
+
+### Progress bar
+
+Pakai `ffmpeg -progress pipe:1`, parse `out_time_ms` vs total duration → live progress bar.
+
+### Output
+
+Default: `HDD/merged/merged_YYYYMMDD_HHMMSS.mp4` (folder `merged/` dibuat auto oleh `ensure_hdd()`).
+Bisa ganti via menu [5].
+
 ## shorts-tui.py v1.0 — ✅ Production
 
 Pecah MP4 final (sudah vertikal + hardsub) jadi N shorts untuk YouTube
@@ -438,10 +499,11 @@ python3 shorts-csv-tui.py
 
 ```
 SSD ~/Dubbing/           → scripts + venv + jv.wiktionary.json
-HDD /Volumes/HDD/Dubbing/ → input/ demucs/ tts/ mix/ shorts/ .env
+HDD /Volumes/HDD/Dubbing/ → input/ demucs/ tts/ mix/ shorts/ parts/ merged/ .env
 ```
 
 config.py handle path:
-- `ensure_hdd()` — cek HDD ter-colok, buat subfolder (input, demucs, tts, mix, **shorts**)
+- `ensure_hdd()` — cek HDD ter-colok, buat subfolder (input, demucs, tts, mix, shorts, parts, merged)
 - `ensure_kamus()` — cek jv.wiktionary.json ada
 - `load_env()` — load .env dari HDD
+- Vars: `INPUT_DIR`, `DEMUCS_DIR`, `TTS_DIR`, `MIX_DIR`, `SHORTS_DIR`, `PARTS_DIR`, `MERGED_DIR`

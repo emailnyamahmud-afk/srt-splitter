@@ -1,14 +1,27 @@
 # AGENTS.md
 
-> Dibaca AI di awal setiap session. Update: 26 Okt 2026.
+> Dibaca AI di awal setiap session. Update: 29 Okt 2026.
 
-## Project: SRT Splitter + Dubbing Jawa
+## Anti-Amnesia Protocol (WAJIB baca duluan)
 
-Pipeline: yt-dlp → Demucs → srt-editor-tui → edge-tts → mix-tui → shorts-tui → shorts-csv-tui → YouTube Studio
+AI sering amnesia tiap session. Untuk hindari:
+1. **Baca duluan**: AGENTS.md (ini), README.md, PROJECT_RULES.md, scripts/README.md, scripts/config.py
+2. **Jangan ngandalkan memory context** — context panjang = amnesia makin parah
+3. **Setiap sesi WAJIB update docs + commit + push** selesai task, biar sesi berikutnya bisa baca
+4. **Jangan tebak struktur folder** — baca config.py + README.md dulu
+5. **Cek git log** untuk tau state terakhir project
+
+## Project: SRT Splitter + Dubbing Multi-Bahasa
+
+Pipeline dubbing bahasa eksternal (Mandarin, English, Jepang, Italia, dll) → Indonesia / Jawa / Sunda.
+- ID: jalan end-to-end (12 TUI production)
+- Jawa/Sunda: nunggu kamus Supabase selesai
+
+Pipeline: yt-dlp → Demucs → srt-editor-tui → edge-tts → mix-tui → shorts-tui → shorts-csv-tui → YouTube Studio + merge-tui (gabungin multi-video)
 Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
 Shorts: Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON 60 segment)
 
-## 11 TUI
+## 12 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -23,12 +36,14 @@ Shorts: Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON
 | 9 | srt-editor-tui v1.0.1 (fix typo SRT hasil translate, glossary bulk replace) | ✅ Production |
 | 10 | shorts-tui v1.1 (pecah MP4: Shorts via AI JSON atau Part via SRT auto-split) | ✅ Production (Shorts 60/60 + Part auto-split) |
 | 11 | shorts-csv-tui v1.0 (metadata CSV + manifest untuk YouTube Studio) | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
+| 12 | merge-tui v1.0 (gabungin multi-video jadi 1 panjang, 3 mode) | ✅ Production (stream copy + re-encode) |
 
 ## Struktur Folder
 
 - SSD `~/Dubbing/` — scripts (.py) + venv + jv.wiktionary.json
-- HDD `/Volumes/HDD/Dubbing/` — data (input, demucs, tts, mix, .env)
-- `config.py` — base path, `ensure_hdd()`, `ensure_kamus()`, `load_env()`
+- HDD `/Volumes/HDD/Dubbing/` — data (input, demucs, tts, mix, shorts, parts, merged, .env)
+- `config.py` — base path: `ensure_hdd()`, `ensure_kamus()`, `load_env()`, `INPUT_DIR`, `DEMUCS_DIR`, `TTS_DIR`, `MIX_DIR`, `SHORTS_DIR`, `PARTS_DIR`, `MERGED_DIR`
+- Workflow: `cd ~/Dubbing && source venv/bin/activate && python3 <tui>.py` (BUKAN `python scripts/<tui>.py`)
 
 ## Aturan
 
@@ -42,6 +57,21 @@ Shorts: Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON
 8. Kalau AI gak yakin → SKIP. Jangan halu.
 9. Data di HDD, scripts di SSD. config.py handle path.
 10. Ducking ≠ vocal removal. Untuk MUTE → pakai Demucs (Full mode) atau amultiply SRT-driven (Original v3.7.6).
+11. Sebutan hormat (Nona Chen, Dokter Chen, Tuan Lin, Paman Zhou, dll) = valid budaya Tiongkok. BUKAN mistranslate. PRESERVE di clean-srt.
+12. GT input preference: pakai SRT English (dari whisper-tui) untuk GT English→ID, lebih akurat dari Mandarin→ID.
+13. clean-srt workflow: heuristic dulu untuk 2000+ cue, manual per-cue cuma untuk cue critical.
+
+## merge-tui v1.0 — gabungin multi-video jadi 1 panjang
+
+TUI #12. Input: `HDD/mix/*.mp4` (output mix-tui, sudah dub ID + burn sub). Output: `HDD/merged/merged_*.mp4`.
+
+| Mode | Kecepatan | Syarat |
+|------|----------|--------|
+| [7] Stream copy (concat demuxer + `-c copy`) | ⚡ super cepat | codec+res+fps sama |
+| [8] Re-encode + pilih target res (1080p/720p/480p/custom) | 🐢 lambat | res beda |
+| [9] Re-encode pakai res file pertama | 🐢 lambat | res beda, ikut file #1 |
+
+Shortcut: ketik `mix` di menu [1] untuk list semua MP4 di `HDD/mix/` (auto-glob).
 
 ## mix-tui v3.7.6 — 6 mode
 
@@ -75,7 +105,7 @@ Fix: amultiply + inverted envelope WAV (sample-by-sample multiplication).
 
 Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no manual move).
 
-## Status (25 Okt 2026)
+## Status (29 Okt 2026)
 
 ### Kamus
 - 44.585 entries, 8.618 dengan indo (cross-ref), 2.165 lengkap 3-field
@@ -88,7 +118,9 @@ Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no m
 - srt-editor-tui v1.0.1: ✅ (glossary 19 entries, 144 replacement di S2-FB-Mandarin)
 - mix-tui v3.8.2: 6 mode production-ready + logo + fade 100ms
 - shorts-tui v1.1: ✅ (Shorts 60/60 sukses + Part mode auto-split SRT, stream copy)
+- merge-tui v1.0: ✅ (gabungin multi-video jadi 1 panjang, 3 mode: stream copy/re-encode/res-first)
 - shorts-csv-tui v1.0: ✅ (metadata CSV + manifest untuk YouTube Studio, test 60 segment S5, CSV 19.8 KB + manifest 30.4 KB)
+- clean-srt v1.0 (hybrid): ✅ (manual cues 1-750 + heuristic cues 751-2857, 731/2857 changes, output ke clean-srt/S1_Lima_Tentara.id.clean.srt)
 
 ### Test results (PERMANEN — all 6 mode production-ready + logo + fade)
 - A (Full + Stream): 5 film sukses (sebelum v3.7)
@@ -102,10 +134,12 @@ Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no m
 ## Next
 
 - User: kamus audit (8.618 entries) → mark READY → upload Supabase
-- User: workflow film berikutnya (pilih 1 dari 3 alur: PROPER/CEPAT/MUTE)
+- User: workflow film berikutnya (pilih 1 dari 4 alur: PROPER/CEPAT/MUTE/MERGE)
 - User: Shorts pipeline (Dola → shorts-tui → shorts-csv-tui → YouTube Studio upload)
+- User: test merge-tui (S1+S2+S3+S4 → 1 video panjang)
 - AI: web app Jawa (TUI #4) — penyesuaian lookup kamus dari Supabase
 - AI (optional): bug cosmetic (filename double `-id`, progress bar `ETA=?ss` glitch)
+- AI: clean-srt pending task — hapus honorific entries dari heuristic (Nona Chen, Dokter Chen, Paman Zhou = PRESERVE budaya Tiongkok)
 
 ## Catatan PAT
 

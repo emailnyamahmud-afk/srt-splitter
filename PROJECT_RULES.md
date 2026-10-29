@@ -1,6 +1,6 @@
 # PROJECT_RULES.md
 
-> Aturan project. Baca tiap session sebelum kerja. Update: 26 Okt 2026.
+> Aturan project. Baca tiap session sebelum kerja. Update: 29 Okt 2026.
 
 ## Pipeline
 
@@ -9,6 +9,7 @@
 [CEPAT]  yt-dlp → srt-editor → edge-tts → mix Simple (C/D)            no SFX
 [MUTE]   yt-dlp → srt-editor → edge-tts → mix Original v3.7.6 (E/F)   skip Demucs, MUTE COMPLETE
 [SHORTS] mix-tui → Dola AI (skill shorts-json) → shorts-tui → shorts-csv-tui → YouTube Studio
+[MERGE]  mix-tui × N → merge-tui → 1 video panjang (stream copy / re-encode)
 
 Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 ```
@@ -16,8 +17,10 @@ Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 > srt-editor-tui (TUI #9, opsional): fix typo/konteks SRT hasil translate sebelum masuk edge-tts. Skip kalau SRT ori sudah clean.
 >
 > Shorts pipeline (TUI #10 + #11): Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON 60 segment) → shorts-tui.py (pecah MP4, ~94s) → shorts-csv-tui.py (metadata CSV + manifest untuk YouTube Studio).
+>
+> Merge pipeline (TUI #12): gabungin output mix-tui (sudah dub ID + burn sub) dari beberapa film/season jadi 1 video panjang. 3 mode: stream copy (super cepat) / re-encode + target res / re-encode pakai res file pertama.
 
-## 11 TUI
+## 12 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -32,13 +35,15 @@ Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 | 9 | srt-editor-tui v1.0.1 | ✅ Production (fix typo SRT translate) |
 | 10 | shorts-tui v1.1 | ✅ Production (Shorts 60/60 + Part auto-split) |
 | 11 | shorts-csv-tui v1.0 | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
+| 12 | merge-tui v1.0 | ✅ Production (gabungin multi-video, 3 mode) |
 
 ## Struktur Folder
 
 - SSD `~/Dubbing/` = scripts + venv + jv.wiktionary.json (kecil)
-- HDD `/Volumes/HDD/Dubbing/` = data (input, demucs, tts, mix, .env)
+- HDD `/Volumes/HDD/Dubbing/` = data (input, demucs, tts, mix, shorts, parts, merged, .env)
 - `config.py` = base path, dipakai semua TUI
 - Kalau HDD gak ter-colok → fallback ke cwd (SSD)
+- Workflow: `cd ~/Dubbing && source venv/bin/activate && python3 <tui>.py` (BUKAN `python scripts/<tui>.py`)
 
 ## Rules Aktif
 
@@ -85,3 +90,5 @@ Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 - Pakai config.py untuk path (SSD scripts, HDD data)
 - Tunggu user VLC feedback sebelum declare "production-ready"
 - Untuk MUTE TOTAL: pakai amultiply + inverted envelope (v3.7.6)
+- Sebutan hormat Tiongkok (Nona/Tuan/Dokter/Paman/Yang Mulia) = PRESERVE, bukan mistranslate
+- Tiap sesi WAJIB update docs (AGENTS.md, README.md, PROJECT_RULES.md, scripts/README.md) + commit + push — biar AI sesi berikutnya gak amnesia
