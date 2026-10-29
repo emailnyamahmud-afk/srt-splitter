@@ -1,22 +1,15 @@
 #!/usr/bin/env python3
 """AI-driven SRT cleaning — S1 Lima Tentara.
 
-Process: baca SRT Indonesia (GT) + Mandarin (source), perbaiki per cue:
-- Grammar Indonesia natural
-- Fix mistranslate (cross-reference Mandarin)
-- Perpendang kalimat verbose
-- Preserve nama orang/tempat
-
-Batch 1: cues 1-50.
-Timestamps/structure preserved EXACTLY (validated).
+Process: baca SRT Indonesia (GT) + Mandarin (source), perbaiki per cue.
+Batch 1-2: cues 1-100. Timestamps/structure preserved EXACTLY.
 """
 import re
 from pathlib import Path
 
-# === Cleaned text per cue (batch 1: cues 1-50) ===
-# Processed by AI with Mandarin cross-reference.
-# Format: {cue_index: "cleaned text"}
+# === Cleaned text per cue ===
 CLEAN_TEXT = {
+    # === Batch 1: cues 1-50 ===
     1: "Kapten, Kapten, Tuan Magong, Saudara Chuan, kalian di mana?",
     2: "Jangan ribut, aku belum mati. Tetap waspada.",
     3: "Wang Haochuan, bagaimana kamu menyetir mobil itu?",
@@ -67,6 +60,58 @@ CLEAN_TEXT = {
     48: "Cek apakah kalian cedera",
     49: "Lalu cek peralatan",
     50: "Luka kamu sudah dibalut dan sembuh",
+
+    # === Batch 2: cues 51-100 ===
+    51: "Masih ada yang lain",
+    52: "Binatangnya lebih dari satu jenis",
+    53: "Tempat ini kebun binatang",
+    54: "Tempat ini kawasan lindung, kan?",
+    55: "Kenapa makhluk hidupnya banyak begini?",
+    56: "Tidak ada orang",
+    57: "Sepertinya aku belum pernah ke sini",
+    58: "Tempat ini kelihatannya nggak jauh dari kita",
+    59: "Tapi kelihatannya sudah lama meninggalkan kita",
+    60: "Filsuf",
+    61: "Terus jalan",
+    62: "Di mana bajak lautnya?",
+    63: "Urusan Mozis",
+    64: "Aku cuma nanya",
+    65: "Jujur nggak sampai dua detik",
+    66: "Kamu sekarang masih di bawah umur?",
+    67: "Sudah dewasa, kan?",
+    68: "Nggak takut orang",
+    69: "Bersembunyi",
+    70: "Jangan panah",
+    71: "Kita nggak akan melukainya",
+    72: "Kalian jangan gugup",
+    73: "Kita nggak ada niat jahat",
+    74: "Cuma tersesat",
+    75: "Lepaskan putriku",
+    76: "Kita lepaskan dia",
+    77: "Kalian turunkan panah",
+    78: "Semua, jangan bertindak",
+    79: "Changfeng",
+    80: "Lepaskan dia",
+    81: "Gadis kecil",
+    82: "Kelincimu",
+    83: "Sekarang",
+    84: "Bisa ngomong sekarang",
+    85: "Para pendekar",
+    86: "Dari mana asalmu?",
+    87: "Bagaimana kalian begini?",
+    88: "Bang",
+    89: "Bang",
+    90: "Aku tanya dulu",
+    91: "Tempat apa ini?",
+    92: "Ini Longshan",
+    93: "Wilayah Qinzhou",
+    94: "Kenapa?",
+    95: "Belum pernah dengar Qinzhou?",
+    96: "Kalian bukan orang Dinasti Song?",
+    97: "Bagaimana?",
+    98: "Aku bilang apa tadi?",
+    99: "Time travel",
+    100: "Boleh kutanya,",
 }
 
 
@@ -106,7 +151,7 @@ def main():
     id_text = Path(id_path).read_text(encoding='utf-8-sig')
     cues = parse_srt(id_text)
     print(f"Total cues: {len(cues)}")
-    print(f"Cleaned this batch: {len(CLEAN_TEXT)}")
+    print(f"Cleaned so far: {len(CLEAN_TEXT)}")
 
     output_lines = []
     changes = 0
@@ -117,17 +162,15 @@ def main():
             if new_text != cue['text']:
                 changes += 1
         else:
-            new_text = cue['text']  # Keep GT original for unprocessed cues
+            new_text = cue['text']
         output_lines.append(str(idx))
         output_lines.append(f"{cue['start']} --> {cue['end']}")
         output_lines.append(new_text)
         output_lines.append('')
 
     Path(out_path).write_text('\n'.join(output_lines), encoding='utf-8')
-    print(f"Changes applied: {changes}")
-    print(f"Output: {out_path}")
+    print(f"Total changes applied: {changes}")
 
-    # Validate
     clean_cues = parse_srt(Path(out_path).read_text(encoding='utf-8'))
     assert len(clean_cues) == len(cues), "CUE COUNT MISMATCH"
     ts_mismatch = sum(1 for o, c in zip(cues, clean_cues)
