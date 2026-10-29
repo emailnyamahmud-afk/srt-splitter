@@ -1800,203 +1800,203 @@ Dia bilang 'Nangis apa!' sekali,
 
 451
 00:27:40,539 --> 00:27:41,769
-Tenang saja
+Langsung bungkam
 
 452
 00:27:41,769 --> 00:27:45,390
-Belum pernah melihat wanita seperti itu
+Belum pernah lihat cewek kayak gitu
 
 453
 00:27:46,390 --> 00:28:14,240
-Tidak lelah
+Badan nggak lelah
 
 454
 00:28:14,240 --> 00:28:15,240
-Lelah
+Batin lelah
 
 455
 00:28:15,240 --> 00:28:16,240
-Latih dan deteksi orang
+Latihan dan pengintaian,
 
 456
 00:28:16,240 --> 00:28:18,240
-dua negara bagian yang berbeda
+Dua keadaan beda
 
 457
 00:28:18,240 --> 00:28:21,009
-Kita sudah terlalu lama merasakan kedamaian
+Kita terlalu lama damai
 
 458
 00:28:21,009 --> 00:28:22,490
-Saudara Xie
+Kak Xie
 
 459
 00:28:22,490 --> 00:28:23,490
-Bersihkan tanganmu
+Lap tanganmu
 
 460
 00:28:24,490 --> 00:28:28,269
-Bagaimana kamu tahu nama belakangku Xie?
+Kamu tau dari mana namaku Xie?
 
 461
 00:28:28,269 --> 00:28:30,269
-Begitulah sebutan semua orang di halaman kepadaku
+Tadi orang di halaman semua panggil gitu
 
 462
 00:28:30,269 --> 00:28:32,299
-Kenapa kamu terus mendatangiku?
+Kamu ngapain terus ngejar aku?
 
 463
 00:28:32,299 --> 00:28:33,299
-Ada bunga di wajahku
+Mukaku ada bunga ya?
 
 464
 00:28:33,299 --> 00:28:34,299
-Tidak, tidak
+Nggak, nggak
 
 465
 00:28:34,299 --> 00:28:35,299
-Harap tenang
+Diam dong kamu
 
 466
 00:28:35,299 --> 00:28:37,940
-Mereka datang untuk merawat kami sementara.
+Dia cuma sementara ke sini buat bantu kita
 
 467
 00:28:38,940 --> 00:28:41,509
-Berhenti menarik dan menarik.
+Jangan tunaikan
 
 468
 00:28:41,509 --> 00:28:42,509
-kamu kentut
+Ngawur kamu
 
 469
 00:28:42,509 --> 00:28:43,509
-Tidakkah kamu melihat bahwa dia akan jatuh?
+Kamu nggak lihat dia mau jatuh?
 
 470
 00:28:43,509 --> 00:28:44,509
-Ayo minum sesuatu yang hangat dulu.
+Minum yang hangat dulu
 
 471
 00:28:46,980 --> 00:28:48,819
-Beberapa dermawan
+Para Bapak baik,
 
 472
 00:28:48,819 --> 00:28:50,849
-Ini adalah sup yang baru dibuat di rumah
+Ini sup baru masak dari rumah
 
 473
 00:28:50,849 --> 00:28:52,849
-Telur juga dikumpulkan dan disimpan
+Telurnya ditabung juga
 
 474
 00:28:52,849 --> 00:28:54,849
-Mohon maafkan saya dan jangan membenci saya
+Bapak baik jangan malu ya
 
 475
 00:28:54,849 --> 00:28:55,849
-Kakak ipar pada hari Selasa
+Mbak Zhou ke-2
 
 476
 00:28:55,849 --> 00:28:58,170
-Orang di keluargamu masih terluka
+Suamimu masih cedera
 
 477
 00:28:59,170 --> 00:29:00,359
-Tinggalkan sup ini untuk dia makan
+Sup ini buat dia makan
 
 478
 00:29:01,359 --> 00:29:02,460
-Apa yang kamu kirim ke sini?
+Buat apa dikirim ke sini?
 
 479
 00:29:02,460 --> 00:29:03,460
-pengirim
+Harus diantar
 
 480
 00:29:03,460 --> 00:29:04,519
-Bagaimana bisa kamu tidak mengirimkannya?
+Mana bisa nggak diantar
 
 481
 00:29:05,519 --> 00:29:06,519
-Jika bukan karena beberapa dermawan
+Kalau bukan Bapak baik,
 
 482
 00:29:06,519 --> 00:29:08,809
-Mulut keluargaku hari ini
+Suamiku hari ini
 
 483
 00:29:08,809 --> 00:29:09,809
-Dia akan mati
+Bakal mati
 
 484
 00:29:10,809 --> 00:29:13,509
-Meskipun dia terbaring di aula leluhur sekarang
+Walaupun sekarang dia terbaring di ruang leluhur
 
 485
 00:29:13,509 --> 00:29:14,509
-hidup pada akhirnya
+Tetap hidup
 
 486
 00:29:15,990 --> 00:29:19,200
-Tetaplah hidup
+Hidup sudah cukup
 
 487
 00:29:20,200 --> 00:29:21,490
-Terima kasih, kakak ipar
+Makasih Mbak
 
 488
 00:29:21,490 --> 00:29:23,059
-Kami mengumpulkan barang-barang itu
+Barangnya kami terima
 
 489
 00:29:24,059 --> 00:29:25,160
-Kembalilah dan rawat yang terluka
+Kamu balik urus yang cedera
 
 490
 00:29:25,160 --> 00:29:27,160
-Para dermawan saya, ambillah.
+Bapak baik ambilah
 
 491
 00:29:27,160 --> 00:29:28,160
-Melakukan etiket juga baik
+Buat adat juga boleh
 
 492
 00:29:28,160 --> 00:29:30,160
-Mengemas barang juga bagus
+Buat bungkus juga bagus
 
 493
 00:29:30,160 --> 00:29:32,160
-Lagipula ini agak bersih
+Lumayan bersih
 
 494
 00:29:32,160 --> 00:29:33,160
-Keluarganya miskin
+Rumahnya miskin
 
 495
 00:29:33,160 --> 00:29:35,160
-Tidak ada yang bagus
+Nggak ada yang bagus
 
 496
 00:29:35,160 --> 00:29:37,160
-Ini masih menjadi beban menantu perempuan saya.
+Ini simpanan menantu perempuanku
 
 497
 00:29:37,160 --> 00:29:38,160
-Tidak mau mengambilnya
+Nggak hati ambil
 
 498
 00:29:39,160 --> 00:29:40,160
-orang tua
+Wong tua
 
 499
 00:29:40,160 --> 00:29:41,160
-Aku benar-benar tidak bisa mendapatkan ini
+Ini beneran nggak bisa diterima
 
 500
 00:29:41,160 --> 00:29:42,160
-Kenapa kamu tidak bisa memilikinya?
+Mana nggak bisa diterima
 
 501
 00:29:42,160 --> 00:29:44,160
