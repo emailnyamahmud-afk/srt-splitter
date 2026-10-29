@@ -17,7 +17,7 @@ Python TUI untuk workflow dubbing bahasa eksternal (Mandarin, English, Jepang, I
 | 9 | srt-editor-tui.py v1.0.1 (fix typo SRT hasil translate) | ✅ Production |
 | 10 | shorts-tui.py v1.1 (Shorts via AI JSON atau Part via SRT auto-split) | ✅ Production (Shorts 60/60 + Part auto-split) |
 | 11 | shorts-csv-tui.py v1.0 (metadata CSV + manifest untuk YouTube Studio) | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
-| 12 | merge-tui.py v1.8 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox, natural sort, hardware detect GPU/CPU, temp di HDD, live ETA, smart scale, audio normalize) | ✅ Production (v1.8 fix audio mismatch) |
+| 12 | merge-tui.py v1.9 (gabungin multi-video, smart scale, audio stream copy, fix-merge-audio.py buat fix output v1.7) | ✅ Production (v1.9) |
 
 ## Pipeline (4 alur)
 
@@ -80,7 +80,7 @@ mix-tui output × N → merge-tui → 1 video panjang
 | demucs-tui.py | Vocal separation (M1 MPS) | HDD/demucs/ |
 | edge-tts-tui.py v7.4 | TTS generation (paralel-safe, lock file + 429 retry) | HDD/tts/ |
 | mix-tui.py v3.9 | Final mix (6 mode, MUTE COMPLETE, force 1080p resolution) | HDD/mix/ |
-| merge-tui.py v1.8 | Gabungin multi-video jadi 1 panjang (3 mode, questionary checkbox, natural sort, hardware detect, temp di HDD, live ETA, smart scale, audio normalize) | HDD/merged/ |
+| merge-tui.py v1.9 | Gabungin multi-video jadi 1 panjang (smart scale, audio stream copy, fix-merge-audio.py) | HDD/merged/ |
 
 ### Kamus
 

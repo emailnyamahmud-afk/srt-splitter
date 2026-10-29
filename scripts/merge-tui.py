@@ -14,16 +14,14 @@ v1.5: Temp files di HDD (BUKAN SSD /tmp). User workflow: scripts di SSD, data di
 v1.3: Re-encode pakai h264_videotoolbox (M1 GPU), bukan libx264 (CPU).
 v1.6: Live ETA per-file + overall.
 v1.7: SMART SCALE — auto-pick MAX res + per-file skip-if-same-res.
-v1.8: AUDIO NORMALIZE — fix audio mismatch (silent + cepat) dari v1.7.
-  - Bug v1.7: file SKIP pakai audio as-is (sample rate ikut source, bisa 44100 Hz),
-    file encode pakai sample rate default (48000 Hz). Concat = sample rate mismatch
-    → VLC baca semua dengan sample rate file pertama → audio cepat/lambat/silent.
-  - v1.8 FIX: SKIP hanya untuk VIDEO (stream copy, instant). Audio SELALU di-encode
-    ke aac 192k 48000 Hz stereo, untuk konsistensi sample rate antara semua file.
-    - File SKIP (res sama): ffmpeg -c:v copy -c:a aac -b:a 192k -ar 48000 -ac 2
-      Video: 0 CPU (stream copy), Audio: ~30 detik per 2.5 jam file (CPU bound, ringan)
-    - File encode (res beda): ffmpeg -vf scale... -c:v h264_videotoolbox -b:v 2M -c:a aac -b:a 192k -ar 48000 -ac 2
-  - Probe sekarang ambil sample_rate + channels untuk detect mismatch (info display).
+v1.8: Audio normalize (re-encode 48000 Hz) — OVER ENGINEER, di-revert.
+v1.9: SIMPLE AUDIO — audio stream copy (-c:a copy), ambil audio asli dari source.
+  - User feedback: 'jangan over engineer audio, ambil saja dari mix = audio bagus semua'
+  - v1.9: SKIP file = -c:v copy -c:a copy (video + audio stream copy, instant)
+  - v1.9: Encode file = -c:v h264_videotoolbox -c:a copy (video re-encode, audio stream copy)
+  - Audio gak di-encode, ambil asli dari source mix-tui output
+  - Catatan: kalau sample rate antar file mix beda, concat bisa kacau (masalah source, bukan merge-tui)
+  - Fix output v1.7 yang udah ada: pakai fix-merge-audio.py (mux video v1.7 + audio concat dari mix)
 
 v1.2: Natural sort (S1<S2<...<S9<S10)
 v1.1: Rewrite pakai questionary (konsisten sama mix-tui/shorts-tui)
@@ -60,7 +58,7 @@ except ImportError:
 sys.path.insert(0, str(Path(__file__).parent))
 from config import ensure_hdd, MIX_DIR, MERGED_DIR
 
-VERSION = 'v1.8'
+VERSION = 'v1.9'
 
 
 # ============================================================
@@ -673,62 +671,31 @@ def merge_reencode(files, output, target_w, target_h, bitrate, device, encoder):
     overall_processed = 0
     overall_start_wall = time.time()
 
-    # Pre-compute skip list: file mana yang res == target (stream copy video, audio tetap encode)
-    # v1.8 FIX: SKIP hanya untuk video, audio selalu di-encode untuk konsistensi sample_rate.
-    # Bug v1.7: file SKIP pakai audio as-is (sample rate ikut source), file encode pakai sample rate
-    # default videotoolbox (48000 Hz). Concat = sample rate mismatch = audio cepat/lambat/silent.
-    # v1.8: semua file (SKIP & encode) → audio re-encode ke aac 192k 48000 Hz stereo.
+    # Pre-compute skip list: file mana yang res == target (stream copy video + audio)
+    # v1.9: audio stream copy (-c:a copy), ambil audio asli dari source mix-tui output.
+    # User feedback: 'jangan over engineer audio, ambil saja dari mix = audio bagus semua'
+    # v1.8 over-engineer (re-encode 48000 Hz) di-revert. v1.9 = audio stream copy.
     skip_count = sum(1 for f in files if f['width'] == target_w and f['height'] == target_h)
     encode_count = len(files) - skip_count
-    print(f'  → {skip_count} file video SKIP (res sama, audio tetap encode), {encode_count} file encode (video + audio)')
-    print(f'  → Audio normalize: aac 192k, 48000 Hz, stereo (v1.8 fix audio mismatch)')
+    print(f'  → {skip_count} file video SKIP (res sama, stream copy), {encode_count} file encode (video + audio copy)')
 
-    # Fase 1: Encode per-file (atau stream copy video + audio encode kalau res sama)
-    print(f'▶ Fase 1: Encode/Remux per-file ({device_label})')
+    # Fase 1: Encode/Stream-copy per-file (v1.9: audio stream copy, no re-encode)
+    print(f'▶ Fase 1: Encode/Stream-copy per-file ({device_label})')
     print('═' * 64)
-    # v1.8: target audio format konsisten (normalize sample rate mismatch)
-    AUDIO_ARGS = ['-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2']
+    # v1.9: audio stream copy (ambil audio asli dari source, no re-encode)
+    AUDIO_ARGS = ['-c:a', 'copy']
 
     for i, f in enumerate(files, 1):
-        # v1.8: Skip encode VIDEO kalau res == target (audio tetap encode untuk normalize)
+        # v1.9: Skip encode VIDEO + AUDIO kalau res == target (stream copy both, instant)
         if f['width'] == target_w and f['height'] == target_h:
-            # Video stream copy (instant), audio re-encode normalize sample rate
-            # cmd: ffmpeg -i input -c:v copy -c:a aac -b:a 192k -ar 48000 -ac 2 output
-            # Video: 0 CPU work (stream copy)
-            # Audio: ~30 detik per 2.5 jam file (CPU bound, tapi ringan)
-            temp_out = os.path.join(temp_dir, f'part_{i:03d}.mp4')
-            temp_files.append(temp_out)
-            print(f'\n  [{i}/{len(files)}] {f["name"]} ({f["width"]}x{f["height"]}, '
-                  f'audio {f["sample_rate"]}Hz → 48000Hz) — '
-                  f'video SKIP + audio normalize ✅')
-            cmd = [
-                'ffmpeg', '-y',
-                '-i', f['path'],
-                '-c:v', 'copy',
-            ] + AUDIO_ARGS + [
-                '-movflags', '+faststart',
-                '-progress', 'pipe:1', '-nostats',
-                temp_out,
-            ]
-            if not run_progress(cmd, f['duration'],
-                               file_index=i, total_files=len(files),
-                               overall_processed=overall_processed,
-                               overall_total=total_duration_all,
-                               overall_start_wall=overall_start_wall):
-                print(f'\n  ❌ Gagal normalize file {i}: {f["name"]}')
-                # Cleanup temp files only (jangan hapus path asli)
-                for tf in temp_files:
-                    if os.path.exists(tf) and temp_dir in tf:
-                        os.unlink(tf)
-                try:
-                    os.rmdir(temp_dir)
-                except OSError:
-                    pass
-                return False
+            # Video + audio stream copy (instant, no CPU work, no re-encode)
+            print(f'\n  [{i}/{len(files)}] {f["name"]} ({f["width"]}x{f["height"]}) '
+                  f'— SKIP ENCODE (res sama, stream copy) ✅')
+            temp_files.append(f['path'])  # pakai path asli, bukan temp
             overall_processed += f['duration']
             continue
 
-        # Re-encode dengan scale (video + audio normalize)
+        # Re-encode video dengan scale + audio stream copy
         temp_out = os.path.join(temp_dir, f'part_{i:03d}.mp4')
         temp_files.append(temp_out)
 
@@ -752,8 +719,7 @@ def merge_reencode(files, output, target_w, target_h, bitrate, device, encoder):
         ]
 
         print(f'\n  [{i}/{len(files)}] {f["name"]} ({fmt_dur(f["duration"])}, '
-              f'{f["width"]}x{f["height"]} → {target_w}x{target_h}, '
-              f'audio {f["sample_rate"]}Hz → 48000Hz)')
+              f'{f["width"]}x{f["height"]} → {target_w}x{target_h})')
         if not run_progress(cmd, f['duration'],
                            file_index=i, total_files=len(files),
                            overall_processed=overall_processed,
@@ -762,7 +728,7 @@ def merge_reencode(files, output, target_w, target_h, bitrate, device, encoder):
             print(f'\n  ❌ Gagal encode file {i}: {f["name"]}')
             # Cleanup temp files only (jangan hapus path asli)
             for tf in temp_files:
-                if os.path.exists(tf) and temp_dir in tf:
+                if os.path.exists(tf) and tf != f['path'] and temp_dir in tf:
                     os.unlink(tf)
             try:
                 os.rmdir(temp_dir)

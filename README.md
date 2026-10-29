@@ -21,7 +21,7 @@ ID jalan end-to-end (12 TUI production). Jawa/Sunda nunggu kamus Supabase selesa
 | 9 | srt-editor-tui.py v1.0.1 | Fix typo/konteks SRT hasil translate (glossary + bulk replace) | ✅ Production |
 | 10 | shorts-tui.py v1.1 | Pecah MP4 final jadi N shorts (JSON dari AI) atau N parts (SRT auto-split) | ✅ Production (Shorts 60/60 + Part mode auto-split) |
 | 11 | shorts-csv-tui.py v1.0 | Generate metadata CSV + manifest untuk YouTube Studio | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
-| 12 | merge-tui.py v1.8 | Gabungin multi-video jadi 1 panjang (smart scale + audio normalize, fix audio mismatch) | ✅ Production (v1.8 fix audio) |
+| 12 | merge-tui.py v1.9 | Gabungin multi-video jadi 1 panjang (smart scale, audio stream copy, simple) | ✅ Production (v1.9 revert over-engineer) |
 
 ## Pipeline
 
@@ -236,4 +236,5 @@ curl -L -o shorts-csv-tui.py "https://raw.githubusercontent.com/emailnyamahmud-a
 curl -L -o tutor-shorts-prompt.md "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/tutor-shorts-prompt.md"
 curl -L -o upload-supabase.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py"
 curl -L -o merge-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/merge-tui.py"
+curl -L -o fix-merge-audio.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/fix-merge-audio.py"
 ```
