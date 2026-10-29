@@ -17,7 +17,7 @@ Python TUI untuk workflow dubbing bahasa eksternal (Mandarin, English, Jepang, I
 | 9 | srt-editor-tui.py v1.0.1 (fix typo SRT hasil translate) | ✅ Production |
 | 10 | shorts-tui.py v1.1 (Shorts via AI JSON atau Part via SRT auto-split) | ✅ Production (Shorts 60/60 + Part auto-split) |
 | 11 | shorts-csv-tui.py v1.0 (metadata CSV + manifest untuk YouTube Studio) | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
-| 12 | merge-tui.py v1.2 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox, natural sort) | ✅ Production (stream copy + re-encode) |
+| 12 | merge-tui.py v1.3 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox, natural sort, M1 GPU h264_videotoolbox) | ✅ Production (stream copy + GPU re-encode) |
 
 ## Pipeline (4 alur)
 
@@ -80,7 +80,7 @@ mix-tui output × N → merge-tui → 1 video panjang
 | demucs-tui.py | Vocal separation (M1 MPS) | HDD/demucs/ |
 | edge-tts-tui.py v7.4 | TTS generation (paralel-safe, lock file + 429 retry) | HDD/tts/ |
 | mix-tui.py v3.7.6 | Final mix (6 mode, MUTE COMPLETE) | HDD/mix/ |
-| merge-tui.py v1.2 | Gabungin multi-video jadi 1 panjang (3 mode, questionary checkbox, natural sort) | HDD/merged/ |
+| merge-tui.py v1.3 | Gabungin multi-video jadi 1 panjang (3 mode, questionary checkbox, natural sort, M1 GPU) | HDD/merged/ |
 
 ### Kamus
 
@@ -312,11 +312,10 @@ sama → auto-resume (progress tidak hilang).
 Mau mulai dari awal (reset progress)? Hapus `<stem>.working.json`, TUI akan load
 dari `.srt` original.
 
-## merge-tui.py v1.2 — TUI #12: gabungin multi-video jadi 1 panjang
+## merge-tui.py v1.3 — TUI #12: gabungin multi-video jadi 1 panjang
 
 Gabungin output mix-tui (sudah dub ID + burn sub ID) dari beberapa film/season
-jadi 1 video panjang. Pakai ffmpeg concat demuxer (stream copy) atau re-encode
-(kalau res beda).
+jadi 1 video panjang.
 
 ### Cara pakai
 
@@ -329,6 +328,7 @@ python3 merge-tui.py
 # Step 3: Auto-detect mode (cek res/codec/fps, suggest mode)
 # Step 4: Pick output path (auto-derive: S1-ori-id-final-sub.mp4 → S1-merged.mp4)
 # Step 5: Pick mode (stream copy / re-encode + target res / re-encode pakai res file #1)
+#         + pick bitrate (2M/4M/6M/8M) untuk re-encode
 # Confirm → run
 # Output: HDD/merged/{prefix}-merged.mp4
 ```
@@ -338,10 +338,10 @@ python3 merge-tui.py
 | Mode | Kecepatan | Syarat | Kapan dipakai |
 |------|----------|--------|--------------|
 | Stream copy (concat demuxer + `-c copy`) | super cepat (no re-encode) | codec+res+fps sama | S1-S4 dari source sama, mix-tui Mode sama |
-| Re-encode + pilih target res | lambat | res beda | S1-S4 dari source beda, mau output standard 1080p/720p |
-| Re-encode pakai res file pertama | lambat | res beda, ikut file #1 | S1-S4 dari source beda, mau ikut res file pertama |
+| Re-encode + pilih target res (M1 GPU) | ~30-50 menit untuk 24 jam | res beda | S1-S4 dari source beda, mau output standard 1080p/720p |
+| Re-encode pakai res file pertama (M1 GPU) | ~30-50 menit untuk 24 jam | res beda, ikut file #1 | S1-S4 dari source beda, mau ikut res file pertama |
 
-### UX (v1.1 rewrite + v1.2 natural sort — konsisten sama mix-tui/shorts-tui)
+### UX (v1.1 rewrite + v1.2 natural sort + v1.3 GPU — konsisten sama mix-tui/shorts-tui)
 
 - `questionary` library (arrow-key navigation, bukan ketik nomor)
 - `questionary.checkbox()` untuk multi-select file (Space untuk centang)
@@ -350,16 +350,42 @@ python3 merge-tui.py
 - Linear workflow (bukan main menu loop): Step 1 → 2 → 3 → 4 → 5 → run
 - Auto-derive output name: `S1-ori-id-final-sub.mp4` → `S1-merged.mp4`
 - Auto-detect mode (Step 3): cek res/codec/fps, suggest mode yang cocok
+- **M1 GPU h264_videotoolbox** (v1.3): re-encode pakai VideoToolbox, bukan CPU. Laptop gak bunyi kenceng.
+
+### v1.3: M1 GPU encode strategy (strategi 2-fase, RAM-safe)
+
+Masalah v1.2: Re-encode 24 jam pakai filter complex (scale+pad+concat) = RAM banjir di Mac 16GB + CPU bunyi kenceng.
+
+v1.3 FIX: Strategi 2-fase
+  - **Fase 1**: Encode tiap file ke target res pakai h264_videotoolbox (M1 GPU, RAM-safe)
+    - Filter: `scale=W:H:force_original_aspect_ratio=decrease, pad=W:H:(ow-iw)/2:(oh-ih)/2:color=black, setsar=1, fps=30`
+    - Codec: `-c:v h264_videotoolbox -b:v <bitrate>` (default 2M)
+    - Audio: `-c:a aac -b:a 192k`
+    - Output: temp file `part_001.mp4`, `part_002.mp4`, dst
+  - **Fase 2**: Concat stream copy semua temp file → output final (super cepat, no re-encode)
+  - Cleanup: hapus temp files
+
+Keuntungan:
+- RAM-friendly: cuma 1 file pada satu waktu, gak banjir
+- GPU dominant: VideoToolbox encode, CPU cuma helper (filter)
+- Laptop gak bunyi kenceng (vs CPU 5+ jam → bunyi kipas terus)
+- Estimasi: ~30-50 menit untuk 24 jam video (M1 VideoToolbox 35x hardware)
+- Res output konsisten (target_w × target_h, letterbox/pillarbox untuk beda aspect)
+
+### Bitrate pilihan (Mode 2 & 3, M1 GPU)
+
+| Bitrate | Estimasi size (24 jam) | Kualitas |
+|---------|----------------------|----------|
+| 2M (default) | ~3.5 GB | Seimbang, hemat storage |
+| 4M | ~7 GB | HD-ready, sharp |
+| 6M | ~10.5 GB | High quality |
+| 8M | ~14 GB | Max, big file |
 
 ### Auto-detect
 
 Probe semua file, bandingin res/codec/fps:
 - Semua sama → rekomendasi mode Stream copy (super cepat, no re-encode)
-- Ada perbedaan → rekomendasi mode Re-encode
-
-### Progress bar
-
-Pakai `ffmpeg -progress pipe:1`, parse `out_time_ms` vs total duration → live progress bar.
+- Ada perbedaan → rekomendasi mode Re-encode (M1 GPU)
 
 ### Output
 

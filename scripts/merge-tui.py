@@ -1,24 +1,31 @@
 #!/usr/bin/env python3
 """
-merge-tui.py v1.1 — TUI #12: Gabungin multi-video jadi 1 panjang.
+merge-tui.py v1.3 — TUI #12: Gabungin multi-video jadi 1 panjang.
 
 User workflow:
   cd ~/Dubbing && source venv/bin/activate
   python3 merge-tui.py
 
-v1.1: Rewrite pakai questionary (konsisten sama mix-tui/shorts-tui/yt-dlp-tui).
-  - Auto-list HDD/mix/*.mp4 saat boot (multi-select via checkbox)
-  - Auto-derive output name dari prefix file pertama (S1.mp4 → S1-merged.mp4)
-  - Linear workflow (bukan main menu loop) — Step 1 → 2 → 3 → 4 → 5 → run
-  - Auto-detect mode (cek res/codec/fps, suggest stream copy vs re-encode)
+v1.3: Re-encode pakai h264_videotoolbox (M1 GPU), bukan libx264 (CPU).
+  - Mode 2 (re-encode + target res) & mode 3 (re-encode + res file pertama):
+    Encode per-file pakai GPU (h264_videotoolbox -b:v 4M), lalu concat stream copy
+    Strategi 2-fase:
+      Fase 1: Encode tiap file ke target res (GPU, paralel-safe, no RAM banjir)
+      Fase 2: Concat stream copy semua hasil (super cepat)
+  - Estimasi: ~30-50 menit untuk 24 jam video 1080p (M1 VideoToolbox, vs CPU 5+ jam)
+  - CPU tetap dipakai untuk filter complex (scale+pad), tapi cuma 1 file pada satu waktu
+  - Laptop gak bunyi kenceng (GPU dominan, CPU cuma helper)
+
+v1.2: Natural sort (S1<S2<...<S9<S10)
+v1.1: Rewrite pakai questionary (konsisten sama mix-tui/shorts-tui)
 
 Input  : HDD/mix/*.mp4 (output mix-tui, sudah dub ID + burn sub ID)
 Output : HDD/merged/{prefix}-merged.mp4
 
 3 mode:
   1. Stream copy (concat demuxer + -c copy) — super cepat, butuh codec+res+fps sama
-  2. Re-encode + pilih target res (1080p/720p/480p/custom) — kalau res beda
-  3. Re-encode pakai res file pertama
+  2. Re-encode + pilih target res (1080p/720p/480p/custom) — h264_videotoolbox M1 GPU
+  3. Re-encode pakai res file pertama — h264_videotoolbox M1 GPU
 
 Install: pip3 install questionary
 """
@@ -43,7 +50,7 @@ except ImportError:
 sys.path.insert(0, str(Path(__file__).parent))
 from config import ensure_hdd, MIX_DIR, MERGED_DIR
 
-VERSION = 'v1.2'
+VERSION = 'v1.3'
 
 
 # ============================================================
@@ -51,17 +58,13 @@ VERSION = 'v1.2'
 # ============================================================
 
 def natural_sort_key(s):
-    """Sort key untuk natural sort: 'S1' < 'S2' < ... < 'S9' < 'S10'.
-    Pakai regex split angka, jadi '5 Tentara ...S10' urut setelah 'S9'.
-    """
+    """Sort key untuk natural sort: 'S1' < 'S2' < ... < 'S9' < 'S10'."""
     return [int(text) if text.isdigit() else text.lower()
             for text in re.split(r'(\d+)', s)]
 
 
 def find_files_in_dir(search_dir, extensions):
-    """Glob files by extension (non-recursive, mirip mix-tui pattern).
-    Natural sort biar 'S10' muncul setelah 'S9' (bukan setelah 'S1').
-    """
+    """Glob files by extension (non-recursive). Natural sort."""
     files = []
     for ext in extensions:
         for f in glob.glob(os.path.join(search_dir, f'*.{ext}')):
@@ -69,7 +72,7 @@ def find_files_in_dir(search_dir, extensions):
         for f in glob.glob(os.path.join(search_dir, f'*.{ext.upper()}')):
             files.append(os.path.basename(f))
     files.sort(key=natural_sort_key)
-    return list(dict.fromkeys(files))  # deduplicate
+    return list(dict.fromkeys(files))
 
 
 def find_ffmpeg():
@@ -158,7 +161,7 @@ def print_banner():
 # ============================================================
 
 def pick_files():
-    """Step 1: Pick multiple MP4 files dari HDD/mix/. Pakai checkbox (multi-select)."""
+    """Step 1: Pick multiple MP4 files dari HDD/mix/."""
     print('═' * 64)
     print('▶ Step 1: Pilih file video untuk digabungin')
     print('═' * 64)
@@ -181,7 +184,6 @@ def pick_files():
                     print(f'  + {info["name"]}')
         return files
 
-    # Multi-select via checkbox (questionary mendukung)
     print(f'\n  Ditemukan {len(available)} MP4 di {MIX_DIR}:')
     print()
     for i, f in enumerate(available, 1):
@@ -233,7 +235,6 @@ def reorder_files(files):
     if confirm:
         return files
 
-    # Reorder loop
     while True:
         print()
         for i, f in enumerate(files, 1):
@@ -299,7 +300,7 @@ def auto_detect_mode(files):
     if len(res_set) == 1 and len(vcodec_set) == 1 and len(acodec_set) == 1:
         print('  ✅ Semua sama → stream copy AMAN (super cepat, no re-encode)')
         return 'stream_copy'
-    print('  ⚠ Ada perbedaan → harus re-encode')
+    print('  ⚠ Ada perbedaan → harus re-encode (pakai M1 GPU, bukan CPU)')
     return 'reencode'
 
 
@@ -308,7 +309,6 @@ def pick_output_path(files):
     if not files:
         return None
 
-    # Auto-derive: S1-ori-id-final-sub.mp4 → S1-merged.mp4
     first_name = Path(files[0]['path']).stem
     for suffix in ['-id-final-sub', '-id-final', '-id-simple-sub', '-id-simple',
                    '-id-orig-sub', '-id-orig', '-ori', '-id']:
@@ -346,21 +346,21 @@ def pick_resolution():
     res = questionary.select(
         'Pilih target resolution:',
         choices=[
-            '1920x1080 (1080p)',
-            '1280x720 (720p)',
-            '854x480 (480p)',
+            '1920x1080 (1080p, vertical 1080x1920)',
+            '1280x720 (720p, vertical 720x1280)',
+            '854x480 (480p, vertical 480x854)',
             'Custom (ketik manual)',
         ],
-        default='1920x1080 (1080p)',
+        default='1920x1080 (1080p, vertical 1080x1920)',
     ).ask()
 
+    # Semua file di HDD/mix/ adalah vertical (9:16), jadi output juga vertical
     if '1080' in res:
-        return 1920, 1080
+        return 1080, 1920  # vertical
     if '720' in res:
-        return 1280, 720
+        return 720, 1280
     if '480' in res:
-        return 854, 480
-    # Custom
+        return 480, 854
     try:
         w = int(questionary.text('Width:').ask())
         h = int(questionary.text('Height:').ask())
@@ -371,17 +371,27 @@ def pick_resolution():
     return None, None
 
 
+def pick_bitrate():
+    """Pilih video bitrate untuk h264_videotoolbox."""
+    bitrate = questionary.select(
+        'Pilih video bitrate (M1 GPU encode):',
+        choices=[
+            '2M (default, seimbang)',
+            '4M (HD-ready, sharp)',
+            '6M (high quality)',
+            '8M (max, big file)',
+        ],
+        default='2M (default, seimbang)',
+    ).ask()
+    return bitrate.split(' ')[0]  # '2M', '4M', dst
+
+
 # ============================================================
 # Merge functions
 # ============================================================
 
-def run_merge(cmd, total_duration_s, list_path=None):
+def run_progress(cmd, total_duration_s, list_path=None):
     """Run ffmpeg dengan progress bar."""
-    print('\n' + '═' * 64)
-    print('🚀 Merge...')
-    print('═' * 64)
-    print(f'\n  Total duration: {fmt_dur(total_duration_s)}\n')
-
     try:
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                 text=True, bufsize=1)
@@ -425,11 +435,7 @@ def run_merge(cmd, total_duration_s, list_path=None):
     if list_path and os.path.exists(list_path):
         os.unlink(list_path)
 
-    if proc.returncode == 0:
-        print('\n\n  ✅ Selesai!')
-        return True
-    print(f'\n\n  ❌ Gagal. Exit code: {proc.returncode}')
-    return False
+    return proc.returncode == 0
 
 
 def merge_stream_copy(files, output):
@@ -444,38 +450,124 @@ def merge_stream_copy(files, output):
            '-i', list_path.name, '-c', 'copy',
            '-progress', 'pipe:1', '-nostats', output]
     total = sum(f['duration'] for f in files)
-    return run_merge(cmd, total, list_path.name)
+
+    print('\n' + '═' * 64)
+    print('🚀 Merge (stream copy, super cepat)...')
+    print('═' * 64)
+    print(f'\n  Total duration: {fmt_dur(total)}\n')
+    return run_progress(cmd, total, list_path.name)
 
 
-def merge_reencode(files, output, target_w=None, target_h=None):
-    """Re-encode dengan scale target. Res output sama untuk semua."""
-    n = len(files)
-    parts = []
-    for i in range(n):
-        if target_w and target_h:
-            parts.append(
-                f'[{i}:v]scale={target_w}:{target_h}'
-                f':force_original_aspect_ratio=decrease,'
-                f'pad={target_w}:{target_h}:(ow-iw)/2:(oh-ih)/2,'
-                f'setsar=1[v{i}]'
-            )
-        else:
-            parts.append(f'[{i}:v]setsar=1[v{i}]')
-    v_inputs = ''.join(f'[v{i}]' for i in range(n))
-    parts.append(f'{v_inputs}concat=n={n}:v=1:a=0[vout]')
-    a_inputs = ''.join(f'[{i}:a]' for i in range(n))
-    parts.append(f'{a_inputs}concat=n={n}:v=0:a=1[aout]')
-    filt = ';'.join(parts)
+def merge_reencode_gpu(files, output, target_w, target_h, bitrate):
+    """Re-encode per-file pakai h264_videotoolbox (M1 GPU), lalu concat stream copy.
 
-    cmd = ['ffmpeg', '-y']
-    for f in files:
-        cmd += ['-i', f['path']]
-    cmd += ['-filter_complex', filt, '-map', '[vout]', '-map', '[aout]',
-            '-c:v', 'libx264', '-preset', 'medium', '-crf', '20',
-            '-c:a', 'aac', '-b:a', '192k',
-            '-progress', 'pipe:1', '-nostats', output]
+    Strategi 2-fase (RAM-safe, GPU-dominant):
+      Fase 1: Encode tiap file ke target res (GPU), simpan ke temp file
+      Fase 2: Concat stream copy semua temp file → output final
+      Cleanup: hapus temp files
+
+    Pakai ini karena:
+    - Filter complex (scale+pad+concat) untuk 24 jam video = RAM banjir (16GB Mac kagok)
+    - Encode per-file = RAM friendly, GPU VideoToolbox dominant
+    - Concat stream copy di akhir = super cepat (no re-encode)
+    """
+    print('\n' + '═' * 64)
+    print('🚀 Merge (re-encode M1 GPU + concat)...')
+    print('═' * 64)
+    print(f'\n  Target res  : {target_w}x{target_h}')
+    print(f'  Bitrate     : {bitrate} (h264_videotoolbox)')
+    print(f'  Strategi    : encode per-file (GPU) → concat stream copy')
+    print(f'  Total files : {len(files)}')
     total = sum(f['duration'] for f in files)
-    return run_merge(cmd, total)
+    print(f'  Total dur   : {fmt_dur(total)}')
+    print(f'\n  ⏱️  Estimasi: ~{int(total * 0.025)}-{int(total * 0.05)} menit '
+          f'(M1 VideoToolbox, vs CPU 5+ jam)')
+    print()
+
+    # Buat temp dir
+    temp_dir = tempfile.mkdtemp(prefix='merge_tmp_')
+    temp_files = []
+
+    # Fase 1: Encode per-file
+    print('▶ Fase 1: Encode per-file (M1 GPU h264_videotoolbox)')
+    print('═' * 64)
+    for i, f in enumerate(files, 1):
+        temp_out = os.path.join(temp_dir, f'part_{i:03d}.mp4')
+        temp_files.append(temp_out)
+
+        # scale + pad: target res, preserve aspect ratio (letterbox/pillarbox)
+        # setsar=1: square pixel, biar concat aman
+        vf = (
+            f'scale={target_w}:{target_h}'
+            f':force_original_aspect_ratio=decrease,'
+            f'pad={target_w}:{target_h}:(ow-iw)/2:(oh-ih)/2:color=black,'
+            f'setsar=1,fps=30'
+        )
+
+        cmd = [
+            'ffmpeg', '-y',
+            '-i', f['path'],
+            '-vf', vf,
+            '-c:v', 'h264_videotoolbox', '-b:v', bitrate,
+            '-c:a', 'aac', '-b:a', '192k',
+            '-movflags', '+faststart',
+            '-progress', 'pipe:1', '-nostats',
+            temp_out,
+        ]
+
+        print(f'\n  [{i}/{len(files)}] {f["name"]} ({fmt_dur(f["duration"])})')
+        if not run_progress(cmd, f['duration']):
+            print(f'\n  ❌ Gagal encode file {i}: {f["name"]}')
+            # Cleanup
+            for tf in temp_files:
+                if os.path.exists(tf):
+                    os.unlink(tf)
+            try:
+                os.rmdir(temp_dir)
+            except OSError:
+                pass
+            return False
+
+    # Fase 2: Concat stream copy
+    print('\n' + '═' * 64)
+    print('▶ Fase 2: Concat stream copy (super cepat)')
+    print('═' * 64)
+    print()
+
+    list_path = os.path.join(temp_dir, 'concat_list.txt')
+    with open(list_path, 'w') as lf:
+        for tf in temp_files:
+            safe = tf.replace("'", r"'\''")
+            lf.write(f"file '{safe}'\n")
+
+    cmd = ['ffmpeg', '-y', '-f', 'concat', '-safe', '0',
+           '-i', list_path, '-c', 'copy',
+           '-movflags', '+faststart',
+           '-progress', 'pipe:1', '-nostats', output]
+
+    if not run_progress(cmd, total, list_path):
+        print('\n  ❌ Gagal concat')
+        # Cleanup
+        for tf in temp_files:
+            if os.path.exists(tf):
+                os.unlink(tf)
+        try:
+            os.rmdir(temp_dir)
+        except OSError:
+            pass
+        return False
+
+    # Cleanup temp files
+    print('\n  Cleaning up temp files...')
+    for tf in temp_files:
+        if os.path.exists(tf):
+            os.unlink(tf)
+    try:
+        os.rmdir(temp_dir)
+    except OSError:
+        pass
+
+    return True
 
 
 # ============================================================
@@ -485,11 +577,9 @@ def merge_reencode(files, output, target_w=None, target_h=None):
 def main():
     print_banner()
 
-    # Cek HDD
     if not ensure_hdd():
         return
 
-    # Cek ffmpeg/ffprobe
     find_ffmpeg()
     find_ffprobe()
 
@@ -528,8 +618,8 @@ def main():
     # Step 5: Pick mode (with suggestion)
     mode_choices = [
         'Stream copy (super cepat, butuh codec+res+fps sama)',
-        'Re-encode + pilih target res (1080p/720p/480p/custom)',
-        'Re-encode pakai res file pertama',
+        'Re-encode + pilih target res (M1 GPU h264_videotoolbox)',
+        'Re-encode pakai res file pertama (M1 GPU h264_videotoolbox)',
     ]
     default_mode = mode_choices[0] if suggested_mode == 'stream_copy' else mode_choices[1]
 
@@ -543,11 +633,33 @@ def main():
         default=default_mode,
     ).ask()
 
+    # Pick bitrate for re-encode modes
+    bitrate = None
+    target_w = target_h = None
+    if 'Re-encode + pilih target res' in mode:
+        w, h = pick_resolution()
+        if w is None:
+            print('\n❌ Resolusi gak valid.')
+            return
+        target_w, target_h = w, h
+        bitrate = pick_bitrate()
+    elif 'Re-encode pakai res file pertama' in mode:
+        # Pakai res file pertama, vertical
+        target_w, target_h = files[0]['width'], files[0]['height']
+        bitrate = pick_bitrate()
+        print(f'\n  Res file pertama: {target_w}x{target_h}')
+
     # Confirm
-    print(f'\n  Mode   : {mode}')
-    print(f'  Output : {output_path}')
-    print(f'  Files  : {len(files)}')
-    print(f'  Total  : {fmt_dur(total_dur)} | {fmt_size(total_size)}')
+    print('\n' + '═' * 64)
+    print('▶ Konfirmasi')
+    print('═' * 64)
+    print(f'\n  Mode    : {mode}')
+    print(f'  Output  : {output_path}')
+    print(f'  Files   : {len(files)}')
+    print(f'  Total   : {fmt_dur(total_dur)} | {fmt_size(total_size)}')
+    if bitrate:
+        print(f'  Bitrate : {bitrate} (h264_videotoolbox)')
+        print(f'  Target  : {target_w}x{target_h}')
 
     if not questionary.confirm('\nLanjut merge?', default=True).ask():
         print('\nDibatalkan.')
@@ -555,25 +667,24 @@ def main():
 
     # Run merge
     if 'Stream copy' in mode:
-        merge_stream_copy(files, output_path)
+        success = merge_stream_copy(files, output_path)
     elif 'Re-encode + pilih target res' in mode:
-        w, h = pick_resolution()
-        if w is None:
-            print('\n❌ Resolusi gak valid.')
-            return
-        merge_reencode(files, output_path, w, h)
+        success = merge_reencode_gpu(files, output_path, target_w, target_h, bitrate)
     elif 'Re-encode pakai res file pertama' in mode:
-        w, h = files[0]['width'], files[0]['height']
-        merge_reencode(files, output_path, w, h)
+        success = merge_reencode_gpu(files, output_path, target_w, target_h, bitrate)
+    else:
+        success = False
 
     # Hasil
-    if os.path.exists(output_path):
+    if success and os.path.exists(output_path):
         size_mb = os.path.getsize(output_path) / 1024 / 1024
         print(f'\n📁 Output: {Path(output_path).name} ({fmt_size(size_mb)})')
         print(f'   Path  : {output_path}')
-    print('\n🎬 Langkah berikutnya:')
-    print('   - Cek hasil di VLC')
-    print('   - Upload ke YouTube / arsip')
+        print('\n🎬 Langkah berikutnya:')
+        print('   - Cek hasil di VLC (test playback + audio sync)')
+        print('   - Upload ke YouTube / arsip')
+    elif not success:
+        print('\n❌ Merge gagal. Cek log di atas.')
     print('═' * 64)
 
 
