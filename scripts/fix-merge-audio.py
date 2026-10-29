@@ -1,21 +1,19 @@
 #!/usr/bin/env python3
 """
-fix-merge-audio.py v1.1 — Fix audio output merge-tui v1.7 (audio kacau).
+fix-merge-audio.py v1.2 — Fix audio output merge-tui v1.7 (audio kacau).
 
 User feedback v1.7: 'audio = parah. banyak yg silen dan banyak suara jadi cepat'.
 Output v1.7 resolusi udah seragam (1440x2560), tapi audio kacau (sample rate mismatch).
 
-Fix: ambil video dari output v1.7 (seragam) + concat audio dari file mix (bagus).
-Gak perlu merge lagi 4 jam, cuma butuh ~5-10 menit (stream copy semua).
+Fix: ambil video dari output v1.7 (seragam) + concat audio dari file mix (bagus, re-encode normalize).
+Gak perlu merge lagi 4 jam, cuma butuh ~30-45 menit (audio re-encode 1x, video stream copy).
 
-v1.1: Auto-detect prefix + questionary (gak perlu ketik, konsisten sama TUI lain).
-
-Cara kerja:
-  1. Auto-list file mix (filter prefix, natural sort, kayak merge-tui)
-  2. Probe sample rate semua file, display (detect mismatch)
-  3. Concat audio dari file mix → audio (stream copy, -vn -c:a copy)
-  4. Mux video dari output v1.7 + audio concat → output final (stream copy both)
-  5. Cleanup temp
+v1.2: Re-encode audio ke 48000 Hz stereo saat concat (normalize sample rate mismatch).
+  - Bug v1.0: stream copy concat = sample rate campur (24000, 44100, 48000 Hz) → VLC kacau
+  - Fix v1.2: -c:a aac -b:a 192k -ar 48000 -ac 2 (normalize semua file ke konsisten)
+  - Estimasi: ~30-45 menit (audio re-encode 24 jam, single pass, no per-file)
+  - Output: video v1.7 (stream copy) + audio normalized → VLC pasti mulus
+v1.1: questionary (auto-detect prefix, gak perlu ketik).
 
 Usage:
   cd ~/Dubbing && source venv/bin/activate
@@ -169,8 +167,8 @@ def cleanup(temp_dir, files):
 
 def main():
     print('╔' + '═' * 64 + '╗')
-    print('║  🔧 Fix Merge Audio v1.1 (fix v1.7 audio kacau)            ║')
-    print('║  Mux video v1.7 + audio dari mix (stream copy, cepat)     ║')
+    print('║  🔧 Fix Merge Audio v1.2 (fix v1.7 audio kacau)            ║')
+    print('║  Mux video v1.7 + audio normalize (re-encode 48000 Hz)    ║')
     print('╚' + '═' * 64 + '╝')
     print()
 
@@ -301,15 +299,17 @@ def main():
     print(f'  Video source : {Path(merge_v17).name} (seragam, audio kacau)')
     print(f'  Audio source : {len(mix_files)} file mix (audio bagus)')
     print(f'  Output       : {Path(output_path).name}')
-    print(f'  Strategi     : concat audio mix → mux video v1.7 + audio')
-    print(f'  Estimasi    : ~5-10 menit (stream copy, no re-encode)')
+    print(f'  Strategi     : concat audio mix (re-encode normalize) → mux video v1.7 + audio')
+    print(f'  Estimasi    : ~30-45 menit (audio re-encode 1x, video stream copy)')
     print('═' * 64)
     if not questionary.confirm('\nLanjut?', default=True).ask():
         print('Dibatalkan.')
         return
 
-    # Step 5: Concat audio dari file mix (stream copy, -vn no video)
-    print('\n▶ Step 5: Concat audio dari file mix')
+    # Step 5: Concat audio dari file mix (v1.2: re-encode normalize sample rate)
+    # Bug v1.0: stream copy concat = sample rate campur (24000, 44100, 48000 Hz) → VLC kacau
+    # Fix v1.2: -c:a aac -b:a 192k -ar 48000 -ac 2 (normalize semua file ke konsisten)
+    print('\n▶ Step 5: Concat audio dari file mix (re-encode normalize 48000 Hz stereo)')
     temp_dir = MERGED_DIR.parent / '.merge_tmp'
     temp_dir.mkdir(parents=True, exist_ok=True)
     audio_list = temp_dir / 'audio_list.txt'
@@ -320,10 +320,13 @@ def main():
             safe = str(mix).replace("'", r"'\''")
             f.write(f"file '{safe}'\n")
 
-    print(f'  Concat {len(mix_files)} file audio (stream copy, -vn -c:a copy)...')
+    print(f'  Concat {len(mix_files)} file audio (re-encode aac 192k 48000 Hz stereo)...')
+    print(f'  Estimasi: ~30-45 menit (audio re-encode 24 jam, single pass)')
     cmd = ['ffmpeg', '-y', '-f', 'concat', '-safe', '0',
            '-i', str(audio_list),
-           '-vn', '-c:a', 'copy',
+           '-vn',  # no video
+           '-c:a', 'aac', '-b:a', '192k',  # re-encode normalize
+           '-ar', '48000', '-ac', '2',     # 48000 Hz stereo konsisten
            '-progress', 'pipe:1', '-nostats',
            str(audio_concat)]
     if not run_progress(cmd, total_dur):
@@ -331,13 +334,13 @@ def main():
         cleanup(temp_dir, [audio_list, audio_concat])
         return
     audio_size = audio_concat.stat().st_size / 1024 / 1024 / 1024
-    print(f'  ✓ Audio concat: {audio_concat.name} ({audio_size:.2f} GB)')
+    print(f'  ✓ Audio concat: {audio_concat.name} ({audio_size:.2f} GB, 48000 Hz stereo)')
     print()
 
     # Step 6: Mux video dari merge v1.7 + audio concat → output final
-    print('▶ Step 6: Mux video v1.7 + audio concat')
+    print('▶ Step 6: Mux video v1.7 + audio concat (stream copy both)')
     print(f'  Video: {Path(merge_v17).name} (stream copy)')
-    print(f'  Audio: {audio_concat.name} (stream copy)')
+    print(f'  Audio: {audio_concat.name} (stream copy, sudah 48000 Hz stereo)')
     cmd = ['ffmpeg', '-y',
            '-i', merge_v17,
            '-i', str(audio_concat),
