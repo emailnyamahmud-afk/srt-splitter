@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-fix-merge-audio.py v1.2 — Fix audio output merge-tui v1.7 (audio kacau).
+fix-merge-audio.py v1.3 — Fix audio output merge-tui v1.7 (audio kacau).
 
 User feedback v1.7: 'audio = parah. banyak yg silen dan banyak suara jadi cepat'.
 Output v1.7 resolusi udah seragam (1440x2560), tapi audio kacau (sample rate mismatch).
@@ -8,11 +8,8 @@ Output v1.7 resolusi udah seragam (1440x2560), tapi audio kacau (sample rate mis
 Fix: ambil video dari output v1.7 (seragam) + concat audio dari file mix (bagus, re-encode normalize).
 Gak perlu merge lagi 4 jam, cuma butuh ~30-45 menit (audio re-encode 1x, video stream copy).
 
+v1.3: Fix questionary default bug — pakai Choice(checked=True) (reliable, bukan default list).
 v1.2: Re-encode audio ke 48000 Hz stereo saat concat (normalize sample rate mismatch).
-  - Bug v1.0: stream copy concat = sample rate campur (24000, 44100, 48000 Hz) → VLC kacau
-  - Fix v1.2: -c:a aac -b:a 192k -ar 48000 -ac 2 (normalize semua file ke konsisten)
-  - Estimasi: ~30-45 menit (audio re-encode 24 jam, single pass, no per-file)
-  - Output: video v1.7 (stream copy) + audio normalized → VLC pasti mulus
 v1.1: questionary (auto-detect prefix, gak perlu ketik).
 
 Usage:
@@ -167,7 +164,7 @@ def cleanup(temp_dir, files):
 
 def main():
     print('╔' + '═' * 64 + '╗')
-    print('║  🔧 Fix Merge Audio v1.2 (fix v1.7 audio kacau)            ║')
+    print('║  🔧 Fix Merge Audio v1.3 (fix v1.7 audio kacau)            ║')
     print('║  Mux video v1.7 + audio normalize (re-encode 48000 Hz)    ║')
     print('╚' + '═' * 64 + '╝')
     print()
@@ -189,17 +186,24 @@ def main():
     suggested_prefix = detect_prefix(all_mix[:10])  # ambil 10 pertama buat detect
     print(f'  Auto-detected prefix: "{suggested_prefix}"')
 
-    # Filter file mix yang match prefix (untuk default selection)
+    # Filter file mix yang match prefix (untuk auto-tercentang)
     matching = [f for f in all_mix if f.name.startswith(suggested_prefix)] if suggested_prefix else []
+    matching_names = {f.name for f in matching}
     print(f'  Files match prefix: {len(matching)}')
     print()
 
-    # Pakai questionary checkbox untuk multi-select
-    file_choices = [f.name for f in all_mix] + ['[Ketik path manual]']
+    # v1.3 FIX: pakai Choice(checked=True) bukan default list (questionary bug)
+    # Build choices: setiap file mix + flag checked kalau match prefix
+    from questionary import Choice
+    file_choices = [
+        Choice(f.name, checked=(f.name in matching_names))
+        for f in all_mix
+    ] + [Choice('[Ketik path manual]', checked=False)]
+
+    # Pakai questionary checkbox untuk multi-select (default via Choice.checked)
     selected = questionary.checkbox(
         'Pilih file mix (Space untuk centang, Enter untuk selesai):',
         choices=file_choices,
-        default=[f.name for f in matching] if matching else [],
     ).ask()
 
     if not selected:
