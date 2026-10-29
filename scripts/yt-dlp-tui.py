@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 """
-yt-dlp-tui.py v6.3 — TUI download YouTube/Facebook/TikTok/IG: video + audio + SRT
+yt-dlp-tui.py v6.4 — TUI download YouTube/Facebook/TikTok/IG: video + audio + SRT
+
+Perubahan v6.4 (29 Okt 2026):
+  FIX subtitle gak kebaca: tambah fallback --list-subs + debug output.
+  - User feedback: 'kenapa subtitle gak kebaca? padahal si sumber ada subtitle id?
+                   yt-dlp versi sebelumnya jalan = ada mp4, mp3 dan srt'
+  - v6.4: --dump-json gagal → fallback ke --list-subs (parse text output)
+  - v6.4: tambah debug print (tahu --dump-json succeed/fail, jumlah subs found)
+  - Manual subs + auto-captions tetep dideteksi (kayak v6.2/v6.3)
 
 Perubahan v6.3 (29 Okt 2026):
   Default resolusi: 480p → 1080p preferred (untuk konsistensi pipeline mix-tui v3.9).
@@ -46,7 +54,7 @@ except ImportError:
     sys.exit(1)
 
 
-VERSION = 'v6.3'
+VERSION = 'v6.4'
 
 # Browser support matrix (urutan = prioritas)
 # Brave dipertama karena user pakai Brave (FB confirmed working)
@@ -89,16 +97,21 @@ def sanitize_filename(name):
 def list_subtitles(ytdlp, url, cookie_args):
     """Ambil daftar subtitle dari YouTube via --dump-json. Return [(code, name), ...].
     Sekarang pass cookie_args supaya bisa ambil subs dari video yang butuh login.
+
+    v6.4: tambah debug output + fallback --list-subs kalau --dump-json gak dapet subs.
     """
     print('\n▶ Cek subtitle tersedia...')
     cmd = [ytdlp, '--dump-json', '--no-playlist', '--skip-download'] + cookie_args + [url]
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
         if result.returncode != 0 or not result.stdout.strip():
-            return []
+            print(f'  ⚠ --dump-json gagal (returncode={result.returncode}), coba --list-subs')
+            # v6.4: fallback ke --list-subs
+            return list_subtitles_fallback(ytdlp, url, cookie_args)
         data = json.loads(result.stdout.splitlines()[0])
-    except Exception:
-        return []
+    except Exception as e:
+        print(f'  ⚠ --dump-json exception: {e}, coba --list-subs')
+        return list_subtitles_fallback(ytdlp, url, cookie_args)
 
     seen = {}
     for key in ('subtitles', 'automatic_captions'):
@@ -109,7 +122,46 @@ def list_subtitles(ytdlp, url, cookie_args):
                     track_name = tracks[0].get('name', '') if isinstance(tracks[0], dict) else ''
                     name = track_name or lang_code
                 seen[lang_code] = name
+    print(f'  ✓ Ditemukan {len(seen)} subtitle (subtitles + auto-captions)')
     return list(seen.items())
+
+
+def list_subtitles_fallback(ytdlp, url, cookie_args):
+    """v6.4 fallback: pakai --list-subs kalau --dump-json gak dapet subs."""
+    cmd = [ytdlp, '--list-subs', '--no-playlist'] + cookie_args + [url]
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        if result.returncode != 0:
+            print(f'  ⚠ --list-subs juga gagal: returncode={result.returncode}')
+            return []
+        # Parse output text: cari baris yang formatnya code + name (manual subs)
+        # Format umum: "en  English  ...  has-auto-captions"
+        lines = result.stdout.split('\n')
+        seen = {}
+        in_subs_section = False
+        for line in lines:
+            # Skip header lines (sebelum baris kosong / "Available subtitles")
+            if 'Available' in line or 'Language' in line.lower():
+                in_subs_section = True
+                continue
+            if not in_subs_section:
+                continue
+            line = line.strip()
+            if not line:
+                continue
+            # Format: "en   English (United States)   vtt, ttml   ..."
+            # Ambil 2 kolom pertama
+            parts = line.split()
+            if len(parts) >= 2:
+                code = parts[0].lower()
+                name = parts[1]
+                if code and code not in seen:
+                    seen[code] = name
+        print(f'  ✓ --list-subs: Ditemukan {len(seen)} subtitle')
+        return list(seen.items())
+    except Exception as e:
+        print(f'  ⚠ --list-subs exception: {e}')
+        return []
 
 
 def pick_cookies(url):
