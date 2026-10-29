@@ -92,3 +92,6 @@ Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 - Untuk MUTE TOTAL: pakai amultiply + inverted envelope (v3.7.6)
 - Sebutan hormat Tiongkok (Nona/Tuan/Dokter/Paman/Yang Mulia) = PRESERVE, bukan mistranslate
 - Tiap sesi WAJIB update docs (AGENTS.md, README.md, PROJECT_RULES.md, scripts/README.md) + commit + push — biar AI sesi berikutnya gak amnesia
+- **merge-tui = stream copy ONLY** (no encode = no drift). Encode audio 24h = drift. Stream copy = no drift, TAPI input harus konsisten dari mix-tui v3.10.
+- **Standarisasi res+audio = kerjaan mix-tui v3.10**, bukan yt-dlp atau merge-tui.
+- **fix-merge-audio.py = DEPRECATED** (audio drift, failed experiment). Jangan pakai.

@@ -62,7 +62,7 @@ Shorts: Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON
 13. clean-srt workflow: heuristic dulu untuk 2000+ cue, manual per-cue cuma untuk cue critical.
 14. **Pipeline konsistensi res v3.10/v6.3**: yt-dlp v6.3 default 1080p preferred → mix-tui v3.10 default force 1080p (Mode B/D/F) + audio 48000 Hz stereo → merge-tui v1.7 auto-detect "semua sama → stream copy AMAN" → merge super cepat (2 menit untuk 24 jam series). Force 1080p + audio 48000 Hz di mix-tui = 1x encode work, merge tinggal stream copy (vs merge 3-5 jam kalau res/audio campuran). v3.10 FIX audio sample rate mismatch (root cause merge audio kacau: mix-tui output audio ikut source sample rate, sekarang fixed ke 48000 Hz stereo konsisten).
 
-## merge-tui v1.7 — gabungin multi-video jadi 1 panjang
+## merge-tui v1.9 — gabungin multi-video (stream copy only)
 
 TUI #12. Input: `HDD/mix/*.mp4` (output mix-tui, sudah dub ID + burn sub). Output: `HDD/merged/{prefix}-merged.mp4`.
 
