@@ -6,7 +6,7 @@ Python TUI untuk workflow dubbing bahasa eksternal (Mandarin, English, Jepang, I
 
 | # | TUI | Status |
 |---|-----|--------|
-| 1 | yt-dlp-tui.py v6.3 (MP4+MP3+SRT, cookies anti-bot YT/FB/TikTok/IG, default 1080p preferred) | ✅ Production (FB+YT confirmed, default 1080p) |
+| 1 | yt-dlp-tui.py v6.5 (MP4+MP3+multi-SRT ID+EN, cookies anti-bot, default 1080p preferred) | ✅ Production (v6.5 multi-SRT) |
 | 2 | demucs-tui.py (M1 MPS) | ✅ Production |
 | 3 | kamus-tui.py v16 | ✅ Production (audit) |
 | 4 | Web app | ⚠ Prototype |
@@ -76,7 +76,7 @@ mix-tui output × N → merge-tui → 1 video panjang
 
 | Script | Fungsi | Output |
 |--------|--------|--------|
-| yt-dlp-tui.py v6.3 | Download MP4 + MP3 + SRT Indonesia (default 1080p preferred) | HDD/input/ |
+| yt-dlp-tui.py v6.5 | Download MP4 + MP3 + multi-SRT (ID+EN) Indonesia/English | HDD/input/ |
 | demucs-tui.py | Vocal separation (M1 MPS) | HDD/demucs/ |
 | edge-tts-tui.py v7.4 | TTS generation (paralel-safe, lock file + 429 retry) | HDD/tts/ |
 | mix-tui.py v3.10 | Final mix (6 mode, MUTE COMPLETE, force 1080p, audio 48000 Hz stereo) | HDD/mix/ |

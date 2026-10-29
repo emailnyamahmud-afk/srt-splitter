@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 """
-yt-dlp-tui.py v6.4 — TUI download YouTube/Facebook/TikTok/IG: video + audio + SRT
+yt-dlp-tui.py v6.5 — TUI download YouTube/Facebook/TikTok/IG: video + audio + SRT
+
+Perubahan v6.5 (29 Okt 2026):
+  Multi-select subtitle (ID + EN sekaligus dari 1 link YouTube).
+  - User request: 'bisakah 1 link outputnya = mp4, mp3, srt (id dan en)?'
+  - srt en berguna kalau user mau garap dub en, atau pasang srt en di channel
+  - Auto-tercentang ID + EN (kalau ada), user bisa centang/batalkan bahasa lain
+  - Download loop per bahasa (id → en → dst.)
+  - Output: {name}.id.srt, {name}.en.srt, dst.
+  - Kalau gak ada subs → suggest whisper-tui + eksternal
 
 Perubahan v6.4 (29 Okt 2026):
   FIX subtitle gak kebaca: tambah fallback --list-subs + debug output.
@@ -54,7 +63,7 @@ except ImportError:
     sys.exit(1)
 
 
-VERSION = 'v6.4'
+VERSION = 'v6.5'
 
 # Browser support matrix (urutan = prioritas)
 # Brave dipertama karena user pakai Brave (FB confirmed working)
@@ -282,35 +291,59 @@ def main():
     else:
         custom_name = None
 
-    # Step 5: SRT Indonesia
+    # Step 5: SRT (v6.5: multi-select ID + EN sekaligus)
     subs = list_subtitles(ytdlp, url, cookie_args)
 
-    srt_choice = 'Skip (download SRT dari eksternal)'
+    selected_srt_langs = []  # list of lang codes yang user pilih
     if subs:
         id_subs = [s for s in subs if s[0].lower() in ('id', 'in', 'ind')]
-        sub_choices = []
-        if id_subs:
-            sub_choices.append(f'Download SRT Indonesia ({id_subs[0][0]})')
-        sub_choices.append('Skip (download SRT dari eksternal)')
-        sub_choices.append('Pilih subtitle lain:')
-        default_idx = 0 if id_subs else 1
-        srt_choice = questionary.select(
-            f'Subtitle tersedia ({len(subs)} bahasa):',
-            choices=sub_choices,
-            default=sub_choices[default_idx]
-        ).ask()
+        en_subs = [s for s in subs if s[0].lower() in ('en', 'eng')]
+        has_id = bool(id_subs)
+        has_en = bool(en_subs)
 
-        if 'Pilih subtitle lain' in srt_choice:
+        if has_id or has_en:
+            # v6.5: multi-select subtitle (checkbox, ID+EN auto-tercentang)
+            from questionary import Choice
+            sub_choices = []
+            for code, name in sorted(subs):
+                # Auto-tercentang ID + EN
+                checked = code.lower() in ('id', 'in', 'ind', 'en', 'eng')
+                label = f'{code} — {name}'
+                if checked:
+                    label += ' (auto)'
+                sub_choices.append(Choice(label, checked=checked))
+            sub_choices.append(Choice('Skip (download SRT dari eksternal)', checked=False))
+
+            selected = questionary.checkbox(
+                f'Subtitle tersedia ({len(subs)} bahasa) — pilih multiple (Space centang):',
+                choices=sub_choices,
+            ).ask()
+
+            if selected:
+                for sel in selected:
+                    if 'Skip' in sel:
+                        selected_srt_langs = []
+                        break
+                    # Parse 'code — name (auto)' → code
+                    code = sel.split(' — ')[0].strip()
+                    selected_srt_langs.append(code)
+
+            print(f'  → Download SRT: {selected_srt_langs if selected_srt_langs else "Skip"}')
+        else:
+            # Gak ada ID/EN, tampilkan semua buat pilih manual
             all_sub_choices = [f'{code} — {name}' for code, name in sorted(subs)]
             all_sub_choices.append('Skip')
-            sel = questionary.select('Pilih subtitle:', choices=all_sub_choices).ask()
+            sel = questionary.select(
+                f'Subtitle tersedia ({len(subs)} bahasa, ID/EN gak ada):',
+                choices=all_sub_choices,
+                default=all_sub_choices[-1],
+            ).ask()
             if sel and 'Skip' not in sel:
-                srt_choice = f'Download SRT {sel.split(" — ")[0]}'
-            else:
-                srt_choice = 'Skip'
+                selected_srt_langs = [sel.split(' — ')[0].strip()]
+            print(f'  → Download SRT: {selected_srt_langs if selected_srt_langs else "Skip"}')
     else:
-        print('  ⚠ Tidak ada subtitle tersedia. Download SRT dari eksternal.')
-        srt_choice = 'Skip (download SRT dari eksternal)'
+        print('  ⚠ Tidak ada subtitle tersedia. Download SRT dari eksternal atau pakai whisper-tui.')
+    print()
 
     # Build format strings
     # v6.3: tambah "1080p preferred" (fallback best) vs "1080p strict" (no fallback)
@@ -341,7 +374,7 @@ def main():
     cookie_label = cookie_args[1] if cookie_args else 'Skip'
     print(f'║  Cookies : {cookie_label[:48]:<48}║')
     print('║  Output  : MP4 (video) + MP3 (audio) terpisah' + ' ' * 8 + '║')
-    print(f'║  SRT     : {srt_choice[:48]:<48}║')
+    print(f'║  SRT     : {", ".join(selected_srt_langs) if selected_srt_langs else "Skip" :<48}║')
     print(f'║  URL     : {url[:48]:<48}║')
     print(f'║  Dir     : {output_dir[:48]:<48}║')
     print('╚' + '═' * 64 + '╝')
@@ -376,18 +409,12 @@ def main():
         print('\n⏹ Dibatalkan.')
         sys.exit(130)
 
-    # Download SRT kalau dipilih
-    if 'Skip' not in srt_choice and 'eksternal' not in srt_choice.lower():
-        srt_lang = None
-        if 'Indonesia' in srt_choice:
-            srt_lang = 'id'
-        elif 'Download SRT' in srt_choice:
-            srt_lang = srt_choice.replace('Download SRT ', '').strip()
-
-        if srt_lang:
-            print(f'\n▶ Download SRT ({srt_lang})...')
-            srt_template = os.path.join(output_dir, f'{base_name}.%(ext)s')
-            cmd_srt = [ytdlp, '--write-sub', '--sub-lang', srt_lang,
+    # Download SRT per bahasa (v6.5: multi-select, loop per lang)
+    if selected_srt_langs:
+        srt_template = os.path.join(output_dir, f'{base_name}.%(ext)s')
+        for lang in selected_srt_langs:
+            print(f'\n▶ Download SRT ({lang})...')
+            cmd_srt = [ytdlp, '--write-sub', '--sub-lang', lang,
                        '--sub-format', 'srt', '--convert-subs', 'srt',
                        '--skip-download',
                        '-o', srt_template,
@@ -397,8 +424,8 @@ def main():
             except KeyboardInterrupt:
                 print('\n⏹ Dibatalkan SRT.')
             except Exception as e:
-                print(f'\n⚠ Gagal download SRT: {e}')
-                print('   Download SRT dari eksternal (mis. subscene.com, opensubtitles.org)')
+                print(f'\n⚠ Gagal download SRT ({lang}): {e}')
+                print(f'   Cari SRT {lang} dari eksternal atau pakai whisper-tui')
 
     # Hasil
     print('\n' + '═' * 64)
@@ -436,12 +463,17 @@ def main():
         print('⚠ Audio tidak ditemukan. Cek log yt-dlp di atas.')
 
     if found_srt:
-        print(f'📁 SRT:   {found_srt.name}')
+        # v6.5: bisa multiple SRT (id, en, dst.)
+        srt_files = list(Path(output_dir).glob(f'{custom_name}*.srt' if custom_name else '*.srt'))
+        # Filter SRT yang di-download sesi ini (by mtime recent)
+        if srt_files:
+            srt_files.sort(key=os.path.getmtime, reverse=True)
+            for srt_file in srt_files[:len(selected_srt_langs)]:
+                print(f'📁 SRT:   {srt_file.name}')
     else:
-        print('\n⚠ SRT belum ada. Download dari eksternal:')
-        print('   - https://subscene.com')
-        print('   - https://www.opensubtitles.org')
-        print('   - https://goblinsub.com')
+        print('\n⚠ SRT belum ada. Opsi:')
+        print('   - Eksternal: https://subscene.com, https://www.opensubtitles.org')
+        print('   - whisper-tui: python3 whisper-tui.py (generate dari audio)')
 
     print('\n🎬 Langkah berikutnya:')
     print('   1. Demucs:    python3 demucs-tui.py')

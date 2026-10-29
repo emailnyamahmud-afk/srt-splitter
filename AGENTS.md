@@ -25,7 +25,7 @@ Shorts: Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON
 
 | # | TUI | Status |
 |---|-----|--------|
-| 1 | yt-dlp-tui v6.3 (MP4+MP3+SRT, cookies anti-bot YT/FB/TikTok/IG, default 1080p preferred) | ✅ Production (FB+YT confirmed, default 1080p) |
+| 1 | yt-dlp-tui v6.5 (MP4+MP3+multi-SRT ID+EN, cookies anti-bot, default 1080p preferred) | ✅ Production (v6.5 multi-SRT) |
 | 2 | demucs-tui | ✅ Production |
 | 3 | kamus-tui v16 | ✅ Production (audit pending) |
 | 4 | Web app | ⚠ Prototype |
@@ -131,7 +131,7 @@ Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no m
 - User validasi manual di kamus-tui, mark READY, upload Supabase
 
 ### Pipeline produksi (6 film tested, 6 mode production-ready)
-- yt-dlp v6.3 MP3 output: ✅ (FB+YT confirmed, cookies anti-bot, default 1080p preferred)
+- yt-dlp v6.5 MP3+multi-SRT output: ✅ (FB+YT confirmed, cookies anti-bot, default 1080p preferred, multi-select SRT ID+EN sekaligus)
 - demucs v2 (segment 4, MPS): ✅
 - edge-tts v7.4 (paralel-safe, lock file + 429 retry): ✅
 - srt-editor-tui v1.0.1: ✅ (glossary 19 entries, 144 replacement di S2-FB-Mandarin)

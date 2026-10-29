@@ -10,7 +10,7 @@ ID jalan end-to-end (12 TUI production). Jawa/Sunda nunggu kamus Supabase selesa
 
 | # | TUI | Tugas | Status |
 |---|-----|-------|--------|
-| 1 | yt-dlp-tui.py v6.3 | Download MP4 + MP3 + SRT (YT/FB/TikTok/IG + cookies anti-bot, default 1080p preferred) | ✅ Production (FB+YT confirmed, default 1080p) |
+| 1 | yt-dlp-tui.py v6.5 | Download MP4 + MP3 + multi-SRT (ID+EN, default 1080p preferred) | ✅ Production (v6.5 multi-SRT) |
 | 2 | demucs-tui.py | Split audio → no_vocals.mp3 (SFX bersih) | ✅ Production |
 | 3 | kamus-tui.py | User edit kamus JSON manual (sebelum DB) | ✅ Production (audit) |
 | 4 | Web app | Translate SRT Indonesia → Jawa (kamus Supabase) | ⚠ Prototype |

@@ -24,7 +24,7 @@ Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 
 | # | TUI | Status |
 |---|-----|--------|
-| 1 | yt-dlp-tui v6.3 | ✅ Production (FB+YT confirmed, default 1080p preferred) |
+| 1 | yt-dlp-tui v6.5 | ✅ Production (FB+YT confirmed, default 1080p, multi-SRT ID+EN) |
 | 2 | demucs-tui | ✅ Production |
 | 3 | kamus-tui v16 | ✅ Production (audit) |
 | 4 | Web app | ⚠ Prototype |
