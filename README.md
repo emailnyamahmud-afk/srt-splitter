@@ -21,7 +21,7 @@ ID jalan end-to-end (12 TUI production). Jawa/Sunda nunggu kamus Supabase selesa
 | 9 | srt-editor-tui.py v1.0.1 | Fix typo/konteks SRT hasil translate (glossary + bulk replace) | ✅ Production |
 | 10 | shorts-tui.py v1.1 | Pecah MP4 final jadi N shorts (JSON dari AI) atau N parts (SRT auto-split) | ✅ Production (Shorts 60/60 + Part mode auto-split) |
 | 11 | shorts-csv-tui.py v1.0 | Generate metadata CSV + manifest untuk YouTube Studio | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
-| 12 | merge-tui.py v1.1 | Gabungin multi-video (S1-S4) jadi 1 video panjang | ✅ Production (questionary, checkbox multi-select) |
+| 12 | merge-tui.py v1.2 | Gabungin multi-video (S1-S4) jadi 1 video panjang | ✅ Production (questionary, natural sort, checkbox multi-select) |
 
 ## Pipeline
 

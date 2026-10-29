@@ -25,6 +25,7 @@ Install: pip3 install questionary
 
 import os
 import sys
+import re
 import json
 import glob
 import subprocess
@@ -42,22 +43,32 @@ except ImportError:
 sys.path.insert(0, str(Path(__file__).parent))
 from config import ensure_hdd, MIX_DIR, MERGED_DIR
 
-VERSION = 'v1.1'
+VERSION = 'v1.2'
 
 
 # ============================================================
 # Helpers (pattern sama kayak mix-tui.py / shorts-tui.py)
 # ============================================================
 
+def natural_sort_key(s):
+    """Sort key untuk natural sort: 'S1' < 'S2' < ... < 'S9' < 'S10'.
+    Pakai regex split angka, jadi '5 Tentara ...S10' urut setelah 'S9'.
+    """
+    return [int(text) if text.isdigit() else text.lower()
+            for text in re.split(r'(\d+)', s)]
+
+
 def find_files_in_dir(search_dir, extensions):
-    """Glob files by extension (non-recursive, mirip mix-tui pattern)."""
+    """Glob files by extension (non-recursive, mirip mix-tui pattern).
+    Natural sort biar 'S10' muncul setelah 'S9' (bukan setelah 'S1').
+    """
     files = []
     for ext in extensions:
         for f in glob.glob(os.path.join(search_dir, f'*.{ext}')):
             files.append(os.path.basename(f))
         for f in glob.glob(os.path.join(search_dir, f'*.{ext.upper()}')):
             files.append(os.path.basename(f))
-    files.sort()
+    files.sort(key=natural_sort_key)
     return list(dict.fromkeys(files))  # deduplicate
 
 
