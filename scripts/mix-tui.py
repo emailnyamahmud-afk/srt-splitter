@@ -519,17 +519,17 @@ def pick_force_resolution(source_w, source_h):
         source_label += ' (vertical 9:16)'
 
     choices = [
-        f'Ikut source ({source_label}, no scale, REKOMENDASI) — kualitas terjaga',
+        f'Ikut source ({source_label}, no scale) — kualitas terjaga',
     ]
     if is_vertical:
         choices.extend([
-            'Force 1080p vertical (1080x1920) — untuk konsistensi merge series',
+            'Force 1080p vertical (1080x1920) — untuk konsistensi merge series — REKOMENDASI',
             'Force 720p vertical (720x1280) — hemat storage',
             'Force 480p vertical (480x854) — paling hemat',
         ])
     else:
         choices.extend([
-            'Force 1080p horizontal (1920x1080)',
+            'Force 1080p horizontal (1920x1080) — REKOMENDASI',
             'Force 720p horizontal (1280x720)',
             'Force 480p horizontal (854x480)',
         ])
@@ -538,7 +538,8 @@ def pick_force_resolution(source_w, source_h):
     res_choice = questionary.select(
         'Output resolution (untuk konsistensi merge series):',
         choices=choices,
-        default=choices[0],
+        # v3.10: default = Force 1080p (bukan "Ikut source") — user confirmed
+        default=choices[1] if len(choices) > 1 else choices[0],
     ).ask()
 
     if not res_choice or res_choice.startswith('Ikut source'):
@@ -1405,7 +1406,7 @@ def main():
                 cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub, '-i', envelope_wav_path,
                        '-filter_complex', audio_filter,
                        '-map', '0:v', '-map', '[aout]',
-                       '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
+                       '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',  # v3.10: standardize audio 48000 Hz stereo
                        '-movflags', '+faststart', output]
                 print(f'Command: ffmpeg -i mp4 -i sfx -i dub -i envelope -filter_complex ... -c:v copy -c:a aac -b:a 192k {output}')
             else:
@@ -1414,14 +1415,14 @@ def main():
                 cmd = [ffmpeg, '-y', '-i', mp4, '-i', sfx_wav, '-i', audio_dub,
                        '-filter_complex', filter_complex,
                        '-map', '0:v', '-map', '[aout]',
-                       '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
+                       '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',  # v3.10: standardize audio 48000 Hz stereo
                        '-movflags', '+faststart', output]
                 print(f'Command: ffmpeg ... -c:v copy -c:a aac -b:a 192k {output}')
         else:
             # Simple + Stream copy (C): 2 input (mp4 + dub), no filter, dub copy as-is
             cmd = [ffmpeg, '-y', '-i', mp4, '-i', audio_dub,
                    '-map', '0:v', '-map', '1:a',
-                   '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k',
+                   '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',  # v3.10: standardize audio 48000 Hz stereo
                    '-movflags', '+faststart', output]
             print(f'Command: ffmpeg ... -c:v copy -c:a aac -b:a 192k {output} (Simple, no SFX, no filter)')
     else:
@@ -1525,7 +1526,7 @@ def main():
                            '-filter_complex', filter_complex,
                            '-map', '[vout]', '-map', '[aout]',
                            '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
-                           '-c:a', 'aac', '-b:a', '192k',
+                           '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',  # v3.10: standardize audio 48000 Hz stereo
                            '-movflags', '+faststart', output]
                 else:
                     # Mode F tanpa logo → 4 input (existing)
@@ -1534,7 +1535,7 @@ def main():
                            '-filter_complex', filter_complex,
                            '-map', '[vout]', '-map', '[aout]',
                            '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
-                           '-c:a', 'aac', '-b:a', '192k',
+                           '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',  # v3.10: standardize audio 48000 Hz stereo
                            '-movflags', '+faststart', output]
             else:
                 # Mode B (Full) atau Mode F tanpa envelope (fallback) → 3 input
@@ -1552,7 +1553,7 @@ def main():
                            '-filter_complex', filter_complex,
                            '-map', '[vout]', '-map', '[aout]',
                            '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
-                           '-c:a', 'aac', '-b:a', '192k',
+                           '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',  # v3.10: standardize audio 48000 Hz stereo
                            '-movflags', '+faststart', output]
                 else:
                     # Mode B tanpa logo → 3 input (existing)
@@ -1561,7 +1562,7 @@ def main():
                            '-filter_complex', filter_complex,
                            '-map', '[vout]', '-map', '[aout]',
                            '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
-                           '-c:a', 'aac', '-b:a', '192k',
+                           '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',  # v3.10: standardize audio 48000 Hz stereo
                            '-movflags', '+faststart', output]
         else:
             # Simple + Burn SRT (D): 2 input + subtitle_filter only (no audio filter)
@@ -1579,7 +1580,7 @@ def main():
                        '-filter_complex', filter_complex,
                        '-map', '[vout]', '-map', '1:a',
                        '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
-                       '-c:a', 'aac', '-b:a', '192k',
+                       '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',  # v3.10: standardize audio 48000 Hz stereo
                        '-movflags', '+faststart', output]
             else:
                 # Mode D tanpa logo → 2 input (existing)
@@ -1588,7 +1589,7 @@ def main():
                        '-filter_complex', filter_complex,
                        '-map', '[vout]', '-map', '1:a',
                        '-c:v', 'h264_videotoolbox', '-b:v', video_bitrate,
-                       '-c:a', 'aac', '-b:a', '192k',
+                       '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',  # v3.10: standardize audio 48000 Hz stereo
                        '-movflags', '+faststart', output]
 
         print(f'Command: ffmpeg ... -c:v h264_videotoolbox -b:v {video_bitrate} -c:a aac -b:a 192k {output}')

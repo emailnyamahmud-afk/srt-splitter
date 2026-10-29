@@ -30,7 +30,7 @@ Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 | 4 | Web app | ⚠ Prototype |
 | 5 | SRT editor (web, pakai SRT ID) | ⏳ Pending |
 | 6 | edge-tts-tui v7.4 (paralel-safe, lock file + 429 retry) | ✅ Production |
-| 7 | mix-tui v3.9 | ✅ Production (all tested + logo + fade + force 1080p) |
+| 7 | mix-tui v3.10 | ✅ Production (all tested + logo + fade + force 1080p + audio 48000 Hz) |
 | 8 | whisper-tui v2.0 | ✅ Production (Metal GPU, 5.3x realtime) |
 | 9 | srt-editor-tui v1.0.1 | ✅ Production (fix typo SRT translate) |
 | 10 | shorts-tui v1.1 | ✅ Production (Shorts 60/60 + Part auto-split) |
