@@ -36,7 +36,7 @@ Shorts: Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON
 | 9 | srt-editor-tui v1.0.1 (fix typo SRT hasil translate, glossary bulk replace) | ✅ Production |
 | 10 | shorts-tui v1.1 (pecah MP4: Shorts via AI JSON atau Part via SRT auto-split) | ✅ Production (Shorts 60/60 + Part auto-split) |
 | 11 | shorts-csv-tui v1.0 (metadata CSV + manifest untuk YouTube Studio) | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
-| 12 | merge-tui v1.7 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox, natural sort, hardware detect GPU/CPU, temp di HDD, live ETA, smart scale skip-if-same) | ✅ Production (stream copy + GPU/CPU re-encode) |
+| 12 | merge-tui v1.8 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox, natural sort, hardware detect GPU/CPU, temp di HDD, live ETA, smart scale, audio normalize fix v1.7 bug) | ✅ Production (v1.8 fix audio mismatch) |
 
 ## Struktur Folder
 
@@ -79,16 +79,17 @@ v1.3: Re-encode pakai M1 GPU h264_videotoolbox (bukan CPU).
 v1.4: Hardware detection (konsisten sama whisper-tui/demucs-tui).
 v1.5: Temp files di HDD (BUKAN SSD /tmp).
 v1.6: Live ETA per-file + overall.
-v1.7: **SMART SCALE** — auto-pick MAX res + per-file skip-if-same-res:
-  - Default target = MAX res among files (preserve quality, no downscale)
-  - Per-file: if res == target → SKIP ENCODE (stream copy, instant, no CPU)
-  - Per-file: if res != target → re-encode dengan scale (GPU)
-  - Untuk user case (10 files, res campuran 360p-1440p, target 1440p MAX):
-    - 5 file SKIP (S1,S4,S5,S7,S8 = 1440x2560, stream copy instant)
-    - 5 file encode (S2=360p, S3=1438p, S6=1078p, S9=720p, S10=1080p → scale up)
-  - Penghematan ~50% waktu vs v1.6 (encode semua file)
-  - No quality loss: file 1440p TIDAK di-scale-down ke 1080p
-  - Cleanup: hanya hapus temp file yang di-encode, JANGAN file asli yang SKIP
+v1.7: SMART SCALE — auto-pick MAX res + per-file skip-if-same-res.
+v1.8: AUDIO NORMALIZE — fix audio mismatch (silent + cepat) dari v1.7.
+  - Bug v1.7: file SKIP pakai audio as-is (sample rate ikut source, bisa 44100 Hz),
+    file encode pakai sample rate default (48000 Hz). Concat = sample rate mismatch
+    → VLC baca semua dengan sample rate file pertama → audio cepat/lambat/silent.
+  - v1.8 FIX: SKIP hanya untuk VIDEO (stream copy, instant). Audio SELALU di-encode
+    ke aac 192k 48000 Hz stereo, untuk konsistensi sample rate antara semua file.
+    - File SKIP (res sama): ffmpeg -c:v copy -c:a aac -b:a 192k -ar 48000 -ac 2
+      Video: 0 CPU (stream copy), Audio: ~30 detik per 2.5 jam file (CPU bound, ringan)
+    - File encode (res beda): ffmpeg -vf scale... -c:v h264_videotoolbox -b:v 2M -c:a aac -b:a 192k -ar 48000 -ac 2
+  - Probe sekarang ambil sample_rate + channels untuk detect mismatch (info display).
   - Konsistensi hardware source: whisper.cpp (Metal) + demucs (MPS) + mix-tui (VideoToolbox) + merge-tui (VideoToolbox/CPU)
 
 ## mix-tui v3.7.6 — 6 mode
@@ -136,7 +137,7 @@ Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no m
 - srt-editor-tui v1.0.1: ✅ (glossary 19 entries, 144 replacement di S2-FB-Mandarin)
 - mix-tui v3.9: 6 mode production-ready + logo + fade 100ms + force 1080p resolution (v3.9 NEW)
 - shorts-tui v1.1: ✅ (Shorts 60/60 sukses + Part mode auto-split SRT, stream copy)
-- merge-tui v1.7: ✅ (gabungin multi-video jadi 1 panjang, 3 mode: stream copy/re-encode/res-first, questionary checkbox multi-select, natural sort, hardware detect GPU/CPU fallback, temp files di HDD bukan SSD, live ETA per-file + overall, smart scale skip-if-same-res, konsisten sama whisper/demucs/mix-tui pattern)
+- merge-tui v1.8: ✅ (gabungin multi-video jadi 1 panjang, 3 mode: stream copy/re-encode/res-first, questionary checkbox multi-select, natural sort, hardware detect GPU/CPU fallback, temp files di HDD bukan SSD, live ETA per-file + overall, smart scale, audio normalize fix v1.7 bug, konsisten sama whisper/demucs/mix-tui pattern)
 - shorts-csv-tui v1.0: ✅ (metadata CSV + manifest untuk YouTube Studio, test 60 segment S5, CSV 19.8 KB + manifest 30.4 KB)
 - clean-srt v1.0 (hybrid): ✅ (manual cues 1-750 + heuristic cues 751-2857, 731/2857 changes, output ke clean-srt/S1_Lima_Tentara.id.clean.srt)
 

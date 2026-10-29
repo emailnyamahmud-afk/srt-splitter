@@ -17,7 +17,7 @@ Python TUI untuk workflow dubbing bahasa eksternal (Mandarin, English, Jepang, I
 | 9 | srt-editor-tui.py v1.0.1 (fix typo SRT hasil translate) | ✅ Production |
 | 10 | shorts-tui.py v1.1 (Shorts via AI JSON atau Part via SRT auto-split) | ✅ Production (Shorts 60/60 + Part auto-split) |
 | 11 | shorts-csv-tui.py v1.0 (metadata CSV + manifest untuk YouTube Studio) | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
-| 12 | merge-tui.py v1.7 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox, natural sort, hardware detect GPU/CPU, temp di HDD, live ETA, smart scale) | ✅ Production (stream copy + GPU/CPU re-encode) |
+| 12 | merge-tui.py v1.8 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox, natural sort, hardware detect GPU/CPU, temp di HDD, live ETA, smart scale, audio normalize) | ✅ Production (v1.8 fix audio mismatch) |
 
 ## Pipeline (4 alur)
 
@@ -80,7 +80,7 @@ mix-tui output × N → merge-tui → 1 video panjang
 | demucs-tui.py | Vocal separation (M1 MPS) | HDD/demucs/ |
 | edge-tts-tui.py v7.4 | TTS generation (paralel-safe, lock file + 429 retry) | HDD/tts/ |
 | mix-tui.py v3.9 | Final mix (6 mode, MUTE COMPLETE, force 1080p resolution) | HDD/mix/ |
-| merge-tui.py v1.7 | Gabungin multi-video jadi 1 panjang (3 mode, questionary checkbox, natural sort, hardware detect, temp di HDD, live ETA, smart scale) | HDD/merged/ |
+| merge-tui.py v1.8 | Gabungin multi-video jadi 1 panjang (3 mode, questionary checkbox, natural sort, hardware detect, temp di HDD, live ETA, smart scale, audio normalize) | HDD/merged/ |
 
 ### Kamus
 
@@ -312,7 +312,7 @@ sama → auto-resume (progress tidak hilang).
 Mau mulai dari awal (reset progress)? Hapus `<stem>.working.json`, TUI akan load
 dari `.srt` original.
 
-## merge-tui.py v1.7 — TUI #12: gabungin multi-video jadi 1 panjang
+## merge-tui.py v1.8 — TUI #12: gabungin multi-video jadi 1 panjang
 
 Gabungin output mix-tui (sudah dub ID + burn sub ID) dari beberapa film/season
 jadi 1 video panjang.
@@ -352,6 +352,42 @@ python3 merge-tui.py
 - Linear workflow (bukan main menu loop): Step 1 → 2 → 3 → 4 → 5 → 5a → run
 - Auto-derive output name: `S1-ori-id-final-sub.mp4` → `S1-merged.mp4`
 - Auto-detect mode (Step 3): cek res/codec/fps, suggest mode yang cocok
+
+### v1.8: Audio normalize (fix v1.7 bug — audio silent + cepat)
+
+User feedback: 'setelah user uji VLC = gak sepenuhnya berhasil, audio = parah. banyak yg silen dan banyak suara jadi cepat.'
+
+Bug v1.7: file SKIP pakai audio as-is (sample rate ikut source, bisa 44100 Hz),
+file encode pakai sample rate default videotoolbox (48000 Hz).
+Concat = sample rate mismatch → VLC baca semua dengan sample rate file pertama →
+audio cepat/lambat/silent.
+
+v1.8 FIX: SKIP hanya untuk VIDEO (stream copy, instant). Audio SELALU di-encode
+ke aac 192k 48000 Hz stereo, untuk konsistensi sample rate antara semua file.
+
+```python
+# v1.8: target audio format konsisten
+AUDIO_ARGS = ['-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2']
+
+# File SKIP (res sama): video stream copy + audio encode
+if file.res == target:
+    cmd = ['ffmpeg', '-i', input, '-c:v', 'copy'] + AUDIO_ARGS + [output]
+    # Video: 0 CPU (stream copy), Audio: ~30 detik per 2.5 jam file
+
+# File encode (res beda): video + audio encode
+else:
+    cmd = ['ffmpeg', '-i', input, '-vf', scale_filter] + enc_args + AUDIO_ARGS + [output]
+```
+
+Trade-off v1.8:
+- 5 file SKIP tetap cepat (video stream copy, audio ~30 detik/file)
+- Total SKIP overhead: ~2.5 menit extra (vs v1.7 instant SKIP)
+- Worth it: audio output jadi konsisten, VLC test mulus
+
+Probe tambahan (v1.8):
+- sample_rate (Hz) — detect mismatch antar file
+- channels (stereo/mono) — detect mismatch
+- Display di progress bar: 'audio 44100Hz → 48000Hz'
 
 ### v1.7: Smart Scale (auto-pick MAX res + per-file skip-if-same-res)
 
