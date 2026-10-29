@@ -15,7 +15,7 @@ Pipeline dubbing Mandarin→Jawa end-to-end. Web app + Python TUI.
 | 5 | SRT editor (web) | Pakai SRT Indonesia (Jawa nunggu kamus+web) | ⏳ Pending |
 | 6 | edge-tts-tui.py v7.4 (paralel-safe, lock file, 429 retry) | ✅ Production |
 | 7 | mix-tui.py v3.8.2 | Mix MP4 + audio → final video (6 mode + logo + fade) | ✅ Production (all tested) |
-| 8 | whisper-tui.py v1.1 | Generate SRT dari audio (faster-whisper, M1) | ✅ Production (SRT quality 90-95%) |
+| 8 | whisper-tui.py v2.0 | Generate SRT dari audio (whisper.cpp, Metal GPU M1) | ✅ Production (Metal GPU, 5.3x realtime, 20 min for 2h audio) |
 | 9 | srt-editor-tui.py v1.0.1 | Fix typo/konteks SRT hasil translate (glossary + bulk replace) | ✅ Production |
 | 10 | shorts-tui.py v1.1 | Pecah MP4 final jadi N shorts (JSON dari AI) atau N parts (SRT auto-split) | ✅ Production (Shorts 60/60 + Part mode auto-split) |
 | 11 | shorts-csv-tui.py v1.0 | Generate metadata CSV + manifest untuk YouTube Studio | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |

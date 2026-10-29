@@ -13,7 +13,7 @@ Python TUI untuk workflow dubbing + kamus Jawa.
 | 5 | SRT editor (web, pakai SRT ID) | ⏳ Pending |
 | 6 | edge-tts-tui.py v7.4 (paralel-safe, lock file + 429 retry) | ✅ Production |
 | 7 | mix-tui.py v3.8.2 | ✅ Production (all tested + logo + fade) |
-| 8 | whisper-tui.py v1.1 (faster-whisper) | ✅ Production (SRT quality 90-95%) |
+| 8 | whisper-tui.py v2.0 (whisper.cpp, Metal GPU native) | ✅ Production (Metal M1, 5.3x realtime) |
 | 9 | srt-editor-tui.py v1.0.1 (fix typo SRT hasil translate) | ✅ Production |
 | 10 | shorts-tui.py v1.1 (Shorts via AI JSON atau Part via SRT auto-split) | ✅ Production (Shorts 60/60 + Part auto-split) |
 | 11 | shorts-csv-tui.py v1.0 (metadata CSV + manifest untuk YouTube Studio) | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |

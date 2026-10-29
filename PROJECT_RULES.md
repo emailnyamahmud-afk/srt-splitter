@@ -28,7 +28,7 @@ Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 | 5 | SRT editor (web, pakai SRT ID) | ⏳ Pending |
 | 6 | edge-tts-tui v7.4 (paralel-safe, lock file + 429 retry) | ✅ Production |
 | 7 | mix-tui v3.8.2 | ✅ Production (all tested + logo + fade) |
-| 8 | whisper-tui v1.1 | ✅ Production (SRT quality 90-95%) |
+| 8 | whisper-tui v2.0 | ✅ Production (Metal GPU, 5.3x realtime) |
 | 9 | srt-editor-tui v1.0.1 | ✅ Production (fix typo SRT translate) |
 | 10 | shorts-tui v1.1 | ✅ Production (Shorts 60/60 + Part auto-split) |
 | 11 | shorts-csv-tui v1.0 | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
