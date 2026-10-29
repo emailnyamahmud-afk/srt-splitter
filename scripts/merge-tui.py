@@ -31,6 +31,7 @@ import sys
 import re
 import json
 import glob
+import time
 import subprocess
 import shutil
 import tempfile
@@ -46,7 +47,7 @@ except ImportError:
 sys.path.insert(0, str(Path(__file__).parent))
 from config import ensure_hdd, MIX_DIR, MERGED_DIR
 
-VERSION = 'v1.5'
+VERSION = 'v1.6'
 
 
 # ============================================================
@@ -436,16 +437,24 @@ def pick_bitrate():
 # Merge functions
 # ============================================================
 
-def run_progress(cmd, total_duration_s, list_path=None):
-    """Run ffmpeg dengan progress bar."""
+def run_progress(cmd, total_duration_s, list_path=None,
+                 file_index=None, total_files=None,
+                 overall_processed=0, overall_total=0, overall_start_wall=None):
+    """Run ffmpeg dengan progress bar + ETA.
+
+    Optional ETA params (untuk re-encode multi-file):
+    - file_index, total_files: tampilkan [N/M]
+    - overall_processed, overall_total, overall_start_wall: hitung overall ETA
+    """
     try:
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                 text=True, bufsize=1)
     except FileNotFoundError:
         print('  ❌ ffmpeg gak ditemukan')
         return False
-
     last_pct = -1
+    file_start_wall = time.time()
+    show_eta = file_index is not None and overall_total > 0
     try:
         for line in proc.stdout:
             line = line.rstrip()
@@ -460,13 +469,46 @@ def run_progress(cmd, total_duration_s, list_path=None):
                         pct = min(int(cur * 100 / total_duration_s), 99)
                         if pct > last_pct:
                             bar = '█' * (pct // 2) + '░' * (50 - pct // 2)
-                            print(f'\r  [{bar}] {pct}% ({fmt_dur(cur)}/{fmt_dur(total_duration_s)})',
-                                  end='', flush=True)
+
+                            if show_eta:
+                                # Per-file ETA
+                                elapsed = time.time() - file_start_wall
+                                speed = cur / elapsed if elapsed > 0 else 0
+                                eta_sec = (total_duration_s - cur) / speed if speed > 0 else 0
+
+                                # Overall ETA
+                                overall_cur = overall_processed + cur
+                                overall_pct = overall_cur / overall_total * 100 if overall_total > 0 else 0
+                                overall_elapsed = time.time() - overall_start_wall
+                                overall_speed = overall_cur / overall_elapsed if overall_elapsed > 0 else 0
+                                overall_eta = (overall_total - overall_cur) / overall_speed if overall_speed > 0 else 0
+
+                                # Clear old text + print with ETA
+                                line_out = (
+                                    f'\r  [{file_index}/{total_files}] [{bar}] {pct}% '
+                                    f'({fmt_dur(cur)}/{fmt_dur(total_duration_s)}) '
+                                    f'ETA:{fmt_dur(eta_sec)} ({speed:.1f}x) | '
+                                    f'Overall:{overall_pct:.0f}% ETA:{fmt_dur(overall_eta)}'
+                                )
+                                # Padding biar clear sisa karakter lama
+                                print(line_out.ljust(120), end='', flush=True)
+                            else:
+                                print(f'\r  [{bar}] {pct}% ({fmt_dur(cur)}/{fmt_dur(total_duration_s)})',
+                                      end='', flush=True)
                             last_pct = pct
                     except ValueError:
                         pass
                 elif k == 'progress' and v == 'end':
-                    print(f'\r  [{"█" * 50}] 100% ({fmt_dur(total_duration_s)})')
+                    if show_eta:
+                        elapsed = time.time() - file_start_wall
+                        speed = total_duration_s / elapsed if elapsed > 0 else 0
+                        done_line = (
+                            f'\r  [{file_index}/{total_files}] [{"█" * 50}] 100% '
+                            f'({fmt_dur(total_duration_s)}) — done in {fmt_dur(elapsed)} ({speed:.1f}x)'
+                        )
+                        print(done_line.ljust(120))
+                    else:
+                        print(f'\r  [{"█" * 50}] 100% ({fmt_dur(total_duration_s)})')
                     break
         proc.wait()
     except KeyboardInterrupt:
@@ -529,12 +571,14 @@ def merge_reencode(files, output, target_w, target_h, bitrate, device, encoder):
     print(f'  Total dur   : {fmt_dur(total)}')
 
     # Estimasi waktu (mix-tui benchmark: 2-3 min/jam GPU, 30-40 min/jam CPU)
+    # NOTE: Untuk high-res source (1440p+), filter scale CPU-bound, bisa 5-10 min/jam
     hours = total / 3600
     if device == 'gpu':
-        est_min = max(5, int(hours * 2.5))  # 2.5 min/jam (mix-tui benchmark)
+        est_min = max(5, int(hours * 2.5))  # 2.5 min/jam (mix-tui benchmark, 480p source)
     else:
         est_min = int(hours * 35)  # 35 min/jam (libx264 medium, mix-tui experience)
-    print(f'\n  ⏱️  Estimasi: ~{est_min} menit ({speed_label})')
+    print(f'\n  ⏱️  Estimasi awal: ~{est_min} menit ({speed_label})')
+    print(f'  (Real ETA bakal muncul live di progress bar setelah file 1 jalan)')
     print()
 
     # Buat temp dir di HDD (BUKAN SSD /tmp) — biar SSD gak penuh
@@ -553,6 +597,11 @@ def merge_reencode(files, output, target_w, target_h, bitrate, device, encoder):
     else:
         # libx264: -c:v libx264 -preset medium -crf 20 (fallback, lambat, CPU bunyi)
         enc_args = ['-c:v', encoder, '-preset', 'medium', '-crf', '20']
+
+    # Track overall progress untuk ETA
+    total_duration_all = sum(f['duration'] for f in files)
+    overall_processed = 0
+    overall_start_wall = time.time()
 
     # Fase 1: Encode per-file
     print(f'▶ Fase 1: Encode per-file ({device_label})')
@@ -581,8 +630,12 @@ def merge_reencode(files, output, target_w, target_h, bitrate, device, encoder):
             temp_out,
         ]
 
-        print(f'\n  [{i}/{len(files)}] {f["name"]} ({fmt_dur(f["duration"])})')
-        if not run_progress(cmd, f['duration']):
+        print(f'\n  [{i}/{len(files)}] {f["name"]} ({fmt_dur(f["duration"])}, {f["width"]}x{f["height"]})')
+        if not run_progress(cmd, f['duration'],
+                           file_index=i, total_files=len(files),
+                           overall_processed=overall_processed,
+                           overall_total=total_duration_all,
+                           overall_start_wall=overall_start_wall):
             print(f'\n  ❌ Gagal encode file {i}: {f["name"]}')
             # Cleanup
             for tf in temp_files:
@@ -593,6 +646,8 @@ def merge_reencode(files, output, target_w, target_h, bitrate, device, encoder):
             except OSError:
                 pass
             return False
+
+        overall_processed += f['duration']
 
     # Fase 2: Concat stream copy
     print('\n' + '═' * 64)

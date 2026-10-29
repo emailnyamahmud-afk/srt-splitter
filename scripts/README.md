@@ -17,7 +17,7 @@ Python TUI untuk workflow dubbing bahasa eksternal (Mandarin, English, Jepang, I
 | 9 | srt-editor-tui.py v1.0.1 (fix typo SRT hasil translate) | ✅ Production |
 | 10 | shorts-tui.py v1.1 (Shorts via AI JSON atau Part via SRT auto-split) | ✅ Production (Shorts 60/60 + Part auto-split) |
 | 11 | shorts-csv-tui.py v1.0 (metadata CSV + manifest untuk YouTube Studio) | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
-| 12 | merge-tui.py v1.5 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox, natural sort, hardware detect GPU/CPU, temp di HDD) | ✅ Production (stream copy + GPU/CPU re-encode) |
+| 12 | merge-tui.py v1.6 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox, natural sort, hardware detect GPU/CPU, temp di HDD, live ETA) | ✅ Production (stream copy + GPU/CPU re-encode) |
 
 ## Pipeline (4 alur)
 
@@ -80,7 +80,7 @@ mix-tui output × N → merge-tui → 1 video panjang
 | demucs-tui.py | Vocal separation (M1 MPS) | HDD/demucs/ |
 | edge-tts-tui.py v7.4 | TTS generation (paralel-safe, lock file + 429 retry) | HDD/tts/ |
 | mix-tui.py v3.7.6 | Final mix (6 mode, MUTE COMPLETE) | HDD/mix/ |
-| merge-tui.py v1.5 | Gabungin multi-video jadi 1 panjang (3 mode, questionary checkbox, natural sort, hardware detect, temp di HDD) | HDD/merged/ |
+| merge-tui.py v1.6 | Gabungin multi-video jadi 1 panjang (3 mode, questionary checkbox, natural sort, hardware detect, temp di HDD, live ETA) | HDD/merged/ |
 
 ### Kamus
 
@@ -312,7 +312,7 @@ sama → auto-resume (progress tidak hilang).
 Mau mulai dari awal (reset progress)? Hapus `<stem>.working.json`, TUI akan load
 dari `.srt` original.
 
-## merge-tui.py v1.5 — TUI #12: gabungin multi-video jadi 1 panjang
+## merge-tui.py v1.6 — TUI #12: gabungin multi-video jadi 1 panjang
 
 Gabungin output mix-tui (sudah dub ID + burn sub ID) dari beberapa film/season
 jadi 1 video panjang.
@@ -330,7 +330,7 @@ python3 merge-tui.py
 # Step 4: Pick output path (auto-derive: S1-ori-id-final-sub.mp4 → S1-merged.mp4)
 # Step 5: Pick mode (stream copy / re-encode + target res / re-encode pakai res file #1)
 # Step 5a: Pick device (GPU/CPU) + pick bitrate (2M/4M/6M/8M) untuk re-encode
-# Confirm → run (dengan estimasi waktu berdasarkan device, mix-tui benchmark)
+# Confirm → run (estimasi awal + live ETA per-file + overall saat merge jalan)
 # Output: HDD/merged/{prefix}-merged.mp4
 # Temp files: HDD/Dubbing/.merge_tmp/merge_tmp_XXX/ (BUKAN SSD /tmp)
 ```
@@ -352,6 +352,25 @@ python3 merge-tui.py
 - Linear workflow (bukan main menu loop): Step 1 → 2 → 3 → 4 → 5 → 5a → run
 - Auto-derive output name: `S1-ori-id-final-sub.mp4` → `S1-merged.mp4`
 - Auto-detect mode (Step 3): cek res/codec/fps, suggest mode yang cocok
+
+### v1.6: Live ETA (per-file + overall)
+
+User feedback: 'next gak bisa dibuat eta = agar nampak estimasi waktu?'.
+
+v1.6 FIX: Progress bar sekarang tampilkan ETA live:
+- Per-file: `[1/10] [bar] 51% (01:16:33/02:30:04) ETA:01:14 (2.0x)`
+  - `ETA:01:14` — sisa waktu buat file ini (1 jam 14 menit)
+  - `2.0x` — speed factor (2.0x realtime = 1 jam video = 30 menit wall)
+- Overall: `Overall:5% ETA:04:30:00` — sisa waktu buat SEMUA file (10 file total)
+- Done line: `[1/10] [bar] 100% (02:30:04) — done in 01:15:00 (2.0x)` — file selesai, kasih info durasi wall + speed
+
+Perhitungan:
+```python
+speed = cur_duration / elapsed_wall  # x realtime (e.g., 2.0x = 2x lebih cepat dari realtime)
+eta = remaining_duration / speed     # wall time remaining
+```
+
+Real ETA bisa beda dari estimasi awal (mix-tui benchmark 2-3 min/jam itu buat 480p source, bukan 1440p). High-res source (1440p+) lebih lambat karena filter `scale+pad` CPU-bound, walaupun GPU encode cepat. Untuk 1440p source, real speed ~1-2x realtime (60-120 min/jam wall), bukan 2-3 min/jam.
 
 ### v1.5: Temp files di HDD (BUKAN SSD /tmp)
 

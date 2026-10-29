@@ -36,7 +36,7 @@ Shorts: Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON
 | 9 | srt-editor-tui v1.0.1 (fix typo SRT hasil translate, glossary bulk replace) | ✅ Production |
 | 10 | shorts-tui v1.1 (pecah MP4: Shorts via AI JSON atau Part via SRT auto-split) | ✅ Production (Shorts 60/60 + Part auto-split) |
 | 11 | shorts-csv-tui v1.0 (metadata CSV + manifest untuk YouTube Studio) | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
-| 12 | merge-tui v1.5 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox, natural sort, hardware detect GPU/CPU, temp di HDD) | ✅ Production (stream copy + GPU/CPU re-encode) |
+| 12 | merge-tui v1.6 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox, natural sort, hardware detect GPU/CPU, temp di HDD, live ETA) | ✅ Production (stream copy + GPU/CPU re-encode) |
 
 ## Struktur Folder
 
@@ -61,7 +61,7 @@ Shorts: Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON
 12. GT input preference: pakai SRT English (dari whisper-tui) untuk GT English→ID, lebih akurat dari Mandarin→ID.
 13. clean-srt workflow: heuristic dulu untuk 2000+ cue, manual per-cue cuma untuk cue critical.
 
-## merge-tui v1.5 — gabungin multi-video jadi 1 panjang
+## merge-tui v1.6 — gabungin multi-video jadi 1 panjang
 
 TUI #12. Input: `HDD/mix/*.mp4` (output mix-tui, sudah dub ID + burn sub). Output: `HDD/merged/{prefix}-merged.mp4`.
 
@@ -85,7 +85,12 @@ v1.5: **Temp files di HDD** (BUKAN SSD /tmp):
   - User workflow: scripts di SSD, data di HDD. Temp files = data besar = HDD.
   - `tempfile.mkdtemp(dir=HDD/.merge_tmp/)` — temp ke `HDD/Dubbing/.merge_tmp/`
   - SSD aman, gak penuh
-  - Estimasi waktu realistis pakai mix-tui benchmark: GPU ~2-3 min/jam, CPU ~35 min/jam
+v1.6: **Live ETA** per-file + overall:
+  - Per-file: `[1/10] [bar] 51% (01:16:33/02:30:04) ETA:01:14 (2.0x)`
+  - Overall: `Overall:5% ETA:04:30:00` (across all 10 files)
+  - Speed factor live (e.g., 2.0x realtime)
+  - Done line: `[1/10] [bar] 100% (02:30:04) — done in 01:15:00 (2.0x)`
+  - Real ETA bisa beda dari estimasi awal (mix-tui benchmark 2-3 min/jam itu buat 480p, bukan 1440p — high-res source lebih lambat karena filter scale CPU-bound)
   - Konsistensi hardware source: whisper.cpp (Metal) + demucs (MPS) + mix-tui (VideoToolbox) + merge-tui (VideoToolbox/CPU)
 
 ## mix-tui v3.7.6 — 6 mode
@@ -133,7 +138,7 @@ Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no m
 - srt-editor-tui v1.0.1: ✅ (glossary 19 entries, 144 replacement di S2-FB-Mandarin)
 - mix-tui v3.8.2: 6 mode production-ready + logo + fade 100ms
 - shorts-tui v1.1: ✅ (Shorts 60/60 sukses + Part mode auto-split SRT, stream copy)
-- merge-tui v1.5: ✅ (gabungin multi-video jadi 1 panjang, 3 mode: stream copy/re-encode/res-first, questionary checkbox multi-select, natural sort, hardware detect GPU/CPU fallback, temp files di HDD bukan SSD, konsisten sama whisper/demucs/mix-tui pattern)
+- merge-tui v1.6: ✅ (gabungin multi-video jadi 1 panjang, 3 mode: stream copy/re-encode/res-first, questionary checkbox multi-select, natural sort, hardware detect GPU/CPU fallback, temp files di HDD bukan SSD, live ETA per-file + overall, konsisten sama whisper/demucs/mix-tui pattern)
 - shorts-csv-tui v1.0: ✅ (metadata CSV + manifest untuk YouTube Studio, test 60 segment S5, CSV 19.8 KB + manifest 30.4 KB)
 - clean-srt v1.0 (hybrid): ✅ (manual cues 1-750 + heuristic cues 751-2857, 731/2857 changes, output ke clean-srt/S1_Lima_Tentara.id.clean.srt)
 
