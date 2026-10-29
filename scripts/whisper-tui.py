@@ -1,25 +1,14 @@
 #!/usr/bin/env python3
 """
-whisper-tui.py v1.3 — TUI generate SRT dari audio via faster-whisper
+whisper-tui.py v2.0 — TUI generate SRT dari audio via whisper.cpp (Metal GPU native)
 
-Tugas: speech-to-text saja (generate SRT ori).
-Translate: USER lakukan manual via Google Translate (bukan tugas Whisper).
+v2.0 BREAKING: Rewrite dari faster-whisper (Python) ke whisper.cpp (C++ CLI)
+  - faster-whisper/CTranslate2 TIDAK support Metal di macOS (hanya iOS)
+  - whisper.cpp pakai Metal native via ggml → GPU jalan di M1
+  - User test: "ggml_metal_library_init: using embedded metal library" ✅
+  - Performance: ~3-5x realtime (vs CPU faster-whisper ~1.65x)
 
-v1.3 FIX: Metal detection lebih robust — print actual error, secondary check via torch MPS.
-  - Bug v1.2: CTranslate2.get_supported_compute_types("metal") gagal silently
-  - Fix: print actual exception, lalu cek torch.backends.mps.is_available()
-  - Kalau MPS tersedia (demucs proof itu), coba load device=metal langsung
-  - Kalau Metal load gagal, kasih instruksi upgrade CTranslate2
-
-v1.2: Auto-detect Metal (M1 GPU) untuk 2-4x lebih cepat + fan tidak bunyi.
-  - CTranslate2 support device="metal" + compute_type="float16" di Apple Silicon
-  - Auto-detect: try Metal first, fallback ke CPU kalau gagal
-  - Metal: ~3-6x realtime (vs CPU int8: ~1.65x realtime)
-
-v1.1 FIX: bypass av library (av 19.x incompatible dengan faster-whisper).
-  - Decode audio via ffmpeg ke numpy float32 array (16kHz mono)
-  - Pass numpy array ke faster-whisper (bukan file path)
-  - Tidak butuh av library sama sekali, no version conflict
+v1.x (deprecated): pakai faster-whisper Python library (CPU only di macOS)
 
 Workflow:
   yt-dlp → MP4 + MP3 (audio Mandarin/English/ID)
@@ -28,10 +17,15 @@ Workflow:
   edge-tts-tui → SRT ID → dub Indonesia
   mix-tui → MP4 + MP3 + dub + SRT ID → final video
 
-Implementasi: faster-whisper (CTranslate2 backend, 4x cepat, RAM aman)
-Model: medium (1.5 GB, default — akurasi bagus untuk Mandarin)
+Prerequisites:
+  brew install whisper.cpp     # Metal GPU native
+  brew install ffmpeg           # audio decode
 
-Install: pip3 install faster-whisper
+Model: ggml-medium.bin (1.5 GB, default — akurasi bagus untuk Mandarin)
+  Download: curl -L -o /Volumes/HDD/Dubbing/input/ggml-medium.bin \
+    "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.bin"
+
+Install: pip3 install questionary (hanya untuk TUI, bukan whisper)
 Usage: python3 whisper-tui.py
 """
 
@@ -39,29 +33,16 @@ import os
 import sys
 import time
 import subprocess
-import numpy as np
+import shutil
 from pathlib import Path
 
 try:
     import questionary
 except ImportError:
-    print('\n❌ pip3 install questionary faster-whisper')
+    print('\n❌ pip3 install questionary')
     sys.exit(1)
 
-try:
-    from faster_whisper import WhisperModel
-except ImportError:
-    print()
-    print('═' * 64)
-    print('❌ faster-whisper belum terinstall!')
-    print('═' * 64)
-    print()
-    print('   Install dengan:')
-    print()
-    print('   pip3 install faster-whisper')
-    print()
-    print('═' * 64)
-    sys.exit(1)
+VERSION = 'v2.0'
 
 
 def clear_screen():
@@ -71,10 +52,37 @@ def clear_screen():
 def print_banner():
     clear_screen()
     print('╔' + '═' * 64 + '╗')
-    print('║  🎤 Whisper TUI — Generate SRT dari audio                  ║')
-    print('║  faster-whisper (CTranslate2, M1 optimized)             ║')
+    print('║  🎤 Whisper TUI v2.0 — whisper.cpp (Metal GPU native)     ║')
+    print('║  Generate SRT dari audio — M1 GPU acceleration           ║')
     print('╚' + '═' * 64 + '╝')
     print()
+
+
+def find_whisper_cli():
+    """Cari whisper-cli binary."""
+    path = shutil.which('whisper-cli')
+    if path:
+        return path
+    for loc in ['/opt/homebrew/bin/whisper-cli', '/usr/local/bin/whisper-cli']:
+        if os.path.isfile(loc):
+            return loc
+    return None
+
+
+def find_model():
+    """Cari ggml model file (.bin) di lokasi umum."""
+    search_dirs = [
+        '/Volumes/HDD/Dubbing/input',
+        os.path.expanduser('~/Dubbing'),
+        os.path.expanduser('~/.cache/whisper'),
+    ]
+    for d in search_dirs:
+        if not os.path.isdir(d):
+            continue
+        for f in sorted(os.listdir(d)):
+            if f.startswith('ggml-') and f.endswith('.bin'):
+                return os.path.join(d, f)
+    return None
 
 
 def find_files_in_dir(search_dir, extensions):
@@ -118,27 +126,6 @@ def format_duration(seconds):
     return f'{s}s'
 
 
-def format_srt_timestamp(seconds):
-    h = int(seconds // 3600)
-    m = int((seconds % 3600) // 60)
-    s = int(seconds % 60)
-    ms = int((seconds % 1) * 1000)
-    return f'{h:02d}:{m:02d}:{s:02d},{ms:03d}'
-
-
-def write_srt(segments, output_path):
-    with open(output_path, 'w', encoding='utf-8') as f:
-        for i, seg in enumerate(segments, 1):
-            start = format_srt_timestamp(seg['start'])
-            end = format_srt_timestamp(seg['end'])
-            text = seg['text'].strip()
-            f.write(f'{i}\n')
-            f.write(f'{start} --> {end}\n')
-            f.write(f'{text}\n')
-            f.write('\n')
-    return len(segments)
-
-
 def get_audio_duration(path):
     try:
         result = subprocess.run(
@@ -151,310 +138,258 @@ def get_audio_duration(path):
         return 0
 
 
-def decode_audio_via_ffmpeg(audio_path):
-    """v1.1 FIX: Decode audio via ffmpeg ke numpy float32 array (16kHz mono).
-
-    Bypass av library entirely (av 19.x incompatible dengan faster-whisper).
-    ffmpeg decode → raw PCM float32 → numpy array.
-
-    Returns: numpy float32 array, sample_rate (16000)
-    """
-    print('  ℹ Decoding audio via ffmpeg (bypass av library)...')
-    result = subprocess.run(
-        ['ffmpeg', '-i', audio_path,
-         '-f', 'f32le',      # 32-bit float little-endian
-         '-ar', '16000',     # 16kHz (Whisper standard)
-         '-ac', '1',         # mono
-         '-'],               # output to stdout
-        capture_output=True, timeout=3600  # 1 hour max
-    )
-    if result.returncode != 0:
-        raise RuntimeError(f'ffmpeg decode gagal: {result.stderr.decode()[-500:]}')
-
-    audio_np = np.frombuffer(result.stdout, dtype=np.float32)
-    print(f'  ✓ Audio decoded: {len(audio_np)} samples, {len(audio_np)/16000:.1f}s @ 16kHz mono')
-    return audio_np, 16000
+def sanitize_filename(name):
+    import re
+    name = re.sub(r'[\\/:*?"<>|]', '', name).strip()
+    return name[:200] if len(name) > 200 else (name or 'audio')
 
 
 def main():
     print_banner()
 
-    print('📋 Tugas Whisper: generate SRT dari audio (speech-to-text)')
-    print('   Translate: USER lakukan manual via Google Translate (bukan tugas Whisper)')
-    print()
-    print('   Navigasi: ↑↓ arrow keys, Enter konfirmasi, q batal')
-    print()
-
-    total = 5
-
-    # Step 1: Pilih audio
-    print(f'▶ Step 1/{total}: Pilih file audio')
-    from config import INPUT_DIR, ensure_hdd
-    audio_path = select_file('Audio (MP3/M4A/WAV):', ['mp3', 'm4a', 'wav', 'flac'])
-    if not audio_path:
-        print('Batal.'); sys.exit(0)
-    if not os.path.isfile(audio_path):
-        print(f'\n❌ File tidak ditemukan: {audio_path}')
+    # Check whisper-cli
+    whisper_cli = find_whisper_cli()
+    if not whisper_cli:
+        print('❌ whisper-cli belum terinstall!')
+        print('   Install: brew install whisper.cpp')
         sys.exit(1)
+    print(f'whisper-cli: {whisper_cli}')
+
+    # Check model
+    model_path = find_model()
+    if model_path:
+        model_size = os.path.getsize(model_path) / 1024 / 1024 / 1024
+        print(f'model:       {model_path} ({model_size:.1f} GB)')
+    else:
+        print('⚠ Model ggml-*.bin tidak ditemukan!')
+        print('  Download medium model (1.5 GB, recommended untuk Mandarin):')
+        print('  curl -L -o /Volumes/HDD/Dubbing/input/ggml-medium.bin \\')
+        print('    "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.bin"')
+        # Allow manual input
+        model_path = questionary.text('Path model .bin (ketik manual):').ask()
+        if not model_path or not os.path.isfile(model_path):
+            print('❌ Model tidak ditemukan. Download dulu.')
+            sys.exit(1)
+    print()
+
+    # === Step 1: Pilih audio ===
+    print('▶ Step 1/5: Pilih file audio')
+    audio_path = select_file('Audio (MP3/M4A/WAV):', ['mp3', 'm4a', 'wav'])
+    if not audio_path:
+        print('Batal.')
+        sys.exit(0)
+    audio_path = os.path.expanduser(audio_path)
+    if not os.path.isfile(audio_path):
+        print(f'❌ File tidak ditemukan: {audio_path}')
+        sys.exit(1)
+
     audio_size = os.path.getsize(audio_path) / 1024 / 1024
     audio_dur = get_audio_duration(audio_path)
     print(f'  ✓ {os.path.basename(audio_path)} ({audio_size:.1f} MB, {format_duration(audio_dur)})')
     print()
 
-    # Step 2: Pilih bahasa
-    print(f'▶ Step 2/{total}: Pilih bahasa audio')
+    # === Step 2: Pilih bahasa ===
+    print('▶ Step 2/5: Pilih bahasa audio')
     lang_choice = questionary.select(
         'Bahasa audio:',
         choices=[
-            'Auto-detect (Whisper detect otomatis)',
             'Mandarin (Chinese)',
-            'Indonesia',
             'English',
+            'Indonesia',
             'Japanese',
             'Korean',
+            'Auto-detect',
         ],
-        default='Auto-detect (Whisper detect otomatis)',
+        default='Mandarin (Chinese)',
     ).ask()
+
     lang_map = {
-        'Auto-detect': None,
-        'Mandarin': 'zh',
-        'Indonesia': 'id',
+        'Mandarin (Chinese)': 'zh',
         'English': 'en',
+        'Indonesia': 'id',
         'Japanese': 'ja',
         'Korean': 'ko',
+        'Auto-detect': 'auto',
     }
-    lang_code = None
-    for key, val in lang_map.items():
-        if key in lang_choice:
-            lang_code = val
-            break
-    lang_display = lang_choice.split('(')[0].strip() if '(' in lang_choice else lang_choice
-    print(f'  ✓ {lang_display}')
+    lang_code = lang_map.get(lang_choice, 'auto')
+    print(f'  ✓ {lang_choice}')
     print()
 
-    # Step 3: Pilih model
-    print(f'▶ Step 3/{total}: Pilih model Whisper')
-    model_choice = questionary.select(
-        'Model:',
-        choices=[
-            'medium (1.5 GB, akurasi bagus, ~20-30 menit untuk 2 jam audio) — REKOMENDASI',
-            'small (244 MB, cepat ~10 menit, akurasi OK untuk clear audio)',
-            'large-v3 (3 GB, terbaik, ~60-90 menit, RAM ~5-10 GB)',
-            'base (74 MB, cepat ~3 menit, akurasi kurang — tidak rekomendasi)',
-        ],
-        default='medium (1.5 GB, akurasi bagus, ~20-30 menit untuk 2 jam audio) — REKOMENDASI',
-    ).ask()
-    if 'medium' in model_choice:
-        model_size = 'medium'
-    elif 'small' in model_choice:
-        model_size = 'small'
-    elif 'large' in model_choice:
-        model_size = 'large-v3'
+    # === Step 3: Pilih model ===
+    print('▶ Step 3/5: Pilih model Whisper')
+    # Detect available models
+    model_dir = os.path.dirname(model_path)
+    available_models = []
+    if os.path.isdir(model_dir):
+        for f in sorted(os.listdir(model_dir)):
+            if f.startswith('ggml-') and f.endswith('.bin'):
+                fpath = os.path.join(model_dir, f)
+                fsize = os.path.getsize(fpath) / 1024 / 1024 / 1024
+                name = f.replace('ggml-', '').replace('.bin', '')
+                available_models.append((fpath, name, fsize))
+
+    if len(available_models) > 1:
+        model_choices = []
+        for fpath, name, fsize in available_models:
+            label = f'{name} ({fsize:.1f} GB)'
+            if name == 'medium':
+                label += ' — REKOMENDASI'
+            model_choices.append(questionary.Choice(label, value=fpath))
+        model_path = questionary.select('Model:', choices=model_choices,
+                                        default=available_models[0][0] if available_models else model_path).ask()
     else:
-        model_size = 'base'
-    print(f'  ✓ {model_size}')
+        print(f'  ✓ {os.path.basename(model_path)} (hanya 1 model tersedia)')
+    print(f'  ✓ {os.path.basename(model_path)}')
     print()
 
-    # Step 4: Output SRT
-    print(f'▶ Step 4/{total}: Pilih nama output SRT')
-    audio_stem = Path(audio_path).stem
-    if audio_stem.endswith('-audio'):
-        audio_stem = audio_stem[:-6]
-    lang_suffix = lang_code if lang_code else 'auto'
-    default_dir = str(INPUT_DIR) if ensure_hdd() else os.path.dirname(audio_path)
-    default_output = os.path.join(default_dir, f'{audio_stem}.{lang_suffix}.srt')
-    print(f'  ℹ Default output: {default_output}')
-    output_path = questionary.text('Output SRT:', default=default_output).ask()
-    output_path = os.path.expanduser(output_path or default_output)
-    out_dir = os.path.dirname(output_path)
-    if out_dir and not os.path.isdir(out_dir):
-        os.makedirs(out_dir, exist_ok=True)
-    print(f'  ✓ {output_path}')
+    # === Step 4: Pilih nama output SRT ===
+    print('▶ Step 4/5: Pilih nama output SRT')
+    base_name = Path(audio_path).stem
+    ext_map = {'zh': '.zh', 'en': '.en', 'id': '.id', 'ja': '.ja', 'ko': '.ko', 'auto': ''}
+    default_output = os.path.join(os.path.dirname(audio_path), f'{base_name}{ext_map.get(lang_code, "")}.srt')
+    output_srt = questionary.text('Output SRT:', default=default_output).ask()
+    if not output_srt:
+        output_srt = default_output
+    output_srt = os.path.expanduser(output_srt)
+    # whisper.cpp output file (without extension)
+    output_base = output_srt.replace('.srt', '')
+    print(f'  ✓ {output_srt}')
     print()
 
-    # Step 5: Konfirmasi
-    print(f'▶ Step 5/{total}: Konfirmasi')
+    # === Step 5: Konfirmasi ===
+    print('▶ Step 5/5: Konfirmasi')
     print()
     print('╔' + '═' * 64 + '╗')
     print('║  📋 Ringkasan:' + ' ' * 49 + '║')
     print('╠' + '═' * 64 + '╣')
     print(f'║  Audio   : {os.path.basename(audio_path)[:46]:<46}║')
-    print(f'║  Size    : {audio_size:.1f} MB{"":<37}║')
+    print(f'║  Size    : {f"{audio_size:.1f} MB":<46}║')
     print(f'║  Durasi  : {format_duration(audio_dur):<46}║')
-    print(f'║  Bahasa  : {lang_display[:46]:<46}║')
-    print(f'║  Model   : {model_size[:46]:<46}║')
-    print(f'║  Output  : {os.path.basename(output_path)[:46]:<46}║')
+    print(f'║  Bahasa  : {lang_choice[:46]:<46}║')
+    print(f'║  Model   : {os.path.basename(model_path)[:46]:<46}║')
+    print(f'║  Output  : {os.path.basename(output_srt)[:46]:<46}║')
+    print(f'║  Engine  : {"whisper.cpp (Metal GPU)":<46}║')
+    # Estimasi: Metal ~3-5x realtime
     if audio_dur > 0:
-        est_factor = {'medium': 0.7, 'small': 0.3, 'large-v3': 1.5, 'base': 0.15}
-        est_time = audio_dur * est_factor.get(model_size, 0.7) / 60
-        print(f'║  Estimasi: ~{est_time:.0f} menit (M1){"":<34}║')
+        est_min = audio_dur / 60 / 3.5  # 3.5x realtime avg
+        print(f'║  Estimasi: {f"~{int(est_min)} menit (Metal GPU ~3.5x realtime)":<46}║')
     print('╚' + '═' * 64 + '╝')
     print()
     print('  ℹ Whisper fokus: generate SRT ori (speech-to-text)')
     print('    Translate: USER lakukan manual via Google Translate')
     print()
 
-    confirm = questionary.confirm('Mulai Whisper?', default=True).ask()
-    if not confirm:
-        print('Batal.'); sys.exit(0)
+    if not questionary.confirm('Mulai Whisper?', default=True).ask():
+        print('Batal.')
+        sys.exit(0)
 
-    # === Run Whisper ===
-    print('\n' + '═' * 64)
-    print(f'🚀 Mulai Whisper... (model: {model_size}, bahasa: {lang_display})')
-    print('═' * 64 + '\n')
-
-    # Load model
-    # v1.3: Metal detection — print actual error, secondary check via torch MPS
-    print('▶ Loading model...')
-    device = "cpu"
-    compute_type = "int8"
-
-    # Step 1: Cek CTranslate2 Metal support
-    try:
-        import ctranslate2
-        ct2_version = getattr(ctranslate2, '__version__', 'unknown')
-        metal_types = ctranslate2.get_supported_compute_types("metal")
-        if "float16" in metal_types or "float32" in metal_types:
-            device = "metal"
-            compute_type = "float16" if "float16" in metal_types else "float32"
-            print(f'  ✓ Apple Metal terdeteksi — GPU acceleration (device=metal, {compute_type})')
-        else:
-            print(f'  ℹ Metal tersedia tapi tidak ada float16/float32 — pakai CPU')
-    except Exception as e:
-        # Step 2: Secondary check via torch MPS (lebih reliable di M1)
-        print(f'  ℹ CTranslate2 Metal check gagal: {e}')
-        try:
-            import subprocess as _sp
-            _r = _sp.run(
-                [sys.executable, '-c', 'import torch; print("mps" if torch.backends.mps.is_available() else "cpu")'],
-                capture_output=True, text=True, timeout=10
-            )
-            if _r.returncode == 0 and 'mps' in _r.stdout:
-                print(f'  ℹ PyTorch MPS tersedia — M1 GPU terkonfirmasi')
-                print(f'  ℹ Coba load dengan device=metal langsung (skip get_supported_compute_types)...')
-                device = "metal"
-                compute_type = "float16"
-            else:
-                print(f'  ℹ PyTorch MPS juga tidak tersedia — pakai CPU')
-        except Exception as e2:
-            print(f'  ℹ Torch check juga gagal: {e2} — pakai CPU')
-
-        # v1.3: Print troubleshooting instructions untuk Python 3.14 issue
-        py_version = f"{sys.version_info.major}.{sys.version_info.minor}"
-        if device == "cpu" and py_version >= "3.13":
-            print()
-            print(f'  ⚠ GPU (Metal) TIDAK terpakai — Whisper jalan di CPU (lambat, fan bunyi)')
-            print(f'  ⚠ Penyebab: Python {py_version} terlalu baru — CTranslate2 belum compile Metal untuk versi ini')
-            print(f'  ⚠ Solusi: Recreate venv dengan Python 3.12 (CTranslate2 Metal ready untuk 3.12):')
-            print(f'     brew install python@3.12')
-            print(f'     mv ~/Dubbing/venv ~/Dubbing/venv-backup-py{py_version}')
-            print(f'     /opt/homebrew/bin/python3.12 -m venv ~/Dubbing/venv')
-            print(f'     source ~/Dubbing/venv/bin/activate')
-            print(f'     pip3 install questionary edge-tts yt-dlp torchaudio demucs numpy faster-whisper ctranslate2')
-            print(f'  ⚠ Setelah recreate venv, Whisper akan pakai GPU (Metal) — 2-3x lebih cepat, fan tenang')
-            print()
-
-    # Step 3: Try load model
-    try:
-        model = WhisperModel(model_size, device=device, compute_type=compute_type)
-    except Exception as e:
-        if device == "metal":
-            print(f'  ⚠ Metal load gagal ({e})')
-            print(f'  ⚠ Coba upgrade CTranslate2: pip3 install ctranslate2 --upgrade')
-            print(f'  ⚠ Fallback ke CPU (device=cpu, int8)...')
-            device = "cpu"
-            compute_type = "int8"
-            model = WhisperModel(model_size, device=device, compute_type=compute_type)
-        else:
-            raise e
-
-    print(f'  ✓ Model {model_size} loaded (device={device}, {compute_type})')
-
-    # v1.1 FIX: Decode audio via ffmpeg (bypass av library)
-    print(f'\n▶ Decoding audio...')
-    try:
-        audio_np, sample_rate = decode_audio_via_ffmpeg(audio_path)
-    except Exception as e:
-        print(f'\n❌ Gagal decode audio: {e}')
-        sys.exit(1)
-
-    # Transcribe (pass numpy array, bukan file path)
-    print(f'\n▶ Transcribing audio...')
-    print(f'   Progress: (Whisper tidak punya native progress bar, tunggu sampai selesai)')
-    if audio_dur > 0:
-        est_factor = {'medium': 0.7, 'small': 0.3, 'large-v3': 1.5, 'base': 0.15}
-        est_time = audio_dur * est_factor.get(model_size, 0.7) / 60
-        print(f'   Estimasi: {format_duration(audio_dur)} audio → ~{est_time:.0f} menit')
+    # === Run whisper.cpp ===
+    print()
+    print('═' * 64)
+    print(f'🚀 Mulai Whisper... (model: {os.path.basename(model_path)}, bahasa: {lang_choice})')
+    print('═' * 64)
     print()
 
+    # Build whisper-cli command
+    cmd = [
+        whisper_cli,
+        '-m', model_path,
+        '-l', lang_code,
+        '-f', audio_path,
+        '-t', '8',          # 8 threads
+        '-osrt',            # output SRT format
+        '-of', output_base,  # output file (without extension)
+    ]
+
+    # Run with real-time output (stream stdout/stderr)
+    print('▶ Running whisper-cli...')
+    print(f'  Command: {" ".join(cmd[:4])}... -osrt -of {os.path.basename(output_base)}')
+    print()
     start_time = time.time()
-    segments = []
+
     try:
-        segments_gen, info = model.transcribe(
-            audio_np,            # v1.1: numpy array (bukan file path)
-            language=lang_code,
-            beam_size=5,
-            vad_filter=True,
-            vad_parameters=dict(min_silence_duration_ms=500),
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
         )
 
-        if lang_code is None:
-            detected_lang = info.language
-            detected_prob = info.language_probability
-            print(f'  ℹ Bahasa terdeteksi: {detected_lang} ({detected_prob*100:.1f}% confidence)')
-            if '.auto.srt' in output_path:
-                output_path = output_path.replace('.auto.srt', f'.{detected_lang}.srt')
-                print(f'     Output diperbarui: {output_path}')
-            print()
+        cue_count = 0
+        metal_detected = False
+        for line in process.stdout:
+            line = line.rstrip()
+            # Detect Metal in startup log
+            if 'metal' in line.lower():
+                if not metal_detected:
+                    metal_detected = True
+                    print(f'  ✅ {line}')
+                else:
+                    # Skip verbose metal library compile logs
+                    if 'ggml_metal_library_compile_all' in line:
+                        continue
+                    print(f'  ℹ {line}')
+            elif 'whisper_model_load' in line or 'system_info' in line:
+                print(f'  ℹ {line}')
+            elif line.startswith('[') and '] ->' in line:
+                # Progress: [00:00:00.000 --> 00:00:10.000]
+                cue_count += 1
+                if cue_count % 50 == 0:
+                    elapsed = time.time() - start_time
+                    print(f'   [{cue_count} cues] elapsed: {format_duration(elapsed)} | last: {line[:60]}')
+            elif line.strip():
+                # Other output (errors, warnings, final result)
+                if 'error' in line.lower() or 'Error' in line:
+                    print(f'  ❌ {line}')
+                else:
+                    print(f'  {line}')
 
-        seg_count = 0
-        for seg in segments_gen:
-            segments.append({
-                'start': seg.start,
-                'end': seg.end,
-                'text': seg.text,
-            })
-            seg_count += 1
-            if seg_count % 50 == 0:
-                elapsed = time.time() - start_time
-                print(f'   [{seg_count} cues] elapsed: {format_duration(elapsed)} | last: {format_srt_timestamp(seg.start)} → {format_srt_timestamp(seg.end)}')
+        process.wait()
+        elapsed = time.time() - start_time
 
     except KeyboardInterrupt:
         print('\n\n⏹ Dibatalkan user.')
-        if segments:
-            partial_path = output_path.replace('.srt', '.partial.srt')
-            n = write_srt(segments, partial_path)
-            print(f'   Partial SRT disimpan: {partial_path} ({n} cues)')
+        process.kill()
         sys.exit(130)
     except Exception as e:
-        print(f'\n❌ Gagal transcribe: {e}')
-        import traceback
-        print(traceback.format_exc()[:500])
+        print(f'\n❌ Error: {e}')
         sys.exit(1)
 
-    elapsed = time.time() - start_time
-
-    # Write SRT
-    print(f'\n▶ Writing SRT...')
-    n_cues = write_srt(segments, output_path)
-    srt_size = os.path.getsize(output_path) / 1024
-
+    # === Hasil ===
     print()
     print('═' * 64)
-    print('✅ SELESAI!')
-    print(f'   Output: {output_path}')
-    print(f'   Cues: {n_cues}')
-    print(f'   Size: {srt_size:.1f} KB')
-    print(f'   Waktu: {format_duration(elapsed)}')
-    if lang_code is None:
-        print(f'   Bahasa: {detected_lang} (auto-detect)')
+    print('✅ SELESAI!\n')
+    print(f'  Waktu: {format_duration(elapsed)}')
+
+    if metal_detected:
+        print(f'  Engine: whisper.cpp (Metal GPU) ✅')
+        if audio_dur > 0:
+            realtime_factor = audio_dur / elapsed
+            print(f'  Speed:  {realtime_factor:.1f}x realtime')
+    else:
+        print(f'  Engine: whisper.cpp (CPU) ⚠ — Metal tidak terdeteksi')
+
+    # Cek output file
+    if os.path.isfile(output_srt):
+        srt_size = os.path.getsize(output_srt) / 1024
+        # Count cues
+        with open(output_srt, 'r', encoding='utf-8') as f:
+            cue_count = sum(1 for line in f if line.strip().isdigit())
+        print(f'  Output: {output_srt}')
+        print(f'  Size:   {srt_size:.1f} KB, {cue_count} cue')
+    else:
+        print(f'  ⚠ Output tidak ditemukan: {output_srt}')
+        # Cek alternative extension
+        alt = output_base + '.srt'
+        if os.path.isfile(alt) and alt != output_srt:
+            print(f'  ℹ Coba: {alt}')
+
     print()
     print('🎬 Langkah berikutnya:')
-    print(f'   1. Translate: buka Google Translate → paste SRT → translate ke ID')
-    srt_id_path = output_path.replace(f'.{lang_code or detected_lang}.', '.id.') if lang_code is None else output_path.replace(f'.{lang_code}.', '.id.')
-    print(f'   2. Save SRT ID → {srt_id_path}')
-    print(f'   3. edge-tts: python3 edge-tts-tui.py')
-    print(f'   4. mix:     python3 mix-tui.py')
+    print(f'   1. Cek SRT di: {output_srt}')
+    print(f'   2. Translate manual via Google Translate (bukan tugas Whisper)')
+    print(f'   3. edge-tts-tui: python3 edge-tts-tui.py')
     print('═' * 64)
 
 
@@ -465,7 +400,7 @@ if __name__ == '__main__':
         print('\n\n⏹ Dibatalkan user.')
         sys.exit(130)
     except Exception as e:
-        print(f'\n❌ {e}', file=sys.stderr)
+        print(f'\n❌ Error: {e}', file=sys.stderr)
         import traceback
-        print(f'\n{traceback.format_exc()[:500]}', file=sys.stderr)
+        print(f'\nStack trace:\n{traceback.format_exc()[:2000]}', file=sys.stderr)
         sys.exit(1)
