@@ -1600,47 +1600,47 @@ Kamu pilih orang
 
 401
 00:25:33,700 --> 00:25:34,700
-Desa ini sangat lincah
+Yang cekatan di desa
 
 402
 00:25:34,700 --> 00:25:35,700
-Wanita pemberani dan remaja putri
+Wanita pemberani dan gadis muda
 
 403
 00:25:35,700 --> 00:25:36,700
-Itu semua milikmu untuk diambil alih
+Semua ikut perintahmu
 
 404
 00:25:36,700 --> 00:25:38,700
-Ikuti instruksi Nona Chen
+Ikuti perintah Nona Chen
 
 405
 00:25:38,700 --> 00:25:40,789
-Nona Chen, terima kasih atas kerja keras Anda
+Nona Chen, makasih kerja kerasnya
 
 406
 00:25:40,789 --> 00:25:42,789
-Semua wanita di desa meneleponmu
+Semua wanita desa ikut perintahmu
 
 407
 00:25:42,789 --> 00:25:43,789
-Apa yang kamu inginkan?
+Mau apa?
 
 408
 00:25:43,789 --> 00:25:44,789
-Apa saja yang hilang
+Kurang apa?
 
 409
 00:25:44,789 --> 00:25:45,789
-Bicaralah saja
+Bilang saja
 
 410
 00:25:47,400 --> 00:25:48,400
-Saya ingin rumah besar
+Aku butuh ruangan besar
 
 411
 00:25:48,400 --> 00:25:49,400
-Ingin air panas
+Air panas
 
 412
 00:25:49,400 --> 00:25:50,400
@@ -1648,79 +1648,79 @@ Garam
 
 413
 00:25:50,400 --> 00:25:51,400
-Minuman keras
+Arak
 
 414
 00:25:51,400 --> 00:25:52,400
-Bersih dan tidak tipis
+Bersih dan tebal
 
 415
 00:25:52,400 --> 00:25:53,400
-Semakin banyak semakin baik
+Makin banyak makin baik
 
 416
 00:25:53,400 --> 00:25:54,619
-Mereka yang terluka parah harus dibawa ke saya terlebih dahulu.
+Yang berat luka, bawa ke sini dulu
 
 417
 00:25:54,619 --> 00:25:55,619
-Kosongkan aula leluhur
+Kosongkan ruang leluhur
 
 418
 00:25:55,619 --> 00:25:56,619
-Pindahkan meja altar
+Pindah meja altar
 
 419
 00:25:56,619 --> 00:25:57,619
-disebarkan di atas tikar jerami
+Hamparkan tikar jerami
 
 420
 00:25:57,619 --> 00:25:59,619
-Hapus semua panel pintu yang dapat digunakan
+Bongkar semua pintu yang bisa dipakai
 
 421
 00:25:59,619 --> 00:26:00,619
-cepat
+Cepat
 
 422
 00:26:00,619 --> 00:26:26,460
-Letakkan di sebelah kiri
+Taruh di kiri
 
 423
 00:26:26,460 --> 00:26:27,460
-Mereka yang mengeluarkan banyak darah dibawa masuk terlebih dahulu
+Yang banyak pendarahan, masuk dulu
 
 424
 00:26:27,460 --> 00:26:29,460
-Untuk luka ringan kalau bisa sendiri ke kanan dulu.
+Luka ringan yang bisa jalan, ke kanan dulu
 
 425
 00:26:30,460 --> 00:26:31,460
-Anak-anak dan wanita, yang terluka menundukkan kepala
+Anak dan wanita yang cedera, di belakang
 
 426
 00:26:31,460 --> 00:26:32,460
-Jangan menghalangi pintu
+Jangan halangi pintu
 
 427
 00:26:33,940 --> 00:26:34,940
-Air panas terus mendidih
+Air panas terus direbus
 
 428
 00:26:34,940 --> 00:26:36,029
-Jangan rusak
+Jangan berhenti
 
 429
 00:26:36,029 --> 00:26:37,029
-Pisahkan gelang kain
+Pisahin kain perban
 
 430
 00:26:37,029 --> 00:26:38,029
-Letakkan yang bersih di sini
+Yang bersih taruh sini
 
 431
 00:26:38,029 --> 00:26:39,029
-Buang yang kotor
+Yang kotor buang
 
 432
 00:26:39,029 --> 00:26:40,029
@@ -1732,71 +1732,71 @@ Hangat
 
 434
 00:26:41,029 --> 00:26:42,029
-Digunakan untuk mencuci luka
+Buat cuci luka
 
 435
 00:26:42,029 --> 00:26:43,029
-Hemostasis terlebih dahulu
+Hentikan pendarahan dulu
 
 436
 00:26:43,029 --> 00:26:44,029
-Bersihkan lagi
+Lalu bersihkan
 
 437
 00:26:44,029 --> 00:26:45,029
-Perban lagi
+Lalu balut
 
 438
 00:26:45,029 --> 00:26:46,029
-Tulang patah
+Yang patah tulang
 
 439
 00:26:46,029 --> 00:26:47,029
-Perbaiki dulu
+Pasang dulu
 
 440
 00:26:47,029 --> 00:26:48,029
-Jangan bergerak
+Jangan gerak
 
 441
 00:26:48,029 --> 00:26:53,380
-jangan sentuh aku
+Jangan gerakkan aku
 
 442
 00:26:53,380 --> 00:27:01,740
-tahan dia
+Tahan dia
 
 443
 00:27:01,740 --> 00:27:13,910
-Mengapa menangis?
+Nangis apa!
 
 444
 00:27:13,910 --> 00:27:14,910
-kamu adalah pahlawan
+Kalian pahlawan
 
 445
 00:27:14,910 --> 00:27:15,910
-Untuk para tetua desa
+Buat tetua desa
 
 446
 00:27:15,910 --> 00:27:16,910
-Tidak takut mati
+Mati nggak takut
 
 447
 00:27:16,910 --> 00:27:17,910
-Apakah Anda masih takut memperlihatkan dua potong daging ini?
+Masak nggak berani tunjuk daging segini?
 
 448
 00:27:18,910 --> 00:27:36,259
-Dokter Anda luar biasa
+Dokter kamu hebat
 
 449
 00:27:36,259 --> 00:27:38,539
-Tadi sidang yang ditunggu-tunggu menangis seperti itu
+Tadi yang nunggu giliran nangis begitu
 
 450
 00:27:38,539 --> 00:27:40,539
-Kenapa dia menangis?
+Dia bilang 'Nangis apa!' sekali,
 
 451
 00:27:40,539 --> 00:27:41,769
