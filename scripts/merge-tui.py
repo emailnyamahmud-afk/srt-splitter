@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 """
-merge-tui.py v1.3 — TUI #12: Gabungin multi-video jadi 1 panjang.
+merge-tui.py v1.4 — TUI #12: Gabungin multi-video jadi 1 panjang.
 
 User workflow:
   cd ~/Dubbing && source venv/bin/activate
   python3 merge-tui.py
 
-v1.3: Re-encode pakai h264_videotoolbox (M1 GPU), bukan libx264 (CPU).
-  - Mode 2 (re-encode + target res) & mode 3 (re-encode + res file pertama):
-    Encode per-file pakai GPU (h264_videotoolbox -b:v 4M), lalu concat stream copy
-    Strategi 2-fase:
-      Fase 1: Encode tiap file ke target res (GPU, paralel-safe, no RAM banjir)
-      Fase 2: Concat stream copy semua hasil (super cepat)
-  - Estimasi: ~30-50 menit untuk 24 jam video 1080p (M1 VideoToolbox, vs CPU 5+ jam)
-  - CPU tetap dipakai untuk filter complex (scale+pad), tapi cuma 1 file pada satu waktu
-  - Laptop gak bunyi kenceng (GPU dominan, CPU cuma helper)
+v1.4: Hardware detection + device selection (konsisten sama whisper-tui/demucs-tui).
+  - Detect h264_videotoolbox (M1 GPU) availability via ffmpeg -encoders
+  - User pilih device: GPU (default kalau terdeteksi) atau CPU (fallback)
+  - Estimasi waktu beda berdasarkan device:
+    GPU: ~10-15 min/jam video (M1 VideoToolbox 35x hardware)
+    CPU: ~50-80 min/jam video (libx264 medium)
+  - Print hardware status di banner (kayak whisper "Engine: Metal GPU ✅")
+  - Auto-fallback ke CPU libx264 kalau VideoToolbox gak ada (non-Mac Apple Silicon)
 
+v1.3: Re-encode pakai h264_videotoolbox (M1 GPU), bukan libx264 (CPU).
 v1.2: Natural sort (S1<S2<...<S9<S10)
 v1.1: Rewrite pakai questionary (konsisten sama mix-tui/shorts-tui)
 
@@ -24,8 +24,8 @@ Output : HDD/merged/{prefix}-merged.mp4
 
 3 mode:
   1. Stream copy (concat demuxer + -c copy) — super cepat, butuh codec+res+fps sama
-  2. Re-encode + pilih target res (1080p/720p/480p/custom) — h264_videotoolbox M1 GPU
-  3. Re-encode pakai res file pertama — h264_videotoolbox M1 GPU
+  2. Re-encode + pilih target res — pakai device pilihan user (GPU/CPU)
+  3. Re-encode pakai res file pertama — pakai device pilihan user (GPU/CPU)
 
 Install: pip3 install questionary
 """
@@ -50,7 +50,7 @@ except ImportError:
 sys.path.insert(0, str(Path(__file__).parent))
 from config import ensure_hdd, MIX_DIR, MERGED_DIR
 
-VERSION = 'v1.3'
+VERSION = 'v1.4'
 
 
 # ============================================================
@@ -95,6 +95,56 @@ def find_ffprobe():
             return loc
     print('\n❌ ffprobe belum terinstall. Install: brew install ffmpeg')
     sys.exit(1)
+
+
+def detect_hw_encoder():
+    """Detect hardware encoder availability (kayak demucs detect_device + whisper Metal detect).
+
+    Cek apakah ffmpeg mendukung h264_videotoolbox (Apple Silicon M1/M2/M3 GPU).
+    Pattern sama kayak:
+    - whisper-tui.py: detect 'metal' di startup log
+    - demucs-tui.py: torch.backends.mps.is_available()
+
+    Return: ('gpu', 'h264_videotoolbox') atau ('cpu', 'libx264')
+    """
+    try:
+        result = subprocess.run(
+            ['ffmpeg', '-hide_banner', '-encoders'],
+            capture_output=True, text=True, timeout=5
+        )
+        if result.returncode == 0 and 'h264_videotoolbox' in result.stdout:
+            return 'gpu', 'h264_videotoolbox'
+    except Exception:
+        pass
+    return 'cpu', 'libx264'
+
+
+def pick_device(detected_device, detected_encoder):
+    """Pilih device (kayak demucs Step 5: Pick device).
+
+    Auto-suggest GPU kalau terdeteksi, fallback CPU.
+    """
+    if detected_device == 'gpu':
+        device = questionary.select(
+            'Device (hardware acceleration):',
+            choices=[
+                f'GPU (M1 VideoToolbox, ~10-15 min/jam) — REKOMENDASI (terdeteksi)',
+                'CPU (libx264, ~50-80 min/jam, bunyi kipas)',
+            ],
+            default=f'GPU (M1 VideoToolbox, ~10-15 min/jam) — REKOMENDASI (terdeteksi)',
+        ).ask()
+    else:
+        device = questionary.select(
+            'Device (hardware acceleration):',
+            choices=[
+                'CPU (libx264, ~50-80 min/jam) — VideoToolbox tidak terdeteksi',
+            ],
+            default='CPU (libx264, ~50-80 min/jam) — VideoToolbox tidak terdeteksi',
+        ).ask()
+
+    if 'GPU' in device:
+        return 'gpu', 'h264_videotoolbox'
+    return 'cpu', 'libx264'
 
 
 def probe(path):
@@ -458,38 +508,54 @@ def merge_stream_copy(files, output):
     return run_progress(cmd, total, list_path.name)
 
 
-def merge_reencode_gpu(files, output, target_w, target_h, bitrate):
-    """Re-encode per-file pakai h264_videotoolbox (M1 GPU), lalu concat stream copy.
+def merge_reencode(files, output, target_w, target_h, bitrate, device, encoder):
+    """Re-encode per-file pakai encoder pilihan (GPU h264_videotoolbox atau CPU libx264),
+    lalu concat stream copy.
 
-    Strategi 2-fase (RAM-safe, GPU-dominant):
-      Fase 1: Encode tiap file ke target res (GPU), simpan ke temp file
+    Strategi 2-fase (RAM-safe):
+      Fase 1: Encode tiap file ke target res (encoder pilihan), simpan ke temp file
       Fase 2: Concat stream copy semua temp file → output final
       Cleanup: hapus temp files
-
-    Pakai ini karena:
-    - Filter complex (scale+pad+concat) untuk 24 jam video = RAM banjir (16GB Mac kagok)
-    - Encode per-file = RAM friendly, GPU VideoToolbox dominant
-    - Concat stream copy di akhir = super cepat (no re-encode)
     """
+    device_label = 'M1 GPU (VideoToolbox)' if device == 'gpu' else 'CPU (libx264)'
+    speed_label = '~10-15 min/jam video' if device == 'gpu' else '~50-80 min/jam video'
+
     print('\n' + '═' * 64)
-    print('🚀 Merge (re-encode M1 GPU + concat)...')
+    print(f'🚀 Merge (re-encode {device_label} + concat)...')
     print('═' * 64)
     print(f'\n  Target res  : {target_w}x{target_h}')
-    print(f'  Bitrate     : {bitrate} (h264_videotoolbox)')
-    print(f'  Strategi    : encode per-file (GPU) → concat stream copy')
+    print(f'  Bitrate     : {bitrate} ({encoder})')
+    print(f'  Device      : {device_label}')
+    print(f'  Speed       : {speed_label}')
+    print(f'  Strategi    : encode per-file → concat stream copy')
     print(f'  Total files : {len(files)}')
     total = sum(f['duration'] for f in files)
     print(f'  Total dur   : {fmt_dur(total)}')
-    print(f'\n  ⏱️  Estimasi: ~{int(total * 0.025)}-{int(total * 0.05)} menit '
-          f'(M1 VideoToolbox, vs CPU 5+ jam)')
+
+    # Estimasi waktu
+    hours = total / 3600
+    if device == 'gpu':
+        est_min = int(hours * 12)  # 12 min/jam (midpoint 10-15)
+    else:
+        est_min = int(hours * 65)  # 65 min/jam (midpoint 50-80)
+    print(f'\n  ⏱️  Estimasi: ~{est_min} menit ({speed_label})')
     print()
 
     # Buat temp dir
     temp_dir = tempfile.mkdtemp(prefix='merge_tmp_')
     temp_files = []
 
+    # Build encoder args
+    if device == 'gpu':
+        # h264_videotoolbox: -c:v h264_videotoolbox -b:v <bitrate>
+        # Apple Silicon hardware encoder, gak bunyi kipas
+        enc_args = ['-c:v', encoder, '-b:v', bitrate]
+    else:
+        # libx264: -c:v libx264 -preset medium -crf 20 (fallback, lambat, CPU bunyi)
+        enc_args = ['-c:v', encoder, '-preset', 'medium', '-crf', '20']
+
     # Fase 1: Encode per-file
-    print('▶ Fase 1: Encode per-file (M1 GPU h264_videotoolbox)')
+    print(f'▶ Fase 1: Encode per-file ({device_label})')
     print('═' * 64)
     for i, f in enumerate(files, 1):
         temp_out = os.path.join(temp_dir, f'part_{i:03d}.mp4')
@@ -508,7 +574,7 @@ def merge_reencode_gpu(files, output, target_w, target_h, bitrate):
             'ffmpeg', '-y',
             '-i', f['path'],
             '-vf', vf,
-            '-c:v', 'h264_videotoolbox', '-b:v', bitrate,
+        ] + enc_args + [
             '-c:a', 'aac', '-b:a', '192k',
             '-movflags', '+faststart',
             '-progress', 'pipe:1', '-nostats',
@@ -583,8 +649,18 @@ def main():
     find_ffmpeg()
     find_ffprobe()
 
+    # Detect hardware encoder (kayak demucs detect_device + whisper Metal detect)
+    detected_device, detected_encoder = detect_hw_encoder()
+    if detected_device == 'gpu':
+        print('  ✓ Apple Silicon terdeteksi — M1 VideoToolbox (GPU) tersedia')
+        hw_label = 'M1 GPU (h264_videotoolbox) ✅'
+    else:
+        print('  ℹ VideoToolbox tidak terdeteksi — akan pakai CPU (libx264, lambat)')
+        hw_label = 'CPU (libx264) ⚠'
+
     print(f'  Input  : {MIX_DIR}')
     print(f'  Output : {MERGED_DIR}')
+    print(f'  Engine : {hw_label}')
     print()
 
     # Step 1: Pick files
@@ -618,8 +694,8 @@ def main():
     # Step 5: Pick mode (with suggestion)
     mode_choices = [
         'Stream copy (super cepat, butuh codec+res+fps sama)',
-        'Re-encode + pilih target res (M1 GPU h264_videotoolbox)',
-        'Re-encode pakai res file pertama (M1 GPU h264_videotoolbox)',
+        'Re-encode + pilih target res',
+        'Re-encode pakai res file pertama',
     ]
     default_mode = mode_choices[0] if suggested_mode == 'stream_copy' else mode_choices[1]
 
@@ -633,21 +709,30 @@ def main():
         default=default_mode,
     ).ask()
 
-    # Pick bitrate for re-encode modes
+    # Pick resolution + bitrate + device for re-encode modes
     bitrate = None
     target_w = target_h = None
-    if 'Re-encode + pilih target res' in mode:
-        w, h = pick_resolution()
-        if w is None:
-            print('\n❌ Resolusi gak valid.')
-            return
-        target_w, target_h = w, h
-        bitrate = pick_bitrate()
-    elif 'Re-encode pakai res file pertama' in mode:
-        # Pakai res file pertama, vertical
-        target_w, target_h = files[0]['width'], files[0]['height']
-        bitrate = pick_bitrate()
-        print(f'\n  Res file pertama: {target_w}x{target_h}')
+    device = encoder = None
+    if 'Re-encode + pilih target res' in mode or 'Re-encode pakai res file pertama' in mode:
+        # Step 5a: Pick device (kayak demucs Step 5)
+        print('\n' + '═' * 64)
+        print('▶ Step 5a: Pilih device (hardware acceleration)')
+        print('═' * 64)
+        device, encoder = pick_device(detected_device, detected_encoder)
+        print(f'  ✓ {device.upper()} ({encoder})')
+
+        if 'Re-encode + pilih target res' in mode:
+            w, h = pick_resolution()
+            if w is None:
+                print('\n❌ Resolusi gak valid.')
+                return
+            target_w, target_h = w, h
+            bitrate = pick_bitrate()
+        else:
+            # Pakai res file pertama
+            target_w, target_h = files[0]['width'], files[0]['height']
+            bitrate = pick_bitrate()
+            print(f'\n  Res file pertama: {target_w}x{target_h}')
 
     # Confirm
     print('\n' + '═' * 64)
@@ -658,8 +743,19 @@ def main():
     print(f'  Files   : {len(files)}')
     print(f'  Total   : {fmt_dur(total_dur)} | {fmt_size(total_size)}')
     if bitrate:
-        print(f'  Bitrate : {bitrate} (h264_videotoolbox)')
+        device_label = 'M1 GPU (VideoToolbox)' if device == 'gpu' else 'CPU (libx264)'
+        print(f'  Device  : {device_label}')
+        print(f'  Encoder : {encoder}')
+        print(f'  Bitrate : {bitrate}')
         print(f'  Target  : {target_w}x{target_h}')
+        # Estimasi waktu
+        hours = total_dur / 3600
+        if device == 'gpu':
+            est_min = int(hours * 12)
+            print(f'  Estimasi: ~{est_min} menit (M1 GPU ~10-15 min/jam)')
+        else:
+            est_min = int(hours * 65)
+            print(f'  Estimasi: ~{est_min} menit (CPU ~50-80 min/jam, bunyi kipas)')
 
     if not questionary.confirm('\nLanjut merge?', default=True).ask():
         print('\nDibatalkan.')
@@ -669,9 +765,9 @@ def main():
     if 'Stream copy' in mode:
         success = merge_stream_copy(files, output_path)
     elif 'Re-encode + pilih target res' in mode:
-        success = merge_reencode_gpu(files, output_path, target_w, target_h, bitrate)
+        success = merge_reencode(files, output_path, target_w, target_h, bitrate, device, encoder)
     elif 'Re-encode pakai res file pertama' in mode:
-        success = merge_reencode_gpu(files, output_path, target_w, target_h, bitrate)
+        success = merge_reencode(files, output_path, target_w, target_h, bitrate, device, encoder)
     else:
         success = False
 
