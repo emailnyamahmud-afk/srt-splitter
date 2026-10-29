@@ -36,7 +36,7 @@ Shorts: Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON
 | 9 | srt-editor-tui v1.0.1 (fix typo SRT hasil translate, glossary bulk replace) | ✅ Production |
 | 10 | shorts-tui v1.1 (pecah MP4: Shorts via AI JSON atau Part via SRT auto-split) | ✅ Production (Shorts 60/60 + Part auto-split) |
 | 11 | shorts-csv-tui v1.0 (metadata CSV + manifest untuk YouTube Studio) | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
-| 12 | merge-tui v1.0 (gabungin multi-video jadi 1 panjang, 3 mode) | ✅ Production (stream copy + re-encode) |
+| 12 | merge-tui v1.1 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox) | ✅ Production (stream copy + re-encode) |
 
 ## Struktur Folder
 
@@ -61,17 +61,17 @@ Shorts: Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON
 12. GT input preference: pakai SRT English (dari whisper-tui) untuk GT English→ID, lebih akurat dari Mandarin→ID.
 13. clean-srt workflow: heuristic dulu untuk 2000+ cue, manual per-cue cuma untuk cue critical.
 
-## merge-tui v1.0 — gabungin multi-video jadi 1 panjang
+## merge-tui v1.1 — gabungin multi-video jadi 1 panjang
 
-TUI #12. Input: `HDD/mix/*.mp4` (output mix-tui, sudah dub ID + burn sub). Output: `HDD/merged/merged_*.mp4`.
+TUI #12. Input: `HDD/mix/*.mp4` (output mix-tui, sudah dub ID + burn sub). Output: `HDD/merged/{prefix}-merged.mp4`.
 
 | Mode | Kecepatan | Syarat |
 |------|----------|--------|
-| [7] Stream copy (concat demuxer + `-c copy`) | ⚡ super cepat | codec+res+fps sama |
-| [8] Re-encode + pilih target res (1080p/720p/480p/custom) | 🐢 lambat | res beda |
-| [9] Re-encode pakai res file pertama | 🐢 lambat | res beda, ikut file #1 |
+| [1] Stream copy (concat demuxer + `-c copy`) | ⚡ super cepat | codec+res+fps sama |
+| [2] Re-encode + pilih target res (1080p/720p/480p/custom) | 🐢 lambat | res beda |
+| [3] Re-encode pakai res file pertama | 🐢 lambat | res beda, ikut file #1 |
 
-Shortcut: ketik `mix` di menu [1] untuk list semua MP4 di `HDD/mix/` (auto-glob).
+UX sama kayak mix-tui/shorts-tui: questionary checkbox (multi-select file), linear workflow (Step 1→5), auto-detect mode, auto-derive output name.
 
 ## mix-tui v3.7.6 — 6 mode
 
@@ -118,7 +118,7 @@ Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no m
 - srt-editor-tui v1.0.1: ✅ (glossary 19 entries, 144 replacement di S2-FB-Mandarin)
 - mix-tui v3.8.2: 6 mode production-ready + logo + fade 100ms
 - shorts-tui v1.1: ✅ (Shorts 60/60 sukses + Part mode auto-split SRT, stream copy)
-- merge-tui v1.0: ✅ (gabungin multi-video jadi 1 panjang, 3 mode: stream copy/re-encode/res-first)
+- merge-tui v1.1: ✅ (gabungin multi-video jadi 1 panjang, 3 mode: stream copy/re-encode/res-first, questionary checkbox multi-select)
 - shorts-csv-tui v1.0: ✅ (metadata CSV + manifest untuk YouTube Studio, test 60 segment S5, CSV 19.8 KB + manifest 30.4 KB)
 - clean-srt v1.0 (hybrid): ✅ (manual cues 1-750 + heuristic cues 751-2857, 731/2857 changes, output ke clean-srt/S1_Lima_Tentara.id.clean.srt)
 

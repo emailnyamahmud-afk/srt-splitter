@@ -1,40 +1,92 @@
 #!/usr/bin/env python3
 """
-merge-tui.py v1.0 — TUI #12: Gabungin multi-video jadi 1 panjang.
+merge-tui.py v1.1 — TUI #12: Gabungin multi-video jadi 1 panjang.
 
 User workflow:
   cd ~/Dubbing && source venv/bin/activate
   python3 merge-tui.py
 
+v1.1: Rewrite pakai questionary (konsisten sama mix-tui/shorts-tui/yt-dlp-tui).
+  - Auto-list HDD/mix/*.mp4 saat boot (multi-select via checkbox)
+  - Auto-derive output name dari prefix file pertama (S1.mp4 → S1-merged.mp4)
+  - Linear workflow (bukan main menu loop) — Step 1 → 2 → 3 → 4 → 5 → run
+  - Auto-detect mode (cek res/codec/fps, suggest stream copy vs re-encode)
+
 Input  : HDD/mix/*.mp4 (output mix-tui, sudah dub ID + burn sub ID)
-Output : HDD/merged/merged_YYYYMMDD_HHMMSS.mp4
+Output : HDD/merged/{prefix}-merged.mp4
 
 3 mode:
-  [7] Stream copy (concat demuxer + -c copy) — super cepat, butuh codec+res+fps sama
-  [8] Re-encode + pilih target res (1080p/720p/480p/custom) — kalau res beda
-  [9] Re-encode pakai res file pertama
+  1. Stream copy (concat demuxer + -c copy) — super cepat, butuh codec+res+fps sama
+  2. Re-encode + pilih target res (1080p/720p/480p/custom) — kalau res beda
+  3. Re-encode pakai res file pertama
 
-Pakai config.py (konsisten sama TUI lain).
+Install: pip3 install questionary
 """
+
 import os
 import sys
 import json
+import glob
 import subprocess
+import shutil
 import tempfile
-from datetime import datetime
 from pathlib import Path
+
+try:
+    import questionary
+except ImportError:
+    print('\n❌ pip3 install questionary')
+    sys.exit(1)
 
 # Import config (sama kayak TUI lain)
 sys.path.insert(0, str(Path(__file__).parent))
-from config import (
-    ensure_hdd, MIX_DIR, MERGED_DIR, HDD_BASE
-)
+from config import ensure_hdd, MIX_DIR, MERGED_DIR
 
-VERSION = "1.0"
+VERSION = 'v1.1'
+
+
+# ============================================================
+# Helpers (pattern sama kayak mix-tui.py / shorts-tui.py)
+# ============================================================
+
+def find_files_in_dir(search_dir, extensions):
+    """Glob files by extension (non-recursive, mirip mix-tui pattern)."""
+    files = []
+    for ext in extensions:
+        for f in glob.glob(os.path.join(search_dir, f'*.{ext}')):
+            files.append(os.path.basename(f))
+        for f in glob.glob(os.path.join(search_dir, f'*.{ext.upper()}')):
+            files.append(os.path.basename(f))
+    files.sort()
+    return list(dict.fromkeys(files))  # deduplicate
+
+
+def find_ffmpeg():
+    path = shutil.which('ffmpeg')
+    if path:
+        return path
+    for loc in ['/usr/local/bin/ffmpeg', '/usr/bin/ffmpeg', '/opt/homebrew/bin/ffmpeg']:
+        if os.path.isfile(loc):
+            return loc
+    print('\n❌ ffmpeg belum terinstall. Install: brew install ffmpeg')
+    sys.exit(1)
+
+
+def find_ffprobe():
+    path = shutil.which('ffprobe')
+    if path:
+        return path
+    for loc in ['/usr/local/bin/ffprobe', '/usr/bin/ffprobe', '/opt/homebrew/bin/ffprobe']:
+        if os.path.isfile(loc):
+            return loc
+    print('\n❌ ffprobe belum terinstall. Install: brew install ffmpeg')
+    sys.exit(1)
 
 
 def probe(path):
-    cmd = ['ffprobe', '-v', 'error', '-print_format', 'json',
+    """Probe video metadata via ffprobe."""
+    ffprobe = find_ffprobe()
+    cmd = [ffprobe, '-v', 'error', '-print_format', 'json',
            '-show_streams', '-show_format', str(path)]
     r = subprocess.run(cmd, capture_output=True, text=True)
     if r.returncode != 0:
@@ -77,186 +129,255 @@ def fmt_size(mb):
     return f'{mb/1024:.2f}GB'
 
 
-def list_mix_files():
-    """Glob MP4 di HDD/mix/ (bahan merge-tui)."""
-    if not MIX_DIR.exists():
-        return []
-    return sorted(MIX_DIR.glob('*.mp4'))
+def clear_screen():
+    os.system('clear' if os.name != 'nt' else 'cls')
 
 
 def print_banner():
-    print(f'\n=== merge-tui.py v{VERSION} — TUI #12 ===')
-    print('Gabungin multi-video jadi 1 panjang')
-    print(f'Input  : {MIX_DIR}')
-    print(f'Output : {MERGED_DIR}\n')
-
-
-def print_menu(files, output_path):
-    print(f'\n--- MENU ---')
-    print(f'  Files: {len(files)} | Output: {Path(output_path).name}')
+    clear_screen()
+    print('╔' + '═' * 64 + '╗')
+    print(f'║  🎬 Merge Multi-Video {VERSION} (TUI #12)' + ' ' * 32 + '║')
+    print('║  Gabungin S1+S2+S3+S4 → 1 video panjang' + ' ' * 22 + '║')
+    print('╚' + '═' * 64 + '╝')
     print()
-    print('[1] Tambah file (ketik "mix" untuk list HDD/mix/*.mp4)')
-    print('[2] List files + probe info')
-    print('[3] Hapus file dari list')
-    print('[4] Reorder file')
-    print('[5] Pilih output path')
-    print('[6] Auto-detect mode (rekomendasi)')
-    print('[7] Merge: stream copy (super cepat, butuh res+codec sama)')
-    print('[8] Merge: re-encode + pilih target res')
-    print('[9] Merge: re-encode pakai res file pertama')
-    print('[0] Keluar')
 
 
-def add_file(files):
-    print('\nTambah file video. Ketik path, atau drag-drop ke terminal.')
-    print('Ketik "mix" untuk list HDD/mix/*.mp4. Kosongkan untuk selesai.')
+# ============================================================
+# Step functions
+# ============================================================
+
+def pick_files():
+    """Step 1: Pick multiple MP4 files dari HDD/mix/. Pakai checkbox (multi-select)."""
+    print('═' * 64)
+    print('▶ Step 1: Pilih file video untuk digabungin')
+    print('═' * 64)
+
+    available = find_files_in_dir(str(MIX_DIR), ['mp4'])
+
+    if not available:
+        print(f'\n  ⚠ Tidak ada MP4 di {MIX_DIR}')
+        print(f'    Jalankan mix-tui.py dulu untuk generate video final.')
+        manual = questionary.text('Ketik path file manual (atau kosong untuk batal):').ask()
+        if not manual or not manual.strip():
+            return []
+        files = []
+        for p in manual.strip().split():
+            p = os.path.expanduser(p.strip().strip("'\""))
+            if os.path.exists(p):
+                info = probe(p)
+                if info and info['vcodec'] != '?':
+                    files.append(info)
+                    print(f'  + {info["name"]}')
+        return files
+
+    # Multi-select via checkbox (questionary mendukung)
+    print(f'\n  Ditemukan {len(available)} MP4 di {MIX_DIR}:')
+    print()
+    for i, f in enumerate(available, 1):
+        print(f'  [{i}] {f}')
+    print()
+
+    choices = available + ['[Ketik path manual]']
+    selected = questionary.checkbox(
+        'Pilih file (Space untuk centang, Enter untuk selesai):',
+        choices=choices,
+    ).ask()
+
+    if not selected:
+        return []
+
+    files = []
+    for sel in selected:
+        if sel == '[Ketik path manual]':
+            manual = questionary.text('Ketik path file:').ask()
+            if manual and manual.strip():
+                p = os.path.expanduser(manual.strip().strip("'\""))
+                if os.path.exists(p):
+                    info = probe(p)
+                    if info and info['vcodec'] != '?':
+                        files.append(info)
+        else:
+            p = os.path.join(str(MIX_DIR), sel)
+            info = probe(p)
+            if info and info['vcodec'] != '?':
+                files.append(info)
+
+    return files
+
+
+def reorder_files(files):
+    """Step 2: Reorder files (optional)."""
+    if len(files) < 2:
+        return files
+
+    print('\n' + '═' * 64)
+    print('▶ Step 2: Urutan file (sekarang)')
+    print('═' * 64)
+    print()
+    for i, f in enumerate(files, 1):
+        print(f'  [{i}] {f["name"]} ({fmt_dur(f["duration"])})')
+    print()
+
+    confirm = questionary.confirm('Urutan udah bener?', default=True).ask()
+    if confirm:
+        return files
+
+    # Reorder loop
     while True:
-        try:
-            p = input('  Path: ').strip().strip("'\"")
-        except (EOFError, KeyboardInterrupt):
+        print()
+        for i, f in enumerate(files, 1):
+            print(f'  [{i}] {f["name"]}')
+        print()
+
+        action = questionary.select(
+            'Pilih aksi:',
+            choices=[
+                'Pindah file ke posisi lain',
+                'Tukar 2 file',
+                'Selesai (lanjut ke step 3)',
+            ],
+        ).ask()
+
+        if 'Selesai' in action:
             break
-        if not p:
-            break
-        if p.lower() == 'mix':
-            mix_files = list_mix_files()
-            if not mix_files:
-                print(f'  (kosong — {MIX_DIR} gak ada MP4)')
-                continue
-            print(f'\n  --- HDD/mix/ MP4 files ---')
-            for i, f in enumerate(mix_files, 1):
-                print(f'  [{i}] {f.name}')
+        elif 'Pindah' in action:
             try:
-                n = input('  Pilih nomor (atau "all" untuk semua): ').strip()
-                if n == 'all':
-                    for f in mix_files:
-                        info = probe(f)
-                        if info and info['vcodec'] != '?':
-                            files.append(info)
-                            print(f'    + {f.name}')
-                else:
-                    n = int(n)
-                    if 1 <= n <= len(mix_files):
-                        info = probe(mix_files[n - 1])
-                        if info:
-                            files.append(info)
-                            print(f'    + {mix_files[n-1].name}')
+                idx = int(questionary.text('Nomor file untuk pindah:').ask())
+                new_pos = int(questionary.text(f'Pindah ke posisi (1..{len(files)}):').ask())
+                if 1 <= idx <= len(files) and 1 <= new_pos <= len(files):
+                    item = files.pop(idx - 1)
+                    files.insert(new_pos - 1, item)
+                    print(f'  ✓ Dipindah')
             except (ValueError, IndexError):
                 print('  ❌ Input gak valid')
-            continue
-        p = os.path.expanduser(p)
-        if not os.path.exists(p):
-            print(f'  ❌ File gak ada: {p}')
-            continue
-        info = probe(p)
-        if not info or info['vcodec'] == '?':
-            print(f'  ❌ Bukan video valid: {p}')
-            continue
-        files.append(info)
-        print(f'  + {info["name"]} | {info["width"]}x{info["height"]} | '
-              f'{info["vcodec"]} | {fmt_dur(info["duration"])}')
+        elif 'Tukar' in action:
+            try:
+                i1 = int(questionary.text('Nomor file 1:').ask())
+                i2 = int(questionary.text('Nomor file 2:').ask())
+                if 1 <= i1 <= len(files) and 1 <= i2 <= len(files):
+                    files[i1-1], files[i2-1] = files[i2-1], files[i1-1]
+                    print(f'  ✓ Ditukar')
+            except (ValueError, IndexError):
+                print('  ❌ Input gak valid')
+
+    return files
 
 
-def list_files(files):
+def auto_detect_mode(files):
+    """Step 3: Auto-detect mode based on res/codec/fps."""
     if not files:
-        print('\n  (kosong)')
-        return
-    print(f'\n--- File list ({len(files)}) ---')
-    total_dur = 0; total_size = 0
-    for i, f in enumerate(files, 1):
-        total_dur += f['duration']
-        total_size += f['size_mb']
-        print(f'  [{i}] {f["name"]}')
-        print(f'      {f["width"]}x{f["height"]} @ {f["fps"]}fps | '
-              f'{f["vcodec"]} + {f["acodec"]} | {fmt_dur(f["duration"])} | {fmt_size(f["size_mb"])}')
-    print(f'\n  Total: {fmt_dur(total_dur)} | {fmt_size(total_size)}')
-
-
-def remove_file(files):
-    list_files(files)
-    if not files:
-        return
-    try:
-        n = input('\nNomor file untuk hapus (kosongkan batal): ').strip()
-        if not n:
-            return
-        n = int(n)
-        if 1 <= n <= len(files):
-            removed = files.pop(n - 1)
-            print(f'  ✓ Dihapus: {removed["name"]}')
-    except (ValueError, IndexError):
-        print('  ❌ Nomor gak valid')
-
-
-def reorder(files):
-    list_files(files)
-    if not files:
-        return
-    try:
-        idx = input('\nNomor file untuk pindah: ').strip()
-        if not idx:
-            return
-        idx = int(idx)
-        if not (1 <= idx <= len(files)):
-            return
-        new_pos = input(f'Pindah ke posisi (1..{len(files)}): ').strip()
-        new_pos = int(new_pos)
-        if not (1 <= new_pos <= len(files)):
-            return
-        item = files.pop(idx - 1)
-        files.insert(new_pos - 1, item)
-        print(f'  ✓ Dipindah ke posisi {new_pos}')
-    except (ValueError, IndexError):
-        print('  ❌ Input gak valid')
-
-
-def pick_output(output_path):
-    print(f'\nOutput path saat ini: {output_path}')
-    p = input('Path output baru (kosongkan batal): ').strip().strip("'\"")
-    if not p:
         return None
-    p = os.path.expanduser(p)
-    parent = os.path.dirname(p)
-    if parent and not os.path.exists(parent):
-        try:
-            os.makedirs(parent, exist_ok=True)
-        except OSError as e:
-            print(f'  ❌ Gak bisa buat folder: {e}')
-            return None
-    return p
 
-
-def auto_detect(files):
-    if not files:
-        print('\n  (kosong)')
-        return None
-    print('\n--- Auto-detect ---')
     res_set = set((f['width'], f['height']) for f in files)
     vcodec_set = set(f['vcodec'] for f in files)
     acodec_set = set(f['acodec'] for f in files)
     fps_set = set(f['fps'] for f in files)
+
+    print('\n' + '═' * 64)
+    print('▶ Step 3: Auto-detect mode')
+    print('═' * 64)
+    print()
     print(f'  Resolution: {len(res_set)} unique')
     for r in res_set:
         print(f'    - {r[0]}x{r[1]}')
     print(f'  Video codec: {vcodec_set}')
     print(f'  Audio codec: {acodec_set}')
     print(f'  FPS: {fps_set}')
+    print()
+
     if len(res_set) == 1 and len(vcodec_set) == 1 and len(acodec_set) == 1:
-        print('\n  ✅ Semua sama → mode [7] stream copy AMAN (super cepat, no re-encode)')
+        print('  ✅ Semua sama → stream copy AMAN (super cepat, no re-encode)')
         return 'stream_copy'
-    print('\n  ⚠️  Ada perbedaan → harus re-encode')
-    print('  Rekomendasi: mode [8] pilih target res, atau [9] pakai res file pertama')
+    print('  ⚠ Ada perbedaan → harus re-encode')
     return 'reencode'
 
 
+def pick_output_path(files):
+    """Step 4: Pick output path. Auto-derive dari prefix file pertama."""
+    if not files:
+        return None
+
+    # Auto-derive: S1-ori-id-final-sub.mp4 → S1-merged.mp4
+    first_name = Path(files[0]['path']).stem
+    for suffix in ['-id-final-sub', '-id-final', '-id-simple-sub', '-id-simple',
+                   '-id-orig-sub', '-id-orig', '-ori', '-id']:
+        if first_name.endswith(suffix):
+            first_name = first_name[:-len(suffix)]
+            break
+
+    default_output = str(MERGED_DIR / f'{first_name}-merged.mp4')
+
+    print('\n' + '═' * 64)
+    print('▶ Step 4: Pilih output path')
+    print('═' * 64)
+    print(f'\n  Default: {default_output}')
+
+    output = questionary.text('Output path (Enter untuk default):',
+                              default=default_output).ask()
+    if not output or not output.strip():
+        output = default_output
+    else:
+        output = os.path.expanduser(output.strip())
+
+    parent = os.path.dirname(output)
+    if parent and not os.path.exists(parent):
+        try:
+            os.makedirs(parent, exist_ok=True)
+        except OSError as e:
+            print(f'  ❌ Gak bisa buat folder: {e}')
+            return None
+
+    return output
+
+
+def pick_resolution():
+    """Pilih target resolution untuk re-encode mode."""
+    res = questionary.select(
+        'Pilih target resolution:',
+        choices=[
+            '1920x1080 (1080p)',
+            '1280x720 (720p)',
+            '854x480 (480p)',
+            'Custom (ketik manual)',
+        ],
+        default='1920x1080 (1080p)',
+    ).ask()
+
+    if '1080' in res:
+        return 1920, 1080
+    if '720' in res:
+        return 1280, 720
+    if '480' in res:
+        return 854, 480
+    # Custom
+    try:
+        w = int(questionary.text('Width:').ask())
+        h = int(questionary.text('Height:').ask())
+        if w > 0 and h > 0:
+            return w, h
+    except ValueError:
+        pass
+    return None, None
+
+
+# ============================================================
+# Merge functions
+# ============================================================
+
 def run_merge(cmd, total_duration_s, list_path=None):
-    print('\n--- Run merge ---')
-    print(f'  Total duration: {fmt_dur(total_duration_s)}')
+    """Run ffmpeg dengan progress bar."""
+    print('\n' + '═' * 64)
+    print('🚀 Merge...')
+    print('═' * 64)
+    print(f'\n  Total duration: {fmt_dur(total_duration_s)}\n')
+
     try:
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                 text=True, bufsize=1)
     except FileNotFoundError:
-        print('  ❌ ffmpeg gak ditemukan di PATH')
+        print('  ❌ ffmpeg gak ditemukan')
         return False
+
     last_pct = -1
     try:
         for line in proc.stdout:
@@ -272,8 +393,7 @@ def run_merge(cmd, total_duration_s, list_path=None):
                         pct = min(int(cur * 100 / total_duration_s), 99)
                         if pct > last_pct:
                             bar = '█' * (pct // 2) + '░' * (50 - pct // 2)
-                            print(f'\r  [{bar}] {pct}% '
-                                  f'({fmt_dur(cur)}/{fmt_dur(total_duration_s)})',
+                            print(f'\r  [{bar}] {pct}% ({fmt_dur(cur)}/{fmt_dur(total_duration_s)})',
                                   end='', flush=True)
                             last_pct = pct
                     except ValueError:
@@ -283,19 +403,21 @@ def run_merge(cmd, total_duration_s, list_path=None):
                     break
         proc.wait()
     except KeyboardInterrupt:
-        print('\n  ⚠️  Dibatalkan. Matiin ffmpeg...')
+        print('\n  ⚠ Dibatalkan. Matiin ffmpeg...')
         proc.terminate()
         try:
             proc.wait(timeout=5)
         except subprocess.TimeoutExpired:
             proc.kill()
         return False
+
     if list_path and os.path.exists(list_path):
         os.unlink(list_path)
+
     if proc.returncode == 0:
-        print('\n  ✅ Selesai!')
+        print('\n\n  ✅ Selesai!')
         return True
-    print(f'\n  ❌ Gagal. Exit code: {proc.returncode}')
+    print(f'\n\n  ❌ Gagal. Exit code: {proc.returncode}')
     return False
 
 
@@ -306,6 +428,7 @@ def merge_stream_copy(files, output):
         safe = f['path'].replace("'", r"'\''")
         list_path.write(f"file '{safe}'\n")
     list_path.close()
+
     cmd = ['ffmpeg', '-y', '-f', 'concat', '-safe', '0',
            '-i', list_path.name, '-c', 'copy',
            '-progress', 'pipe:1', '-nostats', output]
@@ -332,6 +455,7 @@ def merge_reencode(files, output, target_w=None, target_h=None):
     a_inputs = ''.join(f'[{i}:a]' for i in range(n))
     parts.append(f'{a_inputs}concat=n={n}:v=0:a=1[aout]')
     filt = ';'.join(parts)
+
     cmd = ['ffmpeg', '-y']
     for f in files:
         cmd += ['-i', f['path']]
@@ -343,116 +467,111 @@ def merge_reencode(files, output, target_w=None, target_h=None):
     return run_merge(cmd, total)
 
 
-def pick_resolution():
-    print('\n--- Pilih target resolution ---')
-    print('[1] 1920x1080 (1080p)')
-    print('[2] 1280x720 (720p)')
-    print('[3] 854x480 (480p)')
-    print('[4] Custom')
-    try:
-        n = input('Pilih: ').strip()
-    except (EOFError, KeyboardInterrupt):
-        return None, None
-    if n == '1':
-        return 1920, 1080
-    if n == '2':
-        return 1280, 720
-    if n == '3':
-        return 854, 480
-    if n == '4':
-        try:
-            w = int(input('Width: ').strip())
-            h = int(input('Height: ').strip())
-            if w > 0 and h > 0:
-                return w, h
-        except ValueError:
-            pass
-    return None, None
-
+# ============================================================
+# Main
+# ============================================================
 
 def main():
     print_banner()
-    # Cek HDD colok (kayak TUI lain)
+
+    # Cek HDD
     if not ensure_hdd():
         return
-    # Cek ffmpeg
-    try:
-        subprocess.run(['ffmpeg', '-version'], capture_output=True, check=True)
-        subprocess.run(['ffprobe', '-version'], capture_output=True, check=True)
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        print('❌ ffmpeg/ffprobe gak ditemukan. Install dulu:')
-        print('   brew install ffmpeg')
+
+    # Cek ffmpeg/ffprobe
+    find_ffmpeg()
+    find_ffprobe()
+
+    print(f'  Input  : {MIX_DIR}')
+    print(f'  Output : {MERGED_DIR}')
+    print()
+
+    # Step 1: Pick files
+    files = pick_files()
+    if not files or len(files) < 2:
+        print('\n❌ Butuh minimal 2 file untuk digabungin.')
         return
 
-    files = []
-    default_name = f'merged_{datetime.now().strftime("%Y%m%d_%H%M%S")}.mp4'
-    output_path = str(MERGED_DIR / default_name)
+    # Show summary
+    print(f'\n  ✓ {len(files)} file dipilih:')
+    total_dur = 0; total_size = 0
+    for i, f in enumerate(files, 1):
+        total_dur += f['duration']
+        total_size += f['size_mb']
+        print(f'    [{i}] {f["name"]} | {f["width"]}x{f["height"]} | '
+              f'{f["vcodec"]} | {fmt_dur(f["duration"])} | {fmt_size(f["size_mb"])}')
+    print(f'\n  Total: {fmt_dur(total_dur)} | {fmt_size(total_size)}')
 
-    while True:
-        print_menu(files, output_path)
-        try:
-            choice = input('\nPilih: ').strip()
-        except (EOFError, KeyboardInterrupt):
-            print('\nKeluar.')
-            break
-        if choice == '0':
-            print('Keluar.')
-            break
-        elif choice == '1':
-            add_file(files)
-        elif choice == '2':
-            list_files(files)
-        elif choice == '3':
-            remove_file(files)
-        elif choice == '4':
-            reorder(files)
-        elif choice == '5':
-            new = pick_output(output_path)
-            if new:
-                output_path = new
-                print(f'  ✓ Output: {output_path}')
-        elif choice == '6':
-            auto_detect(files)
-        elif choice == '7':
-            if not files:
-                print('  ❌ Tambah file dulu')
-                continue
-            if len(files) < 2:
-                print('  ❌ Butuh minimal 2 file')
-                continue
-            print(f'\n  Mode: stream copy (super cepat, no re-encode)')
-            print(f'  Output: {output_path}')
-            if input('  Lanjut? (y/N): ').strip().lower() == 'y':
-                merge_stream_copy(files, output_path)
-        elif choice == '8':
-            if not files:
-                print('  ❌ Tambah file dulu')
-                continue
-            if len(files) < 2:
-                print('  ❌ Butuh minimal 2 file')
-                continue
-            w, h = pick_resolution()
-            if w is None:
-                continue
-            print(f'\n  Mode: re-encode + scale to {w}x{h}')
-            print(f'  Output: {output_path}')
-            if input('  Lanjut? (y/N): ').strip().lower() == 'y':
-                merge_reencode(files, output_path, w, h)
-        elif choice == '9':
-            if not files:
-                print('  ❌ Tambah file dulu')
-                continue
-            if len(files) < 2:
-                print('  ❌ Butuh minimal 2 file')
-                continue
-            w, h = files[0]['width'], files[0]['height']
-            print(f'\n  Mode: re-encode pakai res file pertama: {w}x{h}')
-            print(f'  Output: {output_path}')
-            if input('  Lanjut? (y/N): ').strip().lower() == 'y':
-                merge_reencode(files, output_path, w, h)
-        else:
-            print('Pilihan gak valid')
+    # Step 2: Reorder (optional)
+    files = reorder_files(files)
+
+    # Step 3: Auto-detect mode
+    suggested_mode = auto_detect_mode(files)
+
+    # Step 4: Pick output path
+    output_path = pick_output_path(files)
+    if not output_path:
+        print('\n❌ Output path gak valid.')
+        return
+
+    # Step 5: Pick mode (with suggestion)
+    mode_choices = [
+        'Stream copy (super cepat, butuh codec+res+fps sama)',
+        'Re-encode + pilih target res (1080p/720p/480p/custom)',
+        'Re-encode pakai res file pertama',
+    ]
+    default_mode = mode_choices[0] if suggested_mode == 'stream_copy' else mode_choices[1]
+
+    print('\n' + '═' * 64)
+    print('▶ Step 5: Pilih mode merge')
+    print('═' * 64)
+
+    mode = questionary.select(
+        'Pilih mode:',
+        choices=mode_choices,
+        default=default_mode,
+    ).ask()
+
+    # Confirm
+    print(f'\n  Mode   : {mode}')
+    print(f'  Output : {output_path}')
+    print(f'  Files  : {len(files)}')
+    print(f'  Total  : {fmt_dur(total_dur)} | {fmt_size(total_size)}')
+
+    if not questionary.confirm('\nLanjut merge?', default=True).ask():
+        print('\nDibatalkan.')
+        return
+
+    # Run merge
+    if 'Stream copy' in mode:
+        merge_stream_copy(files, output_path)
+    elif 'Re-encode + pilih target res' in mode:
+        w, h = pick_resolution()
+        if w is None:
+            print('\n❌ Resolusi gak valid.')
+            return
+        merge_reencode(files, output_path, w, h)
+    elif 'Re-encode pakai res file pertama' in mode:
+        w, h = files[0]['width'], files[0]['height']
+        merge_reencode(files, output_path, w, h)
+
+    # Hasil
+    if os.path.exists(output_path):
+        size_mb = os.path.getsize(output_path) / 1024 / 1024
+        print(f'\n📁 Output: {Path(output_path).name} ({fmt_size(size_mb)})')
+        print(f'   Path  : {output_path}')
+    print('\n🎬 Langkah berikutnya:')
+    print('   - Cek hasil di VLC')
+    print('   - Upload ke YouTube / arsip')
+    print('═' * 64)
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('\n\n⏹ Dibatalkan.')
+        sys.exit(130)
+    except Exception as e:
+        print(f'\n❌ {e}', file=sys.stderr)
+        sys.exit(1)

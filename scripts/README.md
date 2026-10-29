@@ -17,7 +17,7 @@ Python TUI untuk workflow dubbing bahasa eksternal (Mandarin, English, Jepang, I
 | 9 | srt-editor-tui.py v1.0.1 (fix typo SRT hasil translate) | ✅ Production |
 | 10 | shorts-tui.py v1.1 (Shorts via AI JSON atau Part via SRT auto-split) | ✅ Production (Shorts 60/60 + Part auto-split) |
 | 11 | shorts-csv-tui.py v1.0 (metadata CSV + manifest untuk YouTube Studio) | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
-| 12 | merge-tui.py v1.0 (gabungin multi-video jadi 1 panjang, 3 mode) | ✅ Production (stream copy + re-encode) |
+| 12 | merge-tui.py v1.1 (gabungin multi-video jadi 1 panjang, 3 mode, questionary checkbox) | ✅ Production (stream copy + re-encode) |
 
 ## Pipeline (4 alur)
 
@@ -80,7 +80,7 @@ mix-tui output × N → merge-tui → 1 video panjang
 | demucs-tui.py | Vocal separation (M1 MPS) | HDD/demucs/ |
 | edge-tts-tui.py v7.4 | TTS generation (paralel-safe, lock file + 429 retry) | HDD/tts/ |
 | mix-tui.py v3.7.6 | Final mix (6 mode, MUTE COMPLETE) | HDD/mix/ |
-| merge-tui.py v1.0 | Gabungin multi-video jadi 1 panjang (3 mode) | HDD/merged/ |
+| merge-tui.py v1.1 | Gabungin multi-video jadi 1 panjang (3 mode, questionary checkbox) | HDD/merged/ |
 
 ### Kamus
 
@@ -312,7 +312,7 @@ sama → auto-resume (progress tidak hilang).
 Mau mulai dari awal (reset progress)? Hapus `<stem>.working.json`, TUI akan load
 dari `.srt` original.
 
-## merge-tui.py v1.0 — TUI #12: gabungin multi-video jadi 1 panjang
+## merge-tui.py v1.1 — TUI #12: gabungin multi-video jadi 1 panjang
 
 Gabungin output mix-tui (sudah dub ID + burn sub ID) dari beberapa film/season
 jadi 1 video panjang. Pakai ffmpeg concat demuxer (stream copy) atau re-encode
@@ -324,27 +324,37 @@ jadi 1 video panjang. Pakai ffmpeg concat demuxer (stream copy) atau re-encode
 cd ~/Dubbing
 source venv/bin/activate
 python3 merge-tui.py
-# [1] Tambah file: ketik "mix" untuk list HDD/mix/*.mp4 (auto-glob), atau ketik path manual
-# [6] Auto-detect: cek res/codec/fps semua file, rekomendasi mode
-# [7] Stream copy (super cepat, butuh codec+res+fps sama)
-# [8] Re-encode + pilih target res (1080p/720p/480p/custom) — kalau res beda
-# [9] Re-encode pakai res file pertama
-# Output: HDD/merged/merged_YYYYMMDD_HHMMSS.mp4 (default)
+# Step 1: Pick files (questionary checkbox multi-select, auto-list HDD/mix/*.mp4)
+# Step 2: Reorder (optional, confirm urutan)
+# Step 3: Auto-detect mode (cek res/codec/fps, suggest mode)
+# Step 4: Pick output path (auto-derive: S1-ori-id-final-sub.mp4 → S1-merged.mp4)
+# Step 5: Pick mode (stream copy / re-encode + target res / re-encode pakai res file #1)
+# Confirm → run
+# Output: HDD/merged/{prefix}-merged.mp4
 ```
 
 ### 3 mode
 
 | Mode | Kecepatan | Syarat | Kapan dipakai |
 |------|----------|--------|--------------|
-| [7] Stream copy (concat demuxer + `-c copy`) | super cepat (no re-encode) | codec+res+fps sama | S1-S4 dari source sama, mix-tui Mode sama |
-| [8] Re-encode + pilih target res | lambat | res beda | S1-S4 dari source beda, mau output standard 1080p/720p |
-| [9] Re-encode pakai res file pertama | lambat | res beda, ikut file #1 | S1-S4 dari source beda, mau ikut res file pertama |
+| Stream copy (concat demuxer + `-c copy`) | super cepat (no re-encode) | codec+res+fps sama | S1-S4 dari source sama, mix-tui Mode sama |
+| Re-encode + pilih target res | lambat | res beda | S1-S4 dari source beda, mau output standard 1080p/720p |
+| Re-encode pakai res file pertama | lambat | res beda, ikut file #1 | S1-S4 dari source beda, mau ikut res file pertama |
 
-### Auto-detect (menu [6])
+### UX (v1.1 rewrite — konsisten sama mix-tui/shorts-tui)
+
+- `questionary` library (arrow-key navigation, bukan ketik nomor)
+- `questionary.checkbox()` untuk multi-select file (Space untuk centang)
+- Auto-list `HDD/mix/*.mp4` saat boot
+- Linear workflow (bukan main menu loop): Step 1 → 2 → 3 → 4 → 5 → run
+- Auto-derive output name: `S1-ori-id-final-sub.mp4` → `S1-merged.mp4`
+- Auto-detect mode (Step 3): cek res/codec/fps, suggest mode yang cocok
+
+### Auto-detect
 
 Probe semua file, bandingin res/codec/fps:
-- Semua sama → rekomendasi mode [7] stream copy (super cepat, no re-encode)
-- Ada perbedaan → rekomendasi mode [8] atau [9] (re-encode wajib)
+- Semua sama → rekomendasi mode Stream copy (super cepat, no re-encode)
+- Ada perbedaan → rekomendasi mode Re-encode
 
 ### Progress bar
 
@@ -352,8 +362,7 @@ Pakai `ffmpeg -progress pipe:1`, parse `out_time_ms` vs total duration → live 
 
 ### Output
 
-Default: `HDD/merged/merged_YYYYMMDD_HHMMSS.mp4` (folder `merged/` dibuat auto oleh `ensure_hdd()`).
-Bisa ganti via menu [5].
+Default: `HDD/merged/{prefix}-merged.mp4` (folder `merged/` dibuat auto oleh `ensure_hdd()`).
 
 ## shorts-tui.py v1.0 — ✅ Production
 
