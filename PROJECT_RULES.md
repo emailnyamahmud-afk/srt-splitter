@@ -24,13 +24,13 @@ Kamus (parallel): kamus-tui → jv.wiktionary.json → Supabase
 
 | # | TUI | Status |
 |---|-----|--------|
-| 1 | yt-dlp-tui v6.2 | ✅ Production (FB+YT confirmed) |
+| 1 | yt-dlp-tui v6.3 | ✅ Production (FB+YT confirmed, default 1080p preferred) |
 | 2 | demucs-tui | ✅ Production |
 | 3 | kamus-tui v16 | ✅ Production (audit) |
 | 4 | Web app | ⚠ Prototype |
 | 5 | SRT editor (web, pakai SRT ID) | ⏳ Pending |
 | 6 | edge-tts-tui v7.4 (paralel-safe, lock file + 429 retry) | ✅ Production |
-| 7 | mix-tui v3.8.2 | ✅ Production (all tested + logo + fade) |
+| 7 | mix-tui v3.9 | ✅ Production (all tested + logo + fade + force 1080p) |
 | 8 | whisper-tui v2.0 | ✅ Production (Metal GPU, 5.3x realtime) |
 | 9 | srt-editor-tui v1.0.1 | ✅ Production (fix typo SRT translate) |
 | 10 | shorts-tui v1.1 | ✅ Production (Shorts 60/60 + Part auto-split) |

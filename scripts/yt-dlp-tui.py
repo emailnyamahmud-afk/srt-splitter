@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 """
-yt-dlp-tui.py v6.2 — TUI download YouTube/Facebook/TikTok/IG: video + audio + SRT
+yt-dlp-tui.py v6.3 — TUI download YouTube/Facebook/TikTok/IG: video + audio + SRT
+
+Perubahan v6.3 (29 Okt 2026):
+  Default resolusi: 480p → 1080p preferred (untuk konsistensi pipeline mix-tui v3.9).
+  - User feedback: "daripada ribet, paksa jadi 1080p di fase mix tui saja. Lebih mudah render di fase mix daripada repot yt-dlp dan repot merge. Jika dari mix sudah 1080p, maka merge cuma pake stream copy = 2-5 menit selesai."
+  - v6.3: default "1080p preferred (download 1080p kalau ada, fallback best) — REKOMENDASI"
+  - "1080p preferred" = bestvideo[height<=1080]/best (download 1080p kalau ada, fallback ke 720p/480p best available)
+  - Tetap ada pilihan: 1080p strict, 720p, 480p, Best quality
+  - "1080p strict" = bestvideo[height<=1080]/best[height<=1080] (hanya ≤1080p, no fallback ke best)
+  - Untuk Demucs preview (file kecil): pilih 480p manual
 
 Perubahan v6.2 (26 Okt 2026):
   FIX: YouTube sekarang sering kena "Sign in to confirm you're not a bot" (HTTP 429).
@@ -14,7 +23,7 @@ v6 update: Output audio = MP3 (sebelumnya M4A native).
   - Quality: VBR best (~190 kbps), sedikit lebih rendah dari M4A tapi cukup untuk dubbing
   - Kompatibel dengan lebih banyak tool + ringkas
 
-Pilihan resolusi: 480p, 720p, 1080p, best
+Pilihan resolusi v6.3: 1080p preferred (default), 1080p strict, 720p, 480p, Best quality
 Output: 2 file = MP4 (video only) + MP3 (audio only, via yt-dlp convert)
 SRT: list subtitle dari JSON metadata, user pilih Indonesia / lain / skip
 
@@ -37,7 +46,7 @@ except ImportError:
     sys.exit(1)
 
 
-VERSION = 'v6.2'
+VERSION = 'v6.3'
 
 # Browser support matrix (urutan = prioritas)
 # Brave dipertama karena user pakai Brave (FB confirmed working)
@@ -190,12 +199,17 @@ def main():
     print()
 
     # Step 2: Resolusi
+    # v6.3: Default ganti dari 480p ke "1080p preferred" (untuk konsistensi pipeline mix-tui v3.9 force 1080p).
+    #   - "1080p preferred" = bestvideo[height<=1080]/best → download 1080p kalau ada, fallback ke best available
+    #   - "1080p strict" = bestvideo[height<=1080]/best[height<=1080] → hanya ≤1080p, no fallback
+    #   - Untuk Demucs preview (file kecil): pilih 480p manual
     res = questionary.select('Pilih resolusi:', choices=[
-        '480p (file kecil, cepat, aman untuk Demucs)',
-        '720p (sedang, rekomendasi)',
-        '1080p (besar, kualitas terbaik)',
+        '1080p preferred (download 1080p kalau ada, fallback best) — REKOMENDASI',
+        '1080p strict (hanya ≤1080p, no fallback)',
+        '720p (sedang)',
+        '480p (file kecil, cepat, untuk Demucs preview)',
         'Best quality (auto, bisa AV1/VP9)',
-    ], default='480p (file kecil, cepat, aman untuk Demucs)').ask()
+    ], default='1080p preferred (download 1080p kalau ada, fallback best) — REKOMENDASI').ask()
 
     # Step 3: Output dir (default: HDD)
     try:
@@ -247,11 +261,18 @@ def main():
         srt_choice = 'Skip (download SRT dari eksternal)'
 
     # Build format strings
-    if '480p' in res:
+    # v6.3: tambah "1080p preferred" (fallback best) vs "1080p strict" (no fallback)
+    if '1080p preferred' in res:
+        # Download 1080p kalau ada, fallback ke best available (e.g., 720p/360p kalau 1080p gak ada)
+        video_fmt = 'bestvideo[height<=1080]/best'
+    elif '1080p strict' in res:
+        # Hanya ≤1080p, no fallback ke best (kalau 1080p gak ada, error atau skip)
+        video_fmt = 'bestvideo[height<=1080]/best[height<=1080]'
+    elif '480p' in res:
         video_fmt = 'bestvideo[height<=480]/best[height<=480]'
     elif '720p' in res:
         video_fmt = 'bestvideo[height<=720]/best[height<=720]'
-    elif '1080p' in res:
+    elif '1080p' in res:  # legacy fallback kalau ada pilihan "1080p" tanpa qualifier
         video_fmt = 'bestvideo[height<=1080]/best[height<=1080]'
     else:
         video_fmt = 'bestvideo/best'

@@ -1,6 +1,20 @@
 #!/usr/bin/env python3
 """
-mix-tui.py v3.8.1 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn + logo overlay)
+mix-tui.py v3.9 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn + logo overlay + force resolution)
+
+v3.9 NEW: Force output resolution (untuk konsistensi series merge).
+  - Step 4.10: prompt "Force output resolution?" (hanya kalau burn_srt=True)
+  - Default: "Ikut source (no scale)" — kualitas terjaga
+  - Pilihan: Force 1080p vertical (1080x1920), 720p, 480p, custom
+  - Implementasi: tambah scale+pad di awal subtitle_filter chain
+  - Manfaat: kalau semua output mix-tui di-force 1080p, merge-tui auto-detect
+    "Semua sama → stream copy AMAN" → super cepat (2 menit untuk 24 jam video)
+  - Catatan: untuk source 1440p, force 1080p = downscale (sedikit lossy, tapi 1080p masih bagus)
+    Trade-off worth it untuk konsistensi merge workflow series.
+
+v3.8.2: Logo scale 100px (dari 150, user feedback "agak terlalu besar").
+v3.8.1: Fade 100ms smooth transition (fix "kaget" — user request "transisi mulus").
+v3.8: Logo PNG auto-detect, overlay top-right (Mode B/D/F only).
 
 Workflow produksi (4 fase, bersih — sesuai v6 yt-dlp + edge-tts-tui):
   Fase 1: yt-dlp v6      → {name}.mp4 (video) + {name}-audio.mp3 (via yt-dlp convert) + {name}.id.srt
@@ -269,6 +283,26 @@ def get_duration(ffprobe, path):
         return 0
 
 
+def get_resolution(ffprobe, path):
+    """Probe video resolution (width, height) via ffprobe.
+
+    Return: tuple (width, height) atau (0, 0) kalau gagal.
+    """
+    if not os.path.isfile(path):
+        return (0, 0)
+    result = subprocess.run([
+        ffprobe, '-v', 'error', '-select_streams', 'v:0',
+        '-show_entries', 'stream=width,height',
+        '-of', 'csv=s=x:p=0', path,
+    ], capture_output=True, text=True)
+    try:
+        # Output format: "1920x1080" atau "1440x2560"
+        w_str, h_str = result.stdout.strip().split('x')
+        return (int(w_str), int(h_str))
+    except Exception:
+        return (0, 0)
+
+
 def validate_input_file(path, label):
     """Cek file exist + size > 0. Kalau tidak, exit dengan pesan jelas."""
     if not path or not path.strip():
@@ -459,6 +493,71 @@ def prompt_video_bitrate():
     elif bitrate_choice.startswith('4 Mbps'):
         return '4M'
     return '1.5M'
+
+
+def pick_force_resolution(source_w, source_h):
+    """Prompt user pilih output resolution (v3.9 NEW).
+
+    Untuk konsistensi series merge: kalau semua file di-force 1080p,
+    merge-tui auto-detect "semua sama → stream copy AMAN" → super cepat.
+
+    Default: "Ikut source (no scale)" — kualitas terjaga.
+    Pilihan force: 1080p / 720p / 480p / custom.
+
+    Deteksi vertical (h > w) → output juga vertical (e.g., 1080x1920, bukan 1920x1080).
+
+    Return: tuple (target_w, target_h) atau None kalau ikut source.
+    """
+    if source_w == 0 or source_h == 0:
+        # Gagal probe, fallback ke ikut source
+        print(f'  ℹ Tidak bisa detect source resolution, fallback: ikut source')
+        return None
+
+    is_vertical = source_h > source_w
+    source_label = f'{source_w}x{source_h}'
+    if is_vertical:
+        source_label += ' (vertical 9:16)'
+
+    choices = [
+        f'Ikut source ({source_label}, no scale, REKOMENDASI) — kualitas terjaga',
+    ]
+    if is_vertical:
+        choices.extend([
+            'Force 1080p vertical (1080x1920) — untuk konsistensi merge series',
+            'Force 720p vertical (720x1280) — hemat storage',
+            'Force 480p vertical (480x854) — paling hemat',
+        ])
+    else:
+        choices.extend([
+            'Force 1080p horizontal (1920x1080)',
+            'Force 720p horizontal (1280x720)',
+            'Force 480p horizontal (854x480)',
+        ])
+    choices.append('Custom (ketik manual)')
+
+    res_choice = questionary.select(
+        'Output resolution (untuk konsistensi merge series):',
+        choices=choices,
+        default=choices[0],
+    ).ask()
+
+    if not res_choice or res_choice.startswith('Ikut source'):
+        return None
+    if '1080p' in res_choice:
+        return (1080, 1920) if is_vertical else (1920, 1080)
+    if '720p' in res_choice:
+        return (720, 1280) if is_vertical else (1280, 720)
+    if '480p' in res_choice:
+        return (480, 854) if is_vertical else (854, 480)
+    # Custom
+    try:
+        w = int(questionary.text('Width (pixel):', default=str(source_w)).ask() or source_w)
+        h = int(questionary.text('Height (pixel):', default=str(source_h)).ask() or source_h)
+        if w > 0 and h > 0:
+            return (w, h)
+    except ValueError:
+        pass
+    return None
 
 
 def prompt_output(default_output):
@@ -892,6 +991,7 @@ def main():
     duck_segments = None  # Segments untuk SRT-driven ducking (Original mode only)
     srt_position = 'top'  # default top supaya tidak overlap SRT Mandarin (kalau ada di video ori)
     video_bitrate = None  # Bitrate untuk burn SRT (Mode B/D/F only)
+    force_resolution = None  # v3.9: target (w, h) kalau user force, None kalau ikut source
     need_srt_for_duck = original_mode  # Original mode butuh SRT untuk ducking
     need_srt_for_burn = burn_srt       # Burn SRT butuh SRT untuk hardsub
     if need_srt_for_duck or need_srt_for_burn:
@@ -987,8 +1087,23 @@ def main():
                 print(f'  ℹ Tidak ada logo di default path')
                 print(f'    Untuk burn logo, taruh file "logo.png" di ~/Dubbing/ atau HDD/input/')
             print()
-    # else: Mode A/C/E (Stream copy) — tidak ada Step 4.6/4.7/4.8/4.9 (no SRT needed for A/C, SRT only for duck in E)
-    # Catatan: Mode E (Original + Stream copy) sudah dapat SRT di Step 4.6 untuk ducking, no need Step 4.7/4.8/4.9
+
+            # Step 4.10: Force output resolution (v3.9 NEW, muncul kalau burn_srt)
+            # Untuk konsistensi merge series: kalau semua file di-force 1080p,
+            # merge-tui auto-detect "semua sama → stream copy AMAN" → super cepat (2 menit untuk 24 jam)
+            print(f'▶ Step 4.10/{total}: Force output resolution?')
+            ffprobe = find_ffprobe()
+            source_w, source_h = get_resolution(ffprobe, mp4)
+            print(f'  Source: {source_w}x{source_h}')
+            force_resolution = pick_force_resolution(source_w, source_h)
+            if force_resolution:
+                print(f'  ✓ Force output: {force_resolution[0]}x{force_resolution[1]}')
+                print(f'    (Konsistensi merge series: merge-tui bakal stream copy, super cepat)')
+            else:
+                print(f'  ✓ Ikut source (no scale, kualitas terjaga)')
+            print()
+    # else: Mode A/C/E (Stream copy) — tidak ada Step 4.6/4.7/4.8/4.9/4.10 (no SRT needed for A/C, SRT only for duck in E)
+    # Catatan: Mode E (Original + Stream copy) sudah dapat SRT di Step 4.6 untuk ducking, no need Step 4.7/4.8/4.9/4.10
 
 
     # Step 5: Output — default derive dari MP4 prefix (Bug #1 fix)
@@ -1369,15 +1484,26 @@ def main():
         # Filter: [0:v] + subtitles → [vout]
         # subtitles filter butuh file path (escape), force_style untuk styling
         # v3.8: kalau ada logo, chain subtitle + overlay → output label 'vout' (tetap sama)
+        # v3.9: kalau force_resolution set, prepend scale+pad ke subtitle_filter
+        #   - Original: [0:v]subtitles='...'[vout]
+        #   - With scale: [0:v]scale=W:H:force_original_aspect_ratio=decrease,pad=W:H:...,setsar=1,subtitles='...'[vout]
+        #   - Scale preserve aspect ratio, pad letterbox/pillarbox (black bars), setsar=1 square pixel
+        scale_pre = ''
+        if force_resolution:
+            tw, th = force_resolution
+            scale_pre = (
+                f'scale={tw}:{th}:force_original_aspect_ratio=decrease,'
+                f'pad={tw}:{th}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,'
+            )
         if logo_path:
             # v3.8: Chain subtitle + logo overlay
             # [0:v]subtitles='...'[vsub];[vsub][logo_idx:v]overlay=top-right[vout]
             # Logo input index tergantung mode (Mode F: 4, Mode B/D: 3 atau 2)
-            subtitle_filter = f"[0:v]subtitles='{srt_escaped}':force_style='{force_style}'[vsub]"
+            subtitle_filter = f"[0:v]{scale_pre}subtitles='{srt_escaped}':force_style='{force_style}'[vsub]"
             # Logo overlay akan ditambah di cmd build (perlu tahu index input logo)
         else:
-            # No logo → subtitle only (existing behavior)
-            subtitle_filter = f"[0:v]subtitles='{srt_escaped}':force_style='{force_style}'[vout]"
+            # No logo → subtitle only (existing behavior, v3.9: + scale_pre kalau force)
+            subtitle_filter = f"[0:v]{scale_pre}subtitles='{srt_escaped}':force_style='{force_style}'[vout]"
 
         if not simple_mode:
             # Full + Burn SRT (B) / Original + Burn SRT (F): 3 input + audio_filter + subtitle_filter
@@ -1469,6 +1595,10 @@ def main():
         print(f'  SRT path : {srt_path}')
         print(f'  Posisi   : {srt_position} (Alignment={alignment}, MarginV={margin_v})')
         print(f'  Style    : font 18pt, putih outline hitam, VideoToolbox M1 hardware')
+        if force_resolution:
+            print(f'  Resolusi : {force_resolution[0]}x{force_resolution[1]} (force, v3.9)')
+        else:
+            print(f'  Resolusi : ikut source (no scale)')
         if simple_mode:
             mode_print = 'Simple (no SFX)'
         elif original_mode:

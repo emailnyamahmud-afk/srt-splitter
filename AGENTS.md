@@ -25,13 +25,13 @@ Shorts: Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON
 
 | # | TUI | Status |
 |---|-----|--------|
-| 1 | yt-dlp-tui v6.2 (MP4+MP3+SRT, cookies anti-bot YT/FB/TikTok/IG) | ✅ Production (FB+YT confirmed) |
+| 1 | yt-dlp-tui v6.3 (MP4+MP3+SRT, cookies anti-bot YT/FB/TikTok/IG, default 1080p preferred) | ✅ Production (FB+YT confirmed, default 1080p) |
 | 2 | demucs-tui | ✅ Production |
 | 3 | kamus-tui v16 | ✅ Production (audit pending) |
 | 4 | Web app | ⚠ Prototype |
 | 5 | SRT editor (web, pakai SRT ID) | ⏳ Pending |
 | 6 | edge-tts-tui v7.4 (paralel-safe, lock file, 429 retry) | ✅ Production |
-| 7 | mix-tui v3.8.2 (6 mode, MUTE + logo + fade 100ms) | ✅ Production (all tested) |
+| 7 | mix-tui v3.9 (6 mode, MUTE + logo + fade 100ms + force 1080p resolution) | ✅ Production (all tested) |
 | 8 | whisper-tui v2.0 (whisper.cpp, Metal GPU native, 5.3x realtime) | ✅ Production (Metal M1, 20 min for 2h audio) |
 | 9 | srt-editor-tui v1.0.1 (fix typo SRT hasil translate, glossary bulk replace) | ✅ Production |
 | 10 | shorts-tui v1.1 (pecah MP4: Shorts via AI JSON atau Part via SRT auto-split) | ✅ Production (Shorts 60/60 + Part auto-split) |
@@ -60,6 +60,7 @@ Shorts: Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON
 11. Sebutan hormat (Nona Chen, Dokter Chen, Tuan Lin, Paman Zhou, dll) = valid budaya Tiongkok. BUKAN mistranslate. PRESERVE di clean-srt.
 12. GT input preference: pakai SRT English (dari whisper-tui) untuk GT English→ID, lebih akurat dari Mandarin→ID.
 13. clean-srt workflow: heuristic dulu untuk 2000+ cue, manual per-cue cuma untuk cue critical.
+14. **Pipeline konsistensi res v3.9/v6.3**: yt-dlp v6.3 default 1080p preferred → mix-tui v3.9 force 1080p (Mode B/D/F) → merge-tui v1.7 auto-detect "semua sama → stream copy AMAN" → merge super cepat (2 menit untuk 24 jam series). Force 1080p di mix-tui = 1x encode work, merge tinggal stream copy (vs merge 3-5 jam kalau res campuran).
 
 ## merge-tui v1.7 — gabungin multi-video jadi 1 panjang
 
@@ -129,11 +130,11 @@ Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no m
 - User validasi manual di kamus-tui, mark READY, upload Supabase
 
 ### Pipeline produksi (6 film tested, 6 mode production-ready)
-- yt-dlp v6.2 MP3 output: ✅ (FB+YT confirmed, cookies anti-bot)
+- yt-dlp v6.3 MP3 output: ✅ (FB+YT confirmed, cookies anti-bot, default 1080p preferred)
 - demucs v2 (segment 4, MPS): ✅
 - edge-tts v7.4 (paralel-safe, lock file + 429 retry): ✅
 - srt-editor-tui v1.0.1: ✅ (glossary 19 entries, 144 replacement di S2-FB-Mandarin)
-- mix-tui v3.8.2: 6 mode production-ready + logo + fade 100ms
+- mix-tui v3.9: 6 mode production-ready + logo + fade 100ms + force 1080p resolution (v3.9 NEW)
 - shorts-tui v1.1: ✅ (Shorts 60/60 sukses + Part mode auto-split SRT, stream copy)
 - merge-tui v1.7: ✅ (gabungin multi-video jadi 1 panjang, 3 mode: stream copy/re-encode/res-first, questionary checkbox multi-select, natural sort, hardware detect GPU/CPU fallback, temp files di HDD bukan SSD, live ETA per-file + overall, smart scale skip-if-same-res, konsisten sama whisper/demucs/mix-tui pattern)
 - shorts-csv-tui v1.0: ✅ (metadata CSV + manifest untuk YouTube Studio, test 60 segment S5, CSV 19.8 KB + manifest 30.4 KB)

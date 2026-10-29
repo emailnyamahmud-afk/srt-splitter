@@ -10,13 +10,13 @@ ID jalan end-to-end (12 TUI production). Jawa/Sunda nunggu kamus Supabase selesa
 
 | # | TUI | Tugas | Status |
 |---|-----|-------|--------|
-| 1 | yt-dlp-tui.py v6.2 | Download MP4 + MP3 + SRT (YT/FB/TikTok/IG + cookies anti-bot) | ✅ Production (FB+YT confirmed) |
+| 1 | yt-dlp-tui.py v6.3 | Download MP4 + MP3 + SRT (YT/FB/TikTok/IG + cookies anti-bot, default 1080p preferred) | ✅ Production (FB+YT confirmed, default 1080p) |
 | 2 | demucs-tui.py | Split audio → no_vocals.mp3 (SFX bersih) | ✅ Production |
 | 3 | kamus-tui.py | User edit kamus JSON manual (sebelum DB) | ✅ Production (audit) |
 | 4 | Web app | Translate SRT Indonesia → Jawa (kamus Supabase) | ⚠ Prototype |
 | 5 | SRT editor (web) | Pakai SRT Indonesia (Jawa nunggu kamus+web) | ⏳ Pending |
 | 6 | edge-tts-tui.py v7.4 (paralel-safe, lock file, 429 retry) | ✅ Production |
-| 7 | mix-tui.py v3.8.2 | Mix MP4 + audio → final video (6 mode + logo + fade) | ✅ Production (all tested) |
+| 7 | mix-tui.py v3.9 | Mix MP4 + audio → final video (6 mode + logo + fade + force 1080p resolution) | ✅ Production (all tested) |
 | 8 | whisper-tui.py v2.0 | Generate SRT dari audio (whisper.cpp, Metal GPU M1) | ✅ Production (Metal GPU, 5.3x realtime, 20 min for 2h audio) |
 | 9 | srt-editor-tui.py v1.0.1 | Fix typo/konteks SRT hasil translate (glossary + bulk replace) | ✅ Production |
 | 10 | shorts-tui.py v1.1 | Pecah MP4 final jadi N shorts (JSON dari AI) atau N parts (SRT auto-split) | ✅ Production (Shorts 60/60 + Part mode auto-split) |

@@ -6,13 +6,13 @@ Python TUI untuk workflow dubbing bahasa eksternal (Mandarin, English, Jepang, I
 
 | # | TUI | Status |
 |---|-----|--------|
-| 1 | yt-dlp-tui.py v6.2 (MP4+MP3+SRT, cookies anti-bot YT/FB/TikTok/IG) | ✅ Production (FB+YT confirmed) |
+| 1 | yt-dlp-tui.py v6.3 (MP4+MP3+SRT, cookies anti-bot YT/FB/TikTok/IG, default 1080p preferred) | ✅ Production (FB+YT confirmed, default 1080p) |
 | 2 | demucs-tui.py (M1 MPS) | ✅ Production |
 | 3 | kamus-tui.py v16 | ✅ Production (audit) |
 | 4 | Web app | ⚠ Prototype |
 | 5 | SRT editor (web, pakai SRT ID) | ⏳ Pending |
 | 6 | edge-tts-tui.py v7.4 (paralel-safe, lock file + 429 retry) | ✅ Production |
-| 7 | mix-tui.py v3.8.2 | ✅ Production (all tested + logo + fade) |
+| 7 | mix-tui.py v3.9 | ✅ Production (all tested + logo + fade + force 1080p resolution) |
 | 8 | whisper-tui.py v2.0 (whisper.cpp, Metal GPU native) | ✅ Production (Metal M1, 5.3x realtime) |
 | 9 | srt-editor-tui.py v1.0.1 (fix typo SRT hasil translate) | ✅ Production |
 | 10 | shorts-tui.py v1.1 (Shorts via AI JSON atau Part via SRT auto-split) | ✅ Production (Shorts 60/60 + Part auto-split) |
@@ -76,10 +76,10 @@ mix-tui output × N → merge-tui → 1 video panjang
 
 | Script | Fungsi | Output |
 |--------|--------|--------|
-| yt-dlp-tui.py v6.2 | Download MP4 + MP3 + SRT Indonesia | HDD/input/ |
+| yt-dlp-tui.py v6.3 | Download MP4 + MP3 + SRT Indonesia (default 1080p preferred) | HDD/input/ |
 | demucs-tui.py | Vocal separation (M1 MPS) | HDD/demucs/ |
 | edge-tts-tui.py v7.4 | TTS generation (paralel-safe, lock file + 429 retry) | HDD/tts/ |
-| mix-tui.py v3.7.6 | Final mix (6 mode, MUTE COMPLETE) | HDD/mix/ |
+| mix-tui.py v3.9 | Final mix (6 mode, MUTE COMPLETE, force 1080p resolution) | HDD/mix/ |
 | merge-tui.py v1.7 | Gabungin multi-video jadi 1 panjang (3 mode, questionary checkbox, natural sort, hardware detect, temp di HDD, live ETA, smart scale) | HDD/merged/ |
 
 ### Kamus
