@@ -3068,7 +3068,7 @@ Saya khawatir itu tidak mungkin lagi
 
 768
 00:40:02,170 --> 00:40:04,170
-Kabupaten siapa yang menjadi Kabupaten Longcheng sekarang?
+Kabupaten siapa yang menjadi Longcheng sekarang?
 
 769
 00:40:04,170 --> 00:40:06,170
@@ -3428,7 +3428,7 @@ Bagaimana kuda-kuda di daerah perbatasan bisa kendor?
 
 858
 00:42:50,760 --> 00:42:52,889
-Tidak ada peternakan pacuan kuda di Kabupaten Longcheng
+Tidak ada peternakan pacuan kuda di Longcheng
 
 859
 00:42:52,889 --> 00:42:54,889
@@ -3500,7 +3500,7 @@ Tunggu sampai daerah menyelesaikannya sebelum mengambil tindakan.
 
 876
 00:43:22,849 --> 00:43:37,320
-Nona Chen
+Chen Su
 
 877
 00:43:37,320 --> 00:43:39,320
@@ -3752,7 +3752,7 @@ Mari kita bicara tentang masa kini dulu
 
 939
 00:45:56,860 --> 00:45:58,860
-Tuan Lin dan Nona Chen
+Tuan Lin dan Chen Su
 
 940
 00:45:58,860 --> 00:46:00,860
@@ -3764,7 +3764,7 @@ Tuan Lin tinggal di rumah utama
 
 942
 00:46:02,860 --> 00:46:05,860
-Nona Chen tinggal di Dongxiang bersama Qinghe
+Chen Su tinggal di Dongxiang bersama Qinghe
 
 943
 00:46:05,860 --> 00:46:06,860
@@ -4048,7 +4048,7 @@ Beri aku halaman yang lebih luas untuk ditabur.
 
 1013
 00:48:02,869 --> 00:48:04,900
-Adapun Nona Chen
+Adapun Chen Su
 
 1014
 00:48:04,900 --> 00:48:10,730
@@ -4164,7 +4164,7 @@ Ingin aku mengatakannya
 
 1042
 00:49:12,789 --> 00:49:14,789
-Mungkin itu Nona Chen
+Mungkin itu Chen Su
 
 1043
 00:49:14,789 --> 00:49:17,559
@@ -4556,7 +4556,7 @@ Tuan Lin, kalian sudah memutuskan ini.
 
 1140
 00:53:44,820 --> 00:53:46,860
-Sisi Nona Chen
+Sisi Chen Su
 
 1141
 00:53:48,429 --> 00:53:51,429
@@ -4624,7 +4624,7 @@ Tuan Lin
 
 1157
 00:54:18,710 --> 00:54:20,710
-Saya masih harus pergi ke Kabupaten Longcheng
+Saya masih harus pergi ke Longcheng
 
 1158
 00:54:20,710 --> 00:54:22,710
@@ -4796,11 +4796,11 @@ Takut menyakitiku
 
 1200
 00:58:14,039 --> 01:00:38,730
-Bisakah kami menggunakan panah petirmu juga?
+Bisakah kami menggunakan Lei Xiang Nu kamu juga?
 
 1201
 01:00:38,730 --> 01:00:45,750
-panah petir
+Lei Xiang Nu
 
 1202
 01:00:45,750 --> 01:00:47,750
@@ -5496,7 +5496,7 @@ pot tanah liat
 
 1375
 01:06:36,320 --> 01:06:37,320
-soju
+arak
 
 1376
 01:06:37,320 --> 01:06:38,320
@@ -6312,7 +6312,7 @@ Anda mendapat uang bulanan
 
 1579
 01:12:51,199 --> 01:12:52,199
-Tidak bergoyang
+Tidak Bandit
 
 1580
 01:12:52,199 --> 01:12:53,199
@@ -7616,7 +7616,7 @@ Lihat milikmu juga
 
 1905
 01:25:00,949 --> 01:25:01,949
-Kakak yang juru kameranya
+Kakak yang pengintainya
 
 1906
 01:25:02,949 --> 01:25:03,949
@@ -7852,7 +7852,7 @@ Panah pertama perlu diubah
 
 1964
 01:26:56,460 --> 01:26:58,460
-Jika Anda benar-benar ingin menggunakan minyak wijen di kemudian hari,
+Jika Anda benar-benar ingin menggunakan minyak wangi di kemudian hari,
 
 1965
 01:26:58,460 --> 01:26:59,460
@@ -7940,11 +7940,11 @@ aku bertanya padamu
 
 1986
 01:27:34,220 --> 01:27:36,569
-Jika minyak wijen memang ingin membentuk tim di masa depan
+Jika minyak wangi memang ingin membentuk tim di masa depan
 
 1987
 01:27:37,569 --> 01:27:38,569
-Butuh obat sakit emas yang banyak?
+Butuh obat luka emas yang banyak?
 
 1988
 01:27:38,569 --> 01:27:39,569
@@ -7952,7 +7952,7 @@ Apakah Anda ingin anestesi?
 
 1989
 01:27:39,569 --> 01:27:41,569
-Haruskah kita mengolah soju untuk membunuh virus dan luka?
+Haruskah kita mengolah arak untuk disinfeksi dan bersihkan luka?
 
 1990
 01:27:42,569 --> 01:27:43,569
@@ -7996,7 +7996,7 @@ Tidak ada harapan
 
 2000
 01:27:58,500 --> 01:28:00,500
-Tidak peduli seberapa bagus minyak wijennya, apa manfaatnya?
+Tidak peduli seberapa bagus minyak wanginya, apa manfaatnya?
 
 2001
 01:28:00,500 --> 01:28:01,500
@@ -8124,7 +8124,7 @@ Apotek itu milik Anda
 
 2032
 01:28:48,409 --> 01:28:49,409
-obat sakit emas
+obat luka emas
 
 2033
 01:28:49,409 --> 01:28:50,409
@@ -8132,7 +8132,7 @@ Narkoba
 
 2034
 01:28:50,409 --> 01:28:51,409
-Pemurnian soju
+Pemurnian arak
 
 2035
 01:28:51,409 --> 01:28:53,409
@@ -8352,7 +8352,7 @@ Lakukan saja
 
 2089
 01:30:42,039 --> 01:30:43,039
-Saudara laki-laki
+Bang
 
 2090
 01:30:43,039 --> 01:30:44,039
@@ -8480,7 +8480,7 @@ Jika ada pemenang di utara,
 
 2121
 01:31:39,239 --> 01:31:40,239
-Pasukan menuju utara di Jalan Qinfeng
+Pasukan menuju utara di wilayah Qinfeng
 
 2122
 01:31:41,909 --> 01:31:42,909
@@ -8768,7 +8768,7 @@ Kaikenson
 
 2193
 01:34:15,979 --> 01:34:17,979
-Ini Nona Chen Suchen
+Ini Chen Su
 
 2194
 01:34:19,560 --> 01:34:20,560
@@ -8792,7 +8792,7 @@ Guanyin dengan pakaian biasa
 
 2199
 01:34:29,560 --> 01:34:30,850
-Kalau bukan karena Nona Chen
+Kalau bukan karena Chen Su
 
 2200
 01:34:31,850 --> 01:34:32,850
@@ -8956,7 +8956,7 @@ Itu akan menyusahkan
 
 2240
 01:35:52,220 --> 01:35:53,449
-Keterampilan medis Nona Chen
+Keterampilan medis Chen Su
 
 2241
 01:35:53,449 --> 01:35:55,659

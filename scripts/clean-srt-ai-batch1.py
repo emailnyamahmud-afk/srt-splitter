@@ -795,6 +795,173 @@ CLEAN_TEXT = {
 }
 
 
+# === HEURISTIC REPLACEMENTS for cues 751-2857 ===
+# Pendekatan: scan nama orang, nama tempat, dan dialog absurd GT.
+# Apply: longer phrases first to avoid partial match.
+
+# Step 1: ABSURD_PHRASES — full phrase mistranslate (case-sensitive, longer first)
+# These are GT artifacts that produce nonsensical Indonesian
+ABSURD_PHRASES = [
+    # Out-of-context modern words / obscene mistranslates
+    ("Jangan main-main dengan pria saat mereka mengambil penis", "Laki-laki ambil senjata, jangan ribut"),
+    ("menidurinya dengan sangat keras dan besar", "habis nekat jual besar"),
+    ("Mengisap Ponsel Pencuri", "kapak tangan penyerang"),
+    ("Kakak ipar pada hari Selasa", "Mbak Zhou ke-2"),
+    ("Microflush mencapai sembilan", "Micro burst 9"),
+    ("Tambang emas jenis ini", "Penyerang begini"),
+    ("Kain pembersih air panas Soju", "Arak, air panas, kain bersih"),
+    ("Selebriti mungkin adalah tentara bawahan", "Besok mungkin pengungsi"),
+    ("Hutang prajurit sudah jatuh tempo", "Pasukan bawahan harusnya datang"),
+    ("Pemberontakan belum terjadi", "Pasukan bawahan belum datang"),
+    ("Mematikan asap serigala", "nyalain suar"),
+    ("Bukankah kita sudah mematikan asap serigala?", "Bukannya kita udah nyalain suar?"),
+    ("Menjaga hutang", "alasan jaga benteng"),
+    ("Apa yang terjadi dengan kopi?", "Apa-apaan ini?"),
+    ("Empat tahun tergantung di sungai", "Tahun ke-4 Xuanhe"),
+    ("Ini adalah Jalan Qinfeng", "Ini wilayah Qinfeng"),
+    ("Jalan Qinfeng", "wilayah Qinfeng"),  # 路 in Song dynasty = administrative region
+    ("Jalan Qintu", "wilayah Qintu"),
+    ("Jalan Jinglue", "wilayah Jinglue"),
+    ("membunuh virus dan luka", "disinfeksi dan bersihkan luka"),  # 殺毒消創
+    ("Jangan bertaruh di jalan", "Jangan berdiri di jalan"),
+    ("Aku kudamu", "Aku, kamu, kuda"),
+    ("mengisi ulang tembakanku", "Nggak aku tembak lagi"),
+    ("jangan sentuh aku", "Jangan gerakkan aku"),
+    ("Memilih beberapa tangan dan kaki yang lebih rapi", "Pilih beberapa yang cekatan"),
+    ("Beppu Shou", "Jangan panah"),
+    ("Geng Detektif Ma", "Ma Zhenbang"),
+    ("Saudara Sanhuai", "Bang Sanhuai"),
+    ("Saudara Lee", "Saudara Li"),
+    ("Mulut keluargaku", "Suamiku"),
+    ("kamu kentut", "Ngawur kamu"),
+    ("Kiyoai", "Qinghe"),
+    ("Mesin gas", "Mesin mekanik"),
+    ("Hemostasis", "Hentikan pendarahan"),
+    ("Jangan rusak", "Jangan berhenti"),
+    ("Saudara laki-laki", "Bang"),
+    ("saudara laki-laki", "Bang"),
+    ("bergoyang", "Bandit"),
+    # Medical / weapon / item mistranslates
+    ("obat sakit emas", "obat luka emas"),  # 金瘡藥
+    ("minyak wijen", "minyak wangi"),  # 香油 (fragrant oil, NOT sesame oil!)
+    ("panah petirmu", "Lei Xiang Nu kamu"),  # 雷響弩 + -mu (your)
+    ("panah petir", "Lei Xiang Nu"),  # 雷響弩
+    ("Pemurnian soju", "Pemurnian arak"),  # 燒酒提煉
+    ("soju", "arak"),  # 燒酒 (strong liquor, NOT Japanese soju)
+    ("Soju", "Arak"),
+    ("juru kamera", "pengintai"),  # 攝頭 (scout/look-out, NOT cameraman!)
+]
+
+# Step 2: NAMES — case-insensitive name variant → canonical (longer first)
+NAMES_CI = [
+    # Lin Zhao variants
+    ("Peti mati Lin Ya", "Lin Zhao"),
+    ("Lin menertawakan peti mati", "Lin Zhao"),
+    ("Peti mati Lin", "Lin Zhao"),
+    ("Lin Yanya", "Lin Zhao"),
+    ("Lin Yasi", "Lin Zhao"),
+    ("Lin Zhou", "Lin Zhao"),
+    # Xie Changfeng variants
+    ("Xie Zangfeng", "Xie Changfeng"),
+    ("Xie Chaojin", "Xie Changfeng"),
+    ("Xie Dutou", "Xie Changfeng"),
+    ("Pelatih Xie", "Xie Changfeng"),
+    # Wang Haochuan variants
+    ("Wang Haocao", "Wang Haochuan"),
+    ("Aokawa", "Wang Haochuan"),
+    # Ma Zhenbang variants
+    ("Ma Zhenzhuang", "Ma Zhenbang"),
+    ("Ma Zhenbo", "Ma Zhenbang"),
+    ("Marco", "Ma Zhenbang"),
+    # Chen Su variants
+    ("Chen Xinlang", "Chen Su"),
+    ("Saudari Chen Su", "Chen Su"),
+    ("Nona Chen Suchen", "Chen Su"),
+    ("Nona Chen", "Chen Su"),
+    ("Nyonya Chen", "Chen Su"),
+    ("Dokter Chen", "Chen Su"),
+    ("Dr. Chen", "Chen Su"),
+    ("Dr Chen", "Chen Su"),
+    # Qin Hongying variants
+    ("Qin Hongying Nyonya Qin", "Qin Hongying"),
+    ("Elang Merah", "Qin Hongying"),
+    ("Red Eagle", "Qin Hongying"),
+    # Mu En variants
+    ("Bulan mudu xu", "Mu En"),
+    ("Bulan yang rendah hati", "Mu En"),
+    ("Mu Xunjian", "Mu En"),
+    ("Mun En", "Mu En"),
+    # Zhou Lizheng variants
+    ("Zhou Laozhang", "Zhou Lizheng"),
+    ("Zhou Lizhi", "Zhou Lizheng"),
+    ("Paman Zhou", "Zhou Lizheng"),
+    ("Zhou Lao", "Zhou Lizheng"),
+    # Yao Sihai variants
+    ("Butler Yao", "Yao Sihai"),
+    ("Yao Dadu", "Yao Sihai"),
+    ("Yao Zhong", "Yao Sihai"),
+    ("Yao Gu", "Yao Sihai"),
+    # Qin Fenglu variants
+    ("Qin Fengzhan", "Qin Fenglu"),
+    ("Qin Fengjun", "Qin Fenglu"),
+]
+
+# Step 3: PLACES — case-insensitive (longer first)
+PLACES_CI = [
+    ("Kabupaten Longcheng", "Longcheng"),
+    ("Kota Longcheng", "Longcheng"),
+    ("Desa Qinghe", "Desa Qinghe"),  # already canonical, no change
+    # Xixia variants — none common
+]
+
+# Step 4: TERMS — case-insensitive term mistranslate (longer first)
+TERMS_CI = [
+    # Military terms
+    ("Tentara Hunan", "Xiangjun"),
+    ("pemberontak debitur", "Xiangjun"),
+    ("Tentara debitur", "Xiangjun"),
+    ("tentara utang", "Xiangjun"),
+    ("ayam panah otomatis", "panah otomatis"),
+    ("ayam panah", "panah otomatis"),
+    ("payung tempat tidur emas", "obat luka emas"),
+    ("payung emas buatan tangan", "obat luka emas"),
+    ("payung emas", "obat luka emas"),
+    ("Qin Fenglu dot polisi", "Jiedushi"),
+    ("Qin Fenglu dot", "Jiedushi"),
+    ("dot polisi", "Jiedushi"),
+    ("melakukan cumming", "menarik pelatuk"),
+    ("melakukan cumming", "menarik pelatuk"),
+    ("cumming", "menarik pelatuk"),
+    ("menggoreng permen", "laras meledak"),
+    ("retribusi", "pembalasan"),
+    ("universitas terkemuka", "akademi"),
+    ("SMP Desa", "akademi"),
+    # Common GT artifacts
+    ("Microflush", "Micro burst"),
+    ("Beidou", "Beidou"),  # already canonical
+    ("GPS", "GPS"),  # already canonical
+]
+
+
+def heuristic_clean(text):
+    """Apply heuristic replacements: absurd phrases, names, places, terms.
+    Order: ABSURD_PHRASES (case-sensitive) → NAMES/PLACES/TERMS (case-insensitive).
+    Longer phrases first to avoid partial match.
+    """
+    result = text
+    # Step 1: Absurd full-phrase replacements (case-sensitive)
+    for old, new in ABSURD_PHRASES:
+        if old in result:
+            result = result.replace(old, new)
+    # Step 2-4: Case-insensitive replacements
+    for replace_list in [NAMES_CI, PLACES_CI, TERMS_CI]:
+        for old, new in replace_list:
+            if old.lower() in result.lower():
+                pattern = re.compile(re.escape(old), re.IGNORECASE)
+                result = pattern.sub(new, result)
+    return result
+
+
 def parse_srt(text):
     text = text.replace('\r\n', '\n').replace('\r', '\n')
     blocks = re.split(r'\n\s*\n', text.strip())
@@ -835,20 +1002,28 @@ def main():
 
     output_lines = []
     changes = 0
+    heuristic_changes = 0
     for cue in cues:
         idx = cue['index']
         if idx in CLEAN_TEXT:
+            # Cues 1-750: use manual AI cleaning (high quality)
             new_text = CLEAN_TEXT[idx]
             if new_text != cue['text']:
                 changes += 1
         else:
-            new_text = cue['text']
+            # Cues 751-2857: apply heuristic (name/place/absurd-phrase replacement)
+            new_text = heuristic_clean(cue['text'])
+            if new_text != cue['text']:
+                heuristic_changes += 1
+                changes += 1
         output_lines.append(str(idx))
         output_lines.append(f"{cue['start']} --> {cue['end']}")
         output_lines.append(new_text)
         output_lines.append('')
 
     Path(out_path).write_text('\n'.join(output_lines), encoding='utf-8')
+    print(f"Manual changes (cues 1-750): {len(CLEAN_TEXT)} entries")
+    print(f"Heuristic changes (cues 751-2857): {heuristic_changes}")
     print(f"Total changes applied: {changes}")
 
     clean_cues = parse_srt(Path(out_path).read_text(encoding='utf-8'))
