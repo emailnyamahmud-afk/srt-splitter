@@ -21,7 +21,7 @@ ID jalan end-to-end (12 TUI production). Jawa/Sunda nunggu kamus Supabase selesa
 | 9 | srt-editor-tui.py v1.0.1 | Fix typo/konteks SRT hasil translate (glossary + bulk replace) | ✅ Production |
 | 10 | shorts-tui.py v1.1 | Pecah MP4 final jadi N shorts (JSON dari AI) atau N parts (SRT auto-split) | ✅ Production (Shorts 60/60 + Part mode auto-split) |
 | 11 | shorts-csv-tui.py v1.0 | Generate metadata CSV + manifest untuk YouTube Studio | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
-| 12 | merge-tui.py v1.9 | Gabungin multi-video jadi 1 panjang (smart scale, audio stream copy, simple) | ✅ Production (v1.9 revert over-engineer) |
+| 12 | merge-tui.py v2.0 | Gabungin multi-video jadi 1 panjang (full format detect, stream copy / standardize) | ✅ Production (VLC confirmed, sync 100%) |
 
 ## Pipeline
 
@@ -93,7 +93,7 @@ python3 shorts-tui.py
 
 Detail lengkap: lihat [scripts/README.md](scripts/README.md#shorts-tui-v10) + [tutor-shorts-prompt.md](scripts/tutor-shorts-prompt.md).
 
-## merge-tui v1.0 — gabungin multi-video jadi 1 panjang
+## merge-tui v2.0 — gabungin multi-video jadi 1 panjang
 
 ```bash
 cd ~/Dubbing && source venv/bin/activate
@@ -128,7 +128,7 @@ Workflow end-to-end Shorts:
 
 Detail lengkap: lihat [scripts/README.md](scripts/README.md#shorts-csv-tui-v10).
 
-## mix-tui v3.8.2 — 6 mode + logo + smooth fade
+## mix-tui v3.10 — 6 mode + logo + force 1080p + audio 48000Hz
 
 | # | Mode | Input | Output | Durasi | Cocok |
 |---|------|-------|--------|--------|-------|
@@ -236,5 +236,4 @@ curl -L -o shorts-csv-tui.py "https://raw.githubusercontent.com/emailnyamahmud-a
 curl -L -o tutor-shorts-prompt.md "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/tutor-shorts-prompt.md"
 curl -L -o upload-supabase.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py"
 curl -L -o merge-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/merge-tui.py"
-curl -L -o fix-merge-audio.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/fix-merge-audio.py"
 ```

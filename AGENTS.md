@@ -1,166 +1,70 @@
 # AGENTS.md
 
-> Dibaca AI di awal setiap session. Update: 29 Okt 2026.
+> Dibaca AI di awal setiap session. Update: 30 Okt 2026.
 
-## Anti-Amnesia Protocol (WAJIB baca duluan)
+## Anti-Amnesia Protocol
 
-AI sering amnesia tiap session. Untuk hindari:
-1. **Baca duluan**: AGENTS.md (ini), README.md, PROJECT_RULES.md, scripts/README.md, scripts/config.py
-2. **Jangan ngandalkan memory context** — context panjang = amnesia makin parah
-3. **Setiap sesi WAJIB update docs + commit + push** selesai task, biar sesi berikutnya bisa baca
-4. **Jangan tebak struktur folder** — baca config.py + README.md dulu
-5. **Cek git log** untuk tau state terakhir project
+1. Baca duluan: AGENTS.md, README.md, PROJECT_RULES.md, scripts/README.md, scripts/config.py
+2. Jangan ngandalkan memory context — context panjang = amnesia
+3. Setiap sesi WAJIB update docs + commit + push
+4. Jangan tebak struktur folder — baca config.py
+5. Cek git log untuk state terakhir
 
 ## Project: SRT Splitter + Dubbing Multi-Bahasa
 
-Pipeline dubbing bahasa eksternal (Mandarin, English, Jepang, Italia, dll) → Indonesia / Jawa / Sunda.
+Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 - ID: jalan end-to-end (12 TUI production)
-- Jawa/Sunda: nunggu kamus Supabase selesai
-
-Pipeline: yt-dlp → Demucs → srt-editor-tui → edge-tts → mix-tui → shorts-tui → shorts-csv-tui → YouTube Studio + merge-tui (gabungin multi-video)
-Kamus: jv.wiktionary.json (lembar kerja) → Supabase (terverifikasi)
-Shorts: Dola AI skill `shorts-json` (upload SRT → ketik "buat shorts" → JSON 60 segment)
+- Jawa/Sunda: nunggu kamus Supabase
 
 ## 12 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
-| 1 | yt-dlp-tui v6.5 (MP4+MP3+multi-SRT ID+EN, cookies anti-bot, default 1080p preferred) | ✅ Production (v6.5 multi-SRT) |
-| 2 | demucs-tui | ✅ Production |
-| 3 | kamus-tui v16 | ✅ Production (audit pending) |
+| 1 | yt-dlp-tui v6.5 (MP4+MP3+multi-SRT ID+EN, default 1080p) | ✅ |
+| 2 | demucs-tui | ✅ |
+| 3 | kamus-tui v16 | ✅ (audit) |
 | 4 | Web app | ⚠ Prototype |
-| 5 | SRT editor (web, pakai SRT ID) | ⏳ Pending |
-| 6 | edge-tts-tui v7.4 (paralel-safe, lock file, 429 retry) | ✅ Production |
-| 7 | mix-tui v3.10 (6 mode, MUTE + logo + fade 100ms + force 1080p + audio 48000 Hz stereo) | ✅ Production (v3.10 fix audio) |
-| 8 | whisper-tui v2.0 (whisper.cpp, Metal GPU native, 5.3x realtime) | ✅ Production (Metal M1, 20 min for 2h audio) |
-| 9 | srt-editor-tui v1.0.1 (fix typo SRT hasil translate, glossary bulk replace) | ✅ Production |
-| 10 | shorts-tui v1.1 (pecah MP4: Shorts via AI JSON atau Part via SRT auto-split) | ✅ Production (Shorts 60/60 + Part auto-split) |
-| 11 | shorts-csv-tui v1.0 (metadata CSV + manifest untuk YouTube Studio) | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
-| 12 | merge-tui v1.9 (gabungin multi-video, smart scale, audio stream copy, simple — revert v1.8 over-engineer) | ✅ Production (v1.9) |
+| 5 | SRT editor (web) | ⏳ Pending |
+| 6 | edge-tts-tui v7.4 (paralel-safe) | ✅ |
+| 7 | mix-tui v3.10 (force 1080p + audio 48000Hz stereo) | ✅ |
+| 8 | whisper-tui v2.0 (Metal GPU) | ✅ |
+| 9 | srt-editor-tui v1.0.1 | ✅ |
+| 10 | shorts-tui v1.1 (Shorts + Part) | ✅ |
+| 11 | shorts-csv-tui v1.0 | ✅ |
+| 12 | merge-tui v2.0 (full format detect, stream copy / standardize) | ✅ VLC confirmed |
 
 ## Struktur Folder
 
 - SSD `~/Dubbing/` — scripts (.py) + venv + jv.wiktionary.json
 - HDD `/Volumes/HDD/Dubbing/` — data (input, demucs, tts, mix, shorts, parts, merged, .env)
-- `config.py` — base path: `ensure_hdd()`, `ensure_kamus()`, `load_env()`, `INPUT_DIR`, `DEMUCS_DIR`, `TTS_DIR`, `MIX_DIR`, `SHORTS_DIR`, `PARTS_DIR`, `MERGED_DIR`
-- Workflow: `cd ~/Dubbing && source venv/bin/activate && python3 <tui>.py` (BUKAN `python scripts/<tui>.py`)
+- `config.py` — `ensure_hdd()`, `INPUT_DIR`, `MIX_DIR`, `MERGED_DIR`, dll
+- Workflow: `cd ~/Dubbing && source venv/bin/activate && python3 <tui>.py`
 
 ## Aturan
 
-1. jv.wiktionary.json = SOURCE OF TRUTH. DILARANG rusak data.
-2. Supabase DB = kamus terverifikasi. User upload manual setelah validasi.
-3. AI DILARANG parsing tolol. Baca manual per batch 100 entries kalau perlu.
-4. AI DILARANG buang data. Ragu → keterangan, bukan hapus.
-5. Register (ngoko/krama) = tugas user native Jawa. AI gak bisa.
-6. 1 entry = 1 konsep. Sinonim = koma.
-7. di- = pasif Jawa VALID. Bukan noise.
-8. Kalau AI gak yakin → SKIP. Jangan halu.
-9. Data di HDD, scripts di SSD. config.py handle path.
-10. Ducking ≠ vocal removal. Untuk MUTE → pakai Demucs (Full mode) atau amultiply SRT-driven (Original v3.7.6).
-11. Sebutan hormat (Nona Chen, Dokter Chen, Tuan Lin, Paman Zhou, dll) = valid budaya Tiongkok. BUKAN mistranslate. PRESERVE di clean-srt.
-12. GT input preference: pakai SRT English (dari whisper-tui) untuk GT English→ID, lebih akurat dari Mandarin→ID.
-13. clean-srt workflow: heuristic dulu untuk 2000+ cue, manual per-cue cuma untuk cue critical.
-14. **Pipeline konsistensi res v3.10/v6.3**: yt-dlp v6.3 default 1080p preferred → mix-tui v3.10 default force 1080p (Mode B/D/F) + audio 48000 Hz stereo → merge-tui v1.7 auto-detect "semua sama → stream copy AMAN" → merge super cepat (2 menit untuk 24 jam series). Force 1080p + audio 48000 Hz di mix-tui = 1x encode work, merge tinggal stream copy (vs merge 3-5 jam kalau res/audio campuran). v3.10 FIX audio sample rate mismatch (root cause merge audio kacau: mix-tui output audio ikut source sample rate, sekarang fixed ke 48000 Hz stereo konsisten).
+1. jv.wiktionary.json = SOURCE OF TRUTH
+2. Supabase = kamus terverifikasi (user upload manual)
+3. AI DILARANG parsing tolol / buang data / halu
+4. Register (ngoko/krama) = tugas user, AI gak bisa
+5. Data di HDD, scripts di SSD
+6. Sebutan hormat Tiongkok (Nona/Tuan/Dokter/Paman) = PRESERVE, bukan mistranslate
+7. GT input: SRT English (dari whisper-tui) → GT English→ID lebih akurat
+8. **Standarisasi res+audio = kerjaan mix-tui v3.10**, bukan yt-dlp atau merge-tui
+9. **merge-tui v2.0** = full format detect (6 properties) + stream copy (super cepat) / standardize (re-encode). VLC confirmed: sync 100%.
+10. **fix-merge-audio.py = DELETED** (audio drift, failed experiment)
 
-## merge-tui v1.9 — gabungin multi-video (stream copy only)
+## Pipeline Final (confirmed end-to-end)
 
-TUI #12. Input: `HDD/mix/*.mp4` (output mix-tui, sudah dub ID + burn sub). Output: `HDD/merged/{prefix}-merged.mp4`.
+```
+yt-dlp v6.5 (varies, multi-SRT ID+EN)
+  → mix-tui v3.10 (force 1080p + audio 48000Hz stereo = STANDARDISASI)
+    → merge-tui v2.0 (stream copy ~2 menit, no drift)
+      → VLC: sync 100% ✅
+```
 
-| Mode | Kecepatan | Syarat |
-|------|----------|--------|
-| [1] Stream copy (concat demuxer + `-c copy`) | ⚡ super cepat | codec+res+fps sama |
-| [2] Re-encode + pilih target res (smart scale) | ⚡ super cepat (kalau banyak file res sama) | res beda |
-| [3] Re-encode pakai res file pertama | 🐢 lambat | res beda, ikut file #1 |
+## Status (30 Okt 2026)
 
-UX sama kayak mix-tui/shorts-tui: questionary checkbox (multi-select file), linear workflow (Step 1→5), auto-detect mode, auto-derive output name.
-
-v1.2: Natural sort — 'S1, S2, ..., S9, S10' urut bener.
-v1.3: Re-encode pakai M1 GPU h264_videotoolbox (bukan CPU).
-v1.4: Hardware detection (konsisten sama whisper-tui/demucs-tui).
-v1.5: Temp files di HDD (BUKAN SSD /tmp).
-v1.6: Live ETA per-file + overall.
-v1.7: SMART SCALE — auto-pick MAX res + per-file skip-if-same-res.
-v1.8: AUDIO NORMALIZE — fix audio mismatch (silent + cepat) dari v1.7.
-  - Bug v1.7: file SKIP pakai audio as-is (sample rate ikut source, bisa 44100 Hz),
-    file encode pakai sample rate default (48000 Hz). Concat = sample rate mismatch
-    → VLC baca semua dengan sample rate file pertama → audio cepat/lambat/silent.
-  - v1.8 FIX: SKIP hanya untuk VIDEO (stream copy, instant). Audio SELALU di-encode
-    ke aac 192k 48000 Hz stereo, untuk konsistensi sample rate antara semua file.
-    - File SKIP (res sama): ffmpeg -c:v copy -c:a aac -b:a 192k -ar 48000 -ac 2
-      Video: 0 CPU (stream copy), Audio: ~30 detik per 2.5 jam file (CPU bound, ringan)
-    - File encode (res beda): ffmpeg -vf scale... -c:v h264_videotoolbox -b:v 2M -c:a aac -b:a 192k -ar 48000 -ac 2
-  - Probe sekarang ambil sample_rate + channels untuk detect mismatch (info display).
-  - Konsistensi hardware source: whisper.cpp (Metal) + demucs (MPS) + mix-tui (VideoToolbox) + merge-tui (VideoToolbox/CPU)
-
-## mix-tui v3.7.6 — 6 mode
-
-| # | Mode | Ducking | Use case |
-|---|------|---------|----------|
-| A | Full + Stream | sidechain compress | Proper, no hardsub |
-| B | Full + Burn | sidechain compress | Proper + hardsub |
-| C | Simple + Stream | no ducking | Cepat, no SFX |
-| D | Simple + Burn | no ducking | Cepat + hardsub |
-| **E** | **Original + Stream** | **amultiply MUTE COMPLETE** | **Cepat, MUTE, no hardsub** ⭐ |
-| F | Original + Burn | amultiply MUTE COMPLETE | Cepat, MUTE + hardsub |
-
-### v3.8.2 Logo + Fade (PERMANEN)
-- v3.8: Logo PNG auto-detect, overlay top-right (Mode B/D/F only)
-- v3.8.1: Fade 100ms smooth transition (fix "kaget" — user request "transisi mulus")
-- v3.8.2: Logo scale 150→100px (user feedback "agak terlalu besar")
-- User confirmed: "burn sub dan logo berjalan sempurna"
-
-### v3.7.6 MUTE COMPLETE approach (PERMANEN)
-
-User request: "MP3 ori MUTE TOTAL saat cue, NORMAL saat gap" (bukan reduksi gradual).
-Fix: amultiply + inverted envelope WAV (sample-by-sample multiplication).
-- envelope = 0.0 saat cue → MP3 ori × 0 = MUTE TOTAL
-- envelope = 1.0 saat gap → MP3 ori × 1 = NORMAL
-- Fade 1ms di boundary (avoid click)
-- 1 SRT Indonesia untuk ducking + burn subtitle (timestamps identik SRT Mandarin)
-- Test sandbox: MP3 ori mag 31 (TRUE MUTE, floating noise only)
-- User VLC confirm: "mp3 suara ori hening saat dub id bicara"
-
-### v3.7.4 output HDD (PERMANEN)
-
-Default output: `/Volumes/HDD/Dubbing/mix/{filename}.mp4` (langsung ke HDD, no manual move).
-
-## Status (29 Okt 2026)
-
-### Kamus
-- 44.585 entries, 8.618 dengan indo (cross-ref), 2.165 lengkap 3-field
-- User validasi manual di kamus-tui, mark READY, upload Supabase
-
-### Pipeline produksi (6 film tested, 6 mode production-ready)
-- yt-dlp v6.5 MP3+multi-SRT output: ✅ (FB+YT confirmed, cookies anti-bot, default 1080p preferred, multi-select SRT ID+EN sekaligus)
-- demucs v2 (segment 4, MPS): ✅
-- edge-tts v7.4 (paralel-safe, lock file + 429 retry): ✅
-- srt-editor-tui v1.0.1: ✅ (glossary 19 entries, 144 replacement di S2-FB-Mandarin)
-- mix-tui v3.10: 6 mode production-ready + logo + fade 100ms + force 1080p resolution (default 1080p) + audio 48000 Hz stereo aac 192k (v3.10 fix audio sample rate mismatch — root cause merge audio kacau)
-- shorts-tui v1.1: ✅ (Shorts 60/60 sukses + Part mode auto-split SRT, stream copy)
-- merge-tui v1.9: ✅ (gabungin multi-video, smart scale skip-if-same, audio stream copy simple — revert v1.8 over-engineer, fix-merge-audio.py buat fix output v1.7 yang ada)
-- shorts-csv-tui v1.0: ✅ (metadata CSV + manifest untuk YouTube Studio, test 60 segment S5, CSV 19.8 KB + manifest 30.4 KB)
-- clean-srt v1.0 (hybrid): ✅ (manual cues 1-750 + heuristic cues 751-2857, 731/2857 changes, output ke clean-srt/S1_Lima_Tentara.id.clean.srt)
-
-### Test results (PERMANEN — all 6 mode production-ready + logo + fade)
-- A (Full + Stream): 5 film sukses (sebelum v3.7)
-- B (Full + Burn): low risk, konsep sama dengan A + burn layer
-- C (Simple + Stream): VLC sync 100%
-- D (Simple + Burn): 1 Mbps user confirmed > ori (hemat 51%)
-- E (Original + Stream v3.7.6): VLC confirmed MUTE COMPLETE ⭐
-- F (Original + Burn v3.8.2): VLC confirmed burn sub + logo "sempurna" ⭐
-  - 480p @ 2 Mbps: 5m 58s, 2152 MB, fade 100ms smooth, logo 100px top-right
-
-## Next
-
-- User: kamus audit (8.618 entries) → mark READY → upload Supabase
-- User: workflow film berikutnya (pilih 1 dari 4 alur: PROPER/CEPAT/MUTE/MERGE)
-- User: Shorts pipeline (Dola → shorts-tui → shorts-csv-tui → YouTube Studio upload)
-- User: test merge-tui (S1+S2+S3+S4 → 1 video panjang)
-- AI: web app Jawa (TUI #4) — penyesuaian lookup kamus dari Supabase
-- AI (optional): bug cosmetic (filename double `-id`, progress bar `ETA=?ss` glitch)
-- AI: clean-srt pending task — hapus honorific entries dari heuristic (Nona Chen, Dokter Chen, Paman Zhou = PRESERVE budaya Tiongkok)
-
-## Catatan PAT
-
-PAT user exposure di chat (≥21x). User WAJIB revoke sebelum tidur:
-→ GitHub → Settings → Developer settings → Personal access tokens → Revoke
+- merge-tui v2.0: ✅ VLC confirmed (10 file × 24h, sync 100%, stream copy ~2 menit)
+- mix-tui v3.10: ✅ force 1080p + audio 48000Hz stereo
+- yt-dlp v6.5: ✅ multi-SRT ID+EN, default 1080p preferred
+- Pipeline produksi: 6 film tested, all TUI production-ready
