@@ -13,11 +13,11 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 5 | SRT editor (web) | ⏳ Pending |
 | 6 | edge-tts-tui.py v7.5 (SRT + Narration mode, ID only, paralel-safe) | ✅ Production default |
 | 7 | mix-tui.py v3.10 (force 1080p + audio 48000Hz stereo) | ✅ Production |
-| 8 | whisper-tui.py v2.0 (whisper.cpp, Metal GPU) | ✅ Production |
-| 9 | srt-editor-tui.py v1.0.1 (fix typo SRT translate) | ✅ Production |
+| 8 | whisper-tui.py v2.1 (whisper.cpp, Metal GPU) | ✅ Production |
+| 9 | srt-editor-tui.py v1.0.0 (fix typo SRT translate) | ✅ Production |
 | 10 | shorts-tui.py v1.1 (Shorts via AI JSON atau Part via SRT) | ✅ Production |
 | 11 | shorts-csv-tui.py v1.0 (metadata CSV + manifest YouTube) | ✅ Production |
-| 12 | merge-tui.py v2.0 (full format detect, stream copy / standardize) | ✅ Production (VLC confirmed) |
+| 12 | merge-tui.py v1.9 (full format detect, stream copy / standardize) | ✅ Production (VLC confirmed) |
 | 13 | review-mix-tui.py v1.0 (review film: MP4 + JSON + narasi → final MP4) | ✅ Production |
 | 14 | konten-tui.py v1.0 (konten sejarah: narasi + images → Ken Burns video) | ✅ Production |
 | 15 | **gemini-tts-tui.py v1.1** (SRT + Narasi, ID + JV, OPSI TAMBAHAN) | ⚠ Experimental |
@@ -45,11 +45,11 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | kamus-tui.py v16 | 3 | TUI editor jv.wiktionary.json | SSD |
 | edge-tts-tui.py v7.5 | 6 | TTS SRT + Narasi (Indonesia, paralel-safe) | HDD/tts/ |
 | mix-tui.py v3.10 | 7 | Final mix (force 1080p, audio 48000Hz stereo) | HDD/mix/ |
-| whisper-tui.py v2.0 | 8 | Generate SRT dari audio (Metal GPU) | HDD/input/ |
-| srt-editor-tui.py v1.0.1 | 9 | Fix typo SRT hasil translate | HDD/input/ |
+| whisper-tui.py v2.1 | 8 | Generate SRT dari audio (Metal GPU) | HDD/input/ |
+| srt-editor-tui.py v1.0.0 | 9 | Fix typo SRT hasil translate | HDD/input/ |
 | shorts-tui.py v1.1 | 10 | Pecah MP4 jadi shorts/parts | HDD/shorts/ atau HDD/parts/ |
 | shorts-csv-tui.py v1.0 | 11 | Metadata CSV + manifest YouTube | HDD/shorts/ |
-| merge-tui.py v2.0 | 12 | Gabungin multi-video (stream copy / standardize) | HDD/merged/ |
+| merge-tui.py v1.9 | 12 | Gabungin multi-video (stream copy / standardize) | HDD/merged/ |
 | review-mix-tui.py v1.0 | 13 | Review film (MP4 + JSON + narasi → final MP4) | HDD/review/ |
 | konten-tui.py v1.0 | 14 | Konten sejarah (narasi + images → Ken Burns video) | HDD/konten/ |
 | gemini-tts-tui.py v1.1 | 15 | TTS SRT + Narasi (Indonesia + Jawa, OPSI TAMBAHAN) | HDD/tts/ |
@@ -208,7 +208,7 @@ Lihat: `python3 gemini_tts_backend.py --list-voices`
 | Tier 1 (Cloud Billing) | 300 | 1000 | Batch sedang |
 | Tier 2 ($100+ spend) | 1000+ | 10000+ | Batch besar |
 
-## srt-editor-tui v1.0.1
+## srt-editor-tui v1.0.0
 
 ```bash
 python3 srt-editor-tui.py                          # interaktif
@@ -233,7 +233,7 @@ Test: 60/60 sukses, 56.5s total, 803.8 MB output.
 Generate CSV (Excel) + manifest text (copy-paste YouTube Studio).
 Custom: film name, description template, tags, category, schedule, interval.
 
-## merge-tui v2.0 — VLC CONFIRMED ✅
+## merge-tui v1.9 — VLC CONFIRMED ✅
 
 | Mode | Kecepatan | Syarat |
 |------|----------|--------|

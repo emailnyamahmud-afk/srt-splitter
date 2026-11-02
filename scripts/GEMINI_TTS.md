@@ -244,26 +244,27 @@ HDD/tts/
 ✓ Audio utils: parse_srt, trim_silence_asymmetric, peak_normalize, mix_into_buffer — match edge-tts constants
 ```
 
-## Yang TIDAK saya lakukan (biar kamu putuskan)
+## Yang SUDAH dilakukan (status update 2 Nov 2026)
 
-1. **Update `README.md`, `AGENTS.md`, `PROJECT_RULES.md`, `scripts/README.md`** — saya tidak sentuh docs projectmu. Saran commit kalau kamu setuju pakai:
-   - `scripts/README.md`: tambah row di tabel → "13 TUI: gemini-tts-tui v1.1 (experimental, 2 mode: SRT + Narasi, ID + JV)"
-   - `README.md`: tambah section "TUI 13: gemini-tts-tui v1.1 — OPSI TAMBAHAN Gemini 3.8 Flash TTS"
-   - `AGENTS.md`: update status table
-   - `PROJECT_RULES.md`: tambah aturan "Gemini TTS = opsi tambahan (SRT + Narasi, ID + JV), Edge TTS = production default (SRT + Narasi, ID only)"
+Saya sudah update docs utama project ke **15 TUI** (BUKAN 13 TUI lagi — itu kesalahan lama):
+- `AGENTS.md`: tabel 15 TUI, TUI #15 = gemini-tts-tui, section khusus, struktur folder 3 LOKASI berbeda (repo / working dir / Vercel), aturan #15 (Repo ≠ Working dir), anti-amnesia protocol lengkap
+- `PROJECT_RULES.md`: tabel 15 TUI, pipeline [GEMINI-SRT] + [GEMINI-NARASI], aturan + dilarang baru (jangan campur aduk repo vs working dir)
+- `scripts/README.md`: tabel 15 TUI, tabel Script dengan kolom TUI #, section TUI #15 detail, install + workflow GEMINI
+- `README.md` root: tabel 15 TUI, pipeline [GEMINI-SRT] + [GEMINI-NARASI], section TUI #15, install (google-genai + GEMINI_API_KEY), download curl
 
-2. **Curl download command** di README — belum saya tambah. Saran:
-   ```bash
-   curl -L -o gemini-tts-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/gemini-tts-tui.py"
-   curl -L -o gemini_tts_backend.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/gemini_tts_backend.py"
-   curl -L -o GEMINI_TTS.md "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/GEMINI_TTS.md"
-   ```
+### Curl download command (sudah ada di README root, bagian Download):
+```bash
+curl -L -o gemini-tts-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/gemini-tts-tui.py"
+curl -L -o gemini_tts_backend.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/gemini_tts_backend.py"
+```
 
-3. **`.env.example`** — belum saya tambah `GEMINI_API_KEY=` line. Saran:
-   ```bash
-   # Gemini TTS (opsional — untuk gemini-tts-tui.py)
-   GEMINI_API_KEY=
-   ```
+### `.env.example` (kalau belum ada `GEMINI_API_KEY=`):
+Tambah baris ke `.env.example` di repo root:
+```bash
+# Gemini TTS (opsional — untuk gemini-tts-tui.py TUI #15)
+GEMINI_API_KEY=
+```
+(Taruh di HDD `.env` untuk working dir user: `echo "GEMINI_API_KEY=AIza..." >> /Volumes/HDD/Dubbing/.env`)
 
 ## Test plan sebelum declare "production"
 

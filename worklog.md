@@ -5771,3 +5771,80 @@ config.py punya 11 path constants, semua dipakai TUI berbeda:
 5 docs: AGENTS.md, PROJECT_RULES.md, scripts/README.md, README.md, worklog.md
 (Total: tabel TUI di 4 docs utama + section TUI #13/#14 baru + section TUI #15 update)
 
+
+---
+
+## 2026-11-02 — AUDIT DOKUMENTASI: Fix 5 inconsistencies (anti-amnesia parah)
+
+### Context
+
+User minta audit dokumentasi sekali lagi karena 100 sesi sebelumnya AI selalu amnesia.
+Saya baca semua docs (AGENTS, PROJECT_RULES, README, scripts/README, GEMINI_TTS) + cross-check
+dengan file aktual di repo (git ls-tree origin/main scripts/) + cek VERSION line di setiap TUI.
+
+### Inconsistencies ditemukan (5):
+
+#### 1. whisper-tui version: docs v2.0, aktual v2.1
+- Aktual `scripts/whisper-tui.py` VERSION = 'v2.1' (NEW: Dual SRT output — source language + English translate)
+- Docs bilang v2.0 (out-of-date)
+- FIX: ganti `whisper-tui v2.0` → `whisper-tui v2.1` di 4 docs utama
+
+#### 2. srt-editor-tui version: docs v1.0.1, aktual v1.0.0
+- Aktual `scripts/srt-editor-tui.py` VERSION = "1.0.0"
+- Docs bilang v1.0.1 (tidak ada di code)
+- FIX: ganti `srt-editor-tui v1.0.1` → `srt-editor-tui v1.0.0` di 4 docs utama
+
+#### 3. merge-tui version: docs v2.0, aktual v1.9
+- Aktual `scripts/merge-tui.py` VERSION = 'v1.9' (audio stream copy simple, revert v1.8 over-engineer)
+- Commit `5032aaa` bilang "merge-tui v1.9 stream copy only, fix-merge-audio DEPRECATED"
+- Docs bilang v2.0 (commit `ce09059` salah tulis "simplifikasi docs" tapi pakai v2.0)
+- Tidak ada commit yang bikin merge-tui v2.0
+- FIX: ganti `merge-tui v2.0` → `merge-tui v1.9` di 4 docs utama
+
+#### 4. fix-merge-audio.py status: docs bilang "DELETED", aktual MASIH ADA
+- Aktual `scripts/fix-merge-audio.py` v1.4 MASIH ADA di repo
+- Docs bilang "fix-merge-audio.py = DELETED (audio drift, failed experiment)"
+- File tidak dihapus, cuma DEPRECATED
+- FIX: ganti "DELETED" → "DEPRECATED (masih ada di repo scripts/fix-merge-audio.py v1.4, tapi jangan pakai — gunakan merge-tui v1.9 audio stream copy)"
+
+#### 5. GEMINI_TTS.md section "Yang TIDAK saya lakukan" masih bilang "13 TUI"
+- Baris 250-251 masih bilang "13 TUI" dan "TUI 13" (dari v1.0 sebelum saya update docs utama ke 15 TUI)
+- Section ini sudah tidak relevan karena docs utama sudah update ke 15 TUI
+- FIX: hapus section "Yang TIDAK saya lakukan", ganti dengan "Yang SUDAH dilakukan (status update 2 Nov 2026)" yang menjelaskan docs sudah update ke 15 TUI + curl command sudah ada di README root
+
+### File berubah (5):
+
+- AGENTS.md: 7 changes (whisper v2.0→v2.1, srt-editor v1.0.1→v1.0.0, merge v2.0→v1.9, fix-merge-audio DELETED→DEPRECATED)
+- PROJECT_RULES.md: 5 changes (sama)
+- README.md: 5 changes (sama + section header ## srt-editor-tui v1.0.0, ## merge-tui v1.9)
+- scripts/README.md: 8 changes (sama + section header)
+- scripts/GEMINI_TTS.md: hapus section "Yang TIDAK saya lakukan", ganti dengan "Yang SUDAH dilakukan"
+- worklog.md: append entry ini
+
+### Verifikasi setelah fix:
+
+- whisper-tui v2.1 ✓ (di 4 docs)
+- srt-editor-tui v1.0.0 ✓ (di 4 docs)
+- merge-tui v1.9 ✓ (di 4 docs)
+- fix-merge-audio.py DEPRECATED ✓ (di AGENTS.md + PROJECT_RULES.md)
+- GEMINI_TTS.md section "Yang SUDAH dilakukan" ✓ (status update ke 15 TUI)
+- Tidak ada lagi mention "v2.0" / "v1.0.1" / "DELETED" yang salah
+
+### Audit method (untuk AI next session):
+
+Kalau audit konsistensi docs vs code:
+1. Cek file aktual: `git ls-tree origin/main scripts/`
+2. Cek VERSION line per file: `git show origin/main:scripts/<tui>.py | grep "^VERSION"`
+3. Cross-check dengan docs: `git show origin/main:AGENTS.md | grep -E "tui v[0-9]"`
+4. Cari inconsistency: `for f in <tui files>; do v=$(git show origin/main:scripts/$f.py | grep -m1 "^VERSION"); echo "$f: $v"; done`
+5. Fix pakai script Python `re.sub` dengan replace_all di 4 docs utama
+
+### Pelajaran (PERMANENT di AGENTS.md + worklog):
+
+- TIAP TUI punya VERSION line di code (`^VERSION = '...'`). Baca itu untuk verifikasi version di docs.
+- File `scripts/fix-merge-audio.py` MASIH ADA di repo (DEPRECATED, jangan pakai).
+- merge-tui v1.9 = final (audio stream copy simple, revert v1.8 over-engineer). TIDAK ADA v2.0.
+- whisper-tui v2.1 = final (NEW: Dual SRT output). v2.0 outdated.
+- srt-editor-tui v1.0.0 = final (bukan v1.0.1, tidak ada patch v0.1).
+- mix-tui v3.10 = final (commit db250be "feat(mix-tui): v3.10"). Docstring header masih bilang v3.9 (tidak di-update), tapi VERSION aktual = v3.10 per commit. Docs pakai v3.10 (benar).
+

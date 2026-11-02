@@ -28,11 +28,11 @@ Kamus: kamus-tui → jv.wiktionary.json → Supabase
 | 5 | SRT editor (web) | ⏳ Pending |
 | 6 | edge-tts-tui v7.5 | ✅ (SRT + Narasi, ID only, paralel-safe) — production default |
 | 7 | mix-tui v3.10 | ✅ (force 1080p + audio 48000Hz) |
-| 8 | whisper-tui v2.0 | ✅ (Metal GPU) |
-| 9 | srt-editor-tui v1.0.1 | ✅ |
+| 8 | whisper-tui v2.1 | ✅ (Metal GPU) |
+| 9 | srt-editor-tui v1.0.0 | ✅ |
 | 10 | shorts-tui v1.1 | ✅ |
 | 11 | shorts-csv-tui v1.0 | ✅ |
-| 12 | merge-tui v2.0 | ✅ (VLC confirmed, sync 100%) |
+| 12 | merge-tui v1.9 | ✅ (VLC confirmed, sync 100%) |
 | 13 | review-mix-tui v1.0 | ✅ (review film: MP4 + JSON + narasi → final MP4) |
 | 14 | konten-tui v1.0 | ✅ (konten sejarah: narasi + images → Ken Burns video) |
 | 15 | **gemini-tts-tui v1.1** | ⚠ EXPERIMENTAL (SRT + Narasi, ID + JV, OPSI TAMBAHAN, butuh GEMINI_API_KEY) |
@@ -82,8 +82,8 @@ Helper: `ensure_hdd()`, `ensure_kamus()`, `load_env()`
 - Tiap sesi WAJIB update docs + commit + push (AGENTS.md, PROJECT_RULES.md, scripts/README.md, README.md, worklog.md)
 - TUI baru → update tabel "N TUI" di semua docs di atas. Cek `git ls-tree origin/main scripts/` untuk nomor TUI terakhir
 - **Standarisasi res+audio = kerjaan mix-tui v3.10**
-- **merge-tui v2.0** = stream copy (no drift) jika format konsisten, standardize jika beda
-- **fix-merge-audio.py = DELETED** (audio drift, failed experiment)
+- **merge-tui v1.9** = stream copy (no drift) jika format konsisten, standardize jika beda
+- **fix-merge-audio.py = DEPRECATED (masih ada di repo scripts/fix-merge-audio.py v1.4, tapi jangan pakai — gunakan merge-tui v1.9 audio stream copy)** (audio drift, failed experiment)
 - **edge-tts-tui v7.5 = production default** (SRT + Narasi, Indonesia only, paralel-safe, no API key)
 - **review-mix-tui v1.0 = production** (TUI #13) — input narasi dari edge-tts v7.5 / gemini-tts-tui v1.1 Narration
 - **konten-tui v1.0 = production** (TUI #14) — input narasi dari edge-tts v7.5 / gemini-tts-tui v1.1 Narration

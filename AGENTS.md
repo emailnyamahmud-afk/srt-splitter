@@ -37,11 +37,11 @@ Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 5 | SRT editor (web) | ⏳ Pending |
 | 6 | edge-tts-tui v7.5 (SRT + Narasi mode, ID only, paralel-safe) | ✅ Production default |
 | 7 | mix-tui v3.10 (force 1080p + audio 48000Hz stereo) | ✅ |
-| 8 | whisper-tui v2.0 (Metal GPU) | ✅ |
-| 9 | srt-editor-tui v1.0.1 | ✅ |
+| 8 | whisper-tui v2.1 (Metal GPU) | ✅ |
+| 9 | srt-editor-tui v1.0.0 | ✅ |
 | 10 | shorts-tui v1.1 (Shorts + Part) | ✅ |
 | 11 | shorts-csv-tui v1.0 | ✅ |
-| 12 | merge-tui v2.0 (full format detect, stream copy / standardize) | ✅ VLC confirmed |
+| 12 | merge-tui v1.9 (full format detect, stream copy / standardize) | ✅ VLC confirmed |
 | 13 | review-mix-tui v1.0 (review film: potong + narasi + overlay) | ✅ Production |
 | 14 | konten-tui v1.0 (konten sejarah: images → video + narasi + Ken Burns) | ✅ Production |
 | 15 | **gemini-tts-tui v1.1** (SRT + Narasi, ID + JV, OPSI TAMBAHAN) | ⚠ EXPERIMENTAL |
@@ -222,8 +222,8 @@ SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
 6. Sebutan hormat Tiongkok (Nona/Tuan/Dokter/Paman) = PRESERVE, bukan mistranslate
 7. GT input: SRT English (dari whisper-tui) → GT English→ID lebih akurat
 8. **Standarisasi res+audio = kerjaan mix-tui v3.10**, bukan yt-dlp atau merge-tui
-9. **merge-tui v2.0** = full format detect (6 properties) + stream copy (super cepat) / standardize (re-encode). VLC confirmed: sync 100%.
-10. **fix-merge-audio.py = DELETED** (audio drift, failed experiment)
+9. **merge-tui v1.9** = full format detect (6 properties) + stream copy (super cepat) / standardize (re-encode). VLC confirmed: sync 100%.
+10. **fix-merge-audio.py = DEPRECATED (masih ada di repo scripts/fix-merge-audio.py v1.4, tapi jangan pakai — gunakan merge-tui v1.9 audio stream copy)** (audio drift, failed experiment)
 11. **edge-tts-tui v7.5 = production default** (SRT + Narasi, ID only, paralel-safe, no API key)
 12. **review-mix-tui v1.0 = production** (TUI #13) — input narasi dari edge-tts / gemini-tts Narration
 13. **konten-tui v1.0 = production** (TUI #14) — input narasi dari edge-tts / gemini-tts Narration
@@ -243,7 +243,7 @@ SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
 
 ### Pipeline Indonesia (production):
 ```
-yt-dlp v6.5 → srt-editor v1.0.1 → edge-tts v7.5 SRT → mix-tui v3.10 → merge-tui v2.0
+yt-dlp v6.5 → srt-editor v1.0.1 → edge-tts v7.5 SRT → mix-tui v3.10 → merge-tui v1.9
                                                                                       ↘ shorts-tui → shorts-csv-tui → YouTube
 edge-tts v7.5 Narasi (ID) → review-mix-tui v1.0 (review film ID)
 edge-tts v7.5 Narasi (ID) → konten-tui v1.0 (konten sejarah ID)
@@ -258,7 +258,7 @@ naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → konten-tui v1.0 (kont
 
 ## Status (2 Nov 2026)
 
-- merge-tui v2.0: ✅ VLC confirmed (10 file × 24h, sync 100%, stream copy ~2 menit)
+- merge-tui v1.9: ✅ VLC confirmed (10 file × 24h, sync 100%, stream copy ~2 menit)
 - mix-tui v3.10: ✅ force 1080p + audio 48000Hz stereo
 - yt-dlp v6.5: ✅ multi-SRT ID+EN, default 1080p preferred
 - edge-tts-tui v7.5: ✅ production default (SRT + Narasi, ID only, paralel-safe)
