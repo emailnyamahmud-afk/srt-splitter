@@ -5595,3 +5595,90 @@ Stage Summary:
 - Shorts mode TIDAK berubah (backward compatible, Dola JSON tetap jalan)
 - 11 TUI status: 9 Production + 2 non-TUI (Web app Prototype, SRT editor web Pending)
 - Pending: commit + push ke GitHub
+
+---
+
+## 2026-11-02 — TUI #13 gemini-tts-tui v1.1 (OPSI TAMBAHAN, SRT + Narasi, ID + JV)
+
+### Context
+
+User request: tambah Gemini TTS sebagai opsi tambahan (BUKAN pengganti edge-tts-tui).
+- User sudah test Gemini TTS di AI Studio untuk bahasa Jawa halus → hasil bagus
+- Voice "Cruz" + instruction "Panatacara / MC adat" → suara pria dewasa berwibawa untuk Jawa halus
+- Gemini free tier tersedia untuk AI Studio API key
+- Butuh: 2 mode (SRT + Narasi), support Indonesia + Jawa, BUKAN hapus edge-tts-tui
+
+### File ditambahkan (3 file baru, TIDAK ubah file lama)
+
+- `scripts/gemini-tts-tui.py` v1.1 (1367 baris)
+  - 2 mode: SRT (7 step) + Narration (6 step)
+  - Port algoritma audio dari edge-tts-tui.py v7.5 (Smart Fit, crossfade, peak normalize, lock file)
+  - Bahasa selection: Indonesia (id) + Jawa (jv) — filter instruction template per bahasa
+  - Voice: 31 (30 resmi Google + Cruz Extended Library yang user tested)
+  - SRT output: `HDD/tts/{prefix}-audio-id-dub.wav` (24kHz mono 16-bit, mix-tui compatible)
+  - Narration output: `HDD/tts/{stem}-narasi.wav` (48kHz stereo 16-bit, review-mix-tui compatible)
+
+- `scripts/gemini_tts_backend.py` (585 baris)
+  - Backend modul: panggilan ke Google Gemini API legacy (generate_content_stream)
+  - 31 voice (30 resmi + Cruz)
+  - 8 instruction template (4 ID + 4 JV) + custom
+  - 429/RESOURCE_EXHAUSTED retry: 30s → 60s → 120s → skip + log
+  - Helper `instructions_for_language(lang_code)` untuk filter per bahasa
+
+- `scripts/GEMINI_TTS.md` (301 baris)
+  - Dokumentasi TUI #13: cara pakai, kapan Gemini vs Edge, voice catalog, instruction templates
+  - Test plan (SRT mode 8 test + Narration mode 6 test)
+  - Anti-amnesia protocol
+
+### Docs utama diupdate (anti-amnesia)
+
+- `AGENTS.md`: tabel 12 TUI → 13 TUI, edge v7.4 → v7.5, tambah section TUI #13
+- `PROJECT_RULES.md`: tabel 12 TUI → 13 TUI, tambah aturan Gemini (jangan hapus edge, status experimental)
+- `scripts/README.md`: tabel 12 TUI → 13 TUI, tambah row + section gemini-tts-tui v1.1
+- `README.md`: tabel 12 TUI → 13 TUI, tambah section TUI #13, tambah Pipeline GEMINI-SRT + GEMINI-NARASI, update Install (google-genai + GEMINI_API_KEY), update Download (curl gemini files)
+- `worklog.md`: append entry ini
+
+### Workflow (sesuai anti-amnesia protocol)
+
+1. AI sandbox: kerja → commit → push GitHub
+2. User: git pull → test di Mac
+3. Kalau error → paste ke AI → AI fix di sandbox → push GitHub
+4. User: git pull → test lagi
+
+### Pipeline
+
+```
+[GEMINI-SRT]    yt-dlp → srt-editor → gemini-tts-tui (SRT mode, ID/JV) → mix-tui
+[GEMINI-NARASI] naskah.txt → gemini-tts-tui (Narration mode, ID/JV) → review-mix-tui
+```
+
+### Test sandbox (semua lulus)
+
+- ✓ Syntax OK (ast.parse both files)
+- ✓ Backend CLI: --list-voices (31 voice), --list-instructions (8 + custom)
+- ✓ TUI no-API-key: error message jelas + instruksi setup
+- ✓ SRT mode 7 step: SRT → output → bahasa → voice → instruction → Smart Fit → prefix → ringkasan
+- ✓ Narration mode 6 step: naskah → output → bahasa → voice → instruction → rate → ringkasan
+- ✓ Bahasa selection filter instruction template (id → 4 ID, jv → 4 JV)
+- ✓ SRT ringkasan: Bahasa JV/Jawa muncul, Cruz + jawa-halus-mc default
+- ✓ Narration ringkasan: Bahasa JV/Jawa muncul, 3 paragraf terdeteksi otomatis
+- ✓ Lock file acquire/release/stale-detection (SRT mode) — match edge-tts v7.4
+- ✓ Backend retry 429: 1+3=4 calls (retry 3x lalu fail)
+- ✓ Backend non-429 error: fail fast (1 call, no retry)
+- ✓ Backend 429 then success: 2 calls, output 48 KB WAV valid
+- ✓ Audio utils: parse_srt, trim_silence_asymmetric, peak_normalize, mix_into_buffer — match edge-tts constants
+
+### Status
+
+- gemini-tts-tui v1.1: ⚠ EXPERIMENTAL — edge-tts-tui v7.5 tetap production default
+- Pipeline Indonesia: production (12 TUI)
+- Pipeline Jawa: experimental, tunggu user VLC feedback
+
+### Pelajaran (anti-amnesia untuk sesi berikutnya)
+
+- Jangan amnesia: baca config.py LENGKAP, bukan cuma `ensure_hdd` dan `TTS_DIR`
+- Jangan amnesia: update docs utama (AGENTS, PROJECT_RULES, scripts/README, README, worklog) SETIAP sesi
+- Jangan amnesia: Gemini TUI = 2 mode (SRT + Narasi), ID + JV — BUKAN SRT-only
+- Jangan amnesia: edge-tts-tui v7.5 tetap production default, jangan hapus/ganti
+- Jangan amnesia: workflow = AI sandbox → push GitHub → user pull → test → kalau error → AI fix → push
+

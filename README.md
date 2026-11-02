@@ -2,11 +2,11 @@
 
 Pipeline dubbing bahasa eksternal (Mandarin, English, Jepang, Italia, dll) → Indonesia / Jawa / Sunda. Web app + Python TUI.
 
-ID jalan end-to-end (12 TUI production). Jawa/Sunda nunggu kamus Supabase selesai.
+ID jalan end-to-end (12 TUI production + 1 experimental). Jawa jalan (gemini-tts-tui v1.1 SRT + Narasi). Sunda nunggu kamus Supabase selesai.
 
 **Live:** https://srt-splitter.vercel.app/
 
-## 12 TUI
+## 13 TUI
 
 | # | TUI | Tugas | Status |
 |---|-----|-------|--------|
@@ -15,29 +15,34 @@ ID jalan end-to-end (12 TUI production). Jawa/Sunda nunggu kamus Supabase selesa
 | 3 | kamus-tui.py | User edit kamus JSON manual (sebelum DB) | ✅ Production (audit) |
 | 4 | Web app | Translate SRT Indonesia → Jawa (kamus Supabase) | ⚠ Prototype |
 | 5 | SRT editor (web) | Pakai SRT Indonesia (Jawa nunggu kamus+web) | ⏳ Pending |
-| 6 | edge-tts-tui.py v7.4 (paralel-safe, lock file, 429 retry) | ✅ Production |
+| 6 | edge-tts-tui.py v7.5 | TTS SRT + Narration (Indonesia, paralel-safe, lock file, 429 retry) | ✅ Production default |
 | 7 | mix-tui.py v3.10 | Mix MP4 + audio → final video (6 mode + logo + fade + force 1080p + audio 48000 Hz stereo) | ✅ Production (v3.10 fix audio) |
 | 8 | whisper-tui.py v2.0 | Generate SRT dari audio (whisper.cpp, Metal GPU M1) | ✅ Production (Metal GPU, 5.3x realtime, 20 min for 2h audio) |
 | 9 | srt-editor-tui.py v1.0.1 | Fix typo/konteks SRT hasil translate (glossary + bulk replace) | ✅ Production |
 | 10 | shorts-tui.py v1.1 | Pecah MP4 final jadi N shorts (JSON dari AI) atau N parts (SRT auto-split) | ✅ Production (Shorts 60/60 + Part mode auto-split) |
 | 11 | shorts-csv-tui.py v1.0 | Generate metadata CSV + manifest untuk YouTube Studio | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
 | 12 | merge-tui.py v2.0 | Gabungin multi-video jadi 1 panjang (full format detect, stream copy / standardize) | ✅ Production (VLC confirmed, sync 100%) |
+| 13 | **gemini-tts-tui.py v1.1** | TTS SRT + Narasi (Indonesia + Jawa, OPSI TAMBAHAN, butuh GEMINI_API_KEY) | ⚠ Experimental |
 
 ## Pipeline
 
 ```
-[Alur PROPER]  yt-dlp → srt-editor → demucs → edge-tts → mix Full (A/B)  ~350 MB / ~2-4.5 GB
-[Alur CEPAT]   yt-dlp → srt-editor → edge-tts → mix Simple (C/D)     ~350 MB / ~2-4.5 GB
-[Alur MUTE]    yt-dlp → srt-editor → edge-tts → mix Original v3.7.6 (E/F)  ~1 GB / ~4.5 GB
-[Alur SHORTS]  mix-tui → shorts-tui (via Dola JSON) → shorts-csv-tui → YouTube Studio  ~15 detik / ~2 menit
-[Alur MERGE]   mix-tui × N → merge-tui → 1 video panjang (stream copy / re-encode)
+[Alur PROPER]       yt-dlp → srt-editor → demucs → edge-tts → mix Full (A/B)  ~350 MB / ~2-4.5 GB
+[Alur CEPAT]        yt-dlp → srt-editor → edge-tts → mix Simple (C/D)     ~350 MB / ~2-4.5 GB
+[Alur MUTE]         yt-dlp → srt-editor → edge-tts → mix Original v3.7.6 (E/F)  ~1 GB / ~4.5 GB
+[Alur SHORTS]       mix-tui → shorts-tui (via Dola JSON) → shorts-csv-tui → YouTube Studio  ~15 detik / ~2 menit
+[Alur MERGE]        mix-tui × N → merge-tui → 1 video panjang (stream copy / re-encode)
+[Alur GEMINI-SRT]   yt-dlp → srt-editor → gemini-tts-tui (SRT mode, ID/JV) → mix-tui  (opsional: Jawa/karakter spesifik)
+[Alur GEMINI-NARASI] naskah.txt → gemini-tts-tui (Narration mode, ID/JV) → review-mix-tui  (konten sejarah/narasi)
 ```
 
 > **merge-tui** (TUI #12): gabungin output mix-tui (sudah dub ID + burn sub) dari beberapa film/season jadi 1 video panjang. 3 mode: stream copy (super cepat) / re-encode + target res / re-encode pakai res file pertama.
 
-> **srt-editor-tui.py** (TUI #9, opsional) untuk fix typo/konteks SRT hasil translate sebelum masuk edge-tts. Skip kalau SRT ori sudah clean.
+> **srt-editor-tui.py** (TUI #9, opsional) untuk fix typo/konteks SRT hasil translate sebelum masuk edge-tts / gemini-tts. Skip kalau SRT ori sudah clean.
 >
 > **Shorts pipeline** (TUI #10 + #11): mix-tui output → Dola AI skill `shorts-json` (upload SRT, ketik "buat shorts", dapat 60 segment JSON) → shorts-tui.py (pecah MP4, ~94s) → shorts-csv-tui.py (metadata CSV + manifest untuk YouTube Studio).
+>
+> **gemini-tts-tui.py** (TUI #13, OPSI TAMBAHAN): alternatif edge-tts untuk skenario yang Edge kurang bagus. 2 mode: SRT (Indonesia + Jawa) + Narasi (Indonesia + Jawa). Pakai Gemini 3.8 Flash TTS, butuh `GEMINI_API_KEY` di `.env`. Detail: `scripts/GEMINI_TTS.md`.
 
 ## Struktur Folder
 
@@ -128,6 +133,43 @@ Workflow end-to-end Shorts:
 
 Detail lengkap: lihat [scripts/README.md](scripts/README.md#shorts-csv-tui-v10).
 
+## gemini-tts-tui v1.1 — OPSI TAMBAHAN Gemini 3.8 Flash TTS (SRT + Narasi, ID + JV)
+
+⚠ **EXPERIMENTAL** — edge-tts-tui v7.5 tetap production default (Indonesia only).
+gemini-tts-tui untuk skenario yang Edge kurang bagus / tidak support.
+
+### 2 Mode (mirror edge-tts-tui v7.5 pattern)
+
+**SRT mode** (7 step TUI): SRT → output → bahasa → voice → instruction → Smart Fit → prefix
+→ Output: `HDD/tts/{prefix}-audio-id-dub.wav` (24kHz mono 16-bit, mix-tui compatible)
+
+**Narration mode** (6 step TUI): naskah.txt → output → bahasa → voice → instruction → rate
+→ Output: `HDD/tts/{stem}-narasi.wav` (48kHz stereo 16-bit, review-mix-tui compatible)
+
+### Bahasa: Indonesia (id) + Jawa (jv)
+
+Instruction template filter per bahasa pilihan (4 ID + 4 JV + custom).
+
+### Kapan pakai
+- Bahasa Jawa (krama/ngoko) — Cruz + jawa-halus-mc → user tested OK di AI Studio
+- Karakter suara spesifik (MC/adat, narator dokuser, dialog dramatis)
+- Bahasa eksotis (Italia, Jepang, dll) yang tidak ada di Edge TTS
+- JANGAN pakai untuk produksi Indonesia umum (Edge TTS lebih stabil + free)
+
+### Setup & pakai
+```bash
+# Setup (sekali saja)
+echo "GEMINI_API_KEY=AIza..." >> /Volumes/HDD/Dubbing/.env
+pip3 install google-genai
+
+# Pakai
+cd ~/Dubbing && source venv/bin/activate
+python3 gemini-tts-tui.py
+# → Mode selection: SRT / Narration
+```
+
+Detail lengkap: lihat [scripts/GEMINI_TTS.md](scripts/GEMINI_TTS.md).
+
 ## mix-tui v3.10 — 6 mode + logo + force 1080p + audio 48000Hz
 
 | # | Mode | Input | Output | Durasi | Cocok |
@@ -180,8 +222,10 @@ Auto-detect logo PNG transparan, burn ke top-right (100×100 px, 10px margin) be
 ```bash
 cd ~/Dubbing
 source venv/bin/activate
-pip3 install questionary edge-tts yt-dlp torchaudio demucs numpy faster-whisper
+pip3 install questionary edge-tts yt-dlp torchaudio demucs numpy faster-whisper google-genai
 brew install ffmpeg
+# Optional (TUI #13 gemini-tts-tui): set GEMINI_API_KEY
+echo "GEMINI_API_KEY=AIza..." >> /Volumes/HDD/Dubbing/.env
 ```
 
 ## Workflow
@@ -236,4 +280,6 @@ curl -L -o shorts-csv-tui.py "https://raw.githubusercontent.com/emailnyamahmud-a
 curl -L -o tutor-shorts-prompt.md "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/tutor-shorts-prompt.md"
 curl -L -o upload-supabase.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py"
 curl -L -o merge-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/merge-tui.py"
+curl -L -o gemini-tts-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/gemini-tts-tui.py"
+curl -L -o gemini_tts_backend.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/gemini_tts_backend.py"
 ```
