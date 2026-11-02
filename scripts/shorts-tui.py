@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 """
-shorts-tui.py v1.0 — Pecah MP4 final jadi N shorts (vertical, hardsub, sudah ada).
+shorts-tui.py v1.1 — Pecah MP4 final jadi N shorts (vertical, hardsub, sudah ada) atau N parts (SRT auto-split, no AI).
+
+v1.1 update (28 Okt 2026) — Part mode (SRT auto-split, no AI needed):
+  - 2 mode: Shorts (JSON dari AI) atau Part (SRT auto-split, ~4 menit per part)
+  - Shorts mode: input JSON timestamps dari Dola AI, 60 segment, max 60s
+    → Output: HDD/shorts/{film}/short-001.mp4 s/d short-N.mp4
+  - Part mode: input SRT, no AI, auto-split per ~4 menit (240s target)
+    → Output: HDD/parts/{film}/part-001.mp4 s/d part-N.mp4 (TikTok playlist)
+
+v1.0 (sebelumnya):
+  Shorts only, JSON dari AI, 60 segment max 60s.
 
 Workflow:
   1. User paste SRT Indonesia ke ChatGPT/Claude/Gemini/Dola AI → minta pilih 60 segment

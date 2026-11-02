@@ -5946,3 +5946,90 @@ grep -nE "review-mix-tui v1\.0.*Production|konten-tui v1\.0.*Production" AGENTS.
 grep -nE "2 Nov 2026|2026-11-02" AGENTS.md PROJECT_RULES.md README.md scripts/README.md scripts/GEMINI_TTS.md
 ```
 
+
+---
+
+## 2026-11-03 06:55 WIB — AUDIT #3: Fix docstring version mismatch di 4 TUI + scan file docs lain
+
+### Context
+
+User tanya: "Apakah semua dokumentasi sudah terupdate? dokumentasi bukan hanya di root tapi di scrip"
+
+Audit teliti SEMUA file .md di repo + SEMUA docstring di setiap TUI Python.
+
+### File .md lain di repo (9 total, 5 belum pernah saya cek):
+
+```
+AGENTS.md                                # sudah audit #1 + #2
+PROJECT_RULES.md                         # sudah audit #1 + #2
+README.md                                # sudah audit #1 + #2
+clean-srt/README.md                       # BARU — cek
+scripts/GEMINI_TTS.md                     # sudah audit
+scripts/README.md                         # sudah audit
+scripts/skill-clean-srt/SKILL.md          # BARU — cek
+scripts/skill-clean-srt/references/cleaning-rules.md   # BARU — cek
+scripts/skill-clean-srt/references/glossary-names.md  # BARU — cek
+scripts/skill-sejarah-script/SKILL.md    # BARU — cek
+scripts/tutor-demucs-setup.md             # BARU — cek
+scripts/tutor-shorts-prompt.md            # BARU — cek
+worklog.md                                # sudah audit
+```
+
+Audit 5 file baru: semua OK, 0 reference ke TUI version/tanggal/Production yang salah.
+File-file itu = skill docs (clean-srt, sejarah-script) + tutor (demucs, shorts prompt) + clean-srt/README.
+Tidak ada hubungannya dengan TUI #13/#14/#15 → tidak perlu update.
+
+### Docstring version mismatch di TUI Python (DITEMUKAN 4 INKONSISTENSI):
+
+| TUI file | Docstring | Code VERSION | Status |
+|----------|-----------|---------------|--------|
+| edge-tts-tui.py | v7.4 | v7.5 | FIXED → docstring v7.5 + tambah info Narration mode |
+| mix-tui.py | v3.9 | (kosong) | FIXED → docstring v3.10 + tambah VERSION = 'v3.10' line |
+| shorts-tui.py | v1.0 | v1.1 | FIXED → docstring v1.1 + tambah info Part mode |
+| merge-tui.py | v1.4 | v1.9 | FIXED → docstring v1.9 + tambah history singkat |
+
+Catatan: kamus-tui.py docstring bilang v9 tapi docs bilang v16. Saya tidak ubah
+(saya tidak tahu apakah v16 itu refer ke schema kamus vs code Python, atau
+memang ada perubahan yang tidak tercatat di docstring). User putuskan nanti.
+
+### Yang diupdate:
+
+- scripts/edge-tts-tui.py: docstring header v7.4 → v7.5, tambah section "v7.5 update (3 Nov 2026) — Narration mode"
+- scripts/mix-tui.py: docstring header v3.9 → v3.10, tambah section "v3.10 update (29 Okt 2026) — audio 48000Hz + force 1080p", tambah `VERSION = 'v3.10'` line (sebelumnya tidak ada VERSION line sama sekali)
+- scripts/shorts-tui.py: docstring header v1.0 → v1.1, tambah section "v1.1 update (28 Okt 2026) — Part mode"
+- scripts/merge-tui.py: docstring header v1.4 → v1.9, tambah section "v1.9 update" + "History (singkat)"
+- worklog.md: append entry audit #3
+
+### Audit method (untuk AI next session):
+
+```bash
+# Cek semua file .md di repo
+git ls-tree -r origin/main --name-only | grep -E "\.md$"
+
+# Cek docstring vs code VERSION di setiap TUI
+for f in yt-dlp-tui edge-tts-tui mix-tui whisper-tui srt-editor-tui shorts-tui shorts-csv-tui merge-tui review-mix-tui konten-tui gemini-tts-tui; do
+  doc_v=$(git show origin/main:scripts/$f.py 2>/dev/null | head -5 | grep -oE "v[0-9]+\.[0-9]+(\.[0-9]+)?" | head -1)
+  code_v=$(git show origin/main:scripts/$f.py 2>/dev/null | grep -m1 "^VERSION = " | sed "s/VERSION = //; s/['\"]//g")
+  echo "  $f.py: docstring=$doc_v, code=$code_v"
+done
+
+# Cari references TUI version / tanggal / Production di file .md lain
+for f in clean-srt/README.md scripts/skill-clean-srt/SKILL.md scripts/skill-sejarah-script/SKILL.md scripts/tutor-*.md; do
+  git show origin/main:$f 2>/dev/null | grep -E "12 TUI|13 TUI|v2\.0|DELETED|Production.*review|Production.*konten|2 Nov 2026"
+done
+```
+
+### Verifikasi final:
+
+- Docstring vs code VERSION: semua 4 TUI yang mismatch SUDAH match
+- File .md di folder lain (clean-srt, skills, tutor): 0 reference salah
+- Syntax semua 4 TUI: OK
+- File berubah: scripts/edge-tts-tui.py, scripts/mix-tui.py, scripts/shorts-tui.py, scripts/merge-tui.py, worklog.md
+
+### Pelajaran (PERMANENT di worklog):
+
+- DOKUMENTASI = SEMUA file .md di repo + SEMUA docstring di TUI Python
+- TIAP TUI Python WAJIB punya `VERSION = '...'` line di bagian atas (setelah docstring)
+- Docstring line 1-3 WAJIB match dengan `VERSION = ` line
+- Audit docs = cek SEMUA file .md (`git ls-tree -r origin/main --name-only | grep -E "\.md$"`) + SEMUA docstring TUI
+

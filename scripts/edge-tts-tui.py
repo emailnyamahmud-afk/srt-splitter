@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """
-edge-tts-tui.py v7.4 — TUI Generate TTS dari SRT dengan Edge TTS (lokal, gratis)
+edge-tts-tui.py v7.5 — TUI Generate TTS dari SRT + Narration (lokal, gratis, Indonesia only)
+
+v7.5 update (3 Nov 2026) — Narration mode (1 naskah plain text → 1 WAV):
+  - Mode selection: SRT (existing) / Narration (NEW)
+  - SRT mode = dub per cue dari subtitle (Indonesia, paralel-safe)
+  - Narration mode = input naskah.txt, split per paragraf, concat → 1 WAV
+    → Output: {stem}-narasi.wav (48kHz stereo 16-bit) → feed review-mix-tui / konten-tui
 
 v7.4 update (26 Okt 2026) — Paralel support:
   FIX: User mau generate 2 TTS paralel di Mac 16GB (jam 22:00 → pagi ready 2 file).

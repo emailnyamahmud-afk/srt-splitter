@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """
-mix-tui.py v3.9 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn + logo overlay + force resolution)
+mix-tui.py v3.10 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn + logo overlay + force 1080p + audio 48000Hz stereo standardize)
+
+v3.10 update (29 Okt 2026) — audio 48000 Hz stereo standardize + default force 1080p:
+  - Standardize audio output: 48000 Hz stereo 16-bit aac 192k (untuk konsistensi merge-tui)
+  - Default: Force 1080p (bukan "Ikut source") — user confirmed
+  - Commit: db250be
 
 v3.9 NEW: Force output resolution (untuk konsistensi series merge).
   - Step 4.10: prompt "Force output resolution?" (hanya kalau burn_srt=True)
@@ -160,6 +165,9 @@ Output: MP4 durasi penuh. Setelah dub selesai, SFX tetap bermain (dub = hening).
 Install: pip3 install questionary (di venv)
 Usage: python3 mix-tui.py (pilih file pakai arrow keys)
 """
+
+# === Version ===
+VERSION = 'v3.10'
 
 import os
 import sys

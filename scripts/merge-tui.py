@@ -1,6 +1,18 @@
 #!/usr/bin/env python3
 """
-merge-tui.py v1.4 — TUI #12: Gabungin multi-video jadi 1 panjang.
+merge-tui.py v1.9 — TUI #12: Gabungin multi-video jadi 1 panjang (audio stream copy simple).
+
+v1.9 update (29 Okt 2026) — revert v1.8 over-engineer, audio stream copy simple:
+  - SKIP file = -c:v copy -c:a copy (video + audio stream copy, instant)
+  - Encode file = -c:v h264_videotoolbox -c:a copy (video re-encode, audio stream copy)
+  - Commit: cbeb1de (fix merge-tui v1.9 + revert v1.8 over-engineer)
+
+History (singkat):
+  v1.8: audio normalize (OVER ENGINEER, di-revert) — audio silent + cepat
+  v1.7: smart scale, auto-pick MAX res + per-file skip-if-same-res
+  v1.6: live ETA per-file + overall
+  v1.5: temp files di HDD (BUKAN SSD /tmp)
+  v1.4: hardware detection + device selection
 
 User workflow:
   cd ~/Dubbing && source venv/bin/activate
