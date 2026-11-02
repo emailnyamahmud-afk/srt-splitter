@@ -6,7 +6,7 @@ ID jalan end-to-end (12 TUI production). Jawa/Sunda nunggu kamus Supabase selesa
 
 **Live:** https://srt-splitter.vercel.app/
 
-## 13 TUI
+## 12 TUI
 
 | # | TUI | Tugas | Status |
 |---|-----|-------|--------|
@@ -15,14 +15,13 @@ ID jalan end-to-end (12 TUI production). Jawa/Sunda nunggu kamus Supabase selesa
 | 3 | kamus-tui.py | User edit kamus JSON manual (sebelum DB) | ✅ Production (audit) |
 | 4 | Web app | Translate SRT Indonesia → Jawa (kamus Supabase) | ⚠ Prototype |
 | 5 | SRT editor (web) | Pakai SRT Indonesia (Jawa nunggu kamus+web) | ⏳ Pending |
-| 6 | edge-tts-tui.py v7.5 (paralel-safe + narration mode) | ✅ Production |
+| 6 | edge-tts-tui.py v7.4 (paralel-safe, lock file, 429 retry) | ✅ Production |
 | 7 | mix-tui.py v3.10 | Mix MP4 + audio → final video (6 mode + logo + fade + force 1080p + audio 48000 Hz stereo) | ✅ Production (v3.10 fix audio) |
 | 8 | whisper-tui.py v2.0 | Generate SRT dari audio (whisper.cpp, Metal GPU M1) | ✅ Production (Metal GPU, 5.3x realtime, 20 min for 2h audio) |
 | 9 | srt-editor-tui.py v1.0.1 | Fix typo/konteks SRT hasil translate (glossary + bulk replace) | ✅ Production |
 | 10 | shorts-tui.py v1.1 | Pecah MP4 final jadi N shorts (JSON dari AI) atau N parts (SRT auto-split) | ✅ Production (Shorts 60/60 + Part mode auto-split) |
 | 11 | shorts-csv-tui.py v1.0 | Generate metadata CSV + manifest untuk YouTube Studio | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
 | 12 | merge-tui.py v2.0 | Gabungin multi-video jadi 1 panjang (full format detect, stream copy / standardize) | ✅ Production (VLC confirmed, sync 100%) |
-| 13 | review-mix-tui.py v1.0 | Review film: potong adegan + narasi + overlay text | ⏳ Testing |
 
 ## Pipeline
 
@@ -61,7 +60,6 @@ HDD /Volumes/HDD/Dubbing/            ← data (besar)
 ├── shorts/                          ← shorts-tui Shorts: JSON + MP4 (subfolder per film)
 ├── parts/                           ← shorts-tui Part: MP4 4-5 min per part (TikTok playlist)
 ├── merged/                          ← merge-tui output: 1 video panjang (gabungan S1-S4)
-├── review/                           ← review-mix-tui output: review film
 └── .env                             ← Supabase credentials
 ```
 
@@ -238,5 +236,4 @@ curl -L -o shorts-csv-tui.py "https://raw.githubusercontent.com/emailnyamahmud-a
 curl -L -o tutor-shorts-prompt.md "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/tutor-shorts-prompt.md"
 curl -L -o upload-supabase.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/upload-supabase.py"
 curl -L -o merge-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/merge-tui.py"
-curl -L -o review-mix-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/review-mix-tui.py"
 ```
