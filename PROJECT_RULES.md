@@ -13,7 +13,7 @@
 Kamus: kamus-tui → jv.wiktionary.json → Supabase
 ```
 
-## 12 TUI
+## 13 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -22,7 +22,7 @@ Kamus: kamus-tui → jv.wiktionary.json → Supabase
 | 3 | kamus-tui v16 | ✅ (audit) |
 | 4 | Web app | ⚠ Prototype |
 | 5 | SRT editor (web) | ⏳ Pending |
-| 6 | edge-tts-tui v7.4 | ✅ (paralel-safe) |
+| 6 | edge-tts-tui v7.5 | ✅ (paralel-safe) |
 | 7 | mix-tui v3.10 | ✅ (force 1080p + audio 48000Hz) |
 | 8 | whisper-tui v2.0 | ✅ (Metal GPU) |
 | 9 | srt-editor-tui v1.0.1 | ✅ |

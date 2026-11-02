@@ -76,7 +76,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 
 # === Version + paralel constants ===
-VERSION = 'v7.4'
+VERSION = 'v7.5'
 # 429 retry backoff schedule (detik). Total max ~3.5 menit per cue kalau semua gagal.
 RATE_LIMIT_BACKOFF = [30, 60, 120]
 
@@ -795,6 +795,22 @@ def main():
     print('   Navigasi: ↑↓ arrow keys, Enter konfirmasi, Ctrl+C batal')
     print()
 
+    # v7.5: Mode selection — SRT (existing) atau Narration (new)
+    mode = questionary.select(
+        'Mode:',
+        choices=[
+            'SRT (dub per cue dari subtitle) — existing',
+            'Narration (1 naskah plain text → 1 WAV) — NEW v7.5',
+        ],
+        default='SRT (dub per cue dari subtitle) — existing',
+    ).ask()
+
+    if 'Narration' in mode:
+        main_narration()
+        return
+
+    # === Existing SRT mode (below) ===
+
     # Step 1: Pilih SRT (default: HDD/input/)
     print('▶ Step 1/6: Pilih SRT')
     from config import INPUT_DIR, TTS_DIR, ensure_hdd
@@ -1135,6 +1151,220 @@ def main():
 
     # v7.4: Release lock file (normal exit)
     release_lock(output_dir, prefix)
+
+
+# ============================================================
+# v7.5: Narration mode — 1 naskah plain text → 1 WAV
+# ============================================================
+
+def main_narration():
+    """Mode narration: input = naskah.txt, output = 1 WAV panjang.
+
+    Split per paragraf, generate TTS per paragraf, concat → 1 WAV.
+    Gak butuh SRT (gak ada timing constraint).
+    """
+    import wave
+    import struct
+
+    print('\n🎙️  Narration Mode (v7.5)')
+    print('   Input: naskah plain text → Output: 1 WAV panjang')
+    print()
+
+    from config import TTS_DIR, REVIEW_DIR, ensure_hdd
+
+    if ensure_hdd():
+        default_search = str(TTS_DIR)
+        default_out = str(TTS_DIR)
+    else:
+        default_search = os.getcwd()
+        default_out = os.getcwd()
+
+    # Step 1: Pilih naskah.txt
+    print('▶ Step 1: Pilih naskah (.txt)')
+    txt_files = []
+    for ext in ['txt']:
+        for d in [default_search, str(REVIEW_DIR), os.getcwd()]:
+            if Path(d).exists():
+                for f in Path(d).glob(f'*.{ext}'):
+                    txt_files.append(str(f))
+    txt_files = sorted(set(txt_files))
+    if txt_files:
+        choices = [os.path.basename(f) for f in txt_files] + ['[Ketik path manual]']
+        sel = questionary.select('Naskah:', choices=choices, default=choices[0]).ask()
+        if sel == '[Ketik path manual]':
+            naskah_path = questionary.text('Path naskah:').ask()
+        else:
+            for f in txt_files:
+                if os.path.basename(f) == sel:
+                    naskah_path = f
+                    break
+    else:
+        naskah_path = questionary.text('Tidak ada .txt. Ketik path lengkap:').ask()
+    if not naskah_path or not os.path.isfile(naskah_path):
+        print('❌ File naskah tidak ditemukan.')
+        return
+    print(f'  ✓ {naskah_path}')
+    print()
+
+    # Step 2: Output dir + filename
+    print('▶ Step 2: Output')
+    naskah_stem = Path(naskah_path).stem
+    default_wav = os.path.join(default_out, f'{naskah_stem}-narasi.wav')
+    output_wav = questionary.text('Output WAV:', default=default_wav).ask()
+    if not output_wav:
+        output_wav = default_wav
+    os.makedirs(os.path.dirname(output_wav), exist_ok=True)
+    print(f'  ✓ {output_wav}')
+    print()
+
+    # Step 3: Voice
+    print('▶ Step 3: Voice')
+    voice_labels = [v[1] for v in EDGE_VOICES]
+    voice_label = questionary.select('Voice:', choices=voice_labels, default=voice_labels[0]).ask()
+    voice = EDGE_VOICES[voice_labels.index(voice_label)][0]
+    print(f'  ✓ {voice}')
+    print()
+
+    # Step 4: Rate
+    print('▶ Step 4: Rate')
+    rate_choice = questionary.select(
+        'Rate:',
+        choices=['+0% (natural)', '-10% (sedikit lambat)', '+10% (sedikit cepat)'],
+        default='+0% (natural)',
+    ).ask()
+    if '+10' in rate_choice:
+        rate = '+10%'
+    elif '-10' in rate_choice:
+        rate = '-10%'
+    else:
+        rate = '+0%'
+    print(f'  ✓ {rate}')
+    print()
+
+    # Read naskah
+    with open(naskah_path, 'r', encoding='utf-8') as f:
+        naskah = f.read().strip()
+    if not naskah:
+        print('❌ Naskah kosong.')
+        return
+
+    # Split per paragraf (double newline)
+    paragraphs = [p.strip() for p in naskah.split('\n\n') if p.strip()]
+    # Kalau hanya 1 paragraf (no double newline), split per kalimat panjang
+    if len(paragraphs) == 1 and len(paragraphs[0]) > 5000:
+        sentences = re.split(r'(?<=[.!?])\s+', paragraphs[0])
+        paragraphs = []
+        buf = ''
+        for s in sentences:
+            if len(buf) + len(s) > 3000:
+                if buf:
+                    paragraphs.append(buf)
+                buf = s
+            else:
+                buf += ' ' + s if buf else s
+        if buf:
+            paragraphs.append(buf)
+
+    print(f'  Naskah: {len(naskah)} chars → {len(paragraphs)} paragraf')
+    total_chars = sum(len(p) for p in paragraphs)
+    print(f'  Total chars: {total_chars}')
+    print()
+
+    # Konfirmasi
+    print('═' * 64)
+    print(f'  Naskah   : {os.path.basename(naskah_path)}')
+    print(f'  Paragraf : {len(paragraphs)}')
+    print(f'  Voice    : {voice}')
+    print(f'  Rate     : {rate}')
+    print(f'  Output   : {output_wav}')
+    print('═' * 64)
+    if not questionary.confirm('\nLanjut generate?', default=True).ask():
+        print('Dibatalkan.')
+        return
+
+    # Generate TTS per paragraf
+    print('\n🚀 Generate narasi...')
+    print('═' * 64)
+
+    temp_dir = tempfile.mkdtemp(prefix='narration_tmp_')
+    temp_mp3s = []
+
+    for i, para in enumerate(paragraphs, 1):
+        mp3_path = os.path.join(temp_dir, f'narration_{i:04d}.mp3')
+        temp_mp3s.append(mp3_path)
+
+        # Progress
+        print(f'\n  [{i}/{len(paragraphs)}] Paragraf {i} ({len(para)} chars)')
+        success = generate_cue_tts(para, voice, rate, '+0Hz', mp3_path, cue_idx=i)
+        if not success:
+            print(f'  ❌ Gagal generate paragraf {i}')
+            # Cleanup
+            for mp3 in temp_mp3s:
+                if os.path.exists(mp3):
+                    os.unlink(mp3)
+            try:
+                os.rmdir(temp_dir)
+            except OSError:
+                pass
+            return
+
+    print(f'\n  ✓ {len(temp_mp3s)} paragraf selesai')
+
+    # Concat MP3 → WAV
+    print('\n▶ Concat → WAV')
+    # Pakai ffmpeg: concat MP3 → convert ke WAV (48kHz stereo 16-bit)
+    concat_list = os.path.join(temp_dir, 'concat_list.txt')
+    with open(concat_list, 'w') as f:
+        for mp3 in temp_mp3s:
+            safe = mp3.replace("'", r"'\''")
+            f.write(f"file '{safe}'\n")
+
+    ffmpeg = shutil.which('ffmpeg')
+    if not ffmpeg:
+        ffmpeg = '/opt/homebrew/bin/ffmpeg'
+
+    cmd = [ffmpeg, '-y', '-f', 'concat', '-safe', '0',
+           '-i', concat_list,
+           '-ar', '48000', '-ac', '2',
+           '-c:a', 'pcm_s16le',
+           output_wav]
+
+    print(f'  ffmpeg concat → {output_wav}')
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+    if result.returncode != 0:
+        print(f'  ❌ Gagal concat: {result.stderr[-500:]}')
+        for mp3 in temp_mp3s:
+            if os.path.exists(mp3):
+                os.unlink(mp3)
+        if os.path.exists(concat_list):
+            os.unlink(concat_list)
+        try:
+            os.rmdir(temp_dir)
+        except OSError:
+            pass
+        return
+
+    # Cleanup temp
+    for mp3 in temp_mp3s:
+        if os.path.exists(mp3):
+            os.unlink(mp3)
+    if os.path.exists(concat_list):
+        os.unlink(concat_list)
+    try:
+        os.rmdir(temp_dir)
+    except OSError:
+        pass
+
+    # Hasil
+    if os.path.exists(output_wav):
+        size_mb = os.path.getsize(output_wav) / 1024 / 1024
+        print(f'\n📁 Output: {os.path.basename(output_wav)} ({size_mb:.1f} MB)')
+        print(f'   Path   : {output_wav}')
+        print(f'\n🎬 Langkah berikutnya:')
+        print(f'   python3 review-mix-tui.py  → mix MP4 + JSON + narasi.wav')
+    else:
+        print('\n  ❌ Output gak ditemukan')
+    print('═' * 64)
 
 
 if __name__ == '__main__':

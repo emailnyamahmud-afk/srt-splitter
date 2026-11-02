@@ -2,7 +2,7 @@
 
 Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 
-## 12 TUI
+## 13 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -38,6 +38,7 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | edge-tts-tui.py v7.4 | TTS generation (paralel-safe) | HDD/tts/ |
 | mix-tui.py v3.10 | Final mix (force 1080p, audio 48000Hz stereo) | HDD/mix/ |
 | merge-tui.py v2.0 | Gabungin multi-video (stream copy / standardize) | HDD/merged/ |
+| review-mix-tui.py v1.0 | Review film (potong + narasi + overlay) | HDD/review/ |
 | kamus-tui.py v16 | TUI editor jv.wiktionary.json | SSD |
 | srt-editor-tui.py v1.0.1 | Fix typo SRT hasil translate | HDD/input/ |
 | shorts-tui.py v1.1 | Pecah MP4 jadi shorts/parts | HDD/shorts/ |
@@ -50,7 +51,7 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 
 ```
 SSD ~/Dubbing/           → scripts + venv + jv.wiktionary.json
-HDD /Volumes/HDD/Dubbing/ → input/ demucs/ tts/ mix/ shorts/ parts/ merged/ .env
+HDD /Volumes/HDD/Dubbing/ → input/ demucs/ tts/ mix/ shorts/ parts/ merged/ review/ .env
 ```
 
 config.py: `ensure_hdd()`, `ensure_kamus()`, `load_env()`, `INPUT_DIR`, `DEMUCS_DIR`, `TTS_DIR`, `MIX_DIR`, `SHORTS_DIR`, `PARTS_DIR`, `MERGED_DIR`
