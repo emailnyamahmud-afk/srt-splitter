@@ -7,11 +7,17 @@
 1. Baca duluan: AGENTS.md, README.md, PROJECT_RULES.md, scripts/README.md, scripts/config.py
 2. Jangan ngandalkan memory context — context panjang = amnesia
 3. Setiap sesi WAJIB update docs + commit + push
-4. Jangan tebak struktur folder — baca config.py LENGKAP (semua 11 path, bukan cuma `ensure_hdd` + `TTS_DIR`)
-5. Cek git log untuk state terakhir
-6. **TUI baru WAJIB update tabel "N TUI" di 4 docs: AGENTS.md, PROJECT_RULES.md, scripts/README.md, README.md root**
-7. **Cek file yang sudah ada di repo (`git ls-tree origin/main scripts/`) sebelum pilih nomor TUI baru** — jangan pakai nomor yang sudah dipakai
-8. **Workflow: AI sandbox → push GitHub → user pull → test → kalau error → AI fix → push GitHub**
+4. **Jangan tebak struktur folder — baca config.py LENGKAP (11 path constants, semua dipakai TUI berbeda)**
+5. **Paham 3 LOKASI berbeda** (jangan campur aduk):
+   - **Repo srt-splitter** (folder git, untuk DEV): sandbox AI `/home/z/my-project/`, Mac user `~/srt-splitter/` (kalau clone). Edit code + docs + push GitHub.
+   - **User working dir** (tempat TUI jalan): Mac user `~/Dubbing/` (SSD, scripts + venv) + `/Volumes/HDD/Dubbing/` (HDD, data). Scripts didownload dari repo `scripts/*.py` via curl.
+   - **Web app Vercel**: https://srt-splitter.vercel.app/ (deploy dari `src/` repo, terpisah dari TUI pipeline Dubbing).
+6. Cek git log untuk state terakhir
+7. **TUI baru WAJIB update tabel "N TUI" di 4 docs: AGENTS.md, PROJECT_RULES.md, scripts/README.md, README.md root**
+8. **Cek file yang sudah ada di repo (`git ls-tree origin/main scripts/`) sebelum pilih nomor TUI baru** — jangan pakai nomor yang sudah dipakai
+9. **Workflow: AI sandbox → push GitHub → user pull (kalau repo clone) / curl (kalau working dir) → test → kalau error → AI fix → push GitHub**
+10. **AI kerja di repo** (`/home/z/my-project/` sandbox): edit `scripts/*.py` (TUI Python), edit docs, edit `src/` (web app Next.js), commit + push. **JANGAN** bikin file di `~/Dubbing/` (itu USER working dir, AI tidak punya akses langsung).
+
 
 ## Project: SRT Splitter + Dubbing Multi-Bahasa
 
@@ -80,27 +86,79 @@ gemini-tts-tui untuk skenario yang Edge kurang bagus / tidak support:
 **Pakai**: `python3 gemini-tts-tui.py`
 **Detail**: lihat `scripts/GEMINI_TTS.md`
 
-## Struktur Folder (baca config.py LENGKAP)
+## Struktur Folder — 3 LOKASI BERBEDA (baca config.py LENGKAP)
+
+### 1. Repo srt-splitter (folder git, untuk DEV — edit code + docs)
+
+```
+Sandbox AI:  /home/z/my-project/                      (Z.ai sandbox, clone dari GitHub)
+Mac user:    ~/srt-splitter/ (atau lokasi git clone)  (untuk dev web app, kalau user clone)
+
+Repo root:
+├── README.md                          # docs root (web app + TUI overview)
+├── AGENTS.md                          # docs untuk AI (baca tiap session)
+├── PROJECT_RULES.md                   # aturan project
+├── worklog.md                         # log semua perubahan
+├── .env.example                       # template env (NEXT_PUBLIC_SUPABASE_*)
+├── package.json                       # Next.js + deps web app
+├── next.config.ts                     # Next.js config (Vercel deploy)
+├── vercel.json                        # Vercel config
+├── src/                               # Next.js web app (translate SRT Indonesia → Jawa via Supabase)
+├── api/                               # Vercel serverless functions (edge-tts proxy dll)
+├── public/                            # static assets + kamus JSON (jv.wiktionary.json dll)
+├── scripts/                           # Python TUI (15 TUI) — DIDOWNLOAD USER ke ~/Dubbing/
+│   ├── config.py                      # base path USER (~/Dubbing/ + /Volumes/HDD/Dubbing/)
+│   ├── README.md                      # docs scripts (untuk user working dir ~/Dubbing/)
+│   ├── yt-dlp-tui.py  # TUI #1
+│   ├── demucs-tui.py  # TUI #2
+│   ├── kamus-tui.py   # TUI #3
+│   ├── edge-tts-tui.py v7.5  # TUI #6
+│   ├── mix-tui.py    # TUI #7
+│   ├── whisper-tui.py # TUI #8
+│   ├── srt-editor-tui.py # TUI #9
+│   ├── shorts-tui.py # TUI #10
+│   ├── shorts-csv-tui.py # TUI #11
+│   ├── merge-tui.py  # TUI #12
+│   ├── review-mix-tui.py # TUI #13
+│   ├── konten-tui.py # TUI #14
+│   ├── gemini-tts-tui.py v1.1 # TUI #15 (BARU)
+│   ├── gemini_tts_backend.py          # TUI #15 backend modul
+│   ├── GEMINI_TTS.md                  # TUI #15 docs
+│   └── ... (script kamus + tools lain)
+├── srt-splitter-clone/                # git submodule (repo clone untuk eksperimen)
+├── srt-splitter-work/                 # git submodule (repo working)
+├── clean-srt/                         # project Python clean SRT (terpisah)
+├── tool-results/                      # output dari tool AI (log)
+└── upload/                            # upload user (SRT, audio, dll)
+```
+
+**AI kerja di repo path** (sandbox `/home/z/my-project/` atau Mac user `~/srt-splitter/`):
+- Edit code TUI Python di `scripts/*.py`
+- Edit docs (AGENTS.md, README.md, PROJECT_RULES.md, scripts/README.md, worklog.md)
+- Edit web app Next.js di `src/` + `api/`
+- Commit + push ke GitHub (`git push origin main`)
+
+### 2. User working dir (tempat TUI JALAN di Mac — BUKAN repo)
 
 ```
 SSD ~/Dubbing/                          → scripts (.py) + venv + jv.wiktionary.json (cepat)
-  ├── yt-dlp-tui.py                     # TUI #1
-  ├── demucs-tui.py                     # TUI #2
-  ├── kamus-tui.py                      # TUI #3
-  ├── edge-tts-tui.py                   # TUI #6
-  ├── mix-tui.py                        # TUI #7
-  ├── whisper-tui.py                    # TUI #8
-  ├── srt-editor-tui.py                 # TUI #9
-  ├── shorts-tui.py                     # TUI #10
-  ├── shorts-csv-tui.py                 # TUI #11
-  ├── merge-tui.py                      # TUI #12
-  ├── review-mix-tui.py                 # TUI #13
-  ├── konten-tui.py                     # TUI #14
-  ├── gemini-tts-tui.py                 # TUI #15 (BARU)
-  ├── gemini_tts_backend.py             # TUI #15 backend modul
-  ├── GEMINI_TTS.md                     # TUI #15 docs
-  ├── config.py                         # base path (SSD scripts, HDD data)
-  └── venv/
+  ├── yt-dlp-tui.py                     # didownload dari scripts/ repo via curl
+  ├── demucs-tui.py                     # didownload dari scripts/ repo via curl
+  ├── kamus-tui.py                      # didownload dari scripts/ repo via curl
+  ├── edge-tts-tui.py                   # didownload dari scripts/ repo via curl
+  ├── mix-tui.py                        # didownload dari scripts/ repo via curl
+  ├── whisper-tui.py                    # didownload dari scripts/ repo via curl
+  ├── srt-editor-tui.py                 # didownload dari scripts/ repo via curl
+  ├── shorts-tui.py                     # didownload dari scripts/ repo via curl
+  ├── shorts-csv-tui.py                 # didownload dari scripts/ repo via curl
+  ├── merge-tui.py                      # didownload dari scripts/ repo via curl
+  ├── review-mix-tui.py                 # didownload dari scripts/ repo via curl
+  ├── konten-tui.py                     # didownload dari scripts/ repo via curl
+  ├── gemini-tts-tui.py                 # didownload dari scripts/ repo via curl
+  ├── gemini_tts_backend.py             # didownload dari scripts/ repo via curl
+  ├── config.py                         # didownload dari scripts/ repo via curl (BASE PATH USER)
+  ├── jv.wiktionary.json                # kamus (download dari public/ repo)
+  └── venv/                             # Python virtual env (pip3 install)
 
 HDD /Volumes/HDD/Dubbing/              → data (besar, dari config.py)
   ├── input/                            # yt-dlp output (MP4, MP3, SRT) — config.INPUT_DIR
@@ -112,13 +170,47 @@ HDD /Volumes/HDD/Dubbing/              → data (besar, dari config.py)
   ├── merged/                           # merge-tui output (1 file panjang) — config.MERGED_DIR
   ├── review/                           # review-mix-tui output (review-final.mp4) — config.REVIEW_DIR
   ├── konten/                           # konten-tui output (konten-final.mp4) — config.KONTEN_DIR
-  ├── jv.wiktionary.json (di SSD!)      # kamus SOURCE OF TRUTH — config.KAMUS_JSON (SSD_HOME)
   └── .env                              # Supabase + GEMINI_API_KEY — config.ENV_FILE
 ```
 
+**User pakai working dir** (Mac `~/Dubbing/` + HDD `/Volumes/HDD/Dubbing/`):
+- `cd ~/Dubbing && source venv/bin/activate && python3 <tui>.py`
+- TUI baca `config.py` → tahu path HDD → baca/tulis data di HDD subfolder
+- Scripts di sini DIDOWNLOAD dari GitHub raw (`scripts/*.py`) via curl
+
+### 3. Web app Vercel (deploy dari repo)
+
+- URL: https://srt-splitter.vercel.app/
+- Source: `src/` + `api/` di repo
+- Fungsi: translate SRT Indonesia → Jawa via Supabase kamus (web app, BUKAN TUI)
+- TIDAK ada hubungan langsung dengan TUI Dubbing — terpisah
+- AI next session JANGAN pikir web app = TUI pipeline Dubbing
+
+### config.py 11 path constants (semua untuk USER working dir)
+
+```python
+# config.py base path (dipakai TUI di ~/Dubbing/ USER, BUKAN di repo)
+SSD_HOME = Path.home() / 'Dubbing'           # SSD scripts + venv + kamus
+HDD_BASE = Path('/Volumes/HDD/Dubbing')      # HDD data besar
+INPUT_DIR = HDD_BASE / 'input'               # TUI #1 yt-dlp output
+DEMUCS_DIR = HDD_BASE / 'demucs'             # TUI #2 demucs output
+TTS_DIR = HDD_BASE / 'tts'                   # TUI #6 edge-tts + TUI #15 gemini-tts output
+MIX_DIR = HDD_BASE / 'mix'                   # TUI #7 mix-tui output
+SHORTS_DIR = HDD_BASE / 'shorts'             # TUI #10 shorts-tui Shorts mode
+PARTS_DIR = HDD_BASE / 'parts'               # TUI #10 shorts-tui Part mode
+MERGED_DIR = HDD_BASE / 'merged'             # TUI #12 merge-tui output
+REVIEW_DIR = HDD_BASE / 'review'             # TUI #13 review-mix-tui output
+KONTEN_DIR = HDD_BASE / 'konten'             # TUI #14 konten-tui output
+KAMUS_JSON = SSD_HOME / 'jv.wiktionary.json' # kamus SOURCE OF TRUTH (di SSD, cepat load)
+ENV_FILE = HDD_BASE / '.env'                 # Supabase + GEMINI_API_KEY (di HDD)
+SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
+```
+
+- `ensure_hdd()` — cek HDD colok, bikin subfolder kalau belum ada
+- `ensure_kamus()` — cek kamus JSON ada, tampilkan download command kalau gak ada
+- `load_env()` — load `.env` dari HDD ke os.environ (Supabase + GEMINI_API_KEY)
 - Workflow user: `cd ~/Dubbing && source venv/bin/activate && python3 <tui>.py`
-- `config.py` — `ensure_hdd()`, `ensure_kamus()`, `load_env()`, plus 11 path constants
-- Kalau HDD tidak colok → semua TUI fallback ke cwd (atau exit dengan pesan "Colok HDD")
+- Kalau HDD tidak colok → TUI fallback ke cwd atau exit dengan pesan "Colok HDD"
 
 ## Aturan
 
@@ -140,6 +232,12 @@ HDD /Volumes/HDD/Dubbing/              → data (besar, dari config.py)
     - Output Narration mode: `HDD/tts/{stem}-narasi.wav` (review-mix-tui / konten-tui compatible)
     - Jangan hapus / ganti edge-tts-tui v7.5
     - Status EXPERIMENTAL sampai user VLC feedback OK
+15. **Repo srt-splitter ≠ User working dir Dubbing** (jangan campur aduk):
+    - Repo: `~/srt-splitter/` (atau sandbox `/home/z/my-project/`) = tempat dev code + docs + commit + push
+    - Working dir: `~/Dubbing/` (SSD scripts + venv) + `/Volumes/HDD/Dubbing/` (HDD data) = tempat user jalanin TUI
+    - Scripts di repo `scripts/*.py` → user download ke `~/Dubbing/` via `curl -L -o ... https://raw.githubusercontent.com/.../main/scripts/...`
+    - config.py di repo: base path USER (`~/Dubbing/` + `/Volumes/HDD/Dubbing/`), BUKAN path repo
+    - AI TIDAK punya akses langsung ke `~/Dubbing/` user — AI kerja di repo path
 
 ## Pipeline Final (confirmed end-to-end)
 
@@ -172,10 +270,39 @@ naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → konten-tui v1.0 (kont
 
 ## Anti-amnesia untuk AI next session (Pelajaran 2 Nov 2026)
 
-- Jangan amnesia: ada 15 TUI, BUKAN 12/13. Baca `git ls-tree origin/main scripts/` untuk verifikasi
-- Jangan amnesia: TUI #13 = review-mix-tui (production), TUI #14 = konten-tui (production), TUI #15 = gemini-tts-tui (experimental)
-- Jangan amnesia: `REVIEW_DIR` di config.py untuk review-mix-tui, `KONTEN_DIR` untuk konten-tui
-- Jangan amnesia: edge-tts-tui v7.5 Narration mode → feed review-mix-tui / konten-tui (BUKAN langsung ke user)
-- Jangan amnesia: gemini-tts-tui v1.1 Narration mode (JV) → alternatif feed untuk review-mix-tui / konten-tui (bahasa Jawa)
-- Jangan amnesia: baca config.py LENGKAP, ada 11 path constants, semua dipakai TUI berbeda
-- Jangan amnesia: workflow = AI sandbox → push GitHub → user pull → test → kalau error → AI fix → push
+### LOKASI (jangan campur aduk — kesalahan parah saya sebelumnya):
+
+- **Repo srt-splitter** (folder git, untuk DEV): sandbox AI = `/home/z/my-project/`, Mac user (kalau clone) = `~/srt-splitter/` atau lokasi git clone lain. Berisi: `src/` (Next.js), `api/`, `scripts/` (TUI Python), `public/`, docs (.md), `package.json`. AI kerja di sini: edit code + docs + commit + push.
+- **User working dir** (tempat TUI jalan di Mac): `~/Dubbing/` (SSD, scripts + venv + kamus) + `/Volumes/HDD/Dubbing/` (HDD, data). Scripts di sini DIDOWNLOAD dari repo `scripts/*.py` via curl. User jalanin: `cd ~/Dubbing && source venv/bin/activate && python3 <tui>.py`. **AI TIDAK punya akses langsung ke sini — kerja di repo path saja**.
+- **Web app Vercel**: https://srt-splitter.vercel.app/, deploy dari `src/` repo, terpisah dari TUI pipeline Dubbing.
+
+### config.py (di repo `scripts/config.py`, base path untuk USER working dir):
+
+```python
+SSD_HOME = Path.home() / 'Dubbing'           # SSD scripts + venv + kamus
+HDD_BASE = Path('/Volumes/HDD/Dubbing')      # HDD data besar
+INPUT_DIR, DEMUCS_DIR, TTS_DIR, MIX_DIR,     # 9 subfolder HDD
+SHORTS_DIR, PARTS_DIR, MERGED_DIR,
+REVIEW_DIR, KONTEN_DIR
+KAMUS_JSON = SSD_HOME / 'jv.wiktionary.json' # kamus di SSD (cepat load)
+ENV_FILE = HDD_BASE / '.env'                 # Supabase + GEMINI_API_KEY
+SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
+```
+- 11 path constants, semua untuk USER working dir, BUKAN repo path
+- `ensure_hdd()` + `ensure_kamus()` + `load_env()` = helper functions
+
+### TUI (ada 15, BUKAN 12/13):
+
+- Jangan amnesia: ada 15 TUI. Baca `git ls-tree origin/main scripts/` untuk verifikasi sebelum pilih nomor TUI baru
+- TUI #13 = review-mix-tui (production), TUI #14 = konten-tui (production), TUI #15 = gemini-tts-tui (experimental)
+- `REVIEW_DIR` di config.py untuk review-mix-tui (#13), `KONTEN_DIR` untuk konten-tui (#14)
+- edge-tts-tui v7.5 Narration mode → feed review-mix-tui / konten-tui (BUKAN langsung ke user)
+- gemini-tts-tui v1.1 Narration mode (JV) → alternatif feed untuk review-mix-tui / konten-tui (bahasa Jawa)
+
+### Workflow (kesalahan saya sebelumnya: tidak push):
+
+- AI sandbox: kerja di repo → commit + push GitHub
+- User: kalau repo clone → `git pull` (untuk dev web app) / kalau working dir → `curl -L -o ... https://raw.githubusercontent.com/.../main/scripts/<file>.py` (untuk pakai TUI)
+- User test → kalau error → paste ke AI → AI fix di sandbox → push GitHub → user download lagi
+- TIAP selesai task: WAJIB commit + push GitHub (jangan nunggu ditanya ulang)
+

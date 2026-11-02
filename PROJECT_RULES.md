@@ -37,19 +37,41 @@ Kamus: kamus-tui → jv.wiktionary.json → Supabase
 | 14 | konten-tui v1.0 | ✅ (konten sejarah: narasi + images → Ken Burns video) |
 | 15 | **gemini-tts-tui v1.1** | ⚠ EXPERIMENTAL (SRT + Narasi, ID + JV, OPSI TAMBAHAN, butuh GEMINI_API_KEY) |
 
-## Struktur Folder (dari config.py, baca LENGKAP)
+## Struktur Folder — 3 LOKASI BERBEDA (baca config.py LENGKAP)
 
-- SSD `~/Dubbing/` = scripts (.py) + venv + jv.wiktionary.json
+### 1. Repo srt-splitter (folder git, untuk DEV — AI kerja di sini)
+
+- Sandbox AI: `/home/z/my-project/`
+- Mac user (kalau clone untuk dev): `~/srt-splitter/` atau lokasi git clone
+- Berisi: `src/` (Next.js), `api/`, `scripts/` (TUI Python), `public/`, docs (.md), `package.json`
+- AI kerja: edit `scripts/*.py` (TUI), edit docs, edit `src/` (web app), commit + push GitHub
+- **AI TIDAK punya akses langsung ke `~/Dubbing/` user — kerja di repo path saja**
+
+### 2. User working dir (tempat TUI jalan di Mac)
+
+- SSD `~/Dubbing/` = scripts (.py, didownload dari repo via curl) + venv + jv.wiktionary.json
 - HDD `/Volumes/HDD/Dubbing/` = data:
   - `input/` (yt-dlp), `demucs/` (vocal sep), `tts/` (edge-tts + gemini-tts output),
   - `mix/` (mix-tui final), `shorts/` (shorts-tui Shorts), `parts/` (shorts Part),
   - `merged/` (merge-tui), `review/` (review-mix-tui), `konten/` (konten-tui),
   - `.env` (Supabase + GEMINI_API_KEY)
-- `config.py` = base path, dipakai semua TUI. 11 path constants:
-  `SSD_HOME`, `HDD_BASE`, `INPUT_DIR`, `DEMUCS_DIR`, `TTS_DIR`, `MIX_DIR`,
-  `SHORTS_DIR`, `PARTS_DIR`, `MERGED_DIR`, `REVIEW_DIR`, `KONTEN_DIR`,
-  `KAMUS_JSON`, `ENV_FILE`, `SCRIPTS_DIR`
 - Workflow: `cd ~/Dubbing && source venv/bin/activate && python3 <tui>.py`
+
+### 3. Web app Vercel (deploy dari repo `src/`)
+
+- URL: https://srt-splitter.vercel.app/
+- Fungsi: translate SRT Indonesia → Jawa via Supabase (web app, BUKAN TUI)
+- TIDAK ada hubungan langsung dengan TUI pipeline Dubbing
+
+### config.py (di repo `scripts/config.py`, base path USER working dir)
+
+11 path constants, semua untuk USER working dir, BUKAN repo path:
+`SSD_HOME`, `HDD_BASE`, `INPUT_DIR`, `DEMUCS_DIR`, `TTS_DIR`, `MIX_DIR`,
+`SHORTS_DIR`, `PARTS_DIR`, `MERGED_DIR`, `REVIEW_DIR`, `KONTEN_DIR`,
+`KAMUS_JSON`, `ENV_FILE`, `SCRIPTS_DIR`
+
+Helper: `ensure_hdd()`, `ensure_kamus()`, `load_env()`
+
 
 ## Wajib
 
@@ -81,4 +103,7 @@ Kamus: kamus-tui → jv.wiktionary.json → Supabase
 - Hapus / ganti edge-tts-tui v7.5 dengan gemini-tts-tui (kedua TUI harus hidup berdampingan)
 - Bikin TUI baru tanpa cek file yang sudah ada di repo (jangan pakai nomor TUI yang sudah dipakai)
 - Bikin TUI baru tanpa update docs utama (AGENTS/PROJECT_RULES/scripts/README/README root/worklog)
-- Asumsi struktur folder tanpa baca config.py LENGKAP
+- Asumsi struktur folder tanpa baca config.py LENGKAP (11 path constants, semua dipakai TUI berbeda)
+- **Campur aduk repo srt-splitter dengan user working dir `~/Dubbing/`** — repo = folder git untuk dev, working dir = tempat TUI jalan, scripts didownload dari repo via curl
+- **Bikin file di `~/Dubbing/`** — itu user working dir, AI kerja di repo path (`/home/z/my-project/` sandbox atau `~/srt-splitter/` Mac dev)
+- **Pikir web app Vercel = TUI Dubbing** — web app terpisah, translate SRT via Supabase, BUKAN pipeline TUI
