@@ -154,29 +154,54 @@ DEFAULT_INSTRUCTION = (
 )
 
 # Template instruksi yang sering dipakai di pipeline dubbing.
-# Format: (key, label, instruction_text)
+# Format: (key, label, instruction_text, language)
+# language: "id" / "jv" / "any" — buat dipakai TUI untuk filter pilihan per bahasa.
 INSTRUCTION_TEMPLATES = [
-    ("default",       "Default (natural, netral)",
-     "Bacakan teks berikut secara natural, jelas, dengan artikulasi baik dan jeda napas yang pas pada tanda baca koma dan titik."),
-    ("jawa-halus-mc", "Jawa halus — Panatacara / MC adat (pria berwibawa)",
+    # === Bahasa Indonesia ===
+    ("default",       "ID — Default (natural, netral)",
+     "Bacakan teks berikut secara natural, jelas, dengan artikulasi baik dan jeda napas yang pas pada tanda baca koma dan titik.",
+     "id"),
+    ("id-narasi",     "ID — Narasi dokumenter (pria hangat)",
+     "Karakter Suara: Pria dewasa hangat (usia 30-40 tahun), penutur asli bahasa Indonesia. "
+     "Gaya Bicara: Narator dokumenter yang tenang, mengalir, dan menjaga jarak emosional. "
+     "Tempo: Sedang, dengan artikulasi jelas dan jeda napas yang pas pada tanda baca.",
+     "id"),
+    ("id-narasi-w",   "ID — Narasi dokumenter (wanita hangat)",
+     "Karakter Suara: Wanita dewasa hangat (usia 30-40 tahun), penutur asli bahasa Indonesia. "
+     "Gaya Bicara: Narator dokumenter yang tenang, mengalir, dan menjaga jarak emosional. "
+     "Tempo: Sedang, dengan artikulasi jelas dan jeda napas yang pas pada tanda baca.",
+     "id"),
+    ("id-dialog",     "ID — Dialog dramatis (natural)",
+     "Karakter Suara: Penutur asli bahasa Indonesia, suara natural. "
+     "Gaya Bicara: Dialog film/drama, bawa emosi sesuai konteks kalimat, tidak terlalu teatrikal. "
+     "Tempo: Natural mengikuti pola percakapan, jeda napas mengikuti tanda baca.",
+     "id"),
+    # === Bahasa Jawa ===
+    ("jawa-halus-mc", "JV — Panatacara / MC adat (pria berwibawa, lambat khidmat)",
      "Karakter Suara: Pria dewasa matang (usia sekitar 40-50 tahun), suara berat berwibawa (baritone), penutur asli bahasa Jawa halus. "
      "Gaya Bicara: Berperan sebagai \"Panatacara / Pranatacara Pamedhar Sabda\" profesional untuk acara resmi/adat Jawa. "
      "Tempo: Lambat, tenang, khidmat, dengan artikulasi vokal dan konsonan Jawa (seperti \"dha\", \"tha\", \"nga\") yang sangat jelas dan medok mantap. "
-     "Berikan jeda napas yang pas dan anggun di setiap tanda koma dan titik."),
-    ("id-narasi",     "Indonesia — narasi dokumenter (pria hangat)",
-     "Karakter Suara: Pria dewasa hangat (usia 30-40 tahun), penutur asli bahasa Indonesia. "
-     "Gaya Bicara: Narator dokumenter yang tenang, mengalir, dan menjaga jarak emosional. "
-     "Tempo: Sedang, dengan artikulasi jelas dan jeda napas yang pas pada tanda baca."),
-    ("id-narasi-w",   "Indonesia — narasi dokumenter (wanita hangat)",
-     "Karakter Suara: Wanita dewasa hangat (usia 30-40 tahun), penutur asli bahasa Indonesia. "
-     "Gaya Bicara: Narator dokumenter yang tenang, mengalir, dan menjaga jarak emosional. "
-     "Tempo: Sedang, dengan artikulasi jelas dan jeda napas yang pas pada tanda baca."),
-    ("id-dialog",     "Indonesia — dialog dramatis (natural)",
-     "Karakter Suara: Penutur asli bahasa Indonesia, suara natural. "
-     "Gaya Bicara: Dialog film/drama, bawa emosi sesuai konteks kalimat, tidak terlalu teatrikal. "
-     "Tempo: Natural mengikuti pola percakapan, jeda napas mengikuti tanda baca."),
+     "Berikan jeda napas yang pas dan anggun di setiap tanda koma dan titik.",
+     "jv"),
+    ("jv-narasi",     "JV — Narasi (pria hangat, sedang)",
+     "Karakter Suara: Pria dewasa hangat (usia 30-40 tahun), penutur asli bahasa Jawa (krama). "
+     "Gaya Bicara: Narator yang tenang, mengalir, menjaga jarak emosional. "
+     "Tempo: Sedang, artikulasi vokal Jawa jelas (dha/tha/nga), jeda napas pas pada tanda baca.",
+     "jv"),
+    ("jv-narasi-w",   "JV — Narasi (wanita hangat, sedang)",
+     "Karakter Suara: Wanita dewasa hangat (usia 30-40 tahun), penutur asli bahasa Jawa (krama). "
+     "Gaya Bicara: Narator yang tenang, mengalir, menjaga jarak emosional. "
+     "Tempo: Sedang, artikulasi vokal Jawa jelas, jeda napas pas pada tanda baca.",
+     "jv"),
+    ("jv-dialog",     "JV — Dialog dramatis (natural)",
+     "Karakter Suara: Penutur asli bahasa Jawa (krama/ngoko sesuai konteks teks), suara natural. "
+     "Gaya Bicara: Dialog drama, bawa emosi sesuai konteks kalimat, tidak terlalu teatrikal. "
+     "Tempo: Natural mengikuti pola percakapan, jeda napas mengikuti tanda baca.",
+     "jv"),
+    # === Custom ===
     ("custom",        "Custom (ketik sendiri)",
-     None),  # None = minta user ketik
+     None,  # None = minta user ketik
+     "any"),
 ]
 
 
@@ -483,10 +508,18 @@ def _print_voices():
 def _print_instructions():
     print("\nInstruction templates yang tersedia di gemini-tts-tui.py:")
     print("-" * 80)
-    for key, label, _ in INSTRUCTION_TEMPLATES:
-        print(f"  {key:18s} — {label}")
+    for key, label, _, lang in INSTRUCTION_TEMPLATES:
+        print(f"  [{lang:3s}] {key:18s} — {label}")
     print("-" * 80)
     print()
+
+
+def instructions_for_language(lang_code: str) -> list:
+    """Filter instruction template berdasarkan bahasa ('id' / 'jv' / 'any').
+
+    Selalu sertakan 'custom' di akhir.
+    """
+    return [t for t in INSTRUCTION_TEMPLATES if t[3] == lang_code or t[3] == 'any']
 
 
 def main():

@@ -1,37 +1,51 @@
 #!/usr/bin/env python3
 """
-gemini-tts-tui.py v1.0 — TUI Generate TTS dari SRT dengan Gemini TTS (gemini-3.8-flash-tts)
+gemini-tts-tui.py v1.1 — TUI Generate TTS dengan Gemini TTS (gemini-3.8-flash-tts)
 
 OPSI TAMBAHAN untuk pipeline dubbing — bukan pengganti edge-tts-tui.py.
-edge-tts-tui.py (v7.5) tetap production. gemini-tts-tui.py untuk:
-  - Bahasa Jawa halus (krama inggil) — Gemini lebih ekspresif dari Edge TTS
-  - Karakter suara spesifik (MC/adat, narator dokuser, dialog dramatis)
-  - Multi-bahasa eksotis yang tidak ada di Edge TTS (Italia, Jepang, dll)
-  - Kalau user mau suara Cruz (pria dewasa berwibawa, sudah di-test di AI Studio)
+edge-tts-tui.py v7.5 tetap production default (Indonesia saja, SRT + Narration).
+gemini-tts-tui.py untuk skenario yang Edge TTS kurang bagus / tidak support:
+
+  SRT MODE (Dub per cue dari subtitle):
+    - Bahasa Indonesia (alternative ke edge-tts)
+    - Bahasa Jawa (krama/ngoko) — Gemini lebih ekspresif dari Edge TTS
+      → user sudah test Cruz + jawa-halus-mc, hasil bagus untuk MC/adat
+
+  NARRATION MODE (1 naskah plain text → 1 WAV):
+    - Bahasa Indonesia (alternative ke edge-tts narration)
+    - Bahasa Jawa (krama) — user sudah test narasi Jawa, hasil bagus
+    - Cocok untuk: naskah konten, video pendidikan, audio book
 
 Kapan pakai Edge TTS (production default):
-  - Bahasa Indonesia umum (cue-cue film/drama biasa)
-  - Butuh paralel 2-3 instance (free, no quota)
-  - Butuh pitch adjustment (Edge punya pitch slider, Gemini pakai instruction)
+  - Bahasa Indonesia umum (cue-cue film/drama biasa) — free, unlimited, paralel
+  - Butuh pitch adjustment presisi (Edge punya pitch slider)
   - Workflow produksi yang sudah jalan stabil
 
 Compatible dengan mix-tui.py v3.10:
-  - Output: HDD/tts/{prefix}-audio-id-dub.wav (flat di TTS_DIR root, sama edge-tts-tui)
-  - Format: WAV 24kHz mono 16-bit PCM (sama)
-  - mix-tui.py cari dub via glob non-recursive → langsung nemu, gak peduli TUI mana yang bikin
+  - SRT mode output: HDD/tts/{prefix}-audio-id-dub.wav (sama edge-tts-tui)
+    → mix-tui.py cari dub via glob non-recursive → langsung nemu
+  - Narration mode output: HDD/tts/{naskah-stem}-narasi.wav
+    → pakai untuk review-mix-tui.py (sama edge-tts narration)
 
-Algorithm (port dari edge-tts-tui.py v7.5 — identik, hanya beda backend TTS):
+Algorithm SRT mode (port dari edge-tts-tui.py v7.5 — identik, beda backend):
   1. Parse SRT → entries (start, end, text)
   2. Per cue: generate natural TTS (Gemini, rate +0%)
   3. Trim silence (asymmetric, voicertool pattern, -30 dB head/tail)
   4. Hitung need = naturalDur / cueDur
   5. Kalau need <= 1.0 → pakai natural
   6. Kalau need > 1.0 → re-generate dengan instruction "Bicara X% lebih cepat"
-     (Gemini tidak punya parameter rate langsung — di-pass via instruction prompt)
+     (Gemini tidak punya parameter rate langsung — di-pass via instruction)
   7. Peak normalize -2 dBFS
   8. Stitch ke buffer pada cue.start (mix additive)
   9. Crossfade 150ms kalau audio overflow cue next
   10. Output: WAV 24kHz mono 16-bit
+
+Algorithm Narration mode (port dari edge-tts-tui.py v7.5 main_narration):
+  1. Read naskah.txt → split per paragraf (double newline)
+     Kalau 1 paragraf > 5000 chars → split per kalimat panjang (≤3000 chars)
+  2. Per paragraf: generate TTS (Gemini, rate dari pilihan user)
+  3. Concat MP3 → WAV (ffmpeg, 48kHz stereo 16-bit)
+  4. Output: 1 WAV panjang (48kHz stereo 16-bit)
 
 PARALEL WORKFLOW (sama dengan edge-tts-tui v7.4):
   Lock file + PID + prefix auto-suggest + 429/RESOURCE_EXHAUSTED retry.
@@ -78,7 +92,7 @@ from pathlib import Path
 # Version + paralel constants (match edge-tts-tui.py v7.5 pattern)
 # ============================================================
 
-VERSION = 'v1.0'
+VERSION = 'v1.1'
 
 # ============================================================
 # Module-level lock state (match edge-tts-tui.py v7.4 pattern)
@@ -160,6 +174,7 @@ from gemini_tts_backend import (
     DEFAULT_VOICE,
     DEFAULT_INSTRUCTION,
     INSTRUCTION_TEMPLATES,
+    instructions_for_language,
     MODEL,
     RATE_LIMIT_BACKOFF,
     OUTPUT_SAMPLE_RATE as GEMINI_OUTPUT_SR,
@@ -516,13 +531,17 @@ def print_banner():
     pad_title = max(0, 66 - len(title) - 2)
     print('╔' + '═' * 64 + '╗')
     print('║  ' + title + ' ' * pad_title + '║')
-    print('║  OPSI TAMBAHAN | Gemini 3.8 Flash TTS | paralel-safe' + ' ' * 13 + '║')
+    print('║  OPSI TAMBAHAN | Gemini 3.8 Flash TTS | 2 mode: SRT + Narasi' + ' ' * 5 + '║')
     print('╚' + '═' * 64 + '╝')
     print()
     print('  ⚠ edge-tts-tui.py tetap production default. Pakai TUI ini untuk:')
-    print('     • Jawa halus (krama inggil, MC/adat)')
-    print('     • Karakter suara spesifik (Cruz, narrasi dokuser, dialog dramatis)')
+    print('     • Jawa halus (krama/ngoko) — Gemini lebih ekspresif dari Edge TTS')
+    print('     • Karakter suara spesifik (Cruz, narasi dokuser, dialog dramatis)')
     print('     • Bahasa eksotis (Italia, Jepang, dll) yang tidak ada di Edge TTS')
+    print()
+    print('  📋 2 Mode:')
+    print('     • SRT       — Dub per cue dari subtitle (output: {prefix}-audio-id-dub.wav)')
+    print('     • Narration — 1 naskah plain text → 1 WAV (output: {stem}-narasi.wav)')
     print()
 
 
@@ -680,8 +699,25 @@ def main():
     print('   Navigasi: ↑↓ arrow keys, Enter konfirmasi, Ctrl+C batal')
     print()
 
+    # === Mode selection — mirror edge-tts-tui.py v7.5 pattern ===
+    mode = questionary.select(
+        'Mode:',
+        choices=[
+            'SRT (dub per cue dari subtitle) — Indonesia + Jawa',
+            'Narration (1 naskah plain text → 1 WAV) — Indonesia + Jawa',
+        ],
+        default='SRT (dub per cue dari subtitle) — Indonesia + Jawa',
+    ).ask()
+
+    if 'Narration' in mode:
+        main_narration()
+        return
+
+    # === SRT mode (existing main flow) ===
+    print()
+
     # === Step 1: Pilih SRT (default: HDD/input/) ===
-    print('▶ Step 1/6: Pilih SRT')
+    print('▶ Step 1/7: Pilih SRT')
     try:
         from config import INPUT_DIR, TTS_DIR, ensure_hdd
         hdd_ok = ensure_hdd()
@@ -717,7 +753,7 @@ def main():
     print()
 
     # === Step 2: Output dir (default: HDD/tts/) ===
-    print('▶ Step 2/6: Pilih output directory')
+    print('▶ Step 2/7: Pilih output directory')
     if isinstance(TTS_DIR, Path) and TTS_DIR.exists():
         default_out = str(TTS_DIR)
     else:
@@ -732,8 +768,22 @@ def main():
     print(f'  ✓ {output_dir}')
     print()
 
-    # === Step 3: Voice ===
-    print('▶ Step 3/6: Pilih voice')
+    # === Step 3: Bahasa ===
+    print('▶ Step 3/7: Pilih bahasa')
+    bahasa_choice = questionary.select(
+        'Bahasa naskah/SRT:',
+        choices=[
+            'Indonesia (id)',
+            'Jawa (jv) — krama/ngoko',
+        ],
+        default='Indonesia (id)',
+    ).ask()
+    lang_code = 'id' if 'Indonesia' in bahasa_choice else 'jv'
+    print(f'  ✓ {lang_code}')
+    print()
+
+    # === Step 4: Voice ===
+    print('▶ Step 4/7: Pilih voice')
     voice_labels = [v[1] for v in GEMINI_VOICES]
     voice_label = questionary.select(
         'Voice (Gemini prebuilt — 30 resmi + Cruz):',
@@ -744,15 +794,16 @@ def main():
     print(f'  ✓ {voice}')
     print()
 
-    # === Step 4: Instruction template ===
-    print('▶ Step 4/6: Pilih instruksi gaya bicara')
-    inst_labels = [t[1] for t in INSTRUCTION_TEMPLATES]
+    # === Step 5: Instruction template (filtered per bahasa) ===
+    print('▶ Step 5/7: Pilih instruksi gaya bicara')
+    inst_choices = instructions_for_language(lang_code)
+    inst_labels = [t[1] for t in inst_choices]
     inst_label = questionary.select(
-        'Instruction template (karakter + tempo + gaya bicara):',
+        f'Instruction template (karakter + tempo + gaya bicara, {lang_code}):',
         choices=inst_labels,
         default=inst_labels[0],
     ).ask()
-    chosen_template = INSTRUCTION_TEMPLATES[inst_labels.index(inst_label)]
+    chosen_template = inst_choices[inst_labels.index(inst_label)]
     inst_key = chosen_template[0]
 
     if inst_key == 'custom':
@@ -768,8 +819,8 @@ def main():
     print(f'  ✓ {inst_key}: {instruction[:70]}{"..." if len(instruction) > 70 else ""}')
     print()
 
-    # === Step 5: Smart Fit cap ===
-    print('▶ Step 5/6: Smart Fit cap')
+    # === Step 6: Smart Fit cap ===
+    print('▶ Step 6/7: Smart Fit cap')
     cap_choice = questionary.select(
         'Smart Fit cap (max audio rate — Gemini pakai instruksi tempo):',
         choices=[
@@ -789,8 +840,8 @@ def main():
     print(f'  ✓ cap={cap}, smart_fit={smart_fit}')
     print()
 
-    # === Step 6: Prefix (dengan lock file check — paralel-safe) ===
-    print('▶ Step 6/6: Prefix nama file')
+    # === Step 7: Prefix (dengan lock file check — paralel-safe) ===
+    print('▶ Step 7/7: Prefix nama file')
     base_name = Path(srt_path).stem
     prefix = questionary.text(
         'Prefix (default: nama SRT tanpa extension):',
@@ -847,10 +898,11 @@ def main():
 
     # === Konfirmasi ===
     print('╔' + '═' * 64 + '╗')
-    print('║  📋 Ringkasan:' + ' ' * 49 + '║')
+    print('║  📋 Ringkasan (SRT mode):' + ' ' * 39 + '║')
     print('╠' + '═' * 64 + '╣')
     print(f'║  SRT     : {os.path.basename(srt_path)[:46]:<46}║')
     print(f'║  Output  : {output_dir[:46]:<46}║')
+    print(f'║  Bahasa  : {lang_code.upper() + " — " + ("Indonesia" if lang_code == "id" else "Jawa"):44}║')
     print(f'║  Voice   : {voice[:46]:<46}║')
     print(f'║  Instruksi: {inst_key[:45]:<46}║')
     print(f'║  SmartFit: {"ON, cap=" + str(cap) if smart_fit else "OFF":<46}║')
@@ -1025,6 +1077,272 @@ def main():
 
     # Release lock file (normal exit)
     release_lock(output_dir, prefix)
+
+
+# ============================================================
+# v1.1: Narration mode — 1 naskah plain text → 1 WAV
+# Port dari edge-tts-tui.py v7.5 main_narration, adaptasi untuk Gemini TTS.
+# Beda dengan SRT mode: gak ada timing constraint, gak butuh Smart Fit,
+# gak butuh lock file (1 file, bukan paralel), output 48kHz stereo 16-bit.
+# ============================================================
+
+def main_narration():
+    """Mode narration: input = naskah.txt, output = 1 WAV panjang.
+
+    Split per paragraf, generate TTS per paragraf via Gemini, concat → 1 WAV.
+    Gak butuh SRT (gak ada timing constraint).
+    Support Indonesia + Jawa (instruction template filtered per bahasa).
+    """
+    print('\n🎙️  Narration Mode (v1.1)')
+    print('   Input: naskah plain text → Output: 1 WAV panjang')
+    print()
+
+    try:
+        from config import TTS_DIR, REVIEW_DIR, ensure_hdd
+    except ImportError:
+        TTS_DIR = Path(os.getcwd()) / 'tts-output'
+        REVIEW_DIR = Path(os.getcwd()) / 'review'
+        def ensure_hdd():
+            return False
+
+    if ensure_hdd():
+        default_search = str(TTS_DIR)
+        default_out = str(TTS_DIR)
+    else:
+        default_search = os.getcwd()
+        default_out = os.getcwd()
+
+    # Step 1: Pilih naskah.txt
+    print('▶ Step 1/6: Pilih naskah (.txt)')
+    txt_files = []
+    for d in [default_search, str(REVIEW_DIR), os.getcwd()]:
+        if Path(d).exists():
+            for f in Path(d).glob('*.txt'):
+                txt_files.append(str(f))
+    txt_files = sorted(set(txt_files))
+    if txt_files:
+        choices = [os.path.basename(f) for f in txt_files] + ['[Ketik path manual]']
+        sel = questionary.select('Naskah:', choices=choices, default=choices[0]).ask()
+        if sel == '[Ketik path manual]':
+            naskah_path = questionary.text('Path naskah:').ask()
+        else:
+            naskah_path = ''
+            for f in txt_files:
+                if os.path.basename(f) == sel:
+                    naskah_path = f
+                    break
+    else:
+        naskah_path = questionary.text('Tidak ada .txt. Ketik path lengkap:').ask()
+    if not naskah_path or not os.path.isfile(naskah_path):
+        print('❌ File naskah tidak ditemukan.')
+        return
+    print(f'  ✓ {naskah_path}')
+    print()
+
+    # Step 2: Output dir + filename
+    print('▶ Step 2/6: Output')
+    naskah_stem = Path(naskah_path).stem
+    default_wav = os.path.join(default_out, f'{naskah_stem}-narasi.wav')
+    output_wav = questionary.text('Output WAV:', default=default_wav).ask()
+    if not output_wav:
+        output_wav = default_wav
+    os.makedirs(os.path.dirname(output_wav) or '.', exist_ok=True)
+    print(f'  ✓ {output_wav}')
+    print()
+
+    # Step 3: Bahasa
+    print('▶ Step 3/6: Bahasa')
+    bahasa_choice = questionary.select(
+        'Bahasa naskah:',
+        choices=[
+            'Indonesia (id)',
+            'Jawa (jv) — krama/ngoko',
+        ],
+        default='Indonesia (id)',
+    ).ask()
+    lang_code = 'id' if 'Indonesia' in bahasa_choice else 'jv'
+    print(f'  ✓ {lang_code}')
+    print()
+
+    # Step 4: Voice
+    print('▶ Step 4/6: Voice')
+    voice_labels = [v[1] for v in GEMINI_VOICES]
+    voice_label = questionary.select(
+        'Voice (Gemini prebuilt — 30 resmi + Cruz):',
+        choices=voice_labels,
+        default=[v[1] for v in GEMINI_VOICES if v[0] == DEFAULT_VOICE][0],
+    ).ask()
+    voice = GEMINI_VOICES[voice_labels.index(voice_label)][0]
+    print(f'  ✓ {voice}')
+    print()
+
+    # Step 5: Instruction template (filtered per bahasa)
+    print('▶ Step 5/6: Instruksi gaya bicara')
+    inst_choices = instructions_for_language(lang_code)
+    inst_labels = [t[1] for t in inst_choices]
+    inst_label = questionary.select(
+        f'Instruction template ({lang_code}):',
+        choices=inst_labels,
+        default=inst_labels[0],
+    ).ask()
+    chosen_template = inst_choices[inst_labels.index(inst_label)]
+    inst_key = chosen_template[0]
+    if inst_key == 'custom':
+        instruction = questionary.text(
+            'Ketik instruksi:',
+            default='Bacakan teks berikut secara natural, jelas, dengan artikulasi baik.',
+        ).ask()
+        if not instruction:
+            instruction = DEFAULT_INSTRUCTION
+    else:
+        instruction = chosen_template[2]
+    print(f'  ✓ {inst_key}: {instruction[:70]}{"..." if len(instruction) > 70 else ""}')
+    print()
+
+    # Step 6: Rate
+    print('▶ Step 6/6: Rate (instruksi tempo)')
+    rate_choice = questionary.select(
+        'Rate:',
+        choices=[
+            '+0% (natural — recommended)',
+            '-10% (sedikit lambat — untuk MC/adat)',
+            '+10% (sedikit cepat)',
+        ],
+        default='+0% (natural — recommended)',
+    ).ask()
+    if '+10' in rate_choice:
+        rate = '+10%'
+    elif '-10' in rate_choice:
+        rate = '-10%'
+    else:
+        rate = '+0%'
+    print(f'  ✓ {rate}')
+    print()
+
+    # Read naskah
+    with open(naskah_path, 'r', encoding='utf-8') as f:
+        naskah = f.read().strip()
+    if not naskah:
+        print('❌ Naskah kosong.')
+        return
+
+    # Split per paragraf (double newline)
+    paragraphs = [p.strip() for p in naskah.split('\n\n') if p.strip()]
+    # Kalau hanya 1 paragraf (no double newline), split per kalimat panjang
+    if len(paragraphs) == 1 and len(paragraphs[0]) > 5000:
+        sentences = re.split(r'(?<=[.!?])\s+', paragraphs[0])
+        paragraphs = []
+        buf = ''
+        for s in sentences:
+            if len(buf) + len(s) > 3000:
+                if buf:
+                    paragraphs.append(buf)
+                buf = s
+            else:
+                buf += ' ' + s if buf else s
+        if buf:
+            paragraphs.append(buf)
+
+    print(f'  Naskah: {len(naskah)} chars → {len(paragraphs)} paragraf')
+    total_chars = sum(len(p) for p in paragraphs)
+    print(f'  Total chars: {total_chars}')
+    print()
+
+    # Konfirmasi
+    print('═' * 64)
+    print(f'  📋 Ringkasan (Narration mode):')
+    print(f'  Naskah    : {os.path.basename(naskah_path)}')
+    print(f'  Output    : {output_wav}')
+    print(f'  Bahasa    : {lang_code.upper()} — {"Indonesia" if lang_code == "id" else "Jawa"}')
+    print(f'  Voice     : {voice}')
+    print(f'  Instruksi : {inst_key}')
+    print(f'  Rate      : {rate}')
+    print(f'  Paragraf  : {len(paragraphs)}')
+    print('═' * 64)
+    if not questionary.confirm('\nLanjut generate?', default=True).ask():
+        print('Dibatalkan.')
+        return
+
+    # Generate TTS per paragraf
+    print('\n🚀 Generate narasi (Gemini TTS)...')
+    print('═' * 64)
+
+    import tempfile
+    temp_dir = tempfile.mkdtemp(prefix='gemini_narration_tmp_')
+    temp_files = []  # WALAUPUN EXT .mp3, ISI = WAV 16-bit mono 24kHz (backend kita encode WAV)
+
+    for i, para in enumerate(paragraphs, 1):
+        mp3_path = os.path.join(temp_dir, f'narration_{i:04d}.mp3')
+        temp_files.append(mp3_path)
+
+        print(f'\n  [{i}/{len(paragraphs)}] Paragraf {i} ({len(para)} chars)')
+        success = generate_gemini_tts(
+            para, voice=voice, rate=rate, instruction=instruction,
+            output_mp3=mp3_path, cue_idx=i,
+        )
+        if not success:
+            print(f'  ❌ Gagal generate paragraf {i}')
+            for f in temp_files:
+                if os.path.exists(f):
+                    os.unlink(f)
+            try:
+                os.rmdir(temp_dir)
+            except OSError:
+                pass
+            return
+
+    print(f'\n  ✓ {len(temp_files)} paragraf selesai')
+
+    # Concat → WAV (48kHz stereo 16-bit — match edge-tts-tui v7.5 narration output)
+    print('\n▶ Concat → WAV')
+    concat_list = os.path.join(temp_dir, 'concat_list.txt')
+    with open(concat_list, 'w') as f:
+        for mp3 in temp_files:
+            safe = mp3.replace("'", r"'\''")
+            f.write(f"file '{safe}'\n")
+
+    ffmpeg = shutil.which('ffmpeg') or '/opt/homebrew/bin/ffmpeg'
+    cmd = [ffmpeg, '-y', '-f', 'concat', '-safe', '0',
+           '-i', concat_list,
+           '-ar', '48000', '-ac', '2',
+           '-c:a', 'pcm_s16le',
+           output_wav]
+    print(f'  ffmpeg concat → {output_wav}')
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+    if result.returncode != 0:
+        print(f'  ❌ Gagal concat: {result.stderr[-500:]}')
+        for mp3 in temp_files:
+            if os.path.exists(mp3):
+                os.unlink(mp3)
+        if os.path.exists(concat_list):
+            os.unlink(concat_list)
+        try:
+            os.rmdir(temp_dir)
+        except OSError:
+            pass
+        return
+
+    # Cleanup temp
+    for mp3 in temp_files:
+        if os.path.exists(mp3):
+            os.unlink(mp3)
+    if os.path.exists(concat_list):
+        os.unlink(concat_list)
+    try:
+        os.rmdir(temp_dir)
+    except OSError:
+        pass
+
+    # Hasil
+    if os.path.exists(output_wav):
+        size_mb = os.path.getsize(output_wav) / 1024 / 1024
+        print(f'\n📁 Output: {os.path.basename(output_wav)} ({size_mb:.1f} MB)')
+        print(f'   Path   : {output_wav}')
+        print(f'\n🎬 Langkah berikutnya:')
+        print(f'   python3 review-mix-tui.py  → mix MP4 + JSON + narasi.wav')
+    else:
+        print('\n  ❌ Output gak ditemukan')
+    print('═' * 64)
 
 
 # ============================================================
