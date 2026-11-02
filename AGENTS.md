@@ -231,7 +231,7 @@ SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
     - Output SRT mode: `HDD/tts/{prefix}-audio-id-dub.wav` (mix-tui compatible)
     - Output Narration mode: `HDD/tts/{stem}-narasi.wav` (review-mix-tui / konten-tui compatible)
     - Jangan hapus / ganti edge-tts-tui v7.5
-    - Status EXPERIMENTAL sampai user VLC feedback OK
+    - Status UNTESTED (code di GitHub, belum diuji di Mac) sampai user VLC feedback OK
 15. **Repo srt-splitter ≠ User working dir Dubbing** (jangan campur aduk):
     - Repo: `~/srt-splitter/` (atau sandbox `/home/z/my-project/`) = tempat dev code + docs + commit + push
     - Working dir: `~/Dubbing/` (SSD scripts + venv) + `/Volumes/HDD/Dubbing/` (HDD data) = tempat user jalanin TUI
@@ -262,9 +262,9 @@ naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → konten-tui v1.0 (kont
 - mix-tui v3.10: ✅ force 1080p + audio 48000Hz stereo
 - yt-dlp v6.5: ✅ multi-SRT ID+EN, default 1080p preferred
 - edge-tts-tui v7.5: ✅ production default (SRT + Narasi, ID only, paralel-safe)
-- review-mix-tui v1.0: ✅ production (TUI #13)
-- konten-tui v1.0: ✅ production (TUI #14)
-- gemini-tts-tui v1.1: ⚠ EXPERIMENTAL (TUI #15, SRT + Narasi, ID + JV, opsional — butuh GEMINI_API_KEY)
+- review-mix-tui v1.0: ⚠ UNTESTED (TUI #13, code di GitHub belum diuji di Mac)
+- konten-tui v1.0: ⚠ UNTESTED (TUI #14, code di GitHub belum diuji di Mac)
+- gemini-tts-tui v1.1: ⚠ UNTESTED (TUI #15, code di GitHub belum diuji di Mac, SRT + Narasi, ID + JV, butuh GEMINI_API_KEY)
 - Pipeline produksi Indonesia: 6 film tested, all TUI production-ready
 - Pipeline Jawa: experimental, tunggu user VLC feedback
 
