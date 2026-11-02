@@ -18,9 +18,9 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 10 | shorts-tui.py v1.1 (Shorts via AI JSON atau Part via SRT) | ✅ Production |
 | 11 | shorts-csv-tui.py v1.0 (metadata CSV + manifest YouTube) | ✅ Production |
 | 12 | merge-tui.py v1.9 (full format detect, stream copy / standardize) | ✅ Production (VLC confirmed) |
-| 13 | review-mix-tui.py v1.0 (review film: MP4 + JSON + narasi → final MP4) | ✅ Production |
-| 14 | konten-tui.py v1.0 (konten sejarah: narasi + images → Ken Burns video) | ✅ Production |
-| 15 | **gemini-tts-tui.py v1.1** (SRT + Narasi, ID + JV, OPSI TAMBAHAN) | ⚠ Experimental |
+| 13 | review-mix-tui.py v1.0 (review film: MP4 + JSON + narasi → final MP4) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
+| 14 | konten-tui.py v1.0 (konten sejarah: narasi + images → Ken Burns video) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
+| 15 | **gemini-tts-tui.py v1.1** (SRT + Narasi, ID + JV, OPSI TAMBAHAN) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 
 ## Pipeline
 
@@ -133,7 +133,7 @@ Paralel-safe: 2-3 TTS paralel di terminal berbeda. Lock file detect prefix colli
 
 Free, no API key, unlimited. Cocok untuk produksi Indonesia stabil.
 
-## review-mix-tui v1.0 — TUI #13 (production)
+## review-mix-tui v1.0 — TUI #13 (UNTESTED, code di GitHub belum diuji di Mac)
 
 Review film: potong adegan + narasi + text overlay.
 
@@ -146,7 +146,7 @@ Output: `HDD/review/review-final.mp4` (video terpotong + audio narasi + text ove
 
 4 fase: potong MP4 per segment (stream copy) → concat → generate overlay SRT → mix video + narasi + burn overlay (VideoToolbox M1 GPU).
 
-## konten-tui v1.0 — TUI #14 (production)
+## konten-tui v1.0 — TUI #14 (UNTESTED, code di GitHub belum diuji di Mac)
 
 Konten sejarah: images → video + narasi + Ken Burns effect.
 
@@ -162,7 +162,7 @@ Output: `HDD/konten/konten-final.mp4` (1920x1080, Ken Burns effect, text overlay
 
 ## gemini-tts-tui v1.1 — TUI #15 OPSI TAMBAHAN (SRT + Narasi, ID + JV)
 
-⚠ EXPERIMENTAL. Bukan pengganti edge-tts-tui v7.5 (yang tetap production default).
+⚠ UNTESTED (code di GitHub, belum diuji di Mac). Bukan pengganti edge-tts-tui v7.5 (yang tetap production default).
 
 2 mode (sama dengan edge-tts-tui v7.5):
 - **SRT mode** (7 step TUI): SRT → output → bahasa → voice → instruction → Smart Fit → prefix

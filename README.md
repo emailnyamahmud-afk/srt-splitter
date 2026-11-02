@@ -22,9 +22,9 @@ ID jalan end-to-end (14 TUI production + 1 experimental). Jawa jalan via Gemini 
 | 10 | shorts-tui.py v1.1 | Pecah MP4 final jadi N shorts (JSON dari AI) atau N parts (SRT auto-split) | ✅ Production (Shorts 60/60 + Part mode auto-split) |
 | 11 | shorts-csv-tui.py v1.0 | Generate metadata CSV + manifest untuk YouTube Studio | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
 | 12 | merge-tui.py v1.9 | Gabungin multi-video jadi 1 panjang (full format detect, stream copy / standardize) | ✅ Production (VLC confirmed, sync 100%) |
-| 13 | review-mix-tui.py v1.0 | Review film (MP4 + JSON + narasi → final MP4, VideoToolbox M1 GPU) | ✅ Production |
-| 14 | konten-tui.py v1.0 | Konten sejarah (narasi + images → Ken Burns video 1920x1080) | ✅ Production |
-| 15 | **gemini-tts-tui.py v1.1** | TTS SRT + Narasi (Indonesia + Jawa, OPSI TAMBAHAN, butuh GEMINI_API_KEY) | ⚠ Experimental |
+| 13 | review-mix-tui.py v1.0 | Review film (MP4 + JSON + narasi → final MP4, VideoToolbox M1 GPU) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
+| 14 | konten-tui.py v1.0 | Konten sejarah (narasi + images → Ken Burns video 1920x1080) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
+| 15 | **gemini-tts-tui.py v1.1** | TTS SRT + Narasi (Indonesia + Jawa, OPSI TAMBAHAN, butuh GEMINI_API_KEY) | ⚠ UNTESTED (code di GitHub belum diuji di Mac) |
 
 ## Pipeline
 

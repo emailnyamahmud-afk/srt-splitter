@@ -1,6 +1,6 @@
 # Gemini TTS — OPSI TAMBAHAN untuk pipeline dubbing
 
-> Status: **EXPERIMENTAL** v1.1 (2 Nov 2026). edge-tts-tui.py v7.5 tetap production default.
+> Status: **UNTESTED** v1.1 (3 Nov 2026, code di GitHub, belum diuji di Mac). edge-tts-tui.py v7.5 tetap production default.
 > 2 mode: **SRT** (Dub per cue) + **Narration** (1 naskah → 1 WAV). Indonesia + Jawa.
 
 ## TL;DR
@@ -244,7 +244,7 @@ HDD/tts/
 ✓ Audio utils: parse_srt, trim_silence_asymmetric, peak_normalize, mix_into_buffer — match edge-tts constants
 ```
 
-## Yang SUDAH dilakukan (status update 2 Nov 2026)
+## Yang SUDAH dilakukan (status update 3 Nov 2026)
 
 Saya sudah update docs utama project ke **15 TUI** (BUKAN 13 TUI lagi — itu kesalahan lama):
 - `AGENTS.md`: tabel 15 TUI, TUI #15 = gemini-tts-tui, section khusus, struktur folder 3 LOKASI berbeda (repo / working dir / Vercel), aturan #15 (Repo ≠ Working dir), anti-amnesia protocol lengkap
@@ -286,7 +286,7 @@ GEMINI_API_KEY=
 13. [ ] Test review-mix-tui.py dengan output Gemini Narasi → cek sync + ducking
 14. [ ] VLC playback test 1 file narasi full → cek audio quality
 
-Setelah semua test lulus + user VLC feedback OK → update status ke "Production (experimental)" di docs.
+Setelah semua test lulus + user VLC feedback OK → update status ke "Production" di docs.
 
 ## Anti-amnesia protocol (sesuai AGENTS.md)
 
@@ -297,6 +297,6 @@ Kalau AI di sesi berikutnya lupa context:
 4. Baca `scripts/edge-tts-tui.py` baris 1-100 + baris 1160+ (main_narration) untuk pattern reference
 5. **JANGAN** hapus/ubah `edge-tts-tui.py` v7.5 — tetap production default (SRT + Narration, ID only)
 6. **JANGAN** ubah `config.py` — pakai apa adanya
-7. Status TUI ini: **EXPERIMENTAL** sampai user VLC-feedback OK
+7. Status TUI ini: **UNTESTED** (code di GitHub, belum diuji di Mac) sampai user VLC-feedback OK
 8. **JANGAN** amnesia soal 2-mode: Gemini TUI = SRT + Narration, ID + JV
 9. **JANGAN** amnesia soal workflow: AI sandbox → push GitHub → user pull → test → kalau error → AI fix → push GitHub

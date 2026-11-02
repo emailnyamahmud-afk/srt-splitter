@@ -1,6 +1,6 @@
 # AGENTS.md
 
-> Dibaca AI di awal setiap session. Update: 2 Nov 2026.
+> Dibaca AI di awal setiap session. Update: 3 Nov 2026.
 
 ## Anti-Amnesia Protocol
 
@@ -42,11 +42,11 @@ Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 10 | shorts-tui v1.1 (Shorts + Part) | ✅ |
 | 11 | shorts-csv-tui v1.0 | ✅ |
 | 12 | merge-tui v1.9 (full format detect, stream copy / standardize) | ✅ VLC confirmed |
-| 13 | review-mix-tui v1.0 (review film: potong + narasi + overlay) | ✅ Production |
-| 14 | konten-tui v1.0 (konten sejarah: images → video + narasi + Ken Burns) | ✅ Production |
-| 15 | **gemini-tts-tui v1.1** (SRT + Narasi, ID + JV, OPSI TAMBAHAN) | ⚠ EXPERIMENTAL |
+| 13 | review-mix-tui v1.0 (review film: potong + narasi + overlay) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
+| 14 | konten-tui v1.0 (konten sejarah: images → video + narasi + Ken Burns) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
+| 15 | **gemini-tts-tui v1.1** (SRT + Narasi, ID + JV, OPSI TAMBAHAN) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 
-## TUI #13: review-mix-tui v1.0 — Review film (production)
+## TUI #13: review-mix-tui v1.0 — Review film (UNTESTED, code di GitHub belum diuji di Mac)
 
 Input: MP4 + timestamps.json (dari Z.ai skill) + narasi.wav (dari edge-tui v7.5 / gemini-tui v1.1 Narration)
 Output: `HDD/review/review-final.mp4` (video terpotong + audio narasi + text overlay per adegan)
@@ -256,7 +256,7 @@ naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → review-mix-tui v1.0 (
 naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → konten-tui v1.0 (konten sejarah JV)
 ```
 
-## Status (2 Nov 2026)
+## Status (3 Nov 2026)
 
 - merge-tui v1.9: ✅ VLC confirmed (10 file × 24h, sync 100%, stream copy ~2 menit)
 - mix-tui v3.10: ✅ force 1080p + audio 48000Hz stereo
@@ -268,7 +268,7 @@ naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → konten-tui v1.0 (kont
 - Pipeline produksi Indonesia: 6 film tested, all TUI production-ready
 - Pipeline Jawa: experimental, tunggu user VLC feedback
 
-## Anti-amnesia untuk AI next session (Pelajaran 2 Nov 2026)
+## Anti-amnesia untuk AI next session (Pelajaran 3 Nov 2026)
 
 ### LOKASI (jangan campur aduk — kesalahan parah saya sebelumnya):
 

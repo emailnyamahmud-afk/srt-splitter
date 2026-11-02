@@ -1,6 +1,6 @@
 # PROJECT_RULES.md
 
-> Aturan project. Baca tiap session sebelum kerja. Update: 2 Nov 2026.
+> Aturan project. Baca tiap session sebelum kerja. Update: 3 Nov 2026.
 
 ## Pipeline
 
@@ -33,9 +33,9 @@ Kamus: kamus-tui → jv.wiktionary.json → Supabase
 | 10 | shorts-tui v1.1 | ✅ |
 | 11 | shorts-csv-tui v1.0 | ✅ |
 | 12 | merge-tui v1.9 | ✅ (VLC confirmed, sync 100%) |
-| 13 | review-mix-tui v1.0 | ✅ (review film: MP4 + JSON + narasi → final MP4) |
-| 14 | konten-tui v1.0 | ✅ (konten sejarah: narasi + images → Ken Burns video) |
-| 15 | **gemini-tts-tui v1.1** | ⚠ EXPERIMENTAL (SRT + Narasi, ID + JV, OPSI TAMBAHAN, butuh GEMINI_API_KEY) |
+| 13 | review-mix-tui v1.0 | ⚠ UNTESTED (review film: MP4 + JSON + narasi → final MP4, code di GitHub belum diuji di Mac) |
+| 14 | konten-tui v1.0 | ⚠ UNTESTED (konten sejarah: narasi + images → Ken Burns video, code di GitHub belum diuji di Mac) |
+| 15 | **gemini-tts-tui v1.1** | ⚠ UNTESTED (SRT + Narasi, ID + JV, OPSI TAMBAHAN, butuh GEMINI_API_KEY, code di GitHub belum diuji di Mac) |
 
 ## Struktur Folder — 3 LOKASI BERBEDA (baca config.py LENGKAP)
 
@@ -85,8 +85,8 @@ Helper: `ensure_hdd()`, `ensure_kamus()`, `load_env()`
 - **merge-tui v1.9** = stream copy (no drift) jika format konsisten, standardize jika beda
 - **fix-merge-audio.py = DEPRECATED (masih ada di repo scripts/fix-merge-audio.py v1.4, tapi jangan pakai — gunakan merge-tui v1.9 audio stream copy)** (audio drift, failed experiment)
 - **edge-tts-tui v7.5 = production default** (SRT + Narasi, Indonesia only, paralel-safe, no API key)
-- **review-mix-tui v1.0 = production** (TUI #13) — input narasi dari edge-tts v7.5 / gemini-tts-tui v1.1 Narration
-- **konten-tui v1.0 = production** (TUI #14) — input narasi dari edge-tts v7.5 / gemini-tts-tui v1.1 Narration
+- **review-mix-tui v1.0 = UNTESTED** (TUI #13, code di GitHub belum diuji di Mac) — input narasi dari edge-tts v7.5 / gemini-tts-tui v1.1 Narration
+- **konten-tui v1.0 = UNTESTED** (TUI #14, code di GitHub belum diuji di Mac) — input narasi dari edge-tts v7.5 / gemini-tts-tui v1.1 Narration
 - **gemini-tts-tui v1.1 = OPSI TAMBAHAN** (TUI #15, SRT + Narasi, ID + JV, butuh GEMINI_API_KEY)
   - Output SRT mode: `HDD/tts/{prefix}-audio-id-dub.wav` (mix-tui compatible)
   - Output Narration mode: `HDD/tts/{stem}-narasi.wav` (review-mix-tui / konten-tui compatible)

@@ -5598,7 +5598,7 @@ Stage Summary:
 
 ---
 
-## 2026-11-02 — TUI #13 gemini-tts-tui v1.1 (OPSI TAMBAHAN, SRT + Narasi, ID + JV)
+## 2026-11-03 — TUI #13 gemini-tts-tui v1.1 (OPSI TAMBAHAN, SRT + Narasi, ID + JV)
 
 ### Context
 
@@ -5685,7 +5685,7 @@ User request: tambah Gemini TTS sebagai opsi tambahan (BUKAN pengganti edge-tts-
 
 ---
 
-## 2026-11-02 — KOREKSI: TUI sebenarnya 15 (bukan 13), Gemini = TUI #15 (bukan #13)
+## 2026-11-03 — KOREKSI: TUI sebenarnya 15 (bukan 13), Gemini = TUI #15 (bukan #13)
 
 ### Context
 
@@ -5774,7 +5774,7 @@ config.py punya 11 path constants, semua dipakai TUI berbeda:
 
 ---
 
-## 2026-11-02 — AUDIT DOKUMENTASI: Fix 5 inconsistencies (anti-amnesia parah)
+## 2026-11-03 — AUDIT DOKUMENTASI: Fix 5 inconsistencies (anti-amnesia parah)
 
 ### Context
 
@@ -5810,7 +5810,7 @@ dengan file aktual di repo (git ls-tree origin/main scripts/) + cek VERSION line
 #### 5. GEMINI_TTS.md section "Yang TIDAK saya lakukan" masih bilang "13 TUI"
 - Baris 250-251 masih bilang "13 TUI" dan "TUI 13" (dari v1.0 sebelum saya update docs utama ke 15 TUI)
 - Section ini sudah tidak relevan karena docs utama sudah update ke 15 TUI
-- FIX: hapus section "Yang TIDAK saya lakukan", ganti dengan "Yang SUDAH dilakukan (status update 2 Nov 2026)" yang menjelaskan docs sudah update ke 15 TUI + curl command sudah ada di README root
+- FIX: hapus section "Yang TIDAK saya lakukan", ganti dengan "Yang SUDAH dilakukan (status update 3 Nov 2026)" yang menjelaskan docs sudah update ke 15 TUI + curl command sudah ada di README root
 
 ### File berubah (5):
 
@@ -5847,4 +5847,102 @@ Kalau audit konsistensi docs vs code:
 - whisper-tui v2.1 = final (NEW: Dual SRT output). v2.0 outdated.
 - srt-editor-tui v1.0.0 = final (bukan v1.0.1, tidak ada patch v0.1).
 - mix-tui v3.10 = final (commit db250be "feat(mix-tui): v3.10"). Docstring header masih bilang v3.9 (tidak di-update), tapi VERSION aktual = v3.10 per commit. Docs pakai v3.10 (benar).
+
+
+---
+
+## 2026-11-03 06:35 WIB — AUDIT #2: Fix tanggal (UTC → WIB) + status UNTESTED (3 TUI baru)
+
+### Context
+
+User kritik lagi (sah):
+1. "reviuw, konten & gemini tts = belum production. code sudah ada di github, tapi user belum uji di macbook. belum tau ada isu atau tidak., itulah kenapa masih v2"
+2. "soal tanggal ai juga amnesia parah, reviuw, konten dan gemini tts = seharusnya dibuat 3 november 2026 dari jam 00:00 wib sampai detik ini jam 06:31"
+
+### Cek git log (konfirmasi tanggal):
+
+```
+ee4f684 | 2026-11-02 20:34 UTC | feat: TUI #13 review-mix-tui v1.0    → 2026-11-03 03:34 WIB ✓
+2e973f6 | 2026-11-02 21:34 UTC | feat: TUI #14 konten-tui v1.0         → 2026-11-03 04:34 WIB ✓
+7fb137e | 2026-11-02 22:24 UTC | feat: TUI #13 gemini-tts-tui v1.0    → 2026-11-03 05:24 WIB ✓
+5c2e5a4 | 2026-11-02 22:38 UTC | feat: TUI #15 gemini-tts-tui v1.1    → 2026-11-03 05:38 WIB ✓
+6864eb5 | 2026-11-02 22:45 UTC | docs: update ... TUI #13            → 2026-11-03 05:45 WIB ✓
+2c55098 | 2026-11-02 23:17 UTC | docs: koreksi TUI 13 → 15           → 2026-11-03 06:17 WIB ✓
+1dd59e7 | 2026-11-02 23:22 UTC | docs: klarifikasi 3 LOKASI         → 2026-11-03 06:22 WIB ✓
+cd2503f | 2026-11-02 23:29 UTC | docs(audit): fix 5 inconsistencies  → 2026-11-03 06:29 WIB ✓
+```
+
+Semua commit saya (review-mix-tui, konten-tui, gemini-tts-tui, audit fixes) = **3 November 2026 03:34-06:29 WIB** (BUKAN 2 Nov 2026).
+
+Saya amnesia: sistem sandbox pakai **UTC** (23:34 UTC saat ini), user di **Asia/Jakarta (WIB, UTC+7)**. Tanggal saya tulis di docs pakai UTC, seharusnya pakai WIB.
+
+### Inconsistencies ditemukan (2 kategori):
+
+#### Kategori 1: Tanggal salah (UTC vs WIB)
+- AGENTS.md baris 3: "Update: 2 Nov 2026" → seharusnya "Update: 3 Nov 2026"
+- AGENTS.md baris 259: "## Status (2 Nov 2026)" → seharusnya "3 Nov 2026"
+- AGENTS.md baris 271: "## Anti-amnesia ... (Pelajaran 2 Nov 2026)" → seharusnya "3 Nov 2026"
+- PROJECT_RULES.md baris 3: "Update: 2 Nov 2026" → seharusnya "3 Nov 2026"
+- scripts/GEMINI_TTS.md baris 3: "(2 Nov 2026)" → seharusnya "(3 Nov 2026)"
+- scripts/GEMINI_TTS.md baris 247: "(status update 2 Nov 2026)" → seharusnya "3 Nov 2026"
+- worklog.md entries: "## 2026-11-02 — ..." → seharusnya "## 2026-11-03 — ..."
+
+#### Kategori 2: Status "Production" SALAH untuk TUI yang belum diuji
+- review-mix-tui v1.0: code ada di GitHub (commit ee4f684), tapi USER BELUM UJI di Mac
+  - SALAH: docs bilang "✅ Production"
+  - BENAR: "⚠ UNTESTED (code di GitHub, belum diuji di Mac)"
+- konten-tui v1.0: code ada di GitHub (commit 2e973f6), tapi USER BELUM UJI di Mac
+  - SALAH: docs bilang "✅ Production"
+  - BENAR: "⚠ UNTESTED (code di GitHub, belum diuji di Mac)"
+- gemini-tts-tui v1.1: code ada di GitHub (commit 5c2e5a4), USER SUDAH TEST di AI Studio (voice Cruz + jawa-halus-mc) TAPI TUI Python belum diuji di Mac
+  - SALAH: docs bilang "⚠ EXPERIMENTAL" (terlalu optimistic)
+  - BENAR: "⚠ UNTESTED (code di GitHub, belum diuji di Mac)"
+
+### Yang diupdate (24 changes across 6 files):
+
+- AGENTS.md: ~7 changes (tanggal + status 3 TUI)
+- PROJECT_RULES.md: ~6 changes (tanggal + status 3 TUI di tabel + aturan)
+- README.md: ~3 changes (tanggal implicit di "Jawa jalan" + status 3 TUI di tabel)
+- scripts/README.md: 5 changes (status 3 TUI di tabel + section header + baris EXPERIMENTAL → UNTESTED)
+- scripts/GEMINI_TTS.md: ~5 changes (tanggal + status EXPERIMENTAL → UNTESTED + "Production (experimental)" → "Production" di test plan)
+- worklog.md: 4 changes (tanggal entries + entry audit ini)
+
+### Definisi status konsisten (untuk AI next session):
+
+- `✅ Production` = TUI yang sudah USER-CONFIRMED lewat VLC test di Mac (12 TUI lama: yt-dlp, demucs, kamus, edge-tts, mix-tui, whisper, srt-editor, shorts, shorts-csv, merge)
+- `⚠ UNTESTED (code di GitHub, belum diuji di Mac)` = TUI yang code sudah ada di GitHub tapi USER BELUM UJI di Mac (review-mix-tui v1.0, konten-tui v1.0, gemini-tts-tui v1.1)
+- `⚠ Prototype` = Web app (sedang dev)
+- `⏳ Pending` = SRT editor web (belum mulai)
+
+Setelah user test di Mac + VLC feedback OK → status UNTESTED → Production.
+
+### Pelajaran PERMANENT:
+
+- **Tanggal sistem sandbox = UTC**. User di WIB (Asia/Jakarta, UTC+7). Tanggal di docs = tanggal WIB.
+- Konversi: UTC time + 7 jam = WIB time. Kalau hasil > 23:59, roll ke hari berikutnya.
+- TUI baru = UNTESTED sampai user test di Mac + VLC feedback. JANGAN auto-declare "Production" cuma karena code sudah ada di GitHub.
+- Workflow: AI kerja di sandbox → push GitHub → USER PULL + TEST di Mac → user kasih VLC feedback → baru status Production.
+
+### Audit method (untuk AI next session):
+
+```bash
+# Cek tanggal sistem (UTC) vs WIB
+date -u  # UTC
+TZ=Asia/Jakarta date  # WIB
+
+# Cek tanggal commit
+git log --format='%h | %ad | %s' --date=format:'%Y-%m-%d %H:%M %Z' -20
+
+# Cek status TUI di docs (cari yang salah)
+for f in AGENTS.md PROJECT_RULES.md README.md scripts/README.md; do
+  echo "--- $f ---"
+  grep -E "review-mix-tui|konten-tui|gemini-tts-tui" $f | grep -v "^\["
+done
+
+# Cari "Production" untuk TUI yang belum diuji
+grep -nE "review-mix-tui v1\.0.*Production|konten-tui v1\.0.*Production" AGENTS.md PROJECT_RULES.md README.md scripts/README.md
+
+# Cari tanggal salah (UTC vs WIB)
+grep -nE "2 Nov 2026|2026-11-02" AGENTS.md PROJECT_RULES.md README.md scripts/README.md scripts/GEMINI_TTS.md
+```
 
