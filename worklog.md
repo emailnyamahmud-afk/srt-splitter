@@ -5682,3 +5682,92 @@ User request: tambah Gemini TTS sebagai opsi tambahan (BUKAN pengganti edge-tts-
 - Jangan amnesia: edge-tts-tui v7.5 tetap production default, jangan hapus/ganti
 - Jangan amnesia: workflow = AI sandbox → push GitHub → user pull → test → kalau error → AI fix → push
 
+
+---
+
+## 2026-11-02 — KOREKSI: TUI sebenarnya 15 (bukan 13), Gemini = TUI #15 (bukan #13)
+
+### Context
+
+Setelah push commit `6864eb5` (update docs), user marah lagi: "AI tidak paham folder user, ai tidak baca config.py".
+
+Investigasi mendalam ternyata saya amnesia parah:
+- Saya baca config.py tapi tidak paham fungsi `REVIEW_DIR` dan `KONTEN_DIR` (saya catat sebagai "review folder" tapi tidak tahu TUI apa yang pakai)
+- Saya pakai nomor TUI #13 untuk gemini-tts-tui, padahal #13 sudah dipakai `review-mix-tui` (production)
+- Saya pakai nomor TUI #13 lagi, padahal #14 sudah dipakai `konten-tui` (production)
+- Saya HAPUS review-mix-tui dan konten-tui dari tabel di semua docs (AGENTS, PROJECT_RULES, scripts/README, README root)
+- Itu bikin AI next session amnesia parah — akan pikir hanya ada 13 TUI, dan review-mix-tui + konten-tui "tidak ada"
+
+### Koreksi: 15 TUI (bukan 13)
+
+Setelah cek `git ls-tree origin/main scripts/`:
+```
+review-mix-tui.py   # TUI #13 (production, ada di commit ee4f684)
+konten-tui.py       # TUI #14 (production, ada di commit 2e973f6)
+gemini-tts-tui.py   # TUI #15 (experimental, baru saya bikin)
+```
+
+### Yang sebenarnya terjadi
+
+- Tabel asli AGENTS.md origin/main = 12 TUI (TAPI sebenarnya ada 14 TUI yang sudah ada di repo)
+- AI session sebelumnya (commit ee4f684 + 2e973f6) bikin TUI #13 + #14 TAPI TIDAK update tabel AGENTS.md
+- Itu yang bikin saya amnesia — saya baca AGENTS.md, lihat 12 TUI, lalu pakai #13 untuk Gemini TUI
+- Sebenarnya saya harusnya cek `git ls-tree origin/main scripts/` dulu sebelum pilih nomor TUI
+
+### Struktur folder (baca config.py LENGKAP)
+
+config.py punya 11 path constants, semua dipakai TUI berbeda:
+- `SSD_HOME` (~)/Dubbing → tempat user `cd ~/Dubbing && python3 <tui>.py`
+- `HDD_BASE` /Volumes/HDD/Dubbing → data besar
+- `INPUT_DIR` → TUI #1 yt-dlp output (MP4, MP3, SRT)
+- `DEMUCS_DIR` → TUI #2 demucs output (no_vocals)
+- `TTS_DIR` → TUI #6 edge-tts + TUI #15 gemini-tts output (dub.wav, narasi.wav, cache)
+- `MIX_DIR` → TUI #7 mix-tui output (final MP4)
+- `SHORTS_DIR` → TUI #10 shorts-tui Shorts mode output
+- `PARTS_DIR` → TUI #10 shorts-tui Part mode output
+- `MERGED_DIR` → TUI #12 merge-tui output (1 file panjang)
+- `REVIEW_DIR` → TUI #13 review-mix-tui output (review-final.mp4)
+- `KONTEN_DIR` → TUI #14 konten-tui output (konten-final.mp4)
+- `KAMUS_JSON` → SSD (cepat load), kamus SOURCE OF TRUTH
+- `ENV_FILE` → HDD, berisi Supabase + GEMINI_API_KEY
+
+### Pipeline sebenarnya (lengkap)
+
+```
+[Indonesia production]:
+  yt-dlp v6.5 → srt-editor v1.0.1 → edge-tts v7.5 SRT → mix-tui v3.10 → merge-tui v2.0
+                                                                                        ↘ shorts-tui → shorts-csv-tui → YouTube
+  edge-tts v7.5 Narasi (ID) → review-mix-tui v1.0 (review film ID)
+  edge-tts v7.5 Narasi (ID) → konten-tui v1.0 (konten sejarah ID)
+
+[Jawa experimental via Gemini]:
+  yt-dlp v6.5 → srt-editor v1.0.1 → gemini-tts-tui v1.1 SRT mode (JV) → mix-tui v3.10
+  naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → review-mix-tui v1.0 (review film JV)
+  naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → konten-tui v1.0 (konten sejarah JV)
+```
+
+### Yang diupdate (koreksi tabel)
+
+5 docs diupdate lagi (koreksi tabel 13 → 15 TUI):
+
+- `AGENTS.md`: 13 TUI → 15 TUI, tambah review-mix-tui (#13) + konten-tui (#14), Gemini pindah ke #15. Tambah section TUI #13 review-mix-tui + TUI #14 konten-tui + TUI #15 gemini-tts-tui. Tambah anti-amnesia pelajaran (cek `git ls-tree` sebelum pilih nomor TUI).
+- `PROJECT_RULES.md`: 13 TUI → 15 TUI, tambah row #13 + #14 + #15. Pipeline update (REVIEW + KONTEN + GEMINI-NARASI → review-mix-tui / konten-tui). Wajib + Dilarang tambah "cek git ls-tree sebelum pilih nomor TUI".
+- `scripts/README.md`: 13 TUI → 15 TUI, tabel Script tambah kolom TUI #, tambah row review-mix-tui (#13) + konten-tui (#14). Update Workflow (alur REVIEW + KONTEN). Section gemini-tts-tui jadi TUI #15.
+- `README.md` root: 13 TUI → 15 TUI, tambah row #13 + #14 + #15. Pipeline update (REVIEW + KONTEN + GEMINI-NARASI → review-mix-tui / konten-tui). Section gemini-tts-tui heading jadi "TUI #15". Install comment jadi "TUI #15".
+- `worklog.md`: append entry koreksi ini.
+
+### Pelajaran (anti-amnesia, PERMANENT di AGENTS.md + PROJECT_RULES.md)
+
+- Jangan amnesia: ada 15 TUI, BUKAN 12/13. Baca `git ls-tree origin/main scripts/` untuk verifikasi sebelum pilih nomor TUI baru
+- Jangan amnesia: TUI #13 = review-mix-tui (production), TUI #14 = konten-tui (production), TUI #15 = gemini-tts-tui (experimental)
+- Jangan amnesia: `REVIEW_DIR` di config.py untuk review-mix-tui, `KONTEN_DIR` untuk konten-tui
+- Jangan amnesia: edge-tts-tui v7.5 Narration mode → feed review-mix-tui / konten-tui (BUKAN langsung ke user)
+- Jangan amnesia: gemini-tts-tui v1.1 Narration mode (JV) → alternatif feed untuk review-mix-tui / konten-tui (bahasa Jawa)
+- Jangan amnesia: baca config.py LENGKAP, ada 11 path constants, semua dipakai TUI berbeda
+- Jangan amnesia: workflow = AI sandbox → push GitHub → user pull → test → kalau error → AI fix → push
+
+### File berubah
+
+5 docs: AGENTS.md, PROJECT_RULES.md, scripts/README.md, README.md, worklog.md
+(Total: tabel TUI di 4 docs utama + section TUI #13/#14 baru + section TUI #15 update)
+

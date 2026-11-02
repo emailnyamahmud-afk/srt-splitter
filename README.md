@@ -2,11 +2,11 @@
 
 Pipeline dubbing bahasa eksternal (Mandarin, English, Jepang, Italia, dll) → Indonesia / Jawa / Sunda. Web app + Python TUI.
 
-ID jalan end-to-end (12 TUI production + 1 experimental). Jawa jalan (gemini-tts-tui v1.1 SRT + Narasi). Sunda nunggu kamus Supabase selesai.
+ID jalan end-to-end (14 TUI production + 1 experimental). Jawa jalan via Gemini TTS (gemini-tts-tui v1.1 SRT + Narasi). Sunda nunggu kamus Supabase selesai.
 
 **Live:** https://srt-splitter.vercel.app/
 
-## 13 TUI
+## 15 TUI
 
 | # | TUI | Tugas | Status |
 |---|-----|-------|--------|
@@ -22,7 +22,9 @@ ID jalan end-to-end (12 TUI production + 1 experimental). Jawa jalan (gemini-tts
 | 10 | shorts-tui.py v1.1 | Pecah MP4 final jadi N shorts (JSON dari AI) atau N parts (SRT auto-split) | ✅ Production (Shorts 60/60 + Part mode auto-split) |
 | 11 | shorts-csv-tui.py v1.0 | Generate metadata CSV + manifest untuk YouTube Studio | ✅ Production (test 60 segment, CSV 19.8 KB + manifest 30.4 KB) |
 | 12 | merge-tui.py v2.0 | Gabungin multi-video jadi 1 panjang (full format detect, stream copy / standardize) | ✅ Production (VLC confirmed, sync 100%) |
-| 13 | **gemini-tts-tui.py v1.1** | TTS SRT + Narasi (Indonesia + Jawa, OPSI TAMBAHAN, butuh GEMINI_API_KEY) | ⚠ Experimental |
+| 13 | review-mix-tui.py v1.0 | Review film (MP4 + JSON + narasi → final MP4, VideoToolbox M1 GPU) | ✅ Production |
+| 14 | konten-tui.py v1.0 | Konten sejarah (narasi + images → Ken Burns video 1920x1080) | ✅ Production |
+| 15 | **gemini-tts-tui.py v1.1** | TTS SRT + Narasi (Indonesia + Jawa, OPSI TAMBAHAN, butuh GEMINI_API_KEY) | ⚠ Experimental |
 
 ## Pipeline
 
@@ -32,8 +34,10 @@ ID jalan end-to-end (12 TUI production + 1 experimental). Jawa jalan (gemini-tts
 [Alur MUTE]         yt-dlp → srt-editor → edge-tts → mix Original v3.7.6 (E/F)  ~1 GB / ~4.5 GB
 [Alur SHORTS]       mix-tui → shorts-tui (via Dola JSON) → shorts-csv-tui → YouTube Studio  ~15 detik / ~2 menit
 [Alur MERGE]        mix-tui × N → merge-tui → 1 video panjang (stream copy / re-encode)
+[Alur REVIEW]       edge-tts Narration (ID) → review-mix-tui (review film ID)
+[Alur KONTEN]       edge-tts Narration (ID) → konten-tui (konten sejarah ID)
 [Alur GEMINI-SRT]   yt-dlp → srt-editor → gemini-tts-tui (SRT mode, ID/JV) → mix-tui  (opsional: Jawa/karakter spesifik)
-[Alur GEMINI-NARASI] naskah.txt → gemini-tts-tui (Narration mode, ID/JV) → review-mix-tui  (konten sejarah/narasi)
+[Alur GEMINI-NARASI] naskah.txt → gemini-tts-tui (Narration mode, ID/JV) → review-mix-tui / konten-tui  (Jawa)
 ```
 
 > **merge-tui** (TUI #12): gabungin output mix-tui (sudah dub ID + burn sub) dari beberapa film/season jadi 1 video panjang. 3 mode: stream copy (super cepat) / re-encode + target res / re-encode pakai res file pertama.
@@ -42,7 +46,11 @@ ID jalan end-to-end (12 TUI production + 1 experimental). Jawa jalan (gemini-tts
 >
 > **Shorts pipeline** (TUI #10 + #11): mix-tui output → Dola AI skill `shorts-json` (upload SRT, ketik "buat shorts", dapat 60 segment JSON) → shorts-tui.py (pecah MP4, ~94s) → shorts-csv-tui.py (metadata CSV + manifest untuk YouTube Studio).
 >
-> **gemini-tts-tui.py** (TUI #13, OPSI TAMBAHAN): alternatif edge-tts untuk skenario yang Edge kurang bagus. 2 mode: SRT (Indonesia + Jawa) + Narasi (Indonesia + Jawa). Pakai Gemini 3.8 Flash TTS, butuh `GEMINI_API_KEY` di `.env`. Detail: `scripts/GEMINI_TTS.md`.
+> **review-mix-tui** (TUI #13): review film dengan narasi. Input: MP4 + timestamps.json (dari Z.ai skill) + narasi.wav (dari edge-tui v7.5 Narasi ID atau gemini-tui v1.1 Narasi JV). Output: `HDD/review/review-final.mp4`.
+>
+> **konten-tui** (TUI #14): konten sejarah dengan Ken Burns effect. Input: narasi.wav + timestamps.json + folder images (Google Flow) + (opsional) backsound.mp3. Output: `HDD/konten/konten-final.mp4` (1920x1080).
+>
+> **gemini-tts-tui.py** (TUI #15, OPSI TAMBAHAN): alternatif edge-tts untuk skenario yang Edge kurang bagus. 2 mode: SRT (Indonesia + Jawa) + Narasi (Indonesia + Jawa). Pakai Gemini 3.8 Flash TTS, butuh `GEMINI_API_KEY` di `.env`. Narasi output → feed review-mix-tui / konten-tui (untuk bahasa Jawa). Detail: `scripts/GEMINI_TTS.md`.
 
 ## Struktur Folder
 
@@ -133,7 +141,7 @@ Workflow end-to-end Shorts:
 
 Detail lengkap: lihat [scripts/README.md](scripts/README.md#shorts-csv-tui-v10).
 
-## gemini-tts-tui v1.1 — OPSI TAMBAHAN Gemini 3.8 Flash TTS (SRT + Narasi, ID + JV)
+## gemini-tts-tui v1.1 — TUI #15 OPSI TAMBAHAN Gemini 3.8 Flash TTS (SRT + Narasi, ID + JV)
 
 ⚠ **EXPERIMENTAL** — edge-tts-tui v7.5 tetap production default (Indonesia only).
 gemini-tts-tui untuk skenario yang Edge kurang bagus / tidak support.
@@ -224,7 +232,7 @@ cd ~/Dubbing
 source venv/bin/activate
 pip3 install questionary edge-tts yt-dlp torchaudio demucs numpy faster-whisper google-genai
 brew install ffmpeg
-# Optional (TUI #13 gemini-tts-tui): set GEMINI_API_KEY
+# Optional (TUI #15 gemini-tts-tui): set GEMINI_API_KEY
 echo "GEMINI_API_KEY=AIza..." >> /Volumes/HDD/Dubbing/.env
 ```
 
