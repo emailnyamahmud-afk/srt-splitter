@@ -6167,3 +6167,51 @@ Setelah semua test lulus + user VLC feedback OK → update status ke Production.
 - README.md root (15→16 TUI)
 - worklog.md (entry ini)
 
+
+---
+
+## 2026-11-03 11:00 WIB — Tambah tabel INPUT + OUTPUT per TUI ke AGENTS.md + scripts/README.md
+
+### Context
+
+User minta struktur folder lengkap dengan INPUT + OUTPUT per TUI, BUKAN hanya output.
+
+### Yang diupdate (2 docs utama):
+
+- `AGENTS.md`: tambah 3 sub-section di bawah section Struktur Folder:
+  1. "Tabel INPUT + OUTPUT per TUI" — 18 row (16 TUI, edge-tts + gemini-tts + shorts-tui punya 2 mode)
+  2. "Pipeline alur data (visual flow)" — diagram ASCII flow yt-dlp → mix-tui → merge/shorts,
+     + Narasi → review/konten/talkinghead
+  3. "Catatan path penting" — INPUT_DIR multifungsi, TTS_DIR dual role, KONTEN_DIR 2 TUI, REVIEW_DIR, fallback
+
+- `scripts/README.md`: tambah 3 sub-section sama persis di bawah section Struktur Path
+
+### Sumber data untuk tabel (dari grep TUI Python):
+
+| TUI | INPUT path (dari grep `INPUT_DIR\|TTS_DIR\|...`) | OUTPUT path |
+|-----|-----|-----|
+| yt-dlp | URL → INPUT_DIR | INPUT_DIR |
+| demucs | INPUT_DIR | DEMUCS_DIR/htdemucs/{prefix}-audio/no_vocals.mp3 |
+| edge-tts SRT | INPUT_DIR (*.final.srt) | TTS_DIR/{prefix}-audio-id-dub.wav |
+| edge-tts Narasi | cwd/REVIEW_DIR (naskah.txt) | TTS_DIR/{stem}-narasi.wav |
+| mix-tui | INPUT_DIR (*.mp4,*.mp3) + DEMUCS_DIR + TTS_DIR + INPUT_DIR (*.srt) | MIX_DIR |
+| whisper-tui | INPUT_DIR (*.mp3) | INPUT_DIR ({base}.zh.srt + .en.srt) |
+| srt-editor-tui | INPUT_DIR (*.id.srt) | INPUT_DIR ({prefix}.final.srt) |
+| shorts-tui Shorts | MIX_DIR + SHORTS_DIR/MIX_DIR (*.json) | SHORTS_DIR/{film}/short-*.mp4 |
+| shorts-tui Part | MIX_DIR + INPUT_DIR/MIX_DIR (*.srt) | PARTS_DIR/{film}/part-*.mp4 |
+| shorts-csv-tui | SHORTS_DIR (json) + folder MP4 | SHORTS_DIR/{film}.metadata.csv + .manifest.txt |
+| merge-tui | MIX_DIR (multi-file) | MERGED_DIR/{first-name}-merged.mp4 |
+| review-mix-tui | INPUT_DIR/REVIEW_DIR (*.mp4) + INPUT_DIR/REVIEW_DIR (*.json) + TTS_DIR/REVIEW_DIR (*.wav) | REVIEW_DIR/{mp4-stem}-review.mp4 |
+| konten-tui | TTS_DIR/KONTEN_DIR (*.wav) + INPUT_DIR/KONTEN_DIR (*.json) + folder images + backsound.mp3 | KONTEN_DIR/konten-final.mp4 |
+| gemini-tts-tui SRT | INPUT_DIR (*.srt) | TTS_DIR/{prefix}-audio-id-dub.wav |
+| gemini-tts-tui Narasi | TTS_DIR/REVIEW_DIR/cwd (naskah.txt) | TTS_DIR/{stem}-narasi.wav |
+| talkinghead-tui | KONTEN_DIR/INPUT_DIR/cwd (*.jpg/*.png) + TTS_DIR/cwd (*.wav) | KONTEN_DIR/{audio-stem}-talking-green.mp4 |
+
+### Manfaat tabel untuk AI next session:
+
+- Langsung paham alur data tanpa baca 16 file Python
+- Tahu taruh file mana sebelum run TUI tertentu (mis. foto green screen harus di INPUT_DIR/KONTEN_DIR sebelum run talkinghead-tui)
+- Tahu output TUI A = input TUI B (chaining workflow)
+
+### 2 file berubah: AGENTS.md, scripts/README.md
+

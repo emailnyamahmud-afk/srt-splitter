@@ -238,6 +238,80 @@ SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
 - Workflow user: `cd ~/Dubbing && source venv/bin/activate && python3 <tui>.py`
 - Kalau HDD tidak colok → TUI fallback ke cwd atau exit dengan pesan "Colok HDD"
 
+### Tabel INPUT + OUTPUT per TUI (alur data lengkap)
+
+| # | TUI | INPUT (dari mana) | OUTPUT (ke mana) |
+|---|-----|------------------|------------------|
+| 1 | yt-dlp-tui | URL YouTube/FB/TikTok/IG | `INPUT_DIR` (*.mp4, *.mp3, *.id.srt, *.en.srt) |
+| 2 | demucs-tui | `INPUT_DIR` (*.mp3 dari yt-dlp) | `DEMUCS_DIR`/htdemucs/{prefix}-audio/no_vocals.mp3 |
+| 3 | kamus-tui | `KAMUS_JSON` (jv.wiktionary.json di SSD) | Edit in-place + upload Supabase |
+| 6 | edge-tts-tui SRT | `INPUT_DIR` (*.final.srt) | `TTS_DIR`/{prefix}-audio-id-dub.wav + cache + lock |
+| 6 | edge-tts-tui Narasi | naskah.txt (cwd atau `REVIEW_DIR`) | `TTS_DIR`/{stem}-narasi.wav |
+| 7 | mix-tui | `INPUT_DIR` (*.mp4, *.mp3) + `DEMUCS_DIR` (no_vocals) + `TTS_DIR` (*.wav dub) + `INPUT_DIR`/*.srt | `MIX_DIR`/{prefix}-id-*.mp4 |
+| 8 | whisper-tui | `INPUT_DIR` (*.mp3 dari yt-dlp) | `INPUT_DIR`/{base}.zh.srt + {base}.en.srt |
+| 9 | srt-editor-tui | `INPUT_DIR` (*.id.srt) | `INPUT_DIR`/{prefix}.final.srt + .srt.bak + .working.json |
+| 10 | shorts-tui Shorts | `MIX_DIR` (*.mp4) + `SHORTS_DIR`/`MIX_DIR` (*.json dari Dola) | `SHORTS_DIR`/{film}/short-001.mp4 s/d short-N.mp4 |
+| 10 | shorts-tui Part | `MIX_DIR` (*.mp4) + `INPUT_DIR`/`MIX_DIR` (*.srt) | `PARTS_DIR`/{film}/part-001.mp4 s/d part-N.mp4 |
+| 11 | shorts-csv-tui | `SHORTS_DIR` (*.json dari Dola) + folder MP4 (shorts-tui output) | `SHORTS_DIR`/{film}.metadata.csv + {film}.manifest.txt |
+| 12 | merge-tui | `MIX_DIR` (*.mp4 — multi-file) | `MERGED_DIR`/{first-name}-merged.mp4 |
+| 13 | review-mix-tui | `INPUT_DIR`/`REVIEW_DIR` (*.mp4) + `INPUT_DIR`/`REVIEW_DIR` (*.json dari Z.ai) + `TTS_DIR`/`REVIEW_DIR` (*.wav narasi) | `REVIEW_DIR`/{mp4-stem}-review.mp4 |
+| 14 | konten-tui | `TTS_DIR`/`KONTEN_DIR` (*.wav narasi) + `INPUT_DIR`/`KONTEN_DIR` (*.json) + `INPUT_DIR`/`KONTEN_DIR` (folder images) + `INPUT_DIR`/`KONTEN_DIR` (*.mp3 backsound, opsional) | `KONTEN_DIR`/konten-final.mp4 |
+| 15 | gemini-tts-tui SRT | `INPUT_DIR` (*.srt) | `TTS_DIR`/{prefix}-audio-id-dub.wav + cache + lock |
+| 15 | gemini-tts-tui Narasi | naskah.txt (`TTS_DIR`/`REVIEW_DIR`/cwd) | `TTS_DIR`/{stem}-narasi.wav |
+| 16 | talkinghead-tui | `KONTEN_DIR`/`INPUT_DIR`/cwd (*.jpg/*.png foto green screen) + `TTS_DIR`/cwd (*.wav narasi JV) | `KONTEN_DIR`/{audio-stem}-talking-green.mp4 |
+
+### Pipeline alur data (visual flow)
+
+```
+yt-dlp-tui (#1)
+    ↓ output ke INPUT_DIR
+    ├── *.mp4, *.mp3, *.id.srt
+    │
+    ├──→ whisper-tui (#8) → INPUT_DIR/{base}.zh.srt + .en.srt
+    ├──→ srt-editor-tui (#9) → INPUT_DIR/{prefix}.final.srt
+    ├──→ demucs-tui (#2) → DEMUCS_DIR/.../no_vocals.mp3
+    │
+    ├──→ edge-tts-tui #6 SRT  ──┐
+    ├──→ gemini-tts-tui #15 SRT ┤
+    │   (input: INPUT_DIR/*.final.srt)
+    │   (output: TTS_DIR/{prefix}-audio-id-dub.wav)
+    │                              ↓
+    │                              ↓ input mix-tui
+    │                              ↓
+    └──→ mix-tui (#7)
+        (input: INPUT_DIR/*.mp4 + DEMUCS_DIR/no_vocals.mp3 + TTS_DIR/*.wav + INPUT_DIR/*.srt)
+        ↓ output ke MIX_DIR/{prefix}-id-*.mp4
+        │
+        ├──→ merge-tui (#12) → MERGED_DIR/{first-name}-merged.mp4
+        ├──→ shorts-tui #10 Shorts → SHORTS_DIR/{film}/short-*.mp4
+        ├──→ shorts-tui #10 Part → PARTS_DIR/{film}/part-*.mp4
+        └──→ shorts-csv-tui #11 → SHORTS_DIR/{film}.metadata.csv + .manifest.txt
+
+edge-tts #6 Narasi ──┐
+gemini-tts #15 Narasi ┤
+    (input: naskah.txt)
+    (output: TTS_DIR/{stem}-narasi.wav)
+    ↓
+    ├──→ review-mix-tui #13 (input juga: INPUT_DIR/*.mp4 + INPUT_DIR/*.json dari Z.ai)
+    │   → REVIEW_DIR/{mp4-stem}-review.mp4
+    │
+    ├──→ konten-tui #14 (input juga: INPUT_DIR/*.json + folder images + optional backsound.mp3)
+    │   → KONTEN_DIR/konten-final.mp4
+    │
+    └──→ talkinghead-tui #16 (input juga: KONTEN_DIR/INPUT_DIR/*.jpg foto green screen)
+        → KONTEN_DIR/{audio-stem}-talking-green.mp4
+        ↓
+        User edit manual: chroma key → composite background → final-konten.mp4 (siap YouTube)
+```
+
+### Catatan path penting
+
+- `INPUT_DIR` = sumber utama multifungsi: output yt-dlp + tempat user taruh file manual (foto green screen, JSON dari Dola/Z.ai, backsound.mp3, logo.png)
+- `TTS_DIR` = output TUI TTS + input TUI downstream (mix-tui pakai dub, review/konten/talkinghead pakai narasi)
+- `KONTEN_DIR` = output 2 TUI berbeda: konten-tui #14 (Ken Burns, video panjang) + talkinghead-tui #16 (talking head green screen)
+- `REVIEW_DIR` = output review-mix-tui + tempat search input (user bisa pindah file ke sini)
+- Fallback: kalau HDD tidak colok → TUI pakai cwd (current working directory)
+
 ## Aturan
 
 1. jv.wiktionary.json = SOURCE OF TRUTH (kamus)
