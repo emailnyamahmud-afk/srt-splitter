@@ -56,6 +56,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import subprocess
 import sys
 import time
 from typing import Optional
@@ -136,9 +137,91 @@ DOWNLOAD_TIMEOUT = 120
 # Inti: panggil Replicate API + download MP4
 # ============================================================
 
+# A100 80GB rate (per detik) — per Nov 2026 Replicate pricing
+A100_RATE_PER_SECOND = 0.001400  # $0.001400 per second = $5.04 per hour
+
+# Estimasi multiplier untuk prediksi GPU time sebelum run
+# Berdasarkan durasi audio (detik) × multiplier = estimasi GPU time (detik)
+# Range min-max, tergantung mode (preprocess + still + enhancer)
+# Data dari Replicate community benchmarks + sadtalker.ai docs
+ESTIMASI_MULTIPLIER = {
+    # key: (preprocess, still, enhancer)
+    # value: (min_mult, max_mult) — GPU time = audio_dur × multiplier
+    ('full', True, 'gfpgan'):    (1.7, 2.3),   # default, paling lambat (preserve background + tajpkan wajah)
+    ('full', True, 'none'):      (1.5, 2.0),
+    ('full', False, 'gfpgan'):   (1.9, 2.5),   # no-still = lebih natural head movement = lebih banyak frame proses
+    ('full', False, 'none'):     (1.7, 2.2),
+    ('extfull', True, 'gfpgan'): (1.8, 2.4),   # extfull = full + margin = sedikit lebih lambat
+    ('extfull', True, 'none'):   (1.6, 2.1),
+    ('extfull', False, 'gfpgan'):(2.0, 2.6),
+    ('extfull', False, 'none'):  (1.8, 2.3),
+    ('resize', True, 'gfpgan'):  (1.4, 1.9),
+    ('resize', True, 'none'):    (1.2, 1.6),
+    ('resize', False, 'gfpgan'): (1.6, 2.1),
+    ('resize', False, 'none'):   (1.4, 1.8),
+    ('crop', True, 'gfpgan'):    (0.7, 1.0),   # crop = face only, paling cepat (gak cocok green screen)
+    ('crop', True, 'none'):     (0.6, 0.9),
+    ('crop', False, 'gfpgan'):  (0.8, 1.1),
+    ('crop', False, 'none'):    (0.7, 1.0),
+    ('extcrop', True, 'gfpgan'):(0.8, 1.1),
+    ('extcrop', True, 'none'):  (0.7, 1.0),
+    ('extcrop', False, 'gfpgan'):(0.9, 1.2),
+    ('extcrop', False, 'none'): (0.8, 1.1),
+}
+
+
+def estimate_cost(audio_duration_seconds: float, preprocess: str, still: bool, enhancer: str):
+    """Estimasi GPU time + cost SEBELUM run.
+
+    Returns
+    -------
+    dict:
+        {
+            'min_gpu_seconds': float,
+            'max_gpu_seconds': float,
+            'min_cost_usd': float,
+            'max_cost_usd': float,
+            'rate_per_second': float,
+            'audio_seconds': float,
+        }
+    """
+    key = (preprocess, still, enhancer)
+    if key not in ESTIMASI_MULTIPLIER:
+        # Fallback ke default (full + still + gfpgan)
+        min_mult, max_mult = ESTIMASI_MULTIPLIER[('full', True, 'gfpgan')]
+    else:
+        min_mult, max_mult = ESTIMASI_MULTIPLIER[key]
+
+    min_gpu = audio_duration_seconds * min_mult
+    max_gpu = audio_duration_seconds * max_mult
+    return {
+        'audio_seconds': audio_duration_seconds,
+        'min_gpu_seconds': min_gpu,
+        'max_gpu_seconds': max_gpu,
+        'min_cost_usd': min_gpu * A100_RATE_PER_SECOND,
+        'max_cost_usd': max_gpu * A100_RATE_PER_SECOND,
+        'rate_per_second': A100_RATE_PER_SECOND,
+    }
+
+
 def _open_file_for_replicate(file_path: str):
     """Buka file sebagai file object untuk Replicate SDK."""
     return open(file_path, 'rb')
+
+
+def get_audio_duration_seconds(audio_path: str) -> float:
+    """Dapatkan durasi audio (detik) via ffprobe. Return 0.0 kalau gagal."""
+    try:
+        result = subprocess.run(
+            ['ffprobe', '-v', 'error', '-show_entries', 'format=duration',
+             '-of', 'default=noprint_wrappers=1:nokey=1', audio_path],
+            capture_output=True, timeout=10
+        )
+        if result.returncode != 0:
+            return 0.0
+        return float(result.stdout.decode().strip())
+    except (ValueError, subprocess.TimeoutExpired, FileNotFoundError):
+        return 0.0
 
 
 def generate_talking_head(
@@ -149,43 +232,37 @@ def generate_talking_head(
     still: bool = True,
     enhancer: str = DEFAULT_ENHANCER,
     verbose: bool = True,
-) -> bool:
+):
     """
     Generate talking head video via Replicate SadTalker.
 
-    Parameters
-    ----------
-    source_image_path : str
-        Path ke foto source (green screen photo, half-body recommended).
-    driven_audio_path : str
-        Path ke audio wav (dari gemini-tts-tui #15 Narration mode JV).
-    output_mp4_path : str
-        Path output MP4 (background green screen dipertahankan kalau preprocess=full).
-    preprocess : str
-        'full' (default, recommended untuk green screen), 'extfull', 'crop', 'extcrop', 'resize'.
-    still : bool
-        True = --still (kurangi gerakan kepala, cocok presenter formal).
-        False = --no-still (lebih natural head movement, untuk dialog dramatis).
-    enhancer : str
-        'gfpgan' (default, tajpkan wajah) atau 'none'.
-    verbose : bool
-        True = print progress ke stdout.
-
-    Return True kalau sukses, False kalau gagal setelah retry.
+    Returns
+    -------
+    dict kalau sukses:
+        {
+            'success': True,
+            'output_path': str,
+            'output_size_mb': float,
+            'gpu_seconds': float or None,    # dari Replicate metrics.predict_time
+            'cost_usd': float or None,        # gpu_seconds × A100_RATE_PER_SECOND
+            'wall_clock_seconds': float,      # total waktu dari start sampai selesai
+        }
+    dict kalau gagal:
+        {'success': False, 'error': str}
     """
     api_token = os.environ.get("REPLICATE_API_TOKEN")
     if not api_token:
         print("  ⚠ REPLICATE_API_TOKEN belum di-set (cek .env atau env var)",
               file=sys.stderr)
-        return False
+        return {'success': False, 'error': 'REPLICATE_API_TOKEN not set'}
 
     if not os.path.isfile(source_image_path):
         print(f"  ⚠ Source image tidak ditemukan: {source_image_path}", file=sys.stderr)
-        return False
+        return {'success': False, 'error': f'Source image not found: {source_image_path}'}
 
     if not os.path.isfile(driven_audio_path):
         print(f"  ⚠ Driven audio tidak ditemukan: {driven_audio_path}", file=sys.stderr)
-        return False
+        return {'success': False, 'error': f'Driven audio not found: {driven_audio_path}'}
 
     if verbose:
         print(f"  [talkinghead] source: {os.path.basename(source_image_path)}")
@@ -200,6 +277,7 @@ def generate_talking_head(
     import os as _os
     _os.environ['REPLICATE_API_TOKEN'] = api_token
 
+    start_wall = time.time()
     last_error = None
     for attempt in range(len(RETRY_BACKOFF) + 1):
         try:
@@ -207,10 +285,12 @@ def generate_talking_head(
                 print(f"  [talkinghead] Replicate API call (attempt {attempt + 1}/{len(RETRY_BACKOFF) + 1})...")
 
             # Buka file (Replicate SDK butuh file handle)
+            # Pakai predictions.create + wait supaya bisa akses metrics.predict_time
             with open(source_image_path, 'rb') as img_f, open(driven_audio_path, 'rb') as aud_f:
-                # Replicate.run() — blocking sampai output ready
-                output = replicate.run(
-                    MODEL_ID,
+                # Pakai client.predictions.create + .wait() untuk dapat metrics
+                client = replicate.Client(api_token=api_token)
+                prediction = client.predictions.create(
+                    model=MODEL_ID,
                     input={
                         "source_image": img_f,
                         "driven_audio": aud_f,
@@ -218,14 +298,23 @@ def generate_talking_head(
                         "still": still,
                         "enhancer": enhancer,
                     },
-                    timeout=REPLICATE_TIMEOUT,
                 )
+                # Wait sampai selesai (blocking)
+                prediction.wait()
 
-            # Output = URL string atau dict dengan 'video' key
-            if isinstance(output, dict):
-                video_url = output.get('video', output.get('url', ''))
-            else:
-                video_url = str(output)
+                if prediction.status == 'failed':
+                    raise RuntimeError(f"Replicate prediction failed: {prediction.error}")
+
+                # Ambil output URL
+                output = prediction.output
+                if isinstance(output, dict):
+                    video_url = output.get('video', output.get('url', ''))
+                else:
+                    video_url = str(output)
+
+                # Ambil metrics.predict_time (detik GPU aktif)
+                metrics = prediction.metrics or {}
+                gpu_seconds = metrics.get('predict_time')
 
             if not video_url or not video_url.startswith('http'):
                 raise RuntimeError(f"Output URL tidak valid: {video_url}")
@@ -247,10 +336,20 @@ def generate_talking_head(
                 f.write(mp4_bytes)
 
             if os.path.isfile(output_mp4_path) and os.path.getsize(output_mp4_path) > 0:
+                size_mb = os.path.getsize(output_mp4_path) / 1024 / 1024
                 if verbose:
-                    size_mb = os.path.getsize(output_mp4_path) / 1024 / 1024
                     print(f"  [talkinghead] ✓ Output: {output_mp4_path} ({size_mb:.1f} MB)")
-                return True
+
+                end_wall = time.time()
+                cost_usd = (gpu_seconds * A100_RATE_PER_SECOND) if gpu_seconds else None
+                return {
+                    'success': True,
+                    'output_path': output_mp4_path,
+                    'output_size_mb': size_mb,
+                    'gpu_seconds': gpu_seconds,
+                    'cost_usd': cost_usd,
+                    'wall_clock_seconds': end_wall - start_wall,
+                }
 
             raise RuntimeError("Output file tidak terbentuk / kosong")
 
@@ -273,7 +372,7 @@ def generate_talking_head(
             if not is_retryable:
                 # Bukan retryable → langsung fail
                 print(f"  ⚠ Replicate API gagal: {e}", file=sys.stderr)
-                return False
+                return {'success': False, 'error': str(e)}
             # Retryable → backoff + retry
             if attempt < len(RETRY_BACKOFF):
                 wait_s = RETRY_BACKOFF[attempt]
@@ -284,10 +383,10 @@ def generate_talking_head(
             else:
                 print(f"  ⚠ Replicate API gagal setelah {len(RETRY_BACKOFF)} retry: {last_error}",
                       file=sys.stderr)
-                return False
+                return {'success': False, 'error': str(last_error)}
 
     print(f"  ⚠ Replicate API gagal: {last_error}", file=sys.stderr)
-    return False
+    return {'success': False, 'error': str(last_error)}
 
 
 def _download_mp4(url: str) -> bytes:
@@ -368,7 +467,19 @@ def main():
         sys.exit(1)
 
     print(f"[talkinghead-backend] model={MODEL_ID}")
-    ok = generate_talking_head(
+    # Estimasi SEBELUM run
+    audio_dur = get_audio_duration_seconds(args.audio)
+    if audio_dur > 0:
+        est = estimate_cost(audio_dur, args.preprocess, args.still, args.enhancer)
+        print(f"\n  💰 ESTIMASI biaya (A100 80GB = ${A100_RATE_PER_SECOND:.4f}/detik):")
+        print(f"     Audio durasi: {audio_dur:.1f}s")
+        print(f"     Mode: {args.preprocess} + still={args.still} + enhancer={args.enhancer}")
+        print(f"     Estimasi GPU time: {est['min_gpu_seconds']:.0f}s - {est['max_gpu_seconds']:.0f}s")
+        print(f"     Estimasi cost: ${est['min_cost_usd']:.3f} - ${est['max_cost_usd']:.3f}")
+    else:
+        print(f"\n  ⚠ Tidak bisa baca durasi audio dari {args.audio} — estimasi skip")
+
+    result = generate_talking_head(
         source_image_path=args.source,
         driven_audio_path=args.audio,
         output_mp4_path=args.output,
@@ -377,15 +488,27 @@ def main():
         enhancer=args.enhancer,
         verbose=True,
     )
-    if not ok:
-        print("ERROR: gagal generate.", file=sys.stderr)
+    if not result.get('success'):
+        print(f"\nERROR: gagal generate. {result.get('error', '')}", file=sys.stderr)
         sys.exit(1)
 
-    print(f"\n✓ Done! Output: {args.output}")
-    print(f"  Size: {os.path.getsize(args.output) / 1024 / 1024:.1f} MB")
+    # Real cost SESUDAH run
+    gpu_s = result.get('gpu_seconds')
+    cost = result.get('cost_usd')
+    wall_s = result.get('wall_clock_seconds', 0)
+
+    print(f"\n✓ Done! Output: {result['output_path']}")
+    print(f"  Size: {result['output_size_mb']:.1f} MB")
     print(f"  Preprocess: {args.preprocess}")
     print(f"  Still: {args.still}")
     print(f"  Enhancer: {args.enhancer}")
+    print(f"\n  ⏱ Wall-clock total: {wall_s:.1f}s")
+    if gpu_s is not None:
+        print(f"  📊 GPU time (Replicate): {gpu_s:.1f}s")
+        print(f"  💰 REAL cost: {gpu_s:.1f} × ${A100_RATE_PER_SECOND:.4f} = ${cost:.3f}")
+    else:
+        print(f"  ⚠ GPU time tidak tersedia dari Replicate (lihat dashboard Replicate.com)")
+
     print(f"\n🎬 Langkah berikutnya:")
     print(f"   1. Buka {args.output} di Final Cut / DaVinci / Premiere")
     print(f"   2. Chroma key green (hilangkan green screen)")

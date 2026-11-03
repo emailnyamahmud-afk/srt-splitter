@@ -141,6 +141,9 @@ if not shutil.which('ffmpeg'):
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from talkinghead_backend import (
     generate_talking_head,
+    estimate_cost,
+    get_audio_duration_seconds,
+    A100_RATE_PER_SECOND,
     SADTALKER_PREPROCESS_MODES,
     ENHANCER_OPTIONS,
     DEFAULT_PREPROCESS,
@@ -217,6 +220,78 @@ def find_audio_files(search_dirs):
             seen.add(f)
             unique.append(f)
     return sorted(unique)
+
+
+def format_duration(seconds: float) -> str:
+    """Format detik → HH:MM:SS atau MM:SS untuk display."""
+    if seconds < 0:
+        return '0s'
+    h = int(seconds // 3600)
+    m = int((seconds % 3600) // 60)
+    s = int(seconds % 60)
+    if h > 0:
+        return f'{h}j {m}m {s}s'
+    if m > 0:
+        return f'{m}m {s}s'
+    return f'{s}s'
+
+
+def append_cost_log(log_path: str, source_image: str, audio_path: str,
+                    audio_dur: float, gpu_seconds, cost_usd: float,
+                    preprocess: str, still: bool, enhancer: str,
+                    output_path: str):
+    """Append entry ke log file cost (CSV-like format, 1 line per run).
+
+    Format: timestamp | source | audio | audio_dur | gpu_s | cost | mode | output
+    """
+    from datetime import datetime
+    ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    gpu_str = f"{gpu_seconds:.1f}" if gpu_seconds is not None else "unknown"
+    cost_str = f"{cost_usd:.4f}" if cost_usd is not None else "unknown"
+    mode_str = f"{preprocess}+still={still}+{enhancer}"
+    line = (f"{ts} | {os.path.basename(source_image)} | {os.path.basename(audio_path)} | "
+            f"{audio_dur:.1f}s audio | {gpu_str}s GPU | ${cost_str} | {mode_str} | {output_path}\n")
+    try:
+        os.makedirs(os.path.dirname(log_path) or '.', exist_ok=True)
+        with open(log_path, 'a', encoding='utf-8') as f:
+            f.write(line)
+        return True
+    except OSError as e:
+        print(f"  ⚠ Gagal tulis cost log: {e}", file=sys.stderr)
+        return False
+
+
+def read_cost_log_summary(log_path: str):
+    """Baca log file cost, return summary {runs, total_cost, avg_cost}.
+
+    Return None kalau file tidak ada / kosong.
+    """
+    if not os.path.isfile(log_path):
+        return None
+    try:
+        with open(log_path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+        if not lines:
+            return None
+        runs = 0
+        total_cost = 0.0
+        for line in lines:
+            # Format: ts | source | audio | Xs audio | Ys GPU | $Z | mode | output
+            parts = line.split(' | ')
+            if len(parts) >= 6:
+                runs += 1
+                cost_str = parts[5].strip().lstrip('$')
+                try:
+                    total_cost += float(cost_str)
+                except ValueError:
+                    pass  # 'unknown' cost → skip
+        return {
+            'runs': runs,
+            'total_cost': total_cost,
+            'avg_cost': total_cost / runs if runs > 0 else 0,
+        }
+    except OSError:
+        return None
 
 
 # ============================================================
@@ -394,7 +469,22 @@ def main():
     print(f'  ✓ {enhancer}')
     print()
 
-    # === Ringkasan ===
+    # === Baca durasi audio untuk estimasi cost ===
+    audio_dur = get_audio_duration_seconds(driven_audio)
+    audio_dur_str = format_duration(audio_dur) if audio_dur > 0 else '(tidak terdeteksi)'
+
+    # === Estimasi cost SEBELUM run ===
+    if audio_dur > 0:
+        est = estimate_cost(audio_dur, preprocess, still, enhancer)
+        est_min_cost = est['min_cost_usd']
+        est_max_cost = est['max_cost_usd']
+        est_min_gpu = est['min_gpu_seconds']
+        est_max_gpu = est['max_gpu_seconds']
+    else:
+        est_min_cost = est_max_cost = None
+        est_min_gpu = est_max_gpu = None
+
+    # === Ringkasan + Estimasi SEBELUM ===
     print('╔' + '═' * 64 + '╗')
     print('║  📋 Ringkasan:' + ' ' * 49 + '║')
     print('╠' + '═' * 64 + '╣')
@@ -407,10 +497,25 @@ def main():
     print(f'║  Model  : {"Replicate cjwbw/sadtalker"[:46]:<46}║')
     print('╚' + '═' * 64 + '╝')
     print()
-    print(f'  ⚠ Estimasi: ~17 detik (Replicate A100 80GB)')
-    print(f'  ⚠ Cost: ~$0.05-0.20 per video')
+    print(f'  📊 Audio durasi: {audio_dur_str}' + (f' ({audio_dur:.1f}s)' if audio_dur > 0 else ''))
+    if est_min_cost is not None:
+        print(f'  💰 ESTIMASI biaya (A100 80GB = ${A100_RATE_PER_SECOND:.4f}/detik):')
+        print(f'     GPU time: {est_min_gpu:.0f}s - {est_max_gpu:.0f}s (mode: {preprocess}+still={still}+{enhancer})')
+        print(f'     Cost   : ${est_min_cost:.3f} - ${est_max_cost:.3f}')
+        print(f'     (rata-rata ~${(est_min_cost + est_max_cost) / 2:.3f})')
+    else:
+        print(f'  ⚠ Estimasi skip — durasi audio tidak terdeteksi (lihat ffprobe)')
+    print()
     print(f'  ⚠ Output akan punya GREEN SCREEN preserved → siap chroma key manual')
     print()
+
+    # Tampilkan spending history dari log file (kalau ada)
+    cost_log_path = os.path.join(os.path.dirname(output_mp4) or '.', '.talkinghead-costs.log')
+    spending = read_cost_log_summary(cost_log_path)
+    if spending:
+        print(f'  📁 Spending history (dari {os.path.basename(cost_log_path)}):')
+        print(f'     Total {spending["runs"]} run, total cost ${spending["total_cost"]:.3f}, rata-rata ${spending["avg_cost"]:.3f}/run')
+        print()
 
     if not questionary.confirm('Lanjut generate?', default=True).ask():
         print('Batal.')
@@ -421,8 +526,7 @@ def main():
     print(f'🚀 Generate talking head via Replicate (model: {MODEL_ID})...')
     print('═' * 64 + '\n')
 
-    start_time = os.time() if hasattr(os, 'time') else __import__('time').time()
-    ok = generate_talking_head(
+    result = generate_talking_head(
         source_image_path=source_image,
         driven_audio_path=driven_audio,
         output_mp4_path=output_mp4,
@@ -431,22 +535,60 @@ def main():
         enhancer=enhancer,
         verbose=True,
     )
-    end_time = os.time() if hasattr(os, 'time') else __import__('time').time()
 
-    if not ok:
+    if not result.get('success'):
         print()
         print('═' * 64)
-        print('❌ Gagal generate. Cek error di atas.')
+        print(f'❌ Gagal generate. {result.get("error", "")}')
         print('═' * 64)
         sys.exit(1)
 
-    duration = end_time - start_time
+    # === Real cost SESUDAH run ===
+    gpu_s = result.get('gpu_seconds')
+    cost_usd = result.get('cost_usd')
+    wall_s = result.get('wall_clock_seconds', 0)
+    size_mb = result.get('output_size_mb', 0)
+
+    # Append ke log file
+    append_cost_log(
+        log_path=cost_log_path,
+        source_image=source_image,
+        audio_path=driven_audio,
+        audio_dur=audio_dur if audio_dur > 0 else 0.0,
+        gpu_seconds=gpu_s,
+        cost_usd=cost_usd if cost_usd is not None else 0.0,
+        preprocess=preprocess, still=still, enhancer=enhancer,
+        output_path=output_mp4,
+    )
+
+    # Bandingkan estimasi vs real (untuk feedback akurasi)
     print()
     print('═' * 64)
     print('✅ SELESAI!')
-    print(f'  ⏱ Total time: {int(duration)}s')
-    print(f'  📁 Output: {output_mp4_path}')
-    print(f'  📦 Size: {os.path.getsize(output_mp4_path) / 1024 / 1024:.1f} MB')
+    print(f'  ⏱ Wall-clock total: {wall_s:.1f}s')
+    if gpu_s is not None:
+        print(f'  📊 GPU time (Replicate): {gpu_s:.1f}s')
+        print(f'  💰 REAL cost: {gpu_s:.1f} × ${A100_RATE_PER_SECOND:.4f} = ${cost_usd:.4f}')
+        # Bandingkan estimasi
+        if est_min_cost is not None:
+            if cost_usd < est_min_cost:
+                print(f'     (lebih MURAH dari estimasi min ${est_min_cost:.3f} — bagus!)')
+            elif cost_usd > est_max_cost:
+                print(f'     (lebih MAHAL dari estimasi max ${est_max_cost:.3f} — multiplier update?)')
+            else:
+                print(f'     (dalam range estimasi ${est_min_cost:.3f}-${est_max_cost:.3f} — akurat ✓)')
+    else:
+        print(f'  ⚠ GPU time tidak tersedia dari Replicate metrics (cek dashboard)')
+        print(f'     Lihat: https://replicate.com/predictions → cari run terbaru → "Compute time"')
+    print(f'  📁 Output: {output_mp4}')
+    print(f'  📦 Size: {size_mb:.1f} MB')
+    print()
+
+    # Tampilkan log file path + total spending
+    print(f'  📝 Cost log: {cost_log_path}')
+    spending_now = read_cost_log_summary(cost_log_path)
+    if spending_now:
+        print(f'     Total {spending_now["runs"]} run, total ${spending_now["total_cost"]:.3f}, rata-rata ${spending_now["avg_cost"]:.3f}/run')
     print()
     print('🎬 Langkah berikutnya (chroma key manual):')
     print('   1. Buka output MP4 di Final Cut / DaVinci / Premiere')

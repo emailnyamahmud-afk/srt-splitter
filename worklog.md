@@ -6215,3 +6215,117 @@ User minta struktur folder lengkap dengan INPUT + OUTPUT per TUI, BUKAN hanya ou
 
 ### 2 file berubah: AGENTS.md, scripts/README.md
 
+
+---
+
+## 2026-11-03 11:15 WIB — TUI #16: Cost tracking (ESTIMASI + REAL + log file)
+
+### Context
+
+User pilih Opsi A (paling lengkap): Estimasi SEBELUM + real cost SESUDAH + log file tracking.
+Biaya Replicate pakai per-detik GPU (A100 80GB = $0.0014/detik), tergantung durasi audio + mode.
+
+### Yang diupdate (3 file):
+
+- `scripts/talkinghead_backend.py`:
+  * Tambah `A100_RATE_PER_SECOND = 0.0014` constant (per Nov 2026 Replicate pricing)
+  * Tambah `ESTIMASI_MULTIPLIER` dict — 20 kombinasi mode (preprocess × still × enhancer),
+    masing-masing punya (min_mult, max_mult) — GPU time = audio_dur × multiplier
+  * Tambah `estimate_cost(audio_dur, preprocess, still, enhancer)` → return dict dengan
+    min/max GPU time + cost
+  * Tambah `get_audio_duration_seconds(path)` — via ffprobe (subprocess)
+  * Ubah `generate_talking_head()` return type: bool → dict
+    {success, output_path, output_size_mb, gpu_seconds, cost_usd, wall_clock_seconds}
+  * Pakai `client.predictions.create() + .wait()` (BUKAN `replicate.run()`) supaya
+    bisa akses `prediction.metrics.predict_time` (detik GPU aktif dari Replicate)
+  * Update `main()` CLI: tampilkan estimasi SEBELUM + real cost SESUDAH
+
+- `scripts/talkinghead-tui.py`:
+  * Import `estimate_cost, get_audio_duration_seconds, A100_RATE_PER_SECOND` dari backend
+  * Tambah helper `format_duration(seconds)` → "2m 30s" / "1j 5m 10s"
+  * Tambah helper `append_cost_log(log_path, ...)` → write 1 line per run ke log file
+  * Tambah helper `read_cost_log_summary(log_path)` → return {runs, total_cost, avg_cost}
+  * Update `main()`:
+    - Baca durasi audio via ffprobe sebelum ringkasan
+    - Tampilkan ESTIMASI SEBELUM konfirmasi (audio_dur × multiplier → cost range)
+    - Tampilkan spending history (kalau log ada) sebelum konfirmasi
+    - Setelah generate, ambil result dict (bukan bool)
+    - Tampilkan REAL COST sesudah (gpu_seconds × rate, dari Replicate metrics)
+    - Bandingkan estimasi vs real (lebih murah/dalam range/lebih mahal)
+    - Append ke log file `HDD/konten/.talkinghead-costs.log`
+    - Tampilkan total spending setelah run
+
+- `scripts/TALKINGHEAD.md`:
+  * Update section "Limit Replicate" dengan info hardware + billing model
+  * Tambah section baru "Cost tracking (ESTIMASI + REAL + log file)" dengan:
+    - Penjelasan 3 lapisan tracking
+    - Format estimasi + real cost display
+    - Format log file (timestamp | source | audio | dur | GPU | cost | mode | output)
+    - Cara cek log manual (cat, grep, awk)
+    - Cara reset log (mv untuk backup bulan baru)
+
+### Estimasi multiplier (per mode):
+
+```
+full + still + gfpgan (default): 1.7-2.3× audio_dur (paling lambat, preserve bg + tajpkan wajah)
+full + no-still + gfpgan:         1.9-2.5× (no-still = lebih natural head movement = lebih lama)
+extfull + still + gfpgan:        1.8-2.4× (full + margin)
+crop + still + gfpgan:           0.7-1.0× (paling cepat, face only — gak cocok green screen)
+crop + no-still + none:          0.7-1.0× (paling cepat overall)
+...total 20 kombinasi
+```
+
+### Contoh estimasi (audio 150 detik / 2:30 menit, mode default):
+
+```
+💰 ESTIMASI biaya (A100 80GB = $0.0014/detik):
+   GPU time: 255s - 345s (mode: full+still=True+gfpgan)
+   Cost   : $0.357 - $0.483
+   (rata-rata ~$0.420)
+```
+
+### Contoh real cost (dari Replicate metrics.predict_time):
+
+```
+📊 GPU time (Replicate): 142.7s
+💰 REAL cost: 142.7 × $0.0014 = $0.1998
+   (lebih MURAH dari estimasi min $0.357 — bagus!)
+```
+
+### Log file format:
+
+```
+2026-11-03 10:45:51 | amat-avatar.jpg | narasi-jawa.wav | 150.0s audio | 142.7s GPU | $0.1998 | full+still=True+gfpgan | /Volumes/HDD/Dubbing/konten/narasi-jawa-talking-green.mp4
+```
+
+TUI juga tampilkan summary:
+- SEBELUM run: "Total 5 run, total $1.42, rata-rata $0.28/run"
+- SESUDAH run: "Total 6 run, total $1.62, rata-rata $0.27/run"
+
+### Test sandbox (semua lulus):
+
+- ✓ Syntax OK (ast.parse both files)
+- ✓ Backend CLI --list-modes, --help jalan
+- ✓ TUI flow dengan mock audio 150s → estimasi muncul benar ($0.357-$0.483)
+- ✓ Log file write + read: 3 run → total $0.72, rata-rata $0.24 (test write/read helper)
+- ✓ Spending history tampil di ringkasan sebelum konfirmasi
+
+### Manfaat untuk user:
+
+1. Sebelum run → tahu "kira-kira $0.30-0.45" → bisa batal kalau budget nggak cukup
+2. Setelah run → tahu cost exact buat tracking (100% akurat, dari Replicate API)
+3. Log file → tracking spending bulanan, bisa cek total cost per bulan/hari
+4. Bandingkan estimasi vs real → kalau real konsisten < estimasi min, multiplier bisa diturunkan
+   kalau real > estimasi max, multiplier perlu update (Update ESTIMASI_MULTIPLIER di backend)
+
+### Pelajaran PERMANENT:
+
+- Replicate billing = per-detik GPU (BUKAN per request, BUKAN per durasi output)
+- A100 80GB = $0.0014/detik = $5.04/jam (per Nov 2026)
+- SadTalker GPU time = audio_dur × multiplier (1.7-2.3× untuk mode default, 0.6-1.0× untuk crop)
+- `prediction.metrics.predict_time` = sumber truth untuk real cost (BUKAN wall-clock time)
+- Wall-clock time ≠ GPU time (download, network, retry bisa tambah wall-clock tanpa GPU aktif)
+- Log file di `HDD/konten/.talkinghead-costs.log` — tracking spending per-project
+
+### 3 file berubah: scripts/talkinghead_backend.py, scripts/talkinghead-tui.py, scripts/TALKINGHEAD.md
+

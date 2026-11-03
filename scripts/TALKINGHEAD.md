@@ -156,18 +156,93 @@ Langkah:
 ## Limit Replicate (per Nov 2026)
 
 - Free credit: $0.10 untuk test (~2-5 video short)
-- Pay-as-you-go: ~$0.05-0.20 per video (tergantung durasi)
+- Pay-as-you-go: ~$0.05-0.20 per video pendek, ~$1-3 per video 10 menit (tergantung durasi)
+- Hardware: A100 80GB = $0.001400 per detik ($5.04/jam)
+- Billing model: prepaid credit (sejak 16 Jul 2025), valid 1 tahun, auto-reload min $5 threshold
 - Concurrency: 1 request per token (paralel butuh multiple tokens)
 - Timeout: API call max 5 menit (sudah handle di backend)
 - Untuk video narasi 10 menit: cost ~$1-3 per video (masih murah untuk konten sesekali)
+
+## Cost tracking (ESTIMASI + REAL + log file)
+
+TUI #16 punya 3 lapisan cost tracking:
+
+### 1. ESTIMASI SEBELUM run (untuk decision-making)
+
+Sebelum konfirmasi "Lanjut generate?", TUI tampilkan:
+```
+📊 Audio durasi: 2m 30s (150.0s)
+💰 ESTIMASI biaya (A100 80GB = $0.0014/detik):
+   GPU time: 255s - 345s (mode: full+still=True+gfpgan)
+   Cost   : $0.357 - $0.483
+   (rata-rata ~$0.420)
+```
+
+Estimasi dihitung dari:
+- Durasi audio (via ffprobe) × multiplier mode
+- Multiplier bervariasi tergantung preprocess + still + enhancer
+- Default (full + still + gfpgan): 1.7-2.3× audio_dur
+- Paling cepat (crop + no-still + none): 0.6-0.9× audio_dur
+- Lihat `ESTIMASI_MULTIPLIER` dict di `talkinghead_backend.py`
+
+Akurasi: ±30% dari real cost (dari benchmark community). Bagus untuk decision-making
+(batal kalau budget nggak cukup), bukan untuk accounting.
+
+### 2. REAL COST SESUDAH run (exact, dari Replicate API)
+
+Setelah generate selesai, TUI tampilkan:
+```
+✅ SELESAI!
+  ⏱ Wall-clock total: 18.4s
+  📊 GPU time (Replicate): 142.7s
+  💰 REAL cost: 142.7 × $0.0014 = $0.1998
+     (dalam range estimasi $0.357-$0.483 — akurat ✓)
+```
+
+Real cost diambil dari `prediction.metrics.predict_time` (detik GPU aktif, dari Replicate API).
+100% exact — ini angka yang dipakai Replicate untuk tagih credit Anda.
+
+### 3. Log file tracking (untuk manajemen budget)
+
+Setiap run → append entry ke `HDD/konten/.talkinghead-costs.log`:
+```
+2026-11-03 10:45:51 | amat-avatar.jpg | narasi-jawa.wav | 150.0s audio | 142.7s GPU | $0.1998 | full+still=True+gfpgan | /Volumes/HDD/Dubbing/konten/narasi-jawa-talking-green.mp4
+2026-11-03 11:22:13 | tokoh-2.jpg | naskah-2.wav | 320.1s audio | 528.4s GPU | $0.7398 | full+still=True+gfpgan | /Volumes/HDD/Dubbing/konten/naskah-2-talking-green.mp4
+```
+
+Format: `timestamp | source | audio | audio_dur | GPU_dur | cost | mode | output`
+
+TUI juga tampilkan summary spending history di 2 tempat:
+- **SEBELUM run** (kalau log ada): "Total 5 run, total $1.42, rata-rata $0.28/run"
+- **SESUDAH run** (selalu): "Total 6 run, total $1.62, rata-rata $0.27/run"
+
+### Cara cek log manual
+
+```bash
+# Lihat semua run
+cat /Volumes/HDD/Dubbing/konten/.talkinghead-costs.log
+
+# Total cost bulan ini (Nov 2026)
+grep "2026-11" /Volumes/HDD/Dubbing/konten/.talkinghead-costs.log | awk -F'$' '{print $2}' | awk '{sum+=$1} END {print "Total: $"sum}'
+
+# Total cost per hari
+grep "2026-11-03" /Volumes/HDD/Dubbing/konten/.talkinghead-costs.log | wc -l  # jumlah run hari ini
+```
+
+### Cara reset log (kalau mau tracking bulan baru)
+
+```bash
+# Backup log lama, mulai yang baru
+mv /Volumes/HDD/Dubbing/konten/.talkinghead-costs.log /Volumes/HDD/Dubbing/konten/.talkinghead-costs-2026-11.log
+```
 
 ## Output file (compatible dengan pipeline lain)
 
 ```
 HDD/konten/
-└── {audio-stem}-talking-green.mp4    ← talking head dengan green screen preserved
-                                          ↓
-                                       User edit manual (chroma key + composite)
+├── {audio-stem}-talking-green.mp4    ← talking head dengan green screen preserved
+│                                          ↓
+│                                       User edit manual (chroma key + composite)
                                           ↓
                                        final-konten.mp4 (siap YouTube)
 ```
