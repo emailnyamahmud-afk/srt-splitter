@@ -6033,3 +6033,137 @@ done
 - Docstring line 1-3 WAJIB match dengan `VERSION = ` line
 - Audit docs = cek SEMUA file .md (`git ls-tree -r origin/main --name-only | grep -E "\.md$"`) + SEMUA docstring TUI
 
+
+---
+
+## 2026-11-03 10:30 WIB — TUI #16 talkinghead-tui v1.0 (SadTalker via Replicate, green screen preserved)
+
+### Context
+
+User butuh workflow KONTEN (bukan dubbing):
+- Sudah ada narasi-Jawa.wav (dari gemini-tts-tui #15 Narration mode JV, Cruz + jawa-halus-mc)
+- Mau: 1 foto green screen (Amat dengan blangkon + batik) + 1 wav → 1 video talking head sync
+- Output MP4 dengan green screen DIPERTAHANKAN → user chroma key manual → composite background → final YouTube konten
+- User feedback: Wav2Lip "ekspresi cuma mulut, gak bagus" → butuh SadTalker quality (3D motion coefficients, head pose, eye blink)
+- SadTalker di M1: lambat + buggy → pakai Replicate cloud (`cjwbw/sadtalker`, A100 80GB, ~17 detik per run, ~$0.05-0.20 per video)
+
+### File ditambahkan (3 file baru, TIDAK ubah file lama):
+
+- `scripts/talkinghead-tui.py` v1.0 (~440 baris)
+  - TUI utama 6 step: source image → driven audio → output MP4 → preprocess mode → still → enhancer
+  - Cari file dari HDD/konten/, HDD/input/, HDD/tts/ (glob)
+  - Output: `HDD/konten/{audio-stem}-talking-green.mp4`
+  - Mirror pattern edge-tts-tui v7.5 + gemini-tts-tui v1.1
+
+- `scripts/talkinghead_backend.py` (~270 baris)
+  - Backend modul: panggilan ke Replicate API (model `cjwbw/sadtalker`)
+  - 5 preprocess mode: full (default), extfull, crop, extcrop, resize
+  - 2 enhancer: gfpgan (default), none
+  - Retry untuk timeout/network/5xx: 10s → 30s → 60s → skip
+  - Lazy import replicate + requests (supaya --list-modes jalan tanpa dep terinstall)
+  - CLI standalone: --source, --audio, --output, --preprocess, --still, --enhancer
+
+- `scripts/TALKINGHEAD.md` (~270 baris)
+  - Dokumentasi TUI #16: workflow, 6 step, preprocess mode, still mode, enhancer
+  - Limit Replicate free tier + pay-as-you-go
+  - Test plan (10 test point sebelum declare Production)
+  - Anti-amnesia protocol untuk AI next session
+
+### Docs utama diupdate (15 → 16 TUI):
+
+- `AGENTS.md`:
+  * Tabel: 15 → 16 TUI, tambah row #16 talkinghead-tui v1.0
+  * Section baru: TUI #16 talkinghead-tui v1.0 (workflow KONTEN, SadTalker via Replicate, green screen preserved)
+  * Tree repo scripts/: tambah talkinghead-tui.py + talkinghead_backend.py + TALKINGHEAD.md
+  * Tree working dir ~/Dubbing/: tambah talkinghead-tui.py + talkinghead_backend.py (curl download)
+  * Aturan #16: talkinghead-tui v1.0 = UNTESTED, butuh REPLICATE_API_TOKEN
+  * Pipeline Jawa: tambah [TALKING-HEAD] → talkinghead-tui → editor chroma key → final-konten.mp4
+  * Status: tambah talkinghead-tui v1.0 = UNTESTED
+  * Anti-amnesia akhir: TUI (ada 16, BUKAN 12/13/15), tambah #16 detail + Replicate backend
+
+- `PROJECT_RULES.md`:
+  * Tabel: 15 → 16 TUI
+  * Pipeline: tambah [TALKING-HEAD]
+  * Wajib: tambah aturan talkinghead-tui v1.0 = UNTESTED (SadTalker via Replicate, butuh REPLICATE_API_TOKEN)
+  * Dilarang: tambah "Auto-declare TUI baru = Production" + "Install SadTalker lokal di M1"
+
+- `scripts/README.md`:
+  * Tabel: 15 → 16 TUI
+  * Pipeline: tambah [TALKING-HEAD]
+  * Tabel Script: tambah row talkinghead-tui.py + talkinghead_backend.py + TALKINGHEAD.md
+  * Install: tambah `pip install replicate requests` + `echo REPLICATE_API_TOKEN`
+  * Workflow: tambah alur TALKING-HEAD (gemini-tts-tui Narration JV → talkinghead-tui → editor chroma key)
+  * Section baru: talkinghead-tui v1.0 — TUI #16 OPSI TAMBAHAN (workflow, 6 step, kenapa Replicate, setup, preprocess mode, limit)
+
+- `README.md` root:
+  * Header: 14 TUI production + 1 experimental → 14 TUI production + 2 untested
+  * Tabel: 15 → 16 TUI, tambah row #16 talkinghead-tui.py v1.0
+  * Pipeline: tambah [TALKING-HEAD]
+  * Quote block: tambah talkinghead-tui.py (TUI #16, workflow KONTEN, SadTalker Replicate, green screen preserved)
+  * Section baru: talkinghead-tui v1.0 — TUI #16 OPSI TAMBAHAN (workflow, kenapa Replicate, setup, preprocess mode)
+  * Install: tambah `pip install replicate requests` + `echo REPLICATE_API_TOKEN`
+  * Workflow: tambah alur TALKING-HEAD
+  * Download: tambah curl talkinghead-tui.py + talkinghead_backend.py
+
+### Pipeline sekarang (lengkap):
+
+```
+[Indonesia production]:
+  yt-dlp v6.5 → srt-editor v1.0.1 → edge-tts v7.5 SRT → mix-tui v3.10 → merge-tui v1.9
+                                                                                        ↘ shorts-tui → shorts-csv-tui → YouTube
+  edge-tts v7.5 Narasi (ID) → review-mix-tui v1.0 (review film ID)
+  edge-tts v7.5 Narasi (ID) → konten-tui v1.0 (konten sejarah ID)
+
+[Jawa experimental via Gemini + SadTalker]:
+  yt-dlp v6.5 → srt-editor v1.0.1 → gemini-tts-tui v1.1 SRT mode (JV) → mix-tui v3.10
+  naskah.txt → gemini-tts-tui v1.1 Narasi (JV) → review-mix-tui v1.0 (review film JV)
+  naskah.txt → gemini-tts-tui v1.1 Narasi (JV) → konten-tui v1.0 (konten sejarah JV)
+  naskah.txt → gemini-tts-tui v1.1 Narasi (JV) → talkinghead-tui v1.0 (talking head JV, green screen) → editor chroma key → final-konten.mp4
+```
+
+### Test sandbox (sudah dilakukan):
+
+- ✓ Syntax OK (ast.parse both files)
+- ✓ Backend CLI: --list-modes (5 preprocess mode), --list-enhancers (2 option)
+- ✓ TUI no-API-key: error message jelas + instruksi setup
+- ✓ TUI no-REPLICATE_API_TOKEN: banner + setup message rapi
+- ✓ TUI 6 step flow: source image → driven audio → output → preprocess → still → enhancer
+- ✓ Ringkasan: rapi, semua parameter tampil
+- ✓ Konfirmasi abort: TUI exit cleanly
+- ✓ Backend retry: timeout/network/5xx → 10s/30s/60s backoff, non-retryable → fail fast
+
+### Test plan untuk user di Mac:
+
+1. [ ] Set REPLICATE_API_TOKEN di /Volumes/HDD/Dubbing/.env
+2. [ ] pip install replicate requests
+3. [ ] Generate narasi-jawa.wav via gemini-tts-tui v1.1 Narration mode (JV, Cruz + jawa-halus-mc)
+4. [ ] Siapkan foto green screen half-body (mis. amat-avatar.jpg, 1376x768 landscape)
+5. [ ] Run python3 talkinghead-tui.py
+6. [ ] Pilih: source image, driven audio, output path (default HDD/konten/{stem}-talking-green.mp4)
+7. [ ] Pilih: preprocess=full (default), still=yes (default), enhancer=gfpgan (default)
+8. [ ] Cek output MP4: green screen masih preserved? wajah bicara sync?
+9. [ ] Chroma key di DaVinci Resolve: background bersih? quality wajah OK?
+10. [ ] Composite dengan background sejarah → final-konten.mp4 → cek di VLC
+
+Setelah semua test lulus + user VLC feedback OK → update status ke Production.
+
+### Pelajaran PERMANENT:
+
+- TUI baru = UNTESTED sampai user test di Mac + VLC feedback OK (jangan auto-declare Production)
+- TUI #16 backend = Replicate cloud (BUKAN M1 lokal), alasan: SadTalker lambat + buggy di M1
+- preprocess=full = preserve green screen (jangan pakai crop = face only, gak cocok green screen)
+- still=yes = kurangi gerakan kepala (cocok presenter formal dengan tangan clasped)
+- enhancer=gfpgan = tajpkan gigi + mata (penting untuk clean chroma key — edge wajah harus tajam)
+- Output talkinghead-tui → feed editor manual (chroma key + composite) — BUKAN langsung ke YouTube
+
+### File berubah (8 file):
+
+- scripts/talkinghead-tui.py (BARU)
+- scripts/talkinghead_backend.py (BARU)
+- scripts/TALKINGHEAD.md (BARU)
+- AGENTS.md (15→16 TUI)
+- PROJECT_RULES.md (15→16 TUI)
+- scripts/README.md (15→16 TUI)
+- README.md root (15→16 TUI)
+- worklog.md (entry ini)
+

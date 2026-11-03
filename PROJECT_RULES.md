@@ -14,10 +14,11 @@
 [KONTEN]       edge-tts Narration (ID) → konten-tui (konten sejarah ID)
 [GEMINI-SRT]   yt-dlp → srt-editor → gemini-tts-tui (SRT mode, ID/JV) → mix-tui (opsional Jawa/karakter spesifik)
 [GEMINI-NARASI] naskah.txt → gemini-tts-tui (Narration mode, ID/JV) → review-mix-tui / konten-tui (Jawa)
+[TALKING-HEAD] naskah.txt → gemini-tts-tui Narration (JV) → talkinghead-tui v1.0 (Replicate SadTalker, preprocess=full) → MP4 green screen preserved → editor chroma key → final-konten.mp4
 Kamus: kamus-tui → jv.wiktionary.json → Supabase
 ```
 
-## 15 TUI
+## 16 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -36,6 +37,7 @@ Kamus: kamus-tui → jv.wiktionary.json → Supabase
 | 13 | review-mix-tui v1.0 | ⚠ UNTESTED (review film: MP4 + JSON + narasi → final MP4, code di GitHub belum diuji di Mac) |
 | 14 | konten-tui v1.0 | ⚠ UNTESTED (konten sejarah: narasi + images → Ken Burns video, code di GitHub belum diuji di Mac) |
 | 15 | **gemini-tts-tui v1.1** | ⚠ UNTESTED (SRT + Narasi, ID + JV, OPSI TAMBAHAN, butuh GEMINI_API_KEY, code di GitHub belum diuji di Mac) |
+| 16 | **talkinghead-tui v1.0** | ⚠ UNTESTED (SadTalker via Replicate, green screen preserved, butuh REPLICATE_API_TOKEN, code di GitHub belum diuji di Mac) |
 
 ## Struktur Folder — 3 LOKASI BERBEDA (baca config.py LENGKAP)
 
@@ -89,9 +91,16 @@ Helper: `ensure_hdd()`, `ensure_kamus()`, `load_env()`
 - **konten-tui v1.0 = UNTESTED** (TUI #14, code di GitHub belum diuji di Mac) — input narasi dari edge-tts v7.5 / gemini-tts-tui v1.1 Narration
 - **gemini-tts-tui v1.1 = OPSI TAMBAHAN** (TUI #15, SRT + Narasi, ID + JV, butuh GEMINI_API_KEY)
   - Output SRT mode: `HDD/tts/{prefix}-audio-id-dub.wav` (mix-tui compatible)
-  - Output Narration mode: `HDD/tts/{stem}-narasi.wav` (review-mix-tui / konten-tui compatible)
+  - Output Narration mode: `HDD/tts/{stem}-narasi.wav` (review-mix-tui / konten-tui / talkinghead-tui compatible)
   - Jangan hapus / ganti edge-tts-tui v7.5
-  - Status EXPERIMENTAL sampai user VLC feedback OK
+  - Status UNTESTED (code di GitHub, belum diuji di Mac) sampai user VLC feedback OK
+- **talkinghead-tui v1.0 = OPSI TAMBAHAN** (TUI #16, workflow KONTEN bukan dubbing, SadTalker via Replicate)
+  - Input: foto green screen half-body + narasi JV wav (dari gemini-tts-tui #15 Narration)
+  - Backend: Replicate.com `cjwbw/sadtalker` (cloud, butuh `REPLICATE_API_TOKEN` di HDD .env)
+  - Output: `HDD/konten/{name}-talking-green.mp4` (green screen preserved, preprocess=full)
+  - User edit manual: chroma key → composite background → final-konten.mp4 (siap YouTube)
+  - JANGAN install SadTalker lokal di M1 (Python 3.8 strict, hardcode CUDA, MPS partial, very slow) — pakai Replicate cloud
+  - Status UNTESTED sampai user VLC feedback OK
 
 ## Dilarang
 
@@ -107,3 +116,5 @@ Helper: `ensure_hdd()`, `ensure_kamus()`, `load_env()`
 - **Campur aduk repo srt-splitter dengan user working dir `~/Dubbing/`** — repo = folder git untuk dev, working dir = tempat TUI jalan, scripts didownload dari repo via curl
 - **Bikin file di `~/Dubbing/`** — itu user working dir, AI kerja di repo path (`/home/z/my-project/` sandbox atau `~/srt-splitter/` Mac dev)
 - **Pikir web app Vercel = TUI Dubbing** — web app terpisah, translate SRT via Supabase, BUKAN pipeline TUI
+- **Auto-declare TUI baru = "Production"** — TUI baru WAJIB status UNTESTED sampai user test di Mac + VLC feedback OK. Setelah OK baru status Production.
+- **Install SadTalker lokal di M1** — lambat + buggy, pakai Replicate cloud (TUI #16 pakai `cjwbw/sadtalker`)

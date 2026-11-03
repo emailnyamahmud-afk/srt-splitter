@@ -26,7 +26,7 @@ Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 - Jawa: pipeline dub (gemini-tts-tui v1.1 SRT mode) + narasi (gemini-tts-tui v1.1 Narration mode) jalan
 - Sunda: nunggu kamus Supabase
 
-## 15 TUI
+## 16 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -45,6 +45,7 @@ Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 13 | review-mix-tui v1.0 (review film: potong + narasi + overlay) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 14 | konten-tui v1.0 (konten sejarah: images → video + narasi + Ken Burns) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 15 | **gemini-tts-tui v1.1** (SRT + Narasi, ID + JV, OPSI TAMBAHAN) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
+| 16 | **talkinghead-tui v1.0** (SadTalker via Replicate, green screen preserved) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 
 ## TUI #13: review-mix-tui v1.0 — Review film (UNTESTED, code di GitHub belum diuji di Mac)
 
@@ -78,13 +79,33 @@ gemini-tts-tui untuk skenario yang Edge kurang bagus / tidak support:
 
 **Pipeline integrasi**:
 - SRT mode → feed `mix-tui` (sama dengan edge-tts SRT output)
-- Narration mode → feed `review-mix-tui` (review film) atau `konten-tui` (konten sejarah)
+- Narration mode → feed `review-mix-tui` (review film) atau `konten-tui` (konten sejarah) atau `talkinghead-tui` (talking head video)
 - Edge Narasi (ID) → review-mix-tui (review film ID) atau konten-tui (konten ID)
-- Gemini Narasi (JV) → review-mix-tui (review film JV) atau konten-tui (konten JV)
+- Gemini Narasi (JV) → review-mix-tui (review film JV) atau konten-tui (konten JV) atau talkinghead-tui (talking head JV)
 
 **Setup**: `echo "GEMINI_API_KEY=AIza..." >> /Volumes/HDD/Dubbing/.env`
 **Pakai**: `python3 gemini-tts-tui.py`
 **Detail**: lihat `scripts/GEMINI_TTS.md`
+
+## TUI #16: talkinghead-tui v1.0 — SadTalker via Replicate (green screen preserved)
+
+**BUKAN pipeline dubbing** — untuk workflow KONTEN (bukan film).
+talkinghead-tui untuk bikin talking head video dari:
+- Foto green screen half-body (mis. Amat dengan blangkon + batik)
+- Audio narasi Jawa (dari gemini-tts-tui v1.1 Narration mode JV)
+
+Output: MP4 talking head dengan **green screen DIPERTAHANKAN** (preprocess=full).
+User edit manual: chroma key → composite background → final-konten.mp4 (siap YouTube).
+
+**Backend**: Replicate.com `cjwbw/sadtalker` (A100 80GB, ~17 detik per run, ~$0.05-0.20 per video).
+Kenapa cloud (BUKAN M1 lokal)? SadTalker di M1: Python 3.8 strict, hardcode CUDA, MPS support partial (Issue #526 open), community bilang "very slow". Effort install + patch tidak worth it.
+
+**Preprocess mode `full`**: animasi wajah → paste back ke ORIGINAL background → green screen dipertahankan.
+Alternatif mode `crop` = face only (gak cocok green screen).
+
+**Setup**: `echo "REPLICATE_API_TOKEN=r8_xxx" >> /Volumes/HDD/Dubbing/.env`
+**Pakai**: `python3 talkinghead-tui.py` (6 step TUI: foto → audio → output → preprocess → still → enhancer)
+**Detail**: lihat `scripts/TALKINGHEAD.md`
 
 ## Struktur Folder — 3 LOKASI BERBEDA (baca config.py LENGKAP)
 
@@ -124,6 +145,9 @@ Repo root:
 │   ├── gemini-tts-tui.py v1.1 # TUI #15 (BARU)
 │   ├── gemini_tts_backend.py          # TUI #15 backend modul
 │   ├── GEMINI_TTS.md                  # TUI #15 docs
+│   ├── talkinghead-tui.py v1.0 # TUI #16 (BARU)
+│   ├── talkinghead_backend.py         # TUI #16 backend modul (Replicate SadTalker)
+│   ├── TALKINGHEAD.md                 # TUI #16 docs
 │   └── ... (script kamus + tools lain)
 ├── srt-splitter-clone/                # git submodule (repo clone untuk eksperimen)
 ├── srt-splitter-work/                 # git submodule (repo working)
@@ -156,6 +180,8 @@ SSD ~/Dubbing/                          → scripts (.py) + venv + jv.wiktionary
   ├── konten-tui.py                     # didownload dari scripts/ repo via curl
   ├── gemini-tts-tui.py                 # didownload dari scripts/ repo via curl
   ├── gemini_tts_backend.py             # didownload dari scripts/ repo via curl
+  ├── talkinghead-tui.py                # didownload dari scripts/ repo via curl (TUI #16)
+  ├── talkinghead_backend.py            # didownload dari scripts/ repo via curl (Replicate SadTalker)
   ├── config.py                         # didownload dari scripts/ repo via curl (BASE PATH USER)
   ├── jv.wiktionary.json                # kamus (download dari public/ repo)
   └── venv/                             # Python virtual env (pip3 install)
@@ -238,6 +264,12 @@ SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
     - Scripts di repo `scripts/*.py` → user download ke `~/Dubbing/` via `curl -L -o ... https://raw.githubusercontent.com/.../main/scripts/...`
     - config.py di repo: base path USER (`~/Dubbing/` + `/Volumes/HDD/Dubbing/`), BUKAN path repo
     - AI TIDAK punya akses langsung ke `~/Dubbing/` user — AI kerja di repo path
+16. **talkinghead-tui v1.0 = UNTESTED** (TUI #16, code di GitHub belum diuji di Mac)
+    - Workflow KONTEN (bukan dubbing): foto green screen + narasi JV → talking head MP4
+    - Backend: Replicate.com `cjwbw/sadtalker` (cloud, butuh `REPLICATE_API_TOKEN` di HDD .env)
+    - Output: `HDD/konten/{name}-talking-green.mp4` (green screen preserved, preprocess=full)
+    - User edit manual: chroma key → composite background → final-konten.mp4 (siap YouTube)
+    - JANGAN auto-declare "Production" — tunggu user test di Mac + VLC feedback OK
 
 ## Pipeline Final (confirmed end-to-end)
 
@@ -254,6 +286,7 @@ edge-tts v7.5 Narasi (ID) → konten-tui v1.0 (konten sejarah ID)
 yt-dlp v6.5 → srt-editor v1.0.1 → gemini-tts-tui v1.1 SRT mode (JV) → mix-tui v3.10
 naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → review-mix-tui v1.0 (review film JV)
 naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → konten-tui v1.0 (konten sejarah JV)
+naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → talkinghead-tui v1.0 (talking head JV, green screen) → editor chroma key → final-konten.mp4
 ```
 
 ## Status (3 Nov 2026)
@@ -265,6 +298,7 @@ naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → konten-tui v1.0 (kont
 - review-mix-tui v1.0: ⚠ UNTESTED (TUI #13, code di GitHub belum diuji di Mac)
 - konten-tui v1.0: ⚠ UNTESTED (TUI #14, code di GitHub belum diuji di Mac)
 - gemini-tts-tui v1.1: ⚠ UNTESTED (TUI #15, code di GitHub belum diuji di Mac, SRT + Narasi, ID + JV, butuh GEMINI_API_KEY)
+- talkinghead-tui v1.0: ⚠ UNTESTED (TUI #16, code di GitHub belum diuji di Mac, SadTalker via Replicate, butuh REPLICATE_API_TOKEN)
 - Pipeline produksi Indonesia: 6 film tested, all TUI production-ready
 - Pipeline Jawa: experimental, tunggu user VLC feedback
 
@@ -291,13 +325,15 @@ SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
 - 11 path constants, semua untuk USER working dir, BUKAN repo path
 - `ensure_hdd()` + `ensure_kamus()` + `load_env()` = helper functions
 
-### TUI (ada 15, BUKAN 12/13):
+### TUI (ada 16, BUKAN 12/13/15):
 
-- Jangan amnesia: ada 15 TUI. Baca `git ls-tree origin/main scripts/` untuk verifikasi sebelum pilih nomor TUI baru
-- TUI #13 = review-mix-tui (production), TUI #14 = konten-tui (production), TUI #15 = gemini-tts-tui (experimental)
-- `REVIEW_DIR` di config.py untuk review-mix-tui (#13), `KONTEN_DIR` untuk konten-tui (#14)
+- Jangan amnesia: ada **16 TUI**. Baca `git ls-tree origin/main scripts/` untuk verifikasi sebelum pilih nomor TUI baru
+- TUI #13 = review-mix-tui (UNTESTED), TUI #14 = konten-tui (UNTESTED), TUI #15 = gemini-tts-tui (UNTESTED), TUI #16 = talkinghead-tui (UNTESTED)
+- `REVIEW_DIR` di config.py untuk review-mix-tui (#13), `KONTEN_DIR` untuk konten-tui (#14) + talkinghead-tui (#16 output ke KONTEN_DIR)
 - edge-tts-tui v7.5 Narration mode → feed review-mix-tui / konten-tui (BUKAN langsung ke user)
-- gemini-tts-tui v1.1 Narration mode (JV) → alternatif feed untuk review-mix-tui / konten-tui (bahasa Jawa)
+- gemini-tts-tui v1.1 Narration mode (JV) → alternatif feed untuk review-mix-tui / konten-tui / talkinghead-tui (bahasa Jawa)
+- talkinghead-tui v1.0 (#16) = workflow KONTEN (BUKAN dubbing): foto green screen + narasi JV → SadTalker via Replicate → MP4 green screen preserved → user edit chroma key → final-konten.mp4
+- TUI #16 backend = Replicate.com `cjwbw/sadtalker` (cloud), butuh `REPLICATE_API_TOKEN` di HDD .env (BUKAN M1 lokal — sadtalker lambat + MPS partial)
 
 ### Workflow (kesalahan saya sebelumnya: tidak push):
 

@@ -2,7 +2,7 @@
 
 Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 
-## 15 TUI
+## 16 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -21,6 +21,7 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 13 | review-mix-tui.py v1.0 (review film: MP4 + JSON + narasi → final MP4) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 14 | konten-tui.py v1.0 (konten sejarah: narasi + images → Ken Burns video) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 15 | **gemini-tts-tui.py v1.1** (SRT + Narasi, ID + JV, OPSI TAMBAHAN) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
+| 16 | **talkinghead-tui.py v1.0** (SadTalker via Replicate, green screen preserved) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 
 ## Pipeline
 
@@ -34,6 +35,7 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 [KONTEN]       edge-tts Narration (ID) → konten-tui (konten sejarah ID)
 [GEMINI-SRT]   yt-dlp → srt-editor → gemini-tts-tui (SRT mode, ID/JV) → mix-tui (opsional Jawa/karakter)
 [GEMINI-NARASI] naskah.txt → gemini-tts-tui (Narration mode, ID/JV) → review-mix-tui / konten-tui (Jawa)
+[TALKING-HEAD] naskah.txt → gemini-tts-tui Narration (JV) → talkinghead-tui v1.0 (Replicate SadTalker, preprocess=full) → MP4 green screen preserved → editor chroma key → final-konten.mp4
 ```
 
 ## Scripts
@@ -54,9 +56,12 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | konten-tui.py v1.0 | 14 | Konten sejarah (narasi + images → Ken Burns video) | HDD/konten/ |
 | gemini-tts-tui.py v1.1 | 15 | TTS SRT + Narasi (Indonesia + Jawa, OPSI TAMBAHAN) | HDD/tts/ |
 | gemini_tts_backend.py | 15 | Backend modul untuk gemini-tts-tui (Gemini API legacy) | — |
+| talkinghead-tui.py v1.0 | 16 | Talking head video (SadTalker via Replicate, green screen preserved) | HDD/konten/ |
+| talkinghead_backend.py | 16 | Backend modul untuk talkinghead-tui (Replicate API) | — |
 | config.py | — | Base path SSD/HDD | — |
 | upload-supabase.py | — | Upload kamus ke Supabase | — |
 | GEMINI_TTS.md | 15 | Dokumentasi TUI #15 (cara pakai, kapan pakai) | — |
+| TALKINGHEAD.md | 16 | Dokumentasi TUI #16 (workflow green screen + Replicate) | — |
 
 ## Struktur Path (dari config.py)
 
@@ -76,10 +81,12 @@ config.py menyediakan (baca LENGKAP sebelum kerja):
 
 ```bash
 cd ~/Dubbing && source venv/bin/activate
-pip3 install questionary edge-tts yt-dlp torchaudio demucs numpy google-genai
+pip3 install questionary edge-tts yt-dlp torchaudio demucs numpy google-genai replicate requests
 brew install ffmpeg
 # Optional (TUI #15 gemini-tts-tui): set GEMINI_API_KEY
 echo "GEMINI_API_KEY=AIza..." >> /Volumes/HDD/Dubbing/.env
+# Optional (TUI #16 talkinghead-tui): set REPLICATE_API_TOKEN
+echo "REPLICATE_API_TOKEN=r8_xxx..." >> /Volumes/HDD/Dubbing/.env
 ```
 
 ## Workflow
@@ -111,7 +118,13 @@ python3 konten-tui.py         # narasi + images + backsound → konten-final.mp4
 # Alur GEMINI (opsional — Jawa / karakter spesifik / narasi Jawa)
 python3 gemini-tts-tui.py     # Mode: SRT (dub per cue) atau Narration (naskah → 1 WAV)
 # Output: SRT → {prefix}-audio-id-dub.wav (mix-tui compatible)
-#         Narasi → {stem}-narasi.wav (review-mix-tui / konten-tui compatible)
+#         Narasi → {stem}-narasi.wav (review-mix-tui / konten-tui / talkinghead-tui compatible)
+
+# Alur TALKING-HEAD (workflow konten — foto green screen + narasi JV)
+python3 gemini-tts-tui.py     # Narration mode (JV) → narasi-jawa.wav
+python3 talkinghead-tui.py    # foto green screen + narasi-JV → {stem}-talking-green.mp4
+# Output: HDD/konten/{stem}-talking-green.mp4 (green screen preserved, preprocess=full)
+# Edit manual: chroma key di DaVinci/Premiere → composite background → final-konten.mp4
 
 # Kamus (parallel)
 python3 kamus-tui.py
@@ -207,6 +220,68 @@ Lihat: `python3 gemini_tts_backend.py --list-voices`
 | AI Pro ($20/bln) | Higher di Playground | — | Iterasi cepat |
 | Tier 1 (Cloud Billing) | 300 | 1000 | Batch sedang |
 | Tier 2 ($100+ spend) | 1000+ | 10000+ | Batch besar |
+
+## talkinghead-tui v1.0 — TUI #16 OPSI TAMBAHAN (SadTalker via Replicate, green screen preserved)
+
+⚠ UNTESTED (code di GitHub, belum diuji di Mac). Untuk workflow KONTEN (BUKAN dubbing).
+
+### Workflow:
+```
+naskah.txt → gemini-tts-tui v1.1 Narration (JV) → narasi-jawa.wav
+              ↓
+              + foto green screen half-body (mis. amat-avatar.jpg)
+              ↓
+              talkinghead-tui v1.0 (Replicate SadTalker, preprocess=full, still, gfpgan)
+              ↓
+              → HDD/konten/{name}-talking-green.mp4 (green screen DIPERTAHANKAN)
+              ↓
+              User edit manual (DaVinci / Final Cut / Premiere):
+              - Chroma key green → hilang
+              - Composite dengan background baru (foto sejarah, kantor, dll)
+              - Tambah text overlay (opsional)
+              → final-konten.mp4 (siap YouTube)
+```
+
+### 6 step TUI:
+| Step | Pilihan | Default |
+|------|---------|---------|
+| 1 | Source image (.jpg/.png, foto green screen half-body) | Glob dari `HDD/konten/`, `HDD/input/`, cwd |
+| 2 | Driven audio (.wav, dari gemini-tts-tui #15 Narration JV) | Glob dari `HDD/tts/`, cwd |
+| 3 | Output MP4 path | `HDD/konten/{audio-stem}-talking-green.mp4` |
+| 4 | Preprocess mode (full/extfull/crop/extcrop/resize) | **full** (recommended untuk green screen) |
+| 5 | Still mode (yes/no) | **yes** (kurangi gerakan kepala, cocok presenter formal) |
+| 6 | Enhancer (gfpgan/none) | **gfpgan** (tajpkan gigi + mata, penting untuk clean chroma key) |
+
+### Kenapa Replicate (BUKAN M1 lokal)?
+- SadTalker di M1: Python 3.8 strict, hardcode CUDA, MPS support partial (Issue #526 open)
+- Replicate: A100 80GB, ~17 detik per run, ~$0.05-0.20 per video
+- Untuk workflow konten (volume rendah-sedang) = sangat reasonable
+
+### Setup & pakai:
+```bash
+# Set REPLICATE_API_TOKEN di HDD .env
+echo "REPLICATE_API_TOKEN=r8_xxx" >> /Volumes/HDD/Dubbing/.env
+pip3 install replicate requests
+
+# Pakai
+cd ~/Dubbing && source venv/bin/activate
+python3 talkinghead-tui.py
+```
+
+### Preprocess mode:
+- **full** (default): Animasi wajah → paste back ke original background → green screen DIPERTAHANKAN
+- extfull: full + extra margin (untuk head tilt banyak)
+- crop/extcrop: face only (gak cocok green screen — output = face centered)
+- resize: full image scale, animate di atasnya (hybrid)
+
+### Limit Replicate (per Nov 2026):
+| Tier | Cost | Cocok untuk |
+|------|------|-------------|
+| Free credit | $0.10 | Test 2-5 video short |
+| Pay-as-you-go | ~$0.05-0.20 per video | Konten sesekali |
+| Volume besar | butuh multiple tokens | Paralel banyak video |
+
+Detail lengkap: lihat `scripts/TALKINGHEAD.md`
 
 ## srt-editor-tui v1.0.0
 
