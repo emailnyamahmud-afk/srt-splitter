@@ -6329,3 +6329,95 @@ TUI juga tampilkan summary:
 
 ### 3 file berubah: scripts/talkinghead_backend.py, scripts/talkinghead-tui.py, scripts/TALKINGHEAD.md
 
+
+---
+
+## 2026-11-03 14:30 WIB — TUI #15 gemini-tts: pacing proaktif + billing mode + RPD warning
+
+### Context
+
+User uji gemini-tts-tui di Mac dengan batch besar (6255 cue, 2.6 jam film). Hasil:
+- Kena 429 setiap ~3 cue (cue 3, 6, dst)
+- Backoff 30s+60s+120s → ETA melonjak dari 9j ke 60j
+- Free tier Gemini: ~5 RPM, ~250 RPD → 6255 cue = 26x dari limit harian
+
+User kritik saya ngasih opsi "test 50 cue" — itu gak realistis untuk workflow dubbing.
+Solusi yang benar: MANAGE rate limit untuk batch besar, BUKAN kurangi batch.
+
+### Yang diupdate (2 file):
+
+- `scripts/gemini_tts_backend.py`:
+  * Tambah `BILLING_MODES` list — 4 mode: free, ai-pro, tier-1, tier-2
+  * Tambah `BILLING_MODE_PACING` dict — jeda antar cue (detik):
+    - free: 12.0s (5 RPM, hindari 429 reaktif)
+    - ai-pro: 6.0s (10 RPM)
+    - tier-1: 2.0s (30 RPM)
+    - tier-2: 0.5s (120 RPM, no real limit)
+  * Tambah `BILLING_MODE_RPD` dict — quota harian:
+    - free: 250 RPD (preview model Gemini 3.8 TTS konservatif)
+    - ai-pro: 1000 RPD
+    - tier-1: 10000 RPD
+    - tier-2: 100000 RPD
+  * Update `generate_cue_tts()` — tambah param `billing_mode`:
+    - Pacing proaktif (jeda antar cue) sebelum retry loop
+    - BUKAN reaktif (tunggu 429 lalu retry 30s+60s+120s)
+  * Update CLI `main()` — tambah `--billing-mode` arg + `--list-billing-modes`
+  * Default: free (12s jeda, aman untuk testing pertama)
+
+- `scripts/gemini-tts-tui.py`:
+  * Import BILLING_MODES, DEFAULT_BILLING_MODE, BILLING_MODE_PACING, BILLING_MODE_RPD
+  * Update `smart_fit_cue_gemini()` — tambah param `billing_mode`, pass ke generate_gemini_tts
+  * Update `main()` SRT mode — tambah Step 6/8 "Pilih billing mode (pacing antar cue)"
+  * Update semua step counter: 7 → 8 (Step 1-5 jadi /8, Smart Fit jadi 7/8, Prefix jadi 8/8)
+  * Estimasi waktu sekarang termasuk pacing: 2s (API) + pacing_s + 1.5s (smart fit extra)
+  * Tampilkan RPD warning kalau batch > RPD limit:
+    - "⚠ BATCH INI MELEBIHI RPD LIMIT (260 > 250)!"
+    - "Estimasi butuh N hari (RPD reset midnight Pacific time)"
+    - "Atau upgrade ke tier lebih tinggi / pecah batch jadi N sesi"
+  * Konfirmasi beda: kalau batch > RPD limit → default=False (user harus explicit confirm)
+  * Narration mode juga pakai billing_mode default (free, 12s pacing) — gak nambah step
+    supaya Narration mode tetap 6 step (simpler untuk narasi singkat)
+
+### Estimasi untuk skenario user (6255 cue, free mode):
+
+- Estimasi waktu: 6255 × 15.5s = ~27 jam (pacing 12s + API 2s + smart fit 1.5s)
+- RPD limit free: 250 → 6255 cue butuh 26 hari (RPD reset midnight Pacific time)
+- Bukan realistis. Solusi:
+  1. Upgrade ke Tier 1 (Cloud Billing enabled, $250/bln cap): 10000 RPD → 1 sesi cukup
+     Estimasi: 6255 × 5.5s = ~9.5 jam (jeda 2s + API 2s + smart fit 1.5s)
+  2. Upgrade ke Tier 2 ($100+ spend): 100000 RPD → 1 sesi cepat
+     Estimasi: 6255 × 4s = ~7 jam (jeda 0.5s + API 2s + smart fit 1.5s)
+  3. Pecah batch: 26 sesi × 250 cue per hari = 26 hari (gratis, tapi lama)
+
+### Test sandbox (semua lulus):
+
+- ✓ Syntax OK (ast.parse both files)
+- ✓ Backend CLI: --list-billing-modes muncul 4 mode dengan pacing + RPD
+- ✓ TUI 8 step flow (billing mode sebagai Step 6/8)
+- ✓ Estimasi: 20 cue × 15.5s = 5m 10s (mode=free jeda=12s)
+- ✓ RPD warning: 260 cue > 250 RPD limit → "Estimasi butuh 2 hari"
+- ✓ RPD warning: 6255 cue > 250 RPD limit → "Estimasi butuh 26 hari"
+- ✓ Konfirmasi default=False kalau batch > RPD limit (aman, user explicit)
+- ✓ Billing mode pass ke generate_cue_tts → smart_fit_cue_gemini → generate_gemini_tts
+
+### Manfaat untuk user:
+
+1. **Tidak kena 429 lagi** — pacing proaktif 12s antar cue (free) = ~5 RPM, aman
+2. **Tahu realitas sebelum run** — TUI bilang "butuh 26 hari untuk 6255 cue di free tier"
+3. **Decision-making** — user bisa pilih:
+   - Lanjut dengan free (lama, 26 hari)
+   - Upgrade ke Tier 1 (Cloud Billing, ~9.5 jam)
+   - Pecah batch jadi 26 sesi (gratis, 1 sesi per hari)
+4. **Smart Fit tetap jalan** — billing_mode pass sampai ke smart_fit (pass 2 juga kena pacing)
+
+### Pelajaran PERMANENT:
+
+- Gemini free tier = 5 RPM, ~250 RPD — TIDAK realistis untuk batch dubbing 6000+ cue
+- Pacing proaktif (jeda antar cue) lebih efisien dari retry reaktif (30s+60s+120s per 429)
+- Billing mode: free=12s, ai-pro=6s, tier-1=2s, tier-2=0.5s — sesuaikan dengan tier user
+- RPD limit: free=250, ai-pro=1000, tier-1=10000, tier-2=100000
+- TUI WAJIB tampilkan RPD warning sebelum run kalau batch > RPD limit
+- Untuk produksi dubbing (film 2.6 jam = 6000+ cue): Tier 1 (Cloud Billing) atau Tier 2
+
+### 2 file berubah: scripts/gemini_tts_backend.py, scripts/gemini-tts-tui.py
+

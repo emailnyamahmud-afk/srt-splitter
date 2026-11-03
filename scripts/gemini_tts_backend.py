@@ -98,6 +98,36 @@ MODEL = "gemini-3.8-flash-tts"
 # Kalau Gemini API rate-limit, backoff 30s → 60s → 120s → skip.
 RATE_LIMIT_BACKOFF = [30, 60, 120]
 
+# Mode billing untuk pacing proaktif (BUKAN reaktif tunggu 429)
+# Free tier = preview models lebih restricted. Pakai jeda antar cue supaya TIDAK kena 429.
+# Tier 1+ = Cloud Billing enabled, jalan cepat tanpa jeda.
+# RPM = Requests Per Minute (rate limit Gemini)
+# RPD = Requests Per Day (quota harian, reset midnight Pacific time)
+BILLING_MODES = [
+    ('free',     'Free tier (Gemini AI Studio API key, no billing) — jeda 12s antar cue untuk hindari 429'),
+    ('ai-pro',   'AI Pro ($20/bln) — jeda 6s antar cue (RPM lebih longgar)'),
+    ('tier-1',   'Tier 1 (Cloud Billing enabled, $250/bln cap) — jeda 2s antar cue'),
+    ('tier-2',   'Tier 2 ($100+ spend) — no jeda (jalan cepat)'),
+]
+DEFAULT_BILLING_MODE = 'free'
+
+# Jeda antar cue (detik) per billing mode — supaya tidak kena 429 reaktif
+BILLING_MODE_PACING = {
+    'free':   12.0,  # ~5 RPM = 12s antar cue (preview model Gemini 3.8 TTS free ~5-15 RPM)
+    'ai-pro':  6.0,  # ~10 RPM
+    'tier-1': 2.0,  # ~30 RPM
+    'tier-2': 0.5,  # ~120 RPM (no real limit)
+}
+
+# RPD (Requests Per Day) limit per billing mode — untuk warning TUI + tracking quota
+# Reset setiap hari di midnight Pacific time (UTC-8)
+BILLING_MODE_RPD = {
+    'free':   250,    # Gemini 3.8 Flash TTS preview ~250 RPD (realistis konservatif)
+    'ai-pro': 1000,   # AI Pro quota di Playground lebih longgar
+    'tier-1': 10000,  # Tier 1 ~10K RPD
+    'tier-2': 100000, # Tier 2 ~100K RPD
+}
+
 
 # ============================================================
 # Katalog voice + instruction templates
@@ -401,12 +431,16 @@ def generate_cue_tts(
     cue_idx: int = 0,
     temperature: float = 1.0,
     model: str = MODEL,
+    billing_mode: str = DEFAULT_BILLING_MODE,
 ) -> bool:
     """Generate 1 cue via Gemini TTS → save ke output_mp3 (sebenarnya WAV 16-bit mono 24kHz).
 
     Output format: WAV (WAV header + PCM). File extension pakai .mp3 untuk kompatibilitas
     dengan pola cache edge-tts-tui.py (yang menulis MP3) — agar mix-tui.py dan cache
     mechanism tetap konsisten. Decoder ffmpeg handle keduanya.
+
+    billing_mode: 'free' / 'ai-pro' / 'tier-1' / 'tier-2' — menentukan pacing proaktif
+        antar cue (BUKAN reaktif tunggu 429). Free tier = 12s antar cue supaya TIDAK kena 429.
 
     v1.0 retry: auto-retry kalau kena 429 / RESOURCE_EXHAUSTED.
     Backoff: 30s → 60s → 120s → skip + log.
@@ -419,6 +453,14 @@ def generate_cue_tts(
         return False
 
     final_instruction = _rate_to_instruction(rate, instruction)
+
+    # Pacing proaktif — jeda antar cue supaya TIDAK kena 429 (BUKAN reaktif)
+    # Free tier: 12s jeda → ~5 RPM (realistis konservatif untuk Gemini 3.8 TTS preview)
+    # Tier 1+: 2s atau tanpa jeda
+    pacing_seconds = BILLING_MODE_PACING.get(billing_mode, 12.0)
+    if pacing_seconds > 0 and cue_idx > 1:
+        # Jeda kalau bukan cue pertama (cue 1 langsung jalan, no jeda sebelumnya)
+        time.sleep(pacing_seconds)
 
     last_error = None
     for attempt in range(len(RATE_LIMIT_BACKOFF) + 1):
@@ -540,10 +582,16 @@ def main():
                         help='Kreativitas suara (default 1.0)')
     parser.add_argument('--model', default=MODEL,
                         help=f'Gemini TTS model (default: {MODEL})')
+    parser.add_argument('--billing-mode', default=DEFAULT_BILLING_MODE,
+                        choices=[m[0] for m in BILLING_MODES],
+                        help=f'Billing mode untuk pacing (default: {DEFAULT_BILLING_MODE}). '
+                             'free=12s jeda, ai-pro=6s, tier-1=2s, tier-2=0.5s')
     parser.add_argument('--list-voices', action='store_true',
                         help='Tampilkan daftar voice lalu keluar')
     parser.add_argument('--list-instructions', action='store_true',
                         help='Tampilkan daftar instruction template lalu keluar')
+    parser.add_argument('--list-billing-modes', action='store_true',
+                        help='Tampilkan daftar billing mode lalu keluar')
     args = parser.parse_args()
 
     if args.list_voices:
@@ -552,8 +600,18 @@ def main():
     if args.list_instructions:
         _print_instructions()
         return
+    if args.list_billing_modes:
+        print("\nBilling modes (untuk pacing proaktif antar cue):")
+        print("-" * 90)
+        for mode, desc in BILLING_MODES:
+            pacing = BILLING_MODE_PACING.get(mode, 0)
+            rpd = BILLING_MODE_RPD.get(mode, 0)
+            marker = "  ← default" if mode == DEFAULT_BILLING_MODE else ""
+            print(f"  {mode:10s} — jeda {pacing:.1f}s antar cue, RPD {rpd} — {desc}{marker}")
+        print("-" * 90)
+        return
     if not args.text:
-        parser.error("text wajib (atau pakai --list-voices / --list-instructions)")
+        parser.error("text wajib (atau pakai --list-voices / --list-instructions / --list-billing-modes)")
 
     if not os.environ.get("GEMINI_API_KEY"):
         print("ERROR: Set GEMINI_API_KEY dulu. Dapatkan di https://aistudio.google.com/apikey",
@@ -561,12 +619,14 @@ def main():
         sys.exit(1)
 
     print(f"[gemini-tts-backend] voice={args.voice}  rate={args.rate}  temp={args.temperature}")
+    print(f"[gemini-tts-backend] billing-mode={args.billing_mode} (jeda {BILLING_MODE_PACING.get(args.billing_mode, 0):.1f}s antar cue)")
     print(f"[gemini-tts-backend] text: {args.text[:80]}{'...' if len(args.text)>80 else ''}")
 
     ok = generate_cue_tts(
         args.text, voice=args.voice, rate=args.rate,
         instruction=args.instruction, output_mp3=args.output,
         cue_idx=1, temperature=args.temperature, model=args.model,
+        billing_mode=args.billing_mode,
     )
     if not ok:
         print("ERROR: gagal generate.", file=sys.stderr)

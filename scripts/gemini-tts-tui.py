@@ -177,6 +177,10 @@ from gemini_tts_backend import (
     instructions_for_language,
     MODEL,
     RATE_LIMIT_BACKOFF,
+    BILLING_MODES,
+    DEFAULT_BILLING_MODE,
+    BILLING_MODE_PACING,
+    BILLING_MODE_RPD,
     OUTPUT_SAMPLE_RATE as GEMINI_OUTPUT_SR,
     _rate_to_instruction,
     _format_rate_instruction,
@@ -409,6 +413,7 @@ def smart_fit_cue_gemini(
     cue_idx: int = 0,
     temperature: float = 1.0,
     model: str = MODEL,
+    billing_mode: str = DEFAULT_BILLING_MODE,
 ):
     """
     Smart Fit untuk 1 cue (Gemini TTS):
@@ -429,6 +434,7 @@ def smart_fit_cue_gemini(
             text, voice=voice, rate='+0%', instruction=instruction,
             output_mp3=natural_cache, cue_idx=cue_idx,
             temperature=temperature, model=model,
+            billing_mode=billing_mode,
         )
         if not ok:
             raise RuntimeError(f'Pass 1 gagal untuk cue {cue_idx}')
@@ -453,6 +459,7 @@ def smart_fit_cue_gemini(
             text, voice=voice, rate=rate_str, instruction=instruction,
             output_mp3=smart_cache_path, cue_idx=cue_idx,
             temperature=temperature, model=model,
+            billing_mode=billing_mode,
         )
         if not ok:
             # Fallback: pakai natural
@@ -717,7 +724,7 @@ def main():
     print()
 
     # === Step 1: Pilih SRT (default: HDD/input/) ===
-    print('▶ Step 1/7: Pilih SRT')
+    print('▶ Step 1/8: Pilih SRT')
     try:
         from config import INPUT_DIR, TTS_DIR, ensure_hdd
         hdd_ok = ensure_hdd()
@@ -753,7 +760,7 @@ def main():
     print()
 
     # === Step 2: Output dir (default: HDD/tts/) ===
-    print('▶ Step 2/7: Pilih output directory')
+    print('▶ Step 2/8: Pilih output directory')
     if isinstance(TTS_DIR, Path) and TTS_DIR.exists():
         default_out = str(TTS_DIR)
     else:
@@ -769,7 +776,7 @@ def main():
     print()
 
     # === Step 3: Bahasa ===
-    print('▶ Step 3/7: Pilih bahasa')
+    print('▶ Step 3/8: Pilih bahasa')
     bahasa_choice = questionary.select(
         'Bahasa naskah/SRT:',
         choices=[
@@ -783,7 +790,7 @@ def main():
     print()
 
     # === Step 4: Voice ===
-    print('▶ Step 4/7: Pilih voice')
+    print('▶ Step 4/8: Pilih voice')
     voice_labels = [v[1] for v in GEMINI_VOICES]
     voice_label = questionary.select(
         'Voice (Gemini prebuilt — 30 resmi + Cruz):',
@@ -795,7 +802,7 @@ def main():
     print()
 
     # === Step 5: Instruction template (filtered per bahasa) ===
-    print('▶ Step 5/7: Pilih instruksi gaya bicara')
+    print('▶ Step 5/8: Pilih instruksi gaya bicara')
     inst_choices = instructions_for_language(lang_code)
     inst_labels = [t[1] for t in inst_choices]
     inst_label = questionary.select(
@@ -819,8 +826,26 @@ def main():
     print(f'  ✓ {inst_key}: {instruction[:70]}{"..." if len(instruction) > 70 else ""}')
     print()
 
-    # === Step 6: Smart Fit cap ===
-    print('▶ Step 6/7: Smart Fit cap')
+    # === Step 6: Billing mode (pacing proaktif untuk hindari 429) ===
+    print('▶ Step 6/8: Pilih billing mode (pacing antar cue)')
+    billing_labels = [m[1] for m in BILLING_MODES]
+    billing_label = questionary.select(
+        'Billing mode (menentukan jeda antar cue, hindari 429):',
+        choices=billing_labels,
+        default=[l for l in billing_labels if 'Free' in l][0],
+    ).ask()
+    billing_mode = 'free'
+    for mode, label in BILLING_MODES:
+        if label == billing_label:
+            billing_mode = mode
+            break
+    pacing_s = BILLING_MODE_PACING.get(billing_mode, 12.0)
+    rpd_limit = BILLING_MODE_RPD.get(billing_mode, 250)
+    print(f'  ✓ {billing_mode} (jeda {pacing_s:.1f}s antar cue, RPD limit {rpd_limit})')
+    print()
+
+    # === Step 7: Smart Fit cap ===
+    print('▶ Step 7/8: Smart Fit cap')
     cap_choice = questionary.select(
         'Smart Fit cap (max audio rate — Gemini pakai instruksi tempo):',
         choices=[
@@ -840,8 +865,8 @@ def main():
     print(f'  ✓ cap={cap}, smart_fit={smart_fit}')
     print()
 
-    # === Step 7: Prefix (dengan lock file check — paralel-safe) ===
-    print('▶ Step 7/7: Prefix nama file')
+    # === Step 8: Prefix (dengan lock file check — paralel-safe) ===
+    print('▶ Step 8/8: Prefix nama file')
     base_name = Path(srt_path).stem
     prefix = questionary.text(
         'Prefix (default: nama SRT tanpa extension):',
@@ -887,13 +912,27 @@ def main():
     print(f'  ✓ {len(entries)} cue, total durasi {format_duration(total_dur)}')
     print()
 
-    # === Estimasi waktu ===
-    # Gemini API lokal: ~1-3s per cue (network latency + Gemini processing)
-    # Smart Fit 1.5x → rata-rata 1.5-4s per cue (kalau 50% butuh pass 2)
-    est_per_cue = 2.0 if smart_fit else 1.5
+    # === Estimasi waktu (dengan pacing billing mode) ===
+    # Gemini API call: ~2s per cue (network + processing)
+    # Plus jeda pacing: free=12s, ai-pro=6s, tier-1=2s, tier-2=0.5s antar cue
+    # Smart Fit 1.5x → ~50% cue butuh pass 2 (re-generate) → tambah ~1.5s per cue
+    pacing_s = BILLING_MODE_PACING.get(billing_mode, 12.0)
+    smart_fit_extra = 1.5 if smart_fit else 0
+    est_per_cue = 2.0 + pacing_s + smart_fit_extra
     est_total_sec = len(entries) * est_per_cue
-    print(f'  Estimasi: ~{format_duration(est_total_sec)} ({len(entries)} cue × ~{est_per_cue}s)')
-    print(f'  ⚠ Gemini free tier: ~5-15 RPM, ~100-250 RPD. Batch besar perlu AI Pro / Cloud Billing.')
+    rpd_limit = BILLING_MODE_RPD.get(billing_mode, 250)
+    will_exceed_rpd = len(entries) > rpd_limit
+
+    print(f'  Estimasi: ~{format_duration(est_total_sec)} ({len(entries)} cue × ~{est_per_cue:.1f}s, mode={billing_mode} jeda={pacing_s:.1f}s)')
+    print(f'  📊 Quota: {len(entries)} cue butuh {len(entries)} request vs RPD limit {rpd_limit} ({billing_mode})')
+    if will_exceed_rpd:
+        days_needed = (len(entries) + rpd_limit - 1) // rpd_limit
+        print(f'  ⚠ BATCH INI MELEBIHI RPD LIMIT ({len(entries)} > {rpd_limit})!')
+        print(f'     Estimasi butuh {days_needed} hari (RPD reset midnight Pacific time)')
+        print(f'     Atau upgrade ke tier lebih tinggi (Cloud Billing untuk Tier 1, $100+ spend untuk Tier 2)')
+        print(f'     Atau pecah batch jadi {days_needed} sesi (run per hari)')
+    else:
+        print(f'  ✓ Batch muat dalam 1 RPD quota (1 sesi cukup)')
     print()
 
     # === Konfirmasi ===
@@ -905,6 +944,7 @@ def main():
     print(f'║  Bahasa  : {lang_code.upper() + " — " + ("Indonesia" if lang_code == "id" else "Jawa"):44}║')
     print(f'║  Voice   : {voice[:46]:<46}║')
     print(f'║  Instruksi: {inst_key[:45]:<46}║')
+    print(f'║  Billing: {billing_mode + " (jeda " + format(f"{pacing_s:.1f}s") + " antar cue)":46}║')
     print(f'║  SmartFit: {"ON, cap=" + str(cap) if smart_fit else "OFF":<46}║')
     print(f'║  Prefix  : {prefix[:46]:<46}║')
     print(f'║  Cues    : {len(entries):<46}║')
@@ -913,10 +953,19 @@ def main():
     print('╚' + '═' * 64 + '╝')
     print()
 
-    if not questionary.confirm('Lanjut generate?', default=True).ask():
-        print('Batal.')
-        release_lock(output_dir, prefix)
-        sys.exit(0)
+    if will_exceed_rpd:
+        if not questionary.confirm(
+            f'⚠ Batch {len(entries)} cue > RPD limit {rpd_limit} ({billing_mode}). Lanjut?',
+            default=False
+        ).ask():
+            print('Batal (batch terlalu besar untuk billing mode ini).')
+            release_lock(output_dir, prefix)
+            sys.exit(0)
+    else:
+        if not questionary.confirm('Lanjut generate?', default=True).ask():
+            print('Batal.')
+            release_lock(output_dir, prefix)
+            sys.exit(0)
 
     # === Generate per cue + mix inline ===
     print('\n' + '═' * 64)
@@ -982,12 +1031,14 @@ def main():
                     final_audio = smart_fit_cue_gemini(
                         text, cue_dur, voice, instruction, cap,
                         cache_path, cache_key, cue_idx=cue_idx,
+                        billing_mode=billing_mode,
                     )
                 else:
                     if not (os.path.isfile(cache_path) and os.path.getsize(cache_path) > 0):
                         if not generate_gemini_tts(
                             text, voice=voice, rate='+0%', instruction=instruction,
                             output_mp3=cache_path, cue_idx=cue_idx,
+                            billing_mode=billing_mode,
                         ):
                             raise RuntimeError('Gemini TTS gagal')
                     audio1 = decode_audio_to_pcm(cache_path, OUTPUT_SAMPLE_RATE)
@@ -1279,6 +1330,7 @@ def main_narration():
         success = generate_gemini_tts(
             para, voice=voice, rate=rate, instruction=instruction,
             output_mp3=mp3_path, cue_idx=i,
+            billing_mode=DEFAULT_BILLING_MODE,  # Narration pakai default (free, 12s pacing)
         )
         if not success:
             print(f'  ❌ Gagal generate paragraf {i}')
