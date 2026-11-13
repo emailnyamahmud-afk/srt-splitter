@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 """
-mix-tui.py v3.10 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn + logo overlay + force 1080p + audio 48000Hz stereo standardize)
+mix-tui.py v3.11 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn + logo overlay + force 1080p + audio 48000Hz stereo standardize + mode 1:1 square)
+
+v3.11 update (13 Nov 2026) — mode 1:1 square (center crop) untuk source vertical:
+  - Opsi baru "1:1 square (1080x1080)" muncul di Step 4.10 HANYA kalau source vertical (h > w)
+  - Center crop: atas+bawah dipotong, full width dipertahankan (1080px). Untuk IG feed.
+  - Filter: crop=min(iw,ih):min(iw,ih):center,scale=1080:1080,setsar=1
+  - Hanya jalur Burn SRT (mode B/D/F, re-encode) — constraint sama dgn force resolusi biasa
+  - Source horizontal: opsi 1:1 tidak muncul, pakai force 1080p horizontal (1920x1080) spt biasa
+  - Mode lama (A/B/C/D/E/F + force 1080p/720p/480p vert/horiz) TIDAK dihapus — tetap utuh
 
 v3.10 update (29 Okt 2026) — audio 48000 Hz stereo standardize + default force 1080p:
   - Standardize audio output: 48000 Hz stereo 16-bit aac 192k (untuk konsistensi merge-tui)
@@ -167,7 +175,7 @@ Usage: python3 mix-tui.py (pilih file pakai arrow keys)
 """
 
 # === Version ===
-VERSION = 'v3.10'
+VERSION = 'v3.11'
 
 import os
 import sys
@@ -514,7 +522,13 @@ def pick_force_resolution(source_w, source_h):
 
     Deteksi vertical (h > w) → output juga vertical (e.g., 1080x1920, bukan 1920x1080).
 
-    Return: tuple (target_w, target_h) atau None kalau ikut source.
+    v3.11 NEW: untuk source vertical, opsi "1:1 square (1080x1080)" — center crop
+    ke square (atas+bawah dipotong, full width dipertahankan). Untuk IG feed.
+    Hanya muncul kalau is_vertical. Source horizontal pakai opsi force biasa.
+
+    Return: tuple (target_w, target_h, is_square) atau None kalau ikut source.
+        is_square=True  → filter center-crop (crop=min(iw,ih), full width utk vertical).
+        is_square=False → filter scale+pad (mode force resolusi biasa).
     """
     if source_w == 0 or source_h == 0:
         # Gagal probe, fallback ke ikut source
@@ -534,6 +548,7 @@ def pick_force_resolution(source_w, source_h):
             'Force 1080p vertical (1080x1920) — untuk konsistensi merge series — REKOMENDASI',
             'Force 720p vertical (720x1280) — hemat storage',
             'Force 480p vertical (480x854) — paling hemat',
+            '1:1 square (1080x1080) — crop atas+bawah, full width dipertahankan — IG feed [BARU v3.11]',
         ])
     else:
         choices.extend([
@@ -552,18 +567,21 @@ def pick_force_resolution(source_w, source_h):
 
     if not res_choice or res_choice.startswith('Ikut source'):
         return None
+    if '1:1' in res_choice or 'square' in res_choice.lower():
+        # v3.11 NEW: mode 1:1 square — center crop, full width dipertahankan
+        return (1080, 1080, True)
     if '1080p' in res_choice:
-        return (1080, 1920) if is_vertical else (1920, 1080)
+        return (1080, 1920, False) if is_vertical else (1920, 1080, False)
     if '720p' in res_choice:
-        return (720, 1280) if is_vertical else (1280, 720)
+        return (720, 1280, False) if is_vertical else (1280, 720, False)
     if '480p' in res_choice:
-        return (480, 854) if is_vertical else (854, 480)
+        return (480, 854, False) if is_vertical else (854, 480, False)
     # Custom
     try:
         w = int(questionary.text('Width (pixel):', default=str(source_w)).ask() or source_w)
         h = int(questionary.text('Height (pixel):', default=str(source_h)).ask() or source_h)
         if w > 0 and h > 0:
-            return (w, h)
+            return (w, h, False)
     except ValueError:
         pass
     return None
@@ -1106,7 +1124,8 @@ def main():
             print(f'  Source: {source_w}x{source_h}')
             force_resolution = pick_force_resolution(source_w, source_h)
             if force_resolution:
-                print(f'  ✓ Force output: {force_resolution[0]}x{force_resolution[1]}')
+                _sq = ' (1:1 crop, atas+bawah dipotong, full width)' if force_resolution[2] else ''
+                print(f'  ✓ Force output: {force_resolution[0]}x{force_resolution[1]}{_sq}')
                 print(f'    (Konsistensi merge series: merge-tui bakal stream copy, super cepat)')
             else:
                 print(f'  ✓ Ikut source (no scale, kualitas terjaga)')
@@ -1499,11 +1518,25 @@ def main():
         #   - Scale preserve aspect ratio, pad letterbox/pillarbox (black bars), setsar=1 square pixel
         scale_pre = ''
         if force_resolution:
-            tw, th = force_resolution
-            scale_pre = (
-                f'scale={tw}:{th}:force_original_aspect_ratio=decrease,'
-                f'pad={tw}:{th}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,'
-            )
+            tw, th, is_square = force_resolution
+            if is_square:
+                # v3.11 NEW: mode 1:1 — center crop ke square (full width dipertahankan,
+                # atas+bawah dipotong). crop=min(iw,ih) ambil sisi terkecil sbg square side,
+                # center posisi, lalu scale ke target square. setsar=1 square pixel.
+                # Untuk vertical 1080x1920: min=1080 → crop 1080x1080 (y=420), full width 1080 tetap.
+                # Catatan escape: koma dlm min(iw,ih) di-escape (\,) supaya ffmpeg tidak
+                # salah baca sbg pemisah filter.
+                scale_pre = (
+                    f'crop=min(iw\\,ih):min(iw\\,ih):'
+                    f'(iw-min(iw\\,ih))/2:(ih-min(iw\\,ih))/2,'
+                    f'scale={tw}:{th},setsar=1,'
+                )
+            else:
+                # Mode force resolusi biasa — scale preserve aspect + pad black bars
+                scale_pre = (
+                    f'scale={tw}:{th}:force_original_aspect_ratio=decrease,'
+                    f'pad={tw}:{th}:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,'
+                )
         if logo_path:
             # v3.8: Chain subtitle + logo overlay
             # [0:v]subtitles='...'[vsub];[vsub][logo_idx:v]overlay=top-right[vout]
@@ -1605,7 +1638,8 @@ def main():
         print(f'  Posisi   : {srt_position} (Alignment={alignment}, MarginV={margin_v})')
         print(f'  Style    : font 18pt, putih outline hitam, VideoToolbox M1 hardware')
         if force_resolution:
-            print(f'  Resolusi : {force_resolution[0]}x{force_resolution[1]} (force, v3.9)')
+            _sq = ' (1:1 crop, v3.11)' if force_resolution[2] else ' (force, v3.9)'
+            print(f'  Resolusi : {force_resolution[0]}x{force_resolution[1]}{_sq}')
         else:
             print(f'  Resolusi : ikut source (no scale)')
         if simple_mode:

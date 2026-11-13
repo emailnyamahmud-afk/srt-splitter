@@ -6421,3 +6421,65 @@ Solusi yang benar: MANAGE rate limit untuk batch besar, BUKAN kurangi batch.
 
 ### 2 file berubah: scripts/gemini_tts_backend.py, scripts/gemini-tts-tui.py
 
+
+---
+
+## 2026-11-13 — mix-tui v3.11: mode 1:1 square (center crop) untuk source vertical
+
+### Context
+
+User minta mode baru di mix-tui: konversi source vertical (1080x1920) → output 1:1 square
+(1080x1080) dengan **crop atas+bawah, full width dipertahankan** (untuk IG feed). User
+tegas: mode lama TIDAK dihapus (masih dipakai puluhan dub). Mode 1:1 hanya untuk jalur
+Burn SRT + ducking MP3 ori (Mode F pattern), hanya kalau source vertical.
+
+### Audit sebelum implement
+
+- `pick_force_resolution()` (line 506-569): return 2-tuple (w,h), opsi force 1080p/720p/480p
+  auto vertical/horizontal sesuai source + Custom
+- Filter chain (line 1500-1506): `scale=W:H:force_original_aspect_ratio=decrease,pad=...` (fit+pad)
+- Step 4.10 (line 1100): force resolution hanya muncul kalau burn_srt=True (Mode B/D/F)
+  → 1:1 juga kena constraint sama (butuh re-encode, tidak bisa stream copy)
+
+### Yang diupdate (1 file: scripts/mix-tui.py, +48/-14)
+
+- Bump VERSION v3.10 → v3.11 + changelog header
+- `pick_force_resolution()`:
+  * Return jadi 3-tuple `(target_w, target_h, is_square)`
+  * Tambah opsi `'1:1 square (1080x1080) — crop atas+bawah, full width dipertahankan — IG feed [BARU v3.11]'`
+    HANYA di branch `is_vertical` (source h > w). Source horizontal tidak lihat opsi ini.
+  * Deteksi: `if '1:1' in res_choice or 'square' in res_choice.lower(): return (1080, 1080, True)`
+  * Semua return existing (1080p/720p/480p/custom) jadi 3-tuple dgn is_square=False
+- Filter chain (line ~1511):
+  * Branch `if is_square:` → `crop=min(iw\,ih):min(iw\,ih):(iw-min(iw\,ih))/2:(ih-min(iw\,ih))/2,scale={tw}:{th},setsar=1`
+    (center crop ke square, full width utk vertical 1080x1920 → crop 1080x1080 y=420)
+  * Else (mode biasa) → scale+pad (fit+letterbox/pillarbox) spt sebelumnya
+- Print konfirmasi + ringkasan: tampilkan "(1:1 crop, v3.11)" kalau is_square=True
+
+### Test (sandbox, semua PASS)
+
+1. **Filter ffmpeg crop escape** (3 case):
+   - Vertical 1080x1920 → 1080x1080 SAR=1:1 ✓ (kasus user)
+   - Horizontal 1920x1080 → 1080x1080 SAR=1:1 ✓ (defensive, min() handle kedua orientasi)
+   - Small 270x480 → 270x270 ✓ (crop logic verified)
+   - Escape `min(iw\,ih)` (koma di-escape) benar — ffmpeg parse OK
+2. **Logic pick_force_resolution** (mock questionary, 3 case):
+   - Vertical source → opsi 1:1 ADA, return (1080,1080,True) ✓
+   - Horizontal source → opsi 1:1 TIDAK ada (benar), return (1920,1080,False) ✓
+   - Vertical + pilih 1080p → return (1080,1920,False) ✓ (mode lama tetap jalan)
+
+### Constraint (sudah sesuai design user)
+
+- 1:1 hanya muncul kalau source vertical (h > w)
+- 1:1 hanya jalan di jalur Burn SRT (B/D/F) — constraint Step 4.10 yang sudah ada
+- Source horizontal → pakai force 1080p horizontal (1920x1080) spt biasa
+- Mode lama (A/B/C/D/E/F + force 1080p/720p/480p vert/horiz/custom) TIDAK dihapus
+
+### Status: UNTESTED di Mac
+
+Code di GitHub, belum diuji di Mac user. User akan test:
+1. curl update mix-tui.py ke ~/Dubbing/
+2. Run mode F (Original + Burn SRT) dengan source vertical
+3. Pilih opsi "1:1 square (1080x1080)" di Step 4.10
+4. Verify output 1080x1080, hardsub, ducking jalan, subjek utuh di tengah
+5. VLC feedback → kalau OK, status jadi production
