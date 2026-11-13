@@ -28,7 +28,7 @@ Kamus: kamus-tui → jv.wiktionary.json → Supabase
 | 4 | Web app | ⚠ Prototype |
 | 5 | SRT editor (web) | ⏳ Pending |
 | 6 | edge-tts-tui v7.5 | ✅ (SRT + Narasi, ID only, paralel-safe) — production default |
-| 7 | mix-tui v3.10 | ✅ (force 1080p + audio 48000Hz) |
+| 7 | mix-tui v3.11 | ✅ core (force 1080p + audio 48000Hz) / ⚠ 1:1 square mode TESTING |
 | 8 | whisper-tui v2.1 | ✅ (Metal GPU) |
 | 9 | srt-editor-tui v1.0.0 | ✅ |
 | 10 | shorts-tui v1.1 | ✅ |
@@ -83,7 +83,7 @@ Helper: `ensure_hdd()`, `ensure_kamus()`, `load_env()`
 - Sebutan hormat Tiongkok = PRESERVE, bukan mistranslate
 - Tiap sesi WAJIB update docs + commit + push (AGENTS.md, PROJECT_RULES.md, scripts/README.md, README.md, worklog.md)
 - TUI baru → update tabel "N TUI" di semua docs di atas. Cek `git ls-tree origin/main scripts/` untuk nomor TUI terakhir
-- **Standarisasi res+audio = kerjaan mix-tui v3.10**
+- **Standarisasi res+audio = kerjaan mix-tui v3.11** (mode 1:1 square baru = center crop source vertical → 1080x1080 IG feed, TESTING)
 - **merge-tui v1.9** = stream copy (no drift) jika format konsisten, standardize jika beda
 - **fix-merge-audio.py = DEPRECATED (masih ada di repo scripts/fix-merge-audio.py v1.4, tapi jangan pakai — gunakan merge-tui v1.9 audio stream copy)** (audio drift, failed experiment)
 - **edge-tts-tui v7.5 = production default** (SRT + Narasi, Indonesia only, paralel-safe, no API key)

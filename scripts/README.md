@@ -12,7 +12,7 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 4 | Web app | ⚠ Prototype |
 | 5 | SRT editor (web) | ⏳ Pending |
 | 6 | edge-tts-tui.py v7.5 (SRT + Narration mode, ID only, paralel-safe) | ✅ Production default |
-| 7 | mix-tui.py v3.10 (force 1080p + audio 48000Hz stereo) | ✅ Production |
+| 7 | mix-tui.py v3.11 (force 1080p + audio 48000Hz stereo + 1:1 square mode) | ✅ core / ⚠ 1:1 TESTING |
 | 8 | whisper-tui.py v2.1 (whisper.cpp, Metal GPU) | ✅ Production |
 | 9 | srt-editor-tui.py v1.0.0 (fix typo SRT translate) | ✅ Production |
 | 10 | shorts-tui.py v1.1 (Shorts via AI JSON atau Part via SRT) | ✅ Production |
@@ -46,7 +46,7 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | demucs-tui.py | 2 | Vocal separation (M1 MPS) | HDD/demucs/ |
 | kamus-tui.py v16 | 3 | TUI editor jv.wiktionary.json | SSD |
 | edge-tts-tui.py v7.5 | 6 | TTS SRT + Narasi (Indonesia, paralel-safe) | HDD/tts/ |
-| mix-tui.py v3.10 | 7 | Final mix (force 1080p, audio 48000Hz stereo) | HDD/mix/ |
+| mix-tui.py v3.11 | 7 | Final mix (force 1080p, audio 48000Hz stereo, +1:1 square mode TESTING) | HDD/mix/ |
 | whisper-tui.py v2.1 | 8 | Generate SRT dari audio (Metal GPU) | HDD/input/ |
 | srt-editor-tui.py v1.0.0 | 9 | Fix typo SRT hasil translate | HDD/input/ |
 | shorts-tui.py v1.1 | 10 | Pecah MP4 jadi shorts/parts | HDD/shorts/ atau HDD/parts/ |

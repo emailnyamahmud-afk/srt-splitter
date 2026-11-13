@@ -36,7 +36,7 @@ Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 4 | Web app | ⚠ Prototype |
 | 5 | SRT editor (web) | ⏳ Pending |
 | 6 | edge-tts-tui v7.5 (SRT + Narasi mode, ID only, paralel-safe) | ✅ Production default |
-| 7 | mix-tui v3.10 (force 1080p + audio 48000Hz stereo) | ✅ |
+| 7 | mix-tui v3.11 (force 1080p + audio 48000Hz stereo + 1:1 square mode) | ✅ core / ⚠ 1:1 testing |
 | 8 | whisper-tui v2.1 (Metal GPU) | ✅ |
 | 9 | srt-editor-tui v1.0.0 | ✅ |
 | 10 | shorts-tui v1.1 (Shorts + Part) | ✅ |
@@ -321,7 +321,7 @@ gemini-tts #15 Narasi ┤
 5. Data di HDD, scripts di SSD
 6. Sebutan hormat Tiongkok (Nona/Tuan/Dokter/Paman) = PRESERVE, bukan mistranslate
 7. GT input: SRT English (dari whisper-tui) → GT English→ID lebih akurat
-8. **Standarisasi res+audio = kerjaan mix-tui v3.10**, bukan yt-dlp atau merge-tui
+8. **Standarisasi res+audio = kerjaan mix-tui v3.11** (mode 1:1 square baru = center crop untuk source vertical → IG feed), bukan yt-dlp atau merge-tui
 9. **merge-tui v1.9** = full format detect (6 properties) + stream copy (super cepat) / standardize (re-encode). VLC confirmed: sync 100%.
 10. **fix-merge-audio.py = DEPRECATED (masih ada di repo scripts/fix-merge-audio.py v1.4, tapi jangan pakai — gunakan merge-tui v1.9 audio stream copy)** (audio drift, failed experiment)
 11. **edge-tts-tui v7.5 = production default** (SRT + Narasi, ID only, paralel-safe, no API key)
@@ -349,7 +349,7 @@ gemini-tts #15 Narasi ┤
 
 ### Pipeline Indonesia (production):
 ```
-yt-dlp v6.5 → srt-editor v1.0.1 → edge-tts v7.5 SRT → mix-tui v3.10 → merge-tui v1.9
+yt-dlp v6.5 → srt-editor v1.0.1 → edge-tts v7.5 SRT → mix-tui v3.11 → merge-tui v1.9
                                                                                       ↘ shorts-tui → shorts-csv-tui → YouTube
 edge-tts v7.5 Narasi (ID) → review-mix-tui v1.0 (review film ID)
 edge-tts v7.5 Narasi (ID) → konten-tui v1.0 (konten sejarah ID)
@@ -357,16 +357,16 @@ edge-tts v7.5 Narasi (ID) → konten-tui v1.0 (konten sejarah ID)
 
 ### Pipeline Jawa (experimental, opsional via Gemini):
 ```
-yt-dlp v6.5 → srt-editor v1.0.1 → gemini-tts-tui v1.1 SRT mode (JV) → mix-tui v3.10
+yt-dlp v6.5 → srt-editor v1.0.1 → gemini-tts-tui v1.1 SRT mode (JV) → mix-tui v3.11
 naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → review-mix-tui v1.0 (review film JV)
 naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → konten-tui v1.0 (konten sejarah JV)
 naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → talkinghead-tui v1.0 (talking head JV, green screen) → editor chroma key → final-konten.mp4
 ```
 
-## Status (3 Nov 2026)
+## Status (3 Nov 2026, update 14 Nov 2026)
 
 - merge-tui v1.9: ✅ VLC confirmed (10 file × 24h, sync 100%, stream copy ~2 menit)
-- mix-tui v3.10: ✅ force 1080p + audio 48000Hz stereo
+- mix-tui v3.11: ✅ core production (force 1080p + audio 48000Hz stereo) / ⚠ 1:1 square mode TESTING (14 Nov 2026 04:58 WIB — user mid-run Mode F + source vertical 202x360 → 1080x1080 crop, ffmpeg jalan 1.3% ETA ~16m, belum VLC feedback)
 - yt-dlp v6.5: ✅ multi-SRT ID+EN, default 1080p preferred
 - edge-tts-tui v7.5: ✅ production default (SRT + Narasi, ID only, paralel-safe)
 - review-mix-tui v1.0: ⚠ UNTESTED (TUI #13, code di GitHub belum diuji di Mac)

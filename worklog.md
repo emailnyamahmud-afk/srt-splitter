@@ -6483,3 +6483,62 @@ Code di GitHub, belum diuji di Mac user. User akan test:
 3. Pilih opsi "1:1 square (1080x1080)" di Step 4.10
 4. Verify output 1080x1080, hardsub, ducking jalan, subjek utuh di tengah
 5. VLC feedback → kalau OK, status jadi production
+
+---
+
+## 2026-11-14 04:58 WIB — User mulai uji mode 1:1 mix-tui v3.11 di Mac (TESTING, mid-run)
+
+### Context
+
+User mulai uji mode 1:1 square baru (commit f0fce93) di Mac. Test berjalan, belum selesai,
+belum VLC feedback. Entry ini catat status TESTING sesuai aturan "jangan auto-declare production".
+
+### Skenario test (dari output terminal user)
+
+- TUI: `python3 mix-tui.py` di `~/Dubbing` (venv active)
+- Mode input: **Original** (MP4 + MP3 ori + Dub, SRT-driven ducking) — Mode F pattern
+- Mode mix: **Burn SRT Indonesia** (re-encode, VideoToolbox M1)
+- SRT: `5 Tentara Modern di Dinasty Song v4.id.srt` (4182 cues, cue coverage 64.9%)
+- Bitrate: 2 Mbps
+- Logo: auto-detect `~/Dubbing/logo.png` (top-right, 100x100)
+- **Source: 202x360 (vertical)** — kecil, test cepat
+- **Step 4.10: user pilih "1:1 square (1080x1080) — crop atas+bawah, full width"** ✓ terdeteksi
+- Output: `/Volumes/HDD/Dubbing/mix/5 Tentara Modern di Dinasty Song v4.1:1.mp4`
+- Durasi: MP4/MP3 3j 1m 32s, Dub 3j 1m 29s (3s lebih pendek, SFX isi gap)
+
+### Yang terverifikasi dari output (belum VLC)
+
+- ✅ Opsi 1:1 muncul di Step 4.10 (karena source vertical 202x360, h > w)
+- ✅ Print "Force output: 1080x1080 (1:1 crop, atas+bawah dipotong, full width)"
+- ✅ Ringkasan: "Resolusi : 1080x1080 (1:1 crop, v3.11)"
+- ✅ ffmpeg jalan tanpa error (filter crop diterima, escape `min(iw,ih)` OK)
+- ✅ Progress 1.3% | speed=10.9x | ETA ~16m 26s (M1 VideoToolbox 35x hardware)
+- ✅ Envelope WAV untuk ducking generated (4182 cues, amultiply hard mute)
+- ⏳ Output belum selesai di-generate (mid-run saat entry ini)
+
+### Yang belum terverifikasi (tunggu user)
+
+- ❌ Output 1080x1080 benar (ffprobe belum dijalankan user)
+- ❌ SAR=1:1 (square pixel)
+- ❌ Crop center benar (subjek utuh di tengah, atas+bawah dipotong proporsional)
+- ❌ Hardsub SRT terburn di posisi bottom:20
+- ❌ Ducking jalan (MP3 ori mute saat cue, normal saat gap)
+- ❌ Audio sync (dub + MP3 ori + ducking)
+- ❌ VLC playback OK (no glitch, no A/V drift)
+- ❌ Logo overlay terburn top-right
+
+### Status
+
+- mix-tui v3.11 mode 1:1 = **TESTING** (bukan production, belum VLC confirmed)
+- Core features (force 1080p + audio 48000Hz stereo) tetap ✅ production
+- Docs sudah di-update: AGENTS.md, PROJECT_RULES.md, README.md, scripts/README.md
+  semua catat "v3.11 / ⚠ 1:1 TESTING"
+- Kalau user VLC feedback OK → update status jadi production + tulis pelajaran di
+  anti-amnesia section AGENTS.md. Kalau error → fix di sandbox + push + user retest.
+
+### Catatan teknis
+
+- Source 202x360 adalah test kecil (bukan film full). 202x360 → upscale ke 1080x1080
+  (crop dulu ke 202x202 center, lalu scale up 5.3x). Hasil bisa soft karena upscale.
+  Untuk film real (1080x1920), crop 1080x1080 tanpa upscale — sharp.
+- Output filename `v4.1:1.mp4` — user pilih nama sendiri (defaultnya `v4-id-orig-sub.mp4`)
