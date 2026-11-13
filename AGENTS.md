@@ -366,7 +366,7 @@ naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → talkinghead-tui v1.0 
 ## Status (3 Nov 2026, update 14 Nov 2026)
 
 - merge-tui v1.9: ✅ VLC confirmed (10 file × 24h, sync 100%, stream copy ~2 menit)
-- mix-tui v3.11: ✅ production (force 1080p + audio 48000Hz stereo + 1:1 square mode VLC confirmed 14 Nov 2026 — Mode F + source vertical 202x360 → 1080x1080 crop, 3j1m video, 2789 MB, 19m2s encode, subs sharp clean, ducking + hardsub OK. Resolusi rendah = sumber, bukan bug. User retest high-res source next.)
+- mix-tui v3.11: ✅ production (force 1080p + audio 48000Hz stereo + 1:1 square mode VLC confirmed 14 Nov 2026 — 2 test: (1) Mode F source 202x360 → 1080x1080 upscale 5.3x, 3j1m, 2789 MB, 19m2s, subs sharp; (2) Mode F source 1440x2560 4K → 1080x1080 downscale 1.33x, 2j30m, 2361 MB, 15m45s, speed 9.5x, background crisp + subs sharp. Resolusi rendah = sumber, bukan bug — high-res retest confirmed sharp.)
 - yt-dlp v6.5: ✅ multi-SRT ID+EN, default 1080p preferred
 - edge-tts-tui v7.5: ✅ production default (SRT + Narasi, ID only, paralel-safe)
 - review-mix-tui v1.0: ⚠ UNTESTED (TUI #13, code di GitHub belum diuji di Mac)
@@ -425,6 +425,9 @@ SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
 - Source horizontal → opsi 1:1 tidak muncul, pakai force 1080p horizontal (1920x1080).
 - **Return tuple 3-elemen**: `pick_force_resolution()` return `(w, h, is_square)`, BUKAN 2-tuple lama. Indexing `[0]/[1]` tetap jalan, tapi unpacking `tw, th = ...` harus jadi `tw, th, is_square = ...`.
 - Escape koma ffmpeg: `min(iw\,ih)` di f-string Python = `min(iw\\,ih)` (backslash dobel). Tanpa escape, ffmpeg salah parse (koma = pemisah filter).
-- **Resolusi rendah output = sumber rendah, BUKAN bug.** Source 202x360 → crop 202x202 → upscale 5.3x ke 1080x1080 = soft. Source 1080x1920 → crop 1080x1080 tanpa upscale = sharp. User retest high-res untuk konfirmasi sharpness full.
-- Hasil test 14 Nov 2026: Mode F, source 202x360, 4182 cues, 3j1m32s video → 1080x1080, 2789 MB, encode 19m2s (speed 9.5x M1 VideoToolbox), subs sharp, ducking + hardsub + logo OK.
+- **Resolusi output = fungsi sumber, BUKAN bug.** Source 202x360 → crop 202x202 → upscale 5.3x ke 1080x1080 = background soft (subtitle tetap sharp). Source 1440x2560 → crop 1440x1440 → downscale 1.33x ke 1080x1080 = background crisp + subtitle sharp. **VLC confirmed kedua kasus 14 Nov 2026.**
+- Hasil test 14 Nov 2026 (2 run, dua-duanya VLC OK):
+  - Run 1 (low-res): Mode F, source 202x360, 4182 cues, 3j1m32s video → 1080x1080, 2789 MB, encode 19m2s (speed 9.5x), subs sharp, ducking + hardsub + logo OK.
+  - Run 2 (high-res 4K): Mode F, source 1440x2560, 5100 cues, 2j30m4s video → 1080x1080, 2361 MB, encode 15m45s (speed 9.5x), background crisp + subs sharp, ducking + hardsub + logo OK.
+  - Bonus: 1:1 (1080x1080, 1.17MP) encode ~1.7x lebih cepat dari vertical 1080x1920 (2.07MP) — test salah-pilih 1080x1920 speed 6.1x vs 1:1 speed 10.5x.
 

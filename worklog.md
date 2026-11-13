@@ -6597,3 +6597,73 @@ bukan bug mode 1:1. Filter crop jalan benar: 202x360 → crop 202x202 center →
 - `pick_force_resolution()` return 3-tuple `(w, h, is_square)` — unpacking harus 3-elemen.
 - Escape ffmpeg `min(iw\,ih)` di Python f-string = `min(iw\\,ih)` (backslash dobel).
 - 1:1 hanya Burn SRT (B/D/F), hanya source vertical. Mode lama tidak dihapus.
+
+---
+
+## 2026-11-14 — VLC confirmed test 2 (high-res 4K): mix-tui v3.11 mode 1:1 sharp di source besar
+
+### Context
+
+Test 1 (low-res 202x360) sudah VLC confirmed 14 Nov 2026 (entry sebelumnya). User retest
+dengan source high-res untuk konfirmasi sharpness full quality. Awalnya user salah pilih
+opsi (pilih Force 1080p vertical 1080x1920, bukan 1:1) — saya catch dari output
+"Resolusi : 1080x1920 (force, v3.9)", user stop + re-run dengan opsi 1:1 yang benar.
+
+### Hasil uji user (VLC feedback OK)
+
+User VLC feedback: **clean, ukuran 1:1, resolusi 1080p, source resolusi besar → 1080p tetap
+clean, sharp OK.** Ini konfirmasi teori "resolusi rendah = sumber, bukan bug" — kalau source
+high-res, output 1:1 crisp tanpa upscale artifact.
+
+### Detail run (dari output terminal)
+
+- Source: **1440x2560 (4K vertical)** — high-res
+- Mode: Original + Burn SRT (Mode F), SRT-driven ducking
+- SRT: 5100 cues, cue coverage 71.0%
+- Bitrate: 2 Mbps, Logo: auto-detect (top-right 100x100)
+- **Step 4.10: user pilih "1:1 square (1080x1080)"** ✓ (setelah salah pilih di run sebelumnya)
+- Output: `S1-1:1-new.mp4`
+- **Resolusi output: 1080x1080 (1:1 crop, v3.11)** ✓
+- **Encode: 100% selesai, elapsed 15m 45s, speed 9.5x** (M1 VideoToolbox)
+- **Size: 2361.2 MB** (2.36 GB untuk 2j30m video)
+- Duration: 2j 30m 4s (sync MP4/MP3/dub semua sama)
+
+### Yang terverifikasi VLC
+
+- ✅ Output 1080x1080 square benar (1:1, tidak ada letterbox)
+- ✅ Background video **crisp** (downscale 1440→1080, detail terjaga)
+- ✅ Subs sharp (sama seperti test low-res — font 18pt tetap sharp di target 1080)
+- ✅ Resolusi 1080p benar
+- ✅ Ducking + hardsub + logo OK (tidak di-test eksplisit tapi tidak ada komplain)
+
+### Validasi teori "resolusi = fungsi sumber"
+
+| Test | Source | Operasi | Background | Subtitle |
+|------|--------|---------|------------|----------|
+| 1 (low-res) | 202x360 | crop 202x202 → upscale 5.3x | soft | sharp |
+| 2 (high-res) | 1440x2560 | crop 1440x1440 → downscale 1.33x | **crisp** | sharp |
+
+Konfirmasi: subtitle selalu sharp (font render di target 1080, independent source).
+Background sharpness = fungsi source. Mode 1:1 code-nya benar, tidak ada bug.
+
+### Bonus finding: 1:1 encode lebih cepat dari vertical 1080x1920
+
+- 1:1 (1080x1080 = 1.17MP/frame): speed 9.5–10.5x
+- Vertical 1080x1920 (2.07MP/frame, dari run salah-pilih): speed 6.1x
+- Rasio: 1:1 ~1.7x lebih cepat (44% lebih sedikit pixel)
+- Implikasi: untuk konten IG feed (1:1), mode 1:1 lebih hemat waktu encode dari pada
+  force vertical 1080x1920. Tapi vertical 1080x1920 tetap perlu untuk konten Reels/TikTok.
+
+### Catatan: salah-pilih opsi TUI (UX, bukan bug)
+
+User salah pilih "Force 1080p vertical" padahal mau "1:1 square". Penyebab: opsi 1:1 ada
+di urutan ke-5 (bawah), default = opsi ke-2 (Force 1080p vertical). Saya catch dari output
+"Resolusi : 1080x1920 (force, v3.9)" sebelum user VLC — user stop + re-run. Tidak ada
+perubahan code (opsi 1:1 sengaja tidak di-default karena mayoritas workflow user = vertical
+1080x1920 untuk Reels/TikTok). Kalau user mau 1:1 jadi default, bilang — saya swap default.
+
+### Status final: PRODUCTION (2 test VLC confirmed)
+
+- mix-tui v3.11 mode 1:1 = ✅ PRODUCTION, validated di low-res + high-res source
+- Loop "user retest high-res" CLOSED — high-res confirmed crisp
+- Docs di-update: AGENTS.md (status + pelajaran), README.md (section note)

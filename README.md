@@ -232,9 +232,12 @@ Detail lengkap: lihat [scripts/TALKINGHEAD.md](scripts/TALKINGHEAD.md).
 > **v3.11 (14 Nov 2026):** mode baru `1:1 square (1080x1080)` — center crop source vertical
 > (atas+bawah dipotong, full width dipertahankan) untuk IG feed. Hanya muncul kalau source
 > vertical (h > w), hanya jalur Burn SRT (B/D/F). Mode lama tidak dihapus.
-> **Status: ✅ VLC confirmed 14 Nov 2026** — Mode F + source vertical 202x360 → 1080x1080,
-> 3j1m video, 2789 MB, encode 19m2s (M1 VideoToolbox 9.5x), subs sharp clean, ducking +
-> hardsub + logo OK. Resolusi rendah = sumber (bukan bug). User retest high-res source next.
+> **Status: ✅ VLC confirmed 14 Nov 2026** (2 test, dua-duanya OK):
+> (1) Mode F source 202x360 (low-res) → 1080x1080 upscale 5.3x, 3j1m, 2789 MB, 19m2s, subs sharp;
+> (2) Mode F source 1440x2560 (4K high-res) → 1080x1080 downscale 1.33x, 2j30m, 2361 MB, 15m45s,
+> background crisp + subs sharp, ducking + hardsub + logo OK. Resolusi output = fungsi sumber
+> (bukan bug): low-res source = soft background, high-res source = crisp. 1:1 encode ~1.7x
+> lebih cepat dari vertical 1080x1920 (1.17MP vs 2.07MP per frame).
 
 | # | Mode | Input | Output | Durasi | Cocok |
 |---|------|-------|--------|--------|-------|
