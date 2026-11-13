@@ -6542,3 +6542,58 @@ belum VLC feedback. Entry ini catat status TESTING sesuai aturan "jangan auto-de
   (crop dulu ke 202x202 center, lalu scale up 5.3x). Hasil bisa soft karena upscale.
   Untuk film real (1080x1920), crop 1080x1080 tanpa upscale — sharp.
 - Output filename `v4.1:1.mp4` — user pilih nama sendiri (defaultnya `v4-id-orig-sub.mp4`)
+
+---
+
+## 2026-11-14 — VLC confirmed: mix-tui v3.11 mode 1:1 square = PRODUCTION
+
+### Hasil uji user (VLC feedback OK)
+
+User uji mode 1:1 selesai + VLC playback. Hasil: **BAGUS, sharp, subs clean jelas, ukuran 1:1 benar.**
+
+Detail run (dari output terminal):
+- Source: 202x360 (vertical, resolusi rendah — test cepat)
+- Mode: Original + Burn SRT (Mode F), SRT-driven ducking
+- SRT: 4182 cues, cue coverage 64.9%
+- Bitrate: 2 Mbps, Logo: auto-detect (top-right 100x100)
+- Output: `5 Tentara Modern di Dinasty Song v4.1:1.mp4`
+- **Resolusi output: 1080x1080 (1:1 crop, v3.11)** ✓
+- **Encode: 100% selesai, elapsed 19m 2s, speed 9.5x** (M1 VideoToolbox)
+- **Size: 2789.0 MB** (2.79 GB untuk 3j1m video)
+- Duration: 3j 1m 32s (sync MP4/MP3, dub 3s lebih pendek → SFX isi gap)
+
+### Yang terverifikasi VLC
+
+- ✅ Output 1080x1080 square benar
+- ✅ Subs sharp, clean, jelas (hardsub bottom:20, font 18pt putih outline hitam)
+- ✅ Ducking jalan (MP3 ori mute saat cue, normal saat gap, fade 100ms smooth)
+- ✅ Logo overlay terburn top-right
+- ✅ Audio sync (dub + MP3 ori + ducking)
+- ✅ VLC playback OK (no glitch, no A/V drift)
+
+### Resolusi rendah = sumber, BUKAN bug
+
+User konfirmasi: resolusi rendah output karena **source 202x360 memang rendah** (test cepat),
+bukan bug mode 1:1. Filter crop jalan benar: 202x360 → crop 202x202 center → upscale 5.3x ke
+1080x1080. Untuk source 1080x1920 (film full), crop 1080x1080 tanpa upscale → sharp.
+
+**User akan uji lagi dengan source resolusi tinggi** untuk konfirmasi sharpness full quality.
+
+### Status update: TESTING → PRODUCTION
+
+- mix-tui v3.11 mode 1:1 square = **✅ PRODUCTION** (VLC confirmed 14 Nov 2026)
+- Core features (force 1080p + audio 48000Hz stereo) tetap ✅ production
+- Docs di-update (TESTING → VLC confirmed):
+  - AGENTS.md: table row 7, status section, + pelajaran anti-amnesia baru
+  - PROJECT_RULES.md: table row 7
+  - README.md root: table row 7 + section header
+  - scripts/README.md: 2 table rows
+- Anti-amnesia AGENTS.md: tambah section "mix-tui v3.11 mode 1:1 square (VLC confirmed)"
+  dengan detail: filter escape, return tuple 3-elemen, constraint Burn SRT, resolusi rendah = sumber
+
+### Pelajaran untuk AI next session
+
+- Mode 1:1 = production, bukan experimental. Jangan treat sebagai UNTESTED.
+- `pick_force_resolution()` return 3-tuple `(w, h, is_square)` — unpacking harus 3-elemen.
+- Escape ffmpeg `min(iw\,ih)` di Python f-string = `min(iw\\,ih)` (backslash dobel).
+- 1:1 hanya Burn SRT (B/D/F), hanya source vertical. Mode lama tidak dihapus.

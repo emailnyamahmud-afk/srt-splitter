@@ -16,7 +16,7 @@ ID jalan end-to-end (14 TUI production + 2 untested). Jawa jalan via Gemini TTS 
 | 4 | Web app | Translate SRT Indonesia → Jawa (kamus Supabase) | ⚠ Prototype |
 | 5 | SRT editor (web) | Pakai SRT Indonesia (Jawa nunggu kamus+web) | ⏳ Pending |
 | 6 | edge-tts-tui.py v7.5 | TTS SRT + Narration (Indonesia, paralel-safe, lock file, 429 retry) | ✅ Production default |
-| 7 | mix-tui.py v3.11 | Mix MP4 + audio → final video (6 mode + logo + fade + force 1080p + audio 48000 Hz stereo + 1:1 square mode) | ✅ core / ⚠ 1:1 TESTING |
+| 7 | mix-tui.py v3.11 | Mix MP4 + audio → final video (6 mode + logo + fade + force 1080p + audio 48000 Hz stereo + 1:1 square mode) | ✅ Production (1:1 VLC confirmed 14 Nov 2026) |
 | 8 | whisper-tui.py v2.1 | Generate SRT dari audio (whisper.cpp, Metal GPU M1) | ✅ Production (Metal GPU, 5.3x realtime, 20 min for 2h audio) |
 | 9 | srt-editor-tui.py v1.0.0 | Fix typo/konteks SRT hasil translate (glossary + bulk replace) | ✅ Production |
 | 10 | shorts-tui.py v1.1 | Pecah MP4 final jadi N shorts (JSON dari AI) atau N parts (SRT auto-split) | ✅ Production (Shorts 60/60 + Part mode auto-split) |
@@ -227,12 +227,14 @@ python3 talkinghead-tui.py
 
 Detail lengkap: lihat [scripts/TALKINGHEAD.md](scripts/TALKINGHEAD.md).
 
-## mix-tui v3.11 — 6 mode + logo + force 1080p + audio 48000Hz + 1:1 square mode (TESTING)
+## mix-tui v3.11 — 6 mode + logo + force 1080p + audio 48000Hz + 1:1 square mode (VLC confirmed)
 
 > **v3.11 (14 Nov 2026):** mode baru `1:1 square (1080x1080)` — center crop source vertical
 > (atas+bawah dipotong, full width dipertahankan) untuk IG feed. Hanya muncul kalau source
-> vertical (h > w), hanya jalur Burn SRT (B/D/F). Mode lama tidak dihapus. Status: TESTING
-> (user uji 14 Nov 2026 04:58 WIB, belum VLC feedback).
+> vertical (h > w), hanya jalur Burn SRT (B/D/F). Mode lama tidak dihapus.
+> **Status: ✅ VLC confirmed 14 Nov 2026** — Mode F + source vertical 202x360 → 1080x1080,
+> 3j1m video, 2789 MB, encode 19m2s (M1 VideoToolbox 9.5x), subs sharp clean, ducking +
+> hardsub + logo OK. Resolusi rendah = sumber (bukan bug). User retest high-res source next.
 
 | # | Mode | Input | Output | Durasi | Cocok |
 |---|------|-------|--------|--------|-------|

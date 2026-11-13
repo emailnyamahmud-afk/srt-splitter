@@ -36,7 +36,7 @@ Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 4 | Web app | ⚠ Prototype |
 | 5 | SRT editor (web) | ⏳ Pending |
 | 6 | edge-tts-tui v7.5 (SRT + Narasi mode, ID only, paralel-safe) | ✅ Production default |
-| 7 | mix-tui v3.11 (force 1080p + audio 48000Hz stereo + 1:1 square mode) | ✅ core / ⚠ 1:1 testing |
+| 7 | mix-tui v3.11 (force 1080p + audio 48000Hz stereo + 1:1 square mode) | ✅ (1:1 VLC confirmed 14 Nov 2026) |
 | 8 | whisper-tui v2.1 (Metal GPU) | ✅ |
 | 9 | srt-editor-tui v1.0.0 | ✅ |
 | 10 | shorts-tui v1.1 (Shorts + Part) | ✅ |
@@ -366,7 +366,7 @@ naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → talkinghead-tui v1.0 
 ## Status (3 Nov 2026, update 14 Nov 2026)
 
 - merge-tui v1.9: ✅ VLC confirmed (10 file × 24h, sync 100%, stream copy ~2 menit)
-- mix-tui v3.11: ✅ core production (force 1080p + audio 48000Hz stereo) / ⚠ 1:1 square mode TESTING (14 Nov 2026 04:58 WIB — user mid-run Mode F + source vertical 202x360 → 1080x1080 crop, ffmpeg jalan 1.3% ETA ~16m, belum VLC feedback)
+- mix-tui v3.11: ✅ production (force 1080p + audio 48000Hz stereo + 1:1 square mode VLC confirmed 14 Nov 2026 — Mode F + source vertical 202x360 → 1080x1080 crop, 3j1m video, 2789 MB, 19m2s encode, subs sharp clean, ducking + hardsub OK. Resolusi rendah = sumber, bukan bug. User retest high-res source next.)
 - yt-dlp v6.5: ✅ multi-SRT ID+EN, default 1080p preferred
 - edge-tts-tui v7.5: ✅ production default (SRT + Narasi, ID only, paralel-safe)
 - review-mix-tui v1.0: ⚠ UNTESTED (TUI #13, code di GitHub belum diuji di Mac)
@@ -415,4 +415,16 @@ SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
 - User: kalau repo clone → `git pull` (untuk dev web app) / kalau working dir → `curl -L -o ... https://raw.githubusercontent.com/.../main/scripts/<file>.py` (untuk pakai TUI)
 - User test → kalau error → paste ke AI → AI fix di sandbox → push GitHub → user download lagi
 - TIAP selesai task: WAJIB commit + push GitHub (jangan nunggu ditanya ulang)
+
+### mix-tui v3.11 mode 1:1 square (VLC confirmed 14 Nov 2026):
+
+- **Mode 1:1 = PRODUCTION** (VLC confirmed). Bukan experimental lagi.
+- Opsi `1:1 square (1080x1080)` muncul di Step 4.10 HANYA kalau source vertical (h > w).
+- Filter: `crop=min(iw\,ih):min(iw\,ih):center, scale=1080:1080, setsar=1` → atas+bawah dipotong, **full width dipertahankan** (1080px). Untuk IG feed.
+- Hanya jalur Burn SRT (Mode B/D/F, re-encode). Stream copy (A/C/E) tidak bisa (no filter).
+- Source horizontal → opsi 1:1 tidak muncul, pakai force 1080p horizontal (1920x1080).
+- **Return tuple 3-elemen**: `pick_force_resolution()` return `(w, h, is_square)`, BUKAN 2-tuple lama. Indexing `[0]/[1]` tetap jalan, tapi unpacking `tw, th = ...` harus jadi `tw, th, is_square = ...`.
+- Escape koma ffmpeg: `min(iw\,ih)` di f-string Python = `min(iw\\,ih)` (backslash dobel). Tanpa escape, ffmpeg salah parse (koma = pemisah filter).
+- **Resolusi rendah output = sumber rendah, BUKAN bug.** Source 202x360 → crop 202x202 → upscale 5.3x ke 1080x1080 = soft. Source 1080x1920 → crop 1080x1080 tanpa upscale = sharp. User retest high-res untuk konfirmasi sharpness full.
+- Hasil test 14 Nov 2026: Mode F, source 202x360, 4182 cues, 3j1m32s video → 1080x1080, 2789 MB, encode 19m2s (speed 9.5x M1 VideoToolbox), subs sharp, ducking + hardsub + logo OK.
 

@@ -28,7 +28,7 @@ Kamus: kamus-tui → jv.wiktionary.json → Supabase
 | 4 | Web app | ⚠ Prototype |
 | 5 | SRT editor (web) | ⏳ Pending |
 | 6 | edge-tts-tui v7.5 | ✅ (SRT + Narasi, ID only, paralel-safe) — production default |
-| 7 | mix-tui v3.11 | ✅ core (force 1080p + audio 48000Hz) / ⚠ 1:1 square mode TESTING |
+| 7 | mix-tui v3.11 | ✅ (force 1080p + audio 48000Hz + 1:1 square VLC confirmed 14 Nov 2026) |
 | 8 | whisper-tui v2.1 | ✅ (Metal GPU) |
 | 9 | srt-editor-tui v1.0.0 | ✅ |
 | 10 | shorts-tui v1.1 | ✅ |
