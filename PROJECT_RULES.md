@@ -1,6 +1,6 @@
 # PROJECT_RULES.md
 
-> Aturan project. Baca tiap session sebelum kerja. Update: 3 Nov 2026.
+> Aturan project. Baca tiap session sebelum kerja. Update: 19 Nov 2026.
 
 ## Pipeline
 

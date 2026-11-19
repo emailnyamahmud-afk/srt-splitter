@@ -6667,3 +6667,73 @@ perubahan code (opsi 1:1 sengaja tidak di-default karena mayoritas workflow user
 - mix-tui v3.11 mode 1:1 = ✅ PRODUCTION, validated di low-res + high-res source
 - Loop "user retest high-res" CLOSED — high-res confirmed crisp
 - Docs di-update: AGENTS.md (status + pelajaran), README.md (section note)
+
+---
+
+## 2026-11-19 — Sync verification + lesson: sandbox lokal bisa tertinggal dari GitHub
+
+### Konteks
+
+Awal session ini, saya baca AGENTS.md + README.md dari working copy sandbox lokal, dapat
+versi lama: "15 TUI", "mix-tui v3.10", tanggal "3 Nov 2026". Saya salah diagnose: bilang ke
+user "GitHub v3.9, Mac v3.11, tidak sync". User koreksi: workflow-nya AI push GitHub → user
+download ke Mac, jadi Mac = GitHub = sandbox semestinya selalu sync. GitHub tidak mungkin
+stale kalau setiap session WAJIB push.
+
+### Investigasi + root cause
+
+- `git fetch origin` → origin/main sudah di `bf3ab24` (v3.11 + 16 TUI + talkinghead + VLC
+  confirmed, commit dari 13-14 Nov 2026). **GitHub selalu v3.11, tidak pernah stale.**
+- Local sandbox main = `d60839f` (auto-commit no-op, hanya chmod, di atas `a73f2e4` era v3.9).
+  Sandbox lokal tertinggal 9 commit dari origin/main.
+- Penyebab: sandbox AI environment di-recycle antar session. Working copy lokal tidak selalu
+  persist dengan baik ke session baru → mulai dari state lama. Sifat sandbox, bukan error
+  workflow user.
+
+### Fix
+
+- `git reset --hard origin/main` → sandbox lokal naik ke `bf3ab24` (v3.11). Buang auto-commit
+  no-op `d60839f` (hanya chmod file mode, 0 baris konten, aman dibuang).
+- Audit 4 docs, ketemu 4 inconsistency kecil sisa pre-sync era:
+  1. AGENTS.md:25 "14 TUI production + 1 experimental" → "12 production + 4 untested"
+  2. AGENTS.md:130 "15 TUI" → "16 TUI" di struktur folder comment
+  3. README.md:5 "14 production + 2 untested" → "12 production + 4 untested"
+  4. PROJECT_RULES.md:86 mix-tui 1:1 "TESTING" → "VLC confirmed 14 Nov 2026"
+- Commit `a430d67` push OK. Sekarang sandbox = GitHub = Mac (semua v3.11, 16 TUI).
+
+### Pelajaran untuk AI next session (CRITICAL)
+
+**SELALU cek sync di awal session sebelum diagnose masalah:**
+```bash
+git fetch origin
+git log origin/main..main --oneline   # local unpushed (harus kosong kalau selalu push)
+git log main..origin/main --oneline   # local tertinggal (harus kosong kalau up-to-date)
+```
+
+Kalau local tertinggal → `git reset --hard origin/main` (asalkan tidak ada working change
+penting — cek `git status` dulu).
+
+**JANGAN asumsi "GitHub stale" dari baca working copy lokal saja.** GitHub selalu paling
+up-to-date karena setiap session WAJIB push (aturan anti-amnesia). Kalau working copy lokal
+bilang versi lama, itu artinya lokal belum fetch, BUKAN GitHub yang ketinggalan.
+
+Kasus ini: saya salah diagnose ke user "GitHub v3.9" padahal GitHub sudah v3.11. User
+koreksi. Pelajaran: fetch dulu, baru bicara tentang sync state.
+
+### Diskusi tambahan session ini (tidak menghasilkan code change, hanya riset/diskusi)
+
+1. **Riset Content ID + graph-based fingerprinting** (diskusi teknis, user mau antisipasi
+   pembajakan karya Jawa di masa depan). Kesimpulan: 3 lapis defensif praktis — Content ID
+   registration + watermark visual terlihat + timestamp naskah. Tidak over-engineer.
+2. **Diskusi library Python generate image/video** (thumbnail-gen, intro-maker ide TUI baru).
+   User explicit: "pertahankan semua tui, kita cuma diskusi". Tidak ada TUI baru lahir.
+   Riset library: Pillow/pycairo (2D), moderngl/pyrender (3D ala Three.js), moviepy/manim
+   (video). CPU-only, gratis, deterministik. Kalau nanti lahir TUI image-gen, kandidat
+   pertama = tui-thumbnail-gen (Pillow + pycairo, immediate value untuk drama Jawa).
+
+### State repo akhir session
+
+- Local main = origin/main = `a430d67` ✅ sync
+- 16 TUI: 12 production + 4 untested (review-mix #13, konten #14, gemini-tts #15, talkinghead #16)
+- mix-tui v3.11 + 1:1 square VLC confirmed (2 test: low-res 202x360 + high-res 4K 1440x2560)
+- Docs 4-file konsisten: AGENTS.md, README.md, PROJECT_RULES.md, scripts/README.md

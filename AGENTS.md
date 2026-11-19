@@ -1,6 +1,6 @@
 # AGENTS.md
 
-> Dibaca AI di awal setiap session. Update: 3 Nov 2026.
+> Dibaca AI di awal setiap session. Update: 19 Nov 2026.
 
 ## Anti-Amnesia Protocol
 
@@ -363,7 +363,7 @@ naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → konten-tui v1.0 (kont
 naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → talkinghead-tui v1.0 (talking head JV, green screen) → editor chroma key → final-konten.mp4
 ```
 
-## Status (3 Nov 2026, update 14 Nov 2026)
+## Status (3 Nov 2026, update 19 Nov 2026)
 
 - merge-tui v1.9: ✅ VLC confirmed (10 file × 24h, sync 100%, stream copy ~2 menit)
 - mix-tui v3.11: ✅ production (force 1080p + audio 48000Hz stereo + 1:1 square mode VLC confirmed 14 Nov 2026 — 2 test: (1) Mode F source 202x360 → 1080x1080 upscale 5.3x, 3j1m, 2789 MB, 19m2s, subs sharp; (2) Mode F source 1440x2560 4K → 1080x1080 downscale 1.33x, 2j30m, 2361 MB, 15m45s, speed 9.5x, background crisp + subs sharp. Resolusi rendah = sumber, bukan bug — high-res retest confirmed sharp.)
@@ -376,7 +376,7 @@ naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → talkinghead-tui v1.0 
 - Pipeline produksi Indonesia: 6 film tested, all TUI production-ready
 - Pipeline Jawa: experimental, tunggu user VLC feedback
 
-## Anti-amnesia untuk AI next session (Pelajaran 3 Nov 2026)
+## Anti-amnesia untuk AI next session (Pelajaran 3 Nov 2026, update 19 Nov 2026)
 
 ### LOKASI (jangan campur aduk — kesalahan parah saya sebelumnya):
 
@@ -415,6 +415,7 @@ SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
 - User: kalau repo clone → `git pull` (untuk dev web app) / kalau working dir → `curl -L -o ... https://raw.githubusercontent.com/.../main/scripts/<file>.py` (untuk pakai TUI)
 - User test → kalau error → paste ke AI → AI fix di sandbox → push GitHub → user download lagi
 - TIAP selesai task: WAJIB commit + push GitHub (jangan nunggu ditanya ulang)
+- **CEK SYNC DI AWAL SESSION (pelajaran 19 Nov 2026)**: sandbox lokal bisa tertinggal dari GitHub origin/main karena environment di-recycle antar session. **SELALU** jalankan `git fetch origin && git log origin/main..main --oneline && git log main..origin/main --oneline` di awal session sebelum diagnose masalah sync. Kalau local tertinggal: `git reset --hard origin/main` (asalkan tidak ada working change penting). JANGAN asumsi "GitHub stale" hanya dari baca working copy lokal — GitHub selalu paling up-to-date karena setiap session WAJIB push. Kasus 19 Nov 2026: saya salah diagnose "GitHub v3.9" padahal GitHub sudah v3.11 (commit `bf3ab24`), hanya sandbox lokal yang belum fetch. User koreksi. Pelajaran: fetch dulu, baru bicara.
 
 ### mix-tui v3.11 mode 1:1 square (VLC confirmed 14 Nov 2026):
 
