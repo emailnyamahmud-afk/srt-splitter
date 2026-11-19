@@ -2,7 +2,7 @@
 
 Pipeline dubbing bahasa eksternal (Mandarin, English, Jepang, Italia, dll) → Indonesia / Jawa / Sunda. Web app + Python TUI.
 
-ID jalan end-to-end (14 TUI production + 2 untested). Jawa jalan via Gemini TTS (gemini-tts-tui v1.1 SRT + Narasi). Talking head via SadTalker Replicate (talkinghead-tui v1.0). Sunda nunggu kamus Supabase selesai.
+ID jalan end-to-end (12 TUI production + 4 untested). Jawa jalan via Gemini TTS (gemini-tts-tui v1.1 SRT + Narasi). Talking head via SadTalker Replicate (talkinghead-tui v1.0). Sunda nunggu kamus Supabase selesai.
 
 **Live:** https://srt-splitter.vercel.app/
 

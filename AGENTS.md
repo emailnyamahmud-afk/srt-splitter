@@ -22,7 +22,7 @@
 ## Project: SRT Splitter + Dubbing Multi-Bahasa
 
 Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
-- ID: jalan end-to-end (14 TUI production + 1 experimental)
+- ID: jalan end-to-end (12 TUI production + 4 untested: review-mix #13, konten #14, gemini-tts #15, talkinghead #16)
 - Jawa: pipeline dub (gemini-tts-tui v1.1 SRT mode) + narasi (gemini-tts-tui v1.1 Narration mode) jalan
 - Sunda: nunggu kamus Supabase
 
@@ -127,7 +127,7 @@ Repo root:
 ├── src/                               # Next.js web app (translate SRT Indonesia → Jawa via Supabase)
 ├── api/                               # Vercel serverless functions (edge-tts proxy dll)
 ├── public/                            # static assets + kamus JSON (jv.wiktionary.json dll)
-├── scripts/                           # Python TUI (15 TUI) — DIDOWNLOAD USER ke ~/Dubbing/
+├── scripts/                           # Python TUI (16 TUI) — DIDOWNLOAD USER ke ~/Dubbing/
 │   ├── config.py                      # base path USER (~/Dubbing/ + /Volumes/HDD/Dubbing/)
 │   ├── README.md                      # docs scripts (untuk user working dir ~/Dubbing/)
 │   ├── yt-dlp-tui.py  # TUI #1
