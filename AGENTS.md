@@ -22,11 +22,11 @@
 ## Project: SRT Splitter + Dubbing Multi-Bahasa
 
 Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
-- ID: jalan end-to-end (12 TUI production + 4 untested: review-mix #13, konten #14, gemini-tts #15, talkinghead #16)
+- ID: jalan end-to-end (12 TUI production + 5 untested: review-mix #13, konten #14, gemini-tts #15, talkinghead #16, manim-shorts #17)
 - Jawa: pipeline dub (gemini-tts-tui v1.1 SRT mode) + narasi (gemini-tts-tui v1.1 Narration mode) jalan
 - Sunda: nunggu kamus Supabase
 
-## 16 TUI
+## 17 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -46,6 +46,7 @@ Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 14 | konten-tui v1.0 (konten sejarah: images → video + narasi + Ken Burns) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 15 | **gemini-tts-tui v1.1** (SRT + Narasi, ID + JV, OPSI TAMBAHAN) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 16 | **talkinghead-tui v1.0** (SadTalker via Replicate, green screen preserved) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
+| 17 | **manim-shorts-tui v0.1** (WAV + SRT → infografis Shorts video, manim animation) | ⚠ UNTESTED (sandbox pipeline OK 19 Nov 2026, belum diuji di Mac) |
 
 ## TUI #13: review-mix-tui v1.0 — Review film (UNTESTED, code di GitHub belum diuji di Mac)
 
@@ -107,6 +108,29 @@ Alternatif mode `crop` = face only (gak cocok green screen).
 **Pakai**: `python3 talkinghead-tui.py` (6 step TUI: foto → audio → output → preprocess → still → enhancer)
 **Detail**: lihat `scripts/TALKINGHEAD.md`
 
+## TUI #17: manim-shorts-tui v0.1 — Shorts infografis (WAV + SRT → manim video)
+
+**Konten original (BUKAN dubbing).** Generate video Shorts vertical 9:16 dari WAV narasi + SRT, dengan animasi manim (premium look, gratis, tanpa model AI video mahal).
+
+Input:
+- WAV (dari edge-tts-tui Narration / gemini-tts-tui Narration / manual ElevenLabs)
+- SRT (dari whisper-tui #8, atau TTS-generated SRT)
+
+Output: `HDD/manim-shorts/{stem}-shorts.mp4` (1080x1920 vertical, 30fps, h264, manim animation + WAV audio muxed)
+
+Cara kerja:
+1. Parse SRT → segments [{start, end, text, duration}]
+2. Generate manim script temp dengan Scene per segment (charcoal bg `#1C1C2E`, Write animation + hold + FadeOut, adaptive font size)
+3. Render manim → video-only MP4 (no audio)
+4. Mux video + WAV → final MP4 (ffmpeg, video stream copy + audio aac)
+5. Cleanup temp
+
+Render time: ~0.7x realtime (30s video ≈ 19-25s render, sandbox Linux CPU-only tested 19 Nov 2026). Di Mac M1 expected sama atau lebih cepat.
+
+**Install**: `pip3 install manim questionary` + `brew install cairo pango ffmpeg` (Mac system deps). Nggak butuh LaTeX (pakai Text class Pango, bukan Tex/MathTex). Opsional: `brew install font-noto-sans` untuk font default TUI ini.
+**Pakai**: `python3 manim-shorts-tui.py` (4 step TUI: WAV → SRT → output → konfirmasi)
+**Sandbox tested**: 19 Nov 2026, dummy WAV 30s + 8 SRT segments → MP4 1.2MB, 29.93s, h264 1080x1920 30fps + aac 48kHz stereo. Visual check 8/8 keyframe unique hash (text berganti per segment, animasi jalan). Belum diuji di Mac user.
+
 ## Struktur Folder — 3 LOKASI BERBEDA (baca config.py LENGKAP)
 
 ### 1. Repo srt-splitter (folder git, untuk DEV — edit code + docs)
@@ -127,7 +151,7 @@ Repo root:
 ├── src/                               # Next.js web app (translate SRT Indonesia → Jawa via Supabase)
 ├── api/                               # Vercel serverless functions (edge-tts proxy dll)
 ├── public/                            # static assets + kamus JSON (jv.wiktionary.json dll)
-├── scripts/                           # Python TUI (16 TUI) — DIDOWNLOAD USER ke ~/Dubbing/
+├── scripts/                           # Python TUI (17 TUI) — DIDOWNLOAD USER ke ~/Dubbing/
 │   ├── config.py                      # base path USER (~/Dubbing/ + /Volumes/HDD/Dubbing/)
 │   ├── README.md                      # docs scripts (untuk user working dir ~/Dubbing/)
 │   ├── yt-dlp-tui.py  # TUI #1
@@ -196,6 +220,7 @@ HDD /Volumes/HDD/Dubbing/              → data (besar, dari config.py)
   ├── merged/                           # merge-tui output (1 file panjang) — config.MERGED_DIR
   ├── review/                           # review-mix-tui output (review-final.mp4) — config.REVIEW_DIR
   ├── konten/                           # konten-tui output (konten-final.mp4) — config.KONTEN_DIR
+  ├── manim-shorts/                     # manim-shorts-tui output (infografis Shorts) — config.MANIM_SHORTS_DIR
   └── .env                              # Supabase + GEMINI_API_KEY — config.ENV_FILE
 ```
 
@@ -212,7 +237,7 @@ HDD /Volumes/HDD/Dubbing/              → data (besar, dari config.py)
 - TIDAK ada hubungan langsung dengan TUI Dubbing — terpisah
 - AI next session JANGAN pikir web app = TUI pipeline Dubbing
 
-### config.py 11 path constants (semua untuk USER working dir)
+### config.py 12 path constants (semua untuk USER working dir)
 
 ```python
 # config.py base path (dipakai TUI di ~/Dubbing/ USER, BUKAN di repo)
@@ -227,6 +252,7 @@ PARTS_DIR = HDD_BASE / 'parts'               # TUI #10 shorts-tui Part mode
 MERGED_DIR = HDD_BASE / 'merged'             # TUI #12 merge-tui output
 REVIEW_DIR = HDD_BASE / 'review'             # TUI #13 review-mix-tui output
 KONTEN_DIR = HDD_BASE / 'konten'             # TUI #14 konten-tui output
+MANIM_SHORTS_DIR = HDD_BASE / 'manim-shorts' # TUI #17 manim-shorts-tui output
 KAMUS_JSON = SSD_HOME / 'jv.wiktionary.json' # kamus SOURCE OF TRUTH (di SSD, cepat load)
 ENV_FILE = HDD_BASE / '.env'                 # Supabase + GEMINI_API_KEY (di HDD)
 SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
@@ -259,6 +285,7 @@ SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
 | 15 | gemini-tts-tui SRT | `INPUT_DIR` (*.srt) | `TTS_DIR`/{prefix}-audio-id-dub.wav + cache + lock |
 | 15 | gemini-tts-tui Narasi | naskah.txt (`TTS_DIR`/`REVIEW_DIR`/cwd) | `TTS_DIR`/{stem}-narasi.wav |
 | 16 | talkinghead-tui | `KONTEN_DIR`/`INPUT_DIR`/cwd (*.jpg/*.png foto green screen) + `TTS_DIR`/cwd (*.wav narasi JV) | `KONTEN_DIR`/{audio-stem}-talking-green.mp4 |
+| 17 | manim-shorts-tui | `TTS_DIR`/`INPUT_DIR`/cwd (*.wav narasi) + `INPUT_DIR`/`TTS_DIR`/cwd (*.srt dari whisper-tui) | `MANIM_SHORTS_DIR`/{stem}-shorts.mp4 |
 
 ### Pipeline alur data (visual flow)
 
@@ -373,6 +400,7 @@ naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → talkinghead-tui v1.0 
 - konten-tui v1.0: ⚠ UNTESTED (TUI #14, code di GitHub belum diuji di Mac)
 - gemini-tts-tui v1.1: ⚠ UNTESTED (TUI #15, code di GitHub belum diuji di Mac, SRT + Narasi, ID + JV, butuh GEMINI_API_KEY)
 - talkinghead-tui v1.0: ⚠ UNTESTED (TUI #16, code di GitHub belum diuji di Mac, SadTalker via Replicate, butuh REPLICATE_API_TOKEN)
+- manim-shorts-tui v0.1: ⚠ UNTESTED (TUI #17, sandbox pipeline OK 19 Nov 2026 — 30s dummy test render 19s/0.7x realtime, 8/8 frame unique, MP4 1.2MB valid. Belum diuji di Mac. Butuh manim CE + cairo + pango, NGGAK butuh LaTeX)
 - Pipeline produksi Indonesia: 6 film tested, all TUI production-ready
 - Pipeline Jawa: experimental, tunggu user VLC feedback
 
@@ -399,15 +427,16 @@ SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
 - 11 path constants, semua untuk USER working dir, BUKAN repo path
 - `ensure_hdd()` + `ensure_kamus()` + `load_env()` = helper functions
 
-### TUI (ada 16, BUKAN 12/13/15):
+### TUI (ada 17, BUKAN 12/13/15/16):
 
-- Jangan amnesia: ada **16 TUI**. Baca `git ls-tree origin/main scripts/` untuk verifikasi sebelum pilih nomor TUI baru
-- TUI #13 = review-mix-tui (UNTESTED), TUI #14 = konten-tui (UNTESTED), TUI #15 = gemini-tts-tui (UNTESTED), TUI #16 = talkinghead-tui (UNTESTED)
-- `REVIEW_DIR` di config.py untuk review-mix-tui (#13), `KONTEN_DIR` untuk konten-tui (#14) + talkinghead-tui (#16 output ke KONTEN_DIR)
-- edge-tts-tui v7.5 Narration mode → feed review-mix-tui / konten-tui (BUKAN langsung ke user)
-- gemini-tts-tui v1.1 Narration mode (JV) → alternatif feed untuk review-mix-tui / konten-tui / talkinghead-tui (bahasa Jawa)
+- Jangan amnesia: ada **17 TUI**. Baca `git ls-tree origin/main scripts/` untuk verifikasi sebelum pilih nomor TUI baru
+- TUI #13 = review-mix-tui (UNTESTED), TUI #14 = konten-tui (UNTESTED), TUI #15 = gemini-tts-tui (UNTESTED), TUI #16 = talkinghead-tui (UNTESTED), TUI #17 = manim-shorts-tui (UNTESTED sandbox OK)
+- `REVIEW_DIR` di config.py untuk review-mix-tui (#13), `KONTEN_DIR` untuk konten-tui (#14) + talkinghead-tui (#16 output ke KONTEN_DIR), `MANIM_SHORTS_DIR` untuk manim-shorts-tui (#17)
+- edge-tts-tui v7.5 Narration mode → feed review-mix-tui / konten-tui / manim-shorts-tui (BUKAN langsung ke user)
+- gemini-tts-tui v1.1 Narration mode (JV) → alternatif feed untuk review-mix-tui / konten-tui / talkinghead-tui / manim-shorts-tui (bahasa Jawa)
 - talkinghead-tui v1.0 (#16) = workflow KONTEN (BUKAN dubbing): foto green screen + narasi JV → SadTalker via Replicate → MP4 green screen preserved → user edit chroma key → final-konten.mp4
 - TUI #16 backend = Replicate.com `cjwbw/sadtalker` (cloud), butuh `REPLICATE_API_TOKEN` di HDD .env (BUKAN M1 lokal — sadtalker lambat + MPS partial)
+- manim-shorts-tui v0.1 (#17) = workflow KONTEN (BUKAN dubbing): WAV narasi + SRT → manim animation video Shorts vertical 9:16. Render ~0.7x realtime. Butuh manim CE + cairo + pango (NGGAK butuh LaTeX). Input WAV dari edge-tts/gemini-tts Narration atau manual, SRT dari whisper-tui #8
 
 ### Workflow (kesalahan saya sebelumnya: tidak push):
 

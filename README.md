@@ -2,11 +2,11 @@
 
 Pipeline dubbing bahasa eksternal (Mandarin, English, Jepang, Italia, dll) → Indonesia / Jawa / Sunda. Web app + Python TUI.
 
-ID jalan end-to-end (12 TUI production + 4 untested). Jawa jalan via Gemini TTS (gemini-tts-tui v1.1 SRT + Narasi). Talking head via SadTalker Replicate (talkinghead-tui v1.0). Sunda nunggu kamus Supabase selesai.
+ID jalan end-to-end (12 TUI production + 5 untested). Jawa jalan via Gemini TTS (gemini-tts-tui v1.1 SRT + Narasi). Talking head via SadTalker Replicate (talkinghead-tui v1.0). Shorts infografis via manim (manim-shorts-tui v0.1). Sunda nunggu kamus Supabase selesai.
 
 **Live:** https://srt-splitter.vercel.app/
 
-## 16 TUI
+## 17 TUI
 
 | # | TUI | Tugas | Status |
 |---|-----|-------|--------|
@@ -26,6 +26,7 @@ ID jalan end-to-end (12 TUI production + 4 untested). Jawa jalan via Gemini TTS 
 | 14 | konten-tui.py v1.0 | Konten sejarah (narasi + images → Ken Burns video 1920x1080) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 15 | **gemini-tts-tui.py v1.1** | TTS SRT + Narasi (Indonesia + Jawa, OPSI TAMBAHAN, butuh GEMINI_API_KEY) | ⚠ UNTESTED (code di GitHub belum diuji di Mac) |
 | 16 | **talkinghead-tui.py v1.0** | Talking head video (foto green screen + narasi JV via SadTalker Replicate, green screen preserved) | ⚠ UNTESTED (code di GitHub belum diuji di Mac) |
+| 17 | **manim-shorts-tui.py v0.1** | Shorts infografis (WAV + SRT → manim animation video vertical 9:16, premium look gratis) | ⚠ UNTESTED (sandbox pipeline OK 19 Nov 2026, belum diuji di Mac) |
 
 ## Pipeline
 
@@ -40,6 +41,7 @@ ID jalan end-to-end (12 TUI production + 4 untested). Jawa jalan via Gemini TTS 
 [Alur GEMINI-SRT]   yt-dlp → srt-editor → gemini-tts-tui (SRT mode, ID/JV) → mix-tui  (opsional: Jawa/karakter spesifik)
 [Alur GEMINI-NARASI] naskah.txt → gemini-tts-tui (Narration mode, ID/JV) → review-mix-tui / konten-tui  (Jawa)
 [Alur TALKING-HEAD] naskah.txt → gemini-tts-tui Narration (JV) → talkinghead-tui v1.0 (Replicate SadTalker, preprocess=full) → MP4 green screen preserved → editor chroma key → final-konten.mp4
+[Alur MANIM-SHORTS] WAV narasi (edge-tts/gemini-tts Narration) + SRT (whisper-tui) → manim-shorts-tui v0.1 → HDD/manim-shorts/{stem}-shorts.mp4 (infografis Shorts vertical)
 ```
 
 > **merge-tui** (TUI #12): gabungin output mix-tui (sudah dub ID + burn sub) dari beberapa film/season jadi 1 video panjang. 3 mode: stream copy (super cepat) / re-encode + target res / re-encode pakai res file pertama.
@@ -227,6 +229,55 @@ python3 talkinghead-tui.py
 
 Detail lengkap: lihat [scripts/TALKINGHEAD.md](scripts/TALKINGHEAD.md).
 
+## manim-shorts-tui v0.1 — TUI #17 Shorts infografis (WAV + SRT → manim video)
+
+⚠ **UNTESTED** — sandbox pipeline OK 19 Nov 2026, belum diuji di Mac user.
+
+Generate video Shorts vertical 9:16 dari WAV narasi + SRT, dengan animasi manim (premium look, gratis, tanpa model AI video mahal).
+
+### Cara kerja
+
+1. Input WAV (edge-tts/gemini-tts Narration atau manual) + SRT (whisper-tui #8 output)
+2. Parse SRT → segments [{start, end, text}]
+3. Generate manim script temp (charcoal bg `#1C1C2E`, Write animation + hold + FadeOut per segment, adaptive font size)
+4. Render manim → video-only MP4 (no audio)
+5. Mux video + WAV → final MP4 (ffmpeg, video stream copy + audio aac)
+
+Output: `HDD/manim-shorts/{stem}-shorts.mp4` (1080x1920 vertical, 30fps, h264 + aac 48kHz stereo)
+
+### Render time
+
+~0.7x realtime (30s video ≈ 19-25s render). Sandbox test 19 Nov 2026: dummy WAV 30s + 8 SRT segments → MP4 1.2MB, 29.93s, render 19s. Visual check 8/8 keyframe unique hash (text berganti per segment).
+
+### Setup & pakai
+
+```bash
+# Setup (sekali saja)
+pip3 install manim questionary
+brew install cairo pango ffmpeg         # manim system deps (Mac)
+# Opsional: brew install font-noto-sans  # font default TUI ini
+# NGGAK butuh LaTeX (pakai Text class Pango, bukan Tex/MathTex)
+
+# Pakai
+cd ~/Dubbing && source venv/bin/activate
+python3 manim-shorts-tui.py
+# → Step 1: pilih WAV (narasi)
+# → Step 2: pilih SRT (timed text)
+# → Step 3: preview segments + total duration
+# → Step 4: output path (default HDD/manim-shorts/{stem}-shorts.mp4)
+# → Konfirmasi → render → mux → MP4 final
+```
+
+### Pipeline integrasi
+
+```
+edge-tts Narration (ID) ──┐
+gemini-tts Narration (JV) ┤──→ manim-shorts-tui #17 (input juga: SRT dari whisper-tui #8)
+manual ElevenLabs WAV     ┘    → HDD/manim-shorts/{stem}-shorts.mp4
+```
+
+Konten original (BUKAN dubbing workflow). Cocok untuk Shorts infografis/edukasi 30-40s.
+
 ## mix-tui v3.11 — 6 mode + logo + force 1080p + audio 48000Hz + 1:1 square mode (VLC confirmed)
 
 > **v3.11 (14 Nov 2026):** mode baru `1:1 square (1080x1080)` — center crop source vertical
@@ -358,4 +409,5 @@ curl -L -o gemini-tts-tui.py "https://raw.githubusercontent.com/emailnyamahmud-a
 curl -L -o gemini_tts_backend.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/gemini_tts_backend.py"
 curl -L -o talkinghead-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/talkinghead-tui.py"
 curl -L -o talkinghead_backend.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/talkinghead_backend.py"
+curl -L -o manim-shorts-tui.py "https://raw.githubusercontent.com/emailnyamahmud-afk/srt-splitter/main/scripts/manim-shorts-tui.py"
 ```

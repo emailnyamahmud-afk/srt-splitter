@@ -6799,3 +6799,97 @@ Lanjut phase 2: design TUI proper (#17, SRT-driven).
 - LaTeX NGGAK wajib untuk konten infografis (text biasa pakai `Text()` class Pango)
 - Output POC: `download/manim-poc-5s.mp4` (127 KB, 5.5s, 1080×1920)
 - Next: TUI #17 proper dengan SRT-driven scene mapping
+
+---
+
+## 2026-11-19 — TUI #17 manim-shorts-tui v0.1 — Shorts infografis (WAV+SRT→manim video)
+
+### Konteks
+
+Lanjutan POC manim 5s (validated user feedback "bagus, premium untuk free"). User confirm
+spec phase 2: vertical 9:16 Shorts, input WAV (edge-tts/gemini-tts Narration atau manual
+ElevenLabs) + SRT (whisper-tui #8, BUKAN subtitle-cleaner/review-script yang butuh AI),
+output HDD, skip JSON config (hardcoded default charcoal bg + Write animation).
+
+### Implementasi
+
+**config.py**: tambah `MANIM_SHORTS_DIR = HDD_BASE / 'manim-shorts'` + masuk ensure_hdd()
+mkdir loop. Path constants jadi 12 (dari 11).
+
+**scripts/manim-shorts-tui.py v0.1** (TUI #17, ~430 baris, match konten-tui.py pattern):
+- Header docstring + questionary check + config import
+- Helpers: find_ffmpeg/ffprobe/manim, get_duration, fmt_dur/size, select_file, clear_screen
+- parse_srt(): parser SRT standar (block-based, handle HH:MM:SS,mmm timestamp, multi-line text)
+- generate_manim_script(): generate temp .py dengan SEGMENTS + WAV_DURATION baked in via repr()
+  - Template: charcoal bg #1C1C2E, Write animation + hold + FadeOut per segment
+  - Adaptive font size: 56 (≤40 char) / 42 (≤80 char) / 32 (>80 char)
+  - Gap handling: wait antar segment non-contiguous
+  - Tail wait: extend video ke WAV_DURATION (match audio)
+- render_manim(): subprocess manim CLI (--disable_caching --media_dir --format mp4),
+  glob output MP4 exclude partial_movie_files, timeout 600s
+- mux_audio_video(): ffmpeg video stream copy + audio aac 48kHz stereo, -shortest
+- main(): 4 step TUI (WAV → SRT → preview → output → konfirmasi) + 3 fase
+  (generate script → render → mux) + cleanup temp + hasil
+
+**scripts/test-manim-shorts.py**: test harness bypass questionary (sandbox nggak bisa
+interactive prompt). Pakai importlib untuk load manim-shorts-tui.py (filename ada hyphen).
+5 test: parse_srt, generate_script, render, mux, verify output.
+
+### Test results sandbox (19 Nov 2026)
+
+Dummy data: WAV 30s (sine 440Hz via ffmpeg lavfi) + SRT manual 8 segments (infografis tema
+bahasa Jawa 84 juta penutur).
+
+```
+Test 1 parse_srt:        ✓ 8 segments, total 30s, last end 30s
+Test 2 generate_script:  ✓ scene_script.py (2416 bytes, 8 segments + WAV_DURATION=30)
+Test 3 render_manim:     ✓ 19 detik render (0.7x realtime — LEBIH CEPAT dari POC 1.6x)
+Test 4 mux:              ✓ narasi-30s-shorts.mp4 (1.2MB)
+Test 5 verify:           ✓ h264 1080x1920 30fps + aac 48kHz stereo, durasi 29.93s
+Visual check:            ✓ 8/8 keyframe unique hash (text berganti per segment)
+```
+
+**Render time real**: 19s untuk 30s video = 0.7x realtime (sandbox Linux CPU-only, NO Metal).
+Lebih cepat dari POC (1.6x untuk 5.5s) karena 30s video punya lebih banyak hold time (wait)
+yang murah render dibanding active Write animation. Extrapolate M1: sama atau lebih cepat.
+
+**Output**: MP4 1.2MB, 29.93s (WAV 30s, -shortest cut 0.07s — practical perfect sync),
+h264 1080x1920 vertical 30fps + aac 48000Hz stereo.
+
+### Deliverable sandbox
+
+- download/manim-shorts-30s-test.mp4 (1.2MB, 30s test video)
+- download/manim-shorts-frames/ (4 keyframe JPG: seg 1/4/7/8)
+
+### Docs update (4 file + worklog)
+
+- AGENTS.md: 16→17 TUI header, table row #17, TUI #17 section, status line, config.py
+  11→12 path constants + MANIM_SHORTS_DIR, struktur folder HDD +manim-shorts/, tabel
+  INPUT/OUTPUT +row 17, anti-amnesia TUI count 16→17 + bullet manim-shorts
+- README.md: 16→17 TUI, table row #17, manim-shorts section (cara kerja + render time +
+  setup + pipeline), Alur MANIM-SHORTS pipeline, curl download line
+- PROJECT_RULES.md: 16→17 TUI, table row #17
+- scripts/README.md: 16→17 TUI, table row #17, scripts file list +manim-shorts-tui.py,
+  INPUT/OUTPUT table +row 17, pipeline flow +manim-shorts branch, catatan path +MANIM_SHORTS_DIR,
+  manim-shorts section (cara kerja + render time + setup + pipeline)
+- worklog.md: entry ini
+
+### Status
+
+- manim-shorts-tui v0.1: ⚠ UNTESTED (sandbox pipeline OK 19 Nov 2026, belum diuji di Mac user)
+- Butuh install di Mac: pip3 install manim questionary + brew install cairo pango ffmpeg
+- Nggak butuh LaTeX (pakai Text class Pango)
+- Font default "Noto Sans" — fallback graceful kalau belum install (sandbox verify OK)
+- Next: user test di Mac dengan WAV narasi asli (edge-tts/gemini-tts Narration) + SRT dari
+  whisper-tui #8. Kalau VLC feedback OK → declare production. Kalau error → fix + push.
+
+### Anti-amnesia untuk AI next session
+
+- TUI #17 = manim-shorts-tui v0.1, lahir 19 Nov 2026 dari diskusi library Python generate video
+- Bukan dubbing workflow — workflow KONTEN ORIGINAL (infografis Shorts)
+- Input: WAV (edge-tts/gemini-tts Narration atau manual) + SRT (whisper-tui #8)
+- Output: HDD/manim-shorts/{stem}-shorts.mp4 (1080x1920 vertical 30fps)
+- Render: manim CE, ~0.7x realtime, charcoal bg + Write animation, NGGAK butuh LaTeX
+- config.py: MANIM_SHORTS_DIR = HDD_BASE / 'manim-shorts' (path constant ke-12)
+- Sandbox tested: 30s dummy → MP4 1.2MB, 19s render, 8/8 frame unique hash
+- Script: scripts/manim-shorts-tui.py + scripts/test-manim-shorts.py (test harness)
