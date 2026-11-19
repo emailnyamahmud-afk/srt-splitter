@@ -6737,3 +6737,65 @@ koreksi. Pelajaran: fetch dulu, baru bicara tentang sync state.
 - 16 TUI: 12 production + 4 untested (review-mix #13, konten #14, gemini-tts #15, talkinghead #16)
 - mix-tui v3.11 + 1:1 square VLC confirmed (2 test: low-res 202x360 + high-res 4K 1440x2560)
 - Docs 4-file konsisten: AGENTS.md, README.md, PROJECT_RULES.md, scripts/README.md
+
+---
+
+## 2026-11-19 — Phase 1 POC manim untuk Shorts infografis (VALIDATED)
+
+### Konteks
+
+Diskusi library Python generate video untuk konten Shorts 30-40s vertical (bukan drama Jawa,
+itu masih jauh). Scope dipersempit: input WAV TTS + SRT → render visual animasi per SRT
+segment → MP4 vertical 9:16. Prioritas: **premium look** (bukan stock footage generic).
+Pilihan library: manim CE (community edition) — pilihan pre-built animation library
+dengan "manim look" yang langsung dikenali premium.
+
+### Yang di-clear-up di diskusi
+
+- **LaTeX**: BUKAN model AI, BUKAN keharusan untuk manim. LaTeX = sistem typesetting dokumen
+  (Knuth 1978, Lamport 1984), dipakai manim hanya untuk render math equation via `Tex()` /
+  `MathTex()`. Untuk text biasa pakai `Text()` class (Pango+cairo), **NGGAK butuh LaTeX**.
+  Install LaTeX full = 5-7GB (karena packages: font, symbol, language, math, drawing).
+  Untuk konten infografis tanpa math equation: **skip LaTeX**, cukup cairo+Pango ~200MB.
+- **Render time**: estimate awal "30s video = 5-15 menit render" itu SALAH. Realita POC
+  5.5s video di sandbox Linux CPU-only (NO Metal/GPU) = **8.9 detik render**. Ratio
+  ~1.6× realtime. Extrapolate 30s di M1 ≈ 30-60 detik. Koreksi penting.
+
+### POC detail
+
+- Script: `scripts/manim-poc-5s.py` (persisted, jangan rewrite)
+- Konten: infografis statistik bahasa Jawa 84 juta penutur (sumber BPS 2020)
+- Output: `download/manim-poc-5s.mp4` (127 KB, 5.5s, 1080×1920 vertical, 30fps, h264)
+- Keyframe preview: `download/manim-poc-frames/frame_{0.5,1.5,3.0,5.0}s.jpg`
+- Animation: FadeIn title → Write subtitle → Write number (count-up feel) → FadeIn caption
+  → FadeIn source → hold
+- Background: charcoal `#1C1C2E` (manim signature dark)
+- Quantitative verify: 4 frame non-blank, content ratio naik 0.5% → 3.0% per phase (animasi
+  jalan sesuai script)
+
+### User feedback
+
+> "saya sudah download mp4, sudah lihat visual 5s. berisi statistik bahasa jawa 84jt penutur
+> aktif sumber bps 2020. hasilnya bagus, untuk ukuran free. jika bandingkan dengan model
+> generatif video yg mahal."
+
+**POC VALIDATED.** manim look premium + gratis + cepat vs model AI video yang mahal.
+Lanjut phase 2: design TUI proper (#17, SRT-driven).
+
+### Caveat
+
+- Sandbox TIDAK punya "Noto Sans" font (cuma DejaVu, Liberation). manim fallback ke default
+  Pango font. Di Mac user, Noto Sans bisa install via `brew install font-noto-sans`. Visual
+  tetap jalan, font detail bisa di-refine.
+- manim 0.22.1 terinstall di sandbox. Dep: cairo, Pango, ffmpeg, moderngl, pyglet, dll.
+  Conflict warning: click 8.5.1 vs gtts 2.5.4 (nggak relevan untuk TUI ini, ignore).
+- Flag `-p` (preview) gagal di sandbox headless (xdg-open nggak ada) — pakai tanpa `-p`,
+  output ke media/videos/ lalu copy ke download/.
+
+### Anti-amnesia untuk AI next session
+
+- manim POC validated 19 Nov 2026, script di `scripts/manim-poc-5s.py`
+- Render time REAL: ~1.6× realtime (bukan 5-15 menit seperti estimate awal)
+- LaTeX NGGAK wajib untuk konten infografis (text biasa pakai `Text()` class Pango)
+- Output POC: `download/manim-poc-5s.mp4` (127 KB, 5.5s, 1080×1920)
+- Next: TUI #17 proper dengan SRT-driven scene mapping

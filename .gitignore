@@ -112,3 +112,6 @@ softcat-*.json
 # Backup files (lokal, jangan commit)
 *.bak
 *.bak.*
+
+# manim render cache (regenerable, large, per-render — jangan commit)
+scripts/media/
