@@ -1486,8 +1486,22 @@ def main():
             alignment = 2
             margin_v = int(srt_position.split(':')[1]) if ':' in srt_position else 40
 
-        # Escape path untuk filter subtitles (escape colon, backslash, dan single quote)
-        srt_escaped = srt_path.replace('\\', '\\\\').replace(':', '\\:').replace("'", "\\'")
+        # Escape path untuk filter subtitles (semua filtergraph special chars + option separator)
+        # v3.11.1 FIX (21 Nov 2026): tambah escape comma (,) ; ; [ ] — sebelumnya hanya
+        # escape \ : ' yang OK di ffmpeg 7.x tapi break di ffmpeg 9.x (Mac Homebrew).
+        # Bug: SRT path berisi comma (mis. "harta, raja") → ffmpeg 9.x perlakukan
+        # 'PATH':force_style='STYLE' sebagai ONE quoted block (inner ' after PATH nggak
+        # recognized as closing) → "No option name near" error. Escape comma eksplisit
+        # (\,) supaya comma nggak break filtergraph parser, terlepas dari quote behavior.
+        # Order penting: backslash dulu supaya nggak double-escape backslash dari step lain.
+        srt_escaped = (srt_path
+                       .replace('\\', '\\\\')   # escape backslash (HARUS pertama)
+                       .replace(':', '\\:')      # escape colon (option separator)
+                       .replace("'", "\\'")      # escape single quote
+                       .replace(',', '\\,')      # escape comma (filter separator) — FIX v3.11.1
+                       .replace(';', '\\;')      # escape semicolon (filterchain separator)
+                       .replace('[', '\\[')      # escape bracket (label start)
+                       .replace(']', '\\]'))     # escape bracket (label end)
 
         # Style ASS: font 18, putih outline hitam, Alignment + MarginV
         # FontName biarkan default (sans-serif), FontSize=18
