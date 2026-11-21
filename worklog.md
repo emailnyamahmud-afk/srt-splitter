@@ -7251,3 +7251,75 @@ Semua render SUCCESS + subtitle rendered + symlink cleaned up.
 - v3.11.1 (`9201d77`) + v3.11.2 (`18980b1`) + v3.11.3 (`b9d768b`) + v3.11.4 (`3c18e50`) = DEPRECATED — insufficient fix. Tetap di git history untuk referensi pelajaran.
 - Next: user re-download `mix-tui.py` v3.11.5, test ulang. Harusnya JALAN kali ini (no quote = no quote issue di version apapun).
 - Test scripts persisted: 6 test harness (test-subtitle-escape, test-subtitle-fix, verify-subtitle-fix, test-subtitle-v3112, test-symlink-approach, test-noquote-v3115).
+
+---
+
+## 21 Nov 2026 — mix-tui v3.11.6 fix REAL: ONE quote pair (path unquoted + force_style quoted) — root cause `=`
+
+**Commit**: `bca8f55`
+
+### v3.11.5 MASIH FAIL — user verify (round 5) + PROVES root cause sebenarnya
+User re-download mix-tui v3.11.5 (`cd5ce01`, no-quote + escape comma) + test di Mac ffmpeg 9.0.2:
+```
+[AVFilterGraph] No option name near '...mix_tui_sub_14926c3c.srt:force_style=Fontsize=18,PrimaryColour=...,...,Justify=2'
+```
+Filterchain shows `\,` ADA (escape comma jalan), tapi setelah un-escape `,`, ffmpeg masih "No option name". Artinya: escape comma TIDAK cukup.
+
+### Root cause SEBENARNYA (baca ffmpeg docs level-1 special chars PELAN-PELAN)
+FFmpeg filtergraph level-1 special chars: ` \ ' : ; , [ ]` — `=` ADALAH level-1 special char (terminates unquoted argument).
+
+force_style value: `Fontsize=18,PrimaryColour=&H00FFFFFF,...,Justify=2`
+- Punya `=` di dalamnya (`Fontsize=18`, `PrimaryColour=...`, dst)
+- Punya `,` di dalamnya (separator antar style)
+
+Tanpa quote, `=` setelah `Fontsize` terminate value → force_style=`Fontsize`, lalu `18\,PrimaryColour=...` jadi garbage → "No option name near ...".
+
+v3.11.5 escape comma (`\,`) lindungi `,` TAPI TIDAK lindungi `=`. Hanya QUOTE yang lindungi `=` DAN `,` di value.
+
+### Kenapa v3.11.0/v3.11.3 (DUA quote) fail?
+DUA quote pair (`'path':force_style='val'`) → ffmpeg 9.x merge dua quote pair jadi satu blok `'path:force_style=val'`, treat entire quoted content sebagai filename literal, NO option split → "No option name".
+
+### Fix v3.11.6: ONE quote pair saja
+- Path symlink clean (no special char) → UNQUOTED (no quote butuh)
+- force_style value → QUOTED (quote lindungi `=` dan `,`)
+- Satu quote pair = no merging issue di 9.x
+- Ini **canonical ffmpeg subtitles form** (jutaan user pakai `subtitles=path:force_style='Fontsize=24,PrimaryColour=...'`)
+
+```python
+# v3.11.5 (FAIL — escape comma tidak lindungi =):
+force_style_esc = force_style.replace(',', '\\,')
+subtitle_filter = f"subtitles={srt_for_filter}:force_style={force_style_esc}"
+
+# v3.11.6 (FIX — one quote pair, force_style value quoted):
+subtitle_filter = f"subtitles={srt_for_filter}:force_style='{force_style}'"
+```
+
+Fallback (symlink gagal, rare): escape `:` `\` `,` di path (path UNQUOTED, no quote protect), force_style tetap QUOTED.
+
+### Verify sandbox (6 varian, mirror mix-tui code path)
+Test `scripts/test-v3116.py` — semua mode B/D/F variant:
+- B no-scale no-logo: ✓ subtitle 7.68% white
+- B no-scale +logo: ✓ subtitle 7.68% white
+- B force-1080p no-logo: ✓ subtitle 3.76% white
+- B force-1080p +logo: ✓ subtitle 3.74% white
+- B 1:1-square no-logo: ✓ subtitle 7.19% white
+- B 1:1-square +logo: ✓ subtitle 7.18% white
+
+Semua render SUCCESS + subtitle rendered + symlink cleaned up.
+
+### Perubahan code (4 tempat)
+1. Line ~1490-1510: update comment (v3.11.5 → v3.11.6, `=` root cause) + fallback escape `:` `\` `,` (path UNQUOTED)
+2. Line ~1532: hapus `force_style_esc` (quote yang protect, bukan escape)
+3. Line ~1570, 1574: subtitle_filter path UNQUOTED + force_style value QUOTED
+
+### Pelajaran PENTING untuk AI next session
+1. **Baca ffmpeg docs level-1 special chars.** Set: ` \ ' : ; , [ ]`. `=` ADALAH level-1 special (terminates unquoted arg). force_style value `Fontsize=18,...` punya `=` dan `,` keduanya level-1 special → WAJIB quote (escape comma saja TIDAK cukup karena `=` tetap unprotected).
+2. **Canonical ffmpeg subtitles form**: `subtitles=path:force_style='val1,val2,...'` — path unquoted (clean), force_style value quoted. ONE quote pair. Ini form yg jutaan user pakai + works di ffmpeg version apapun.
+3. **DUA quote pair fail di 9.x** (merge jadi satu blok). ONE quote pair OK (no merge). NO quote fail (`=` unprotected).
+4. **Stop tebak escape/quote tanpa paham level-1 special char set.** v3.11.0-v3.11.5 = 5x wasted round-trip user karena tebak-tebakan. Root cause sederhana: `=` di value butuh quote protection. Seharusnya baca docs pertama, identify `=` adalah level-1 special, langsung quote force_style value.
+
+### Status
+- mix-tui v3.11.6: ✅ production (fix REAL ffmpeg 9.x, pending VLC feedback user di Mac).
+- v3.11.1 (`9201d77`) + v3.11.2 (`18980b1`) + v3.11.3 (`b9d768b`) + v3.11.4 (`3c18e50`) + v3.11.5 (`cd5ce01`) = DEPRECATED — insufficient fix. Tetap di git history untuk referensi pelajaran.
+- Next: user re-download `mix-tui.py` v3.11.6, test ulang. Harusnya JALAN kali ini (canonical form = one quote pair, `=`+`,` protected, no merge issue).
+- Test scripts persisted: 7 test harness (test-subtitle-escape, test-subtitle-fix, verify-subtitle-fix, test-subtitle-v3112, test-symlink-approach, test-noquote-v3115, test-v3116).
