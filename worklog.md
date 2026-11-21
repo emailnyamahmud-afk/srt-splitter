@@ -6945,3 +6945,55 @@ h264 1080x1920 vertical 30fps + aac 48000Hz stereo.
 ### Status
 - manim-shorts-tui v0.1 (post-fix 1623907): ⚠ UNTESTED (sandbox OK 21 Nov 2026, belum diuji di Mac user)
 - Next: user download `manim-shorts-tui.py` + `config.py` (re-download config karena updated dengan MANIM_SHORTS_DIR path constant ke-12), install manim CE + cairo + pango, test di Mac dengan WAV+SRT asli
+
+---
+
+## 21 Nov 2026 — mix-tui v3.11.1 fix: escape comma + ; [ ] di SRT path (ffmpeg 9.x Mac)
+
+**Commit**: `9201d77`
+
+### Bug report user (Mac, ffmpeg 9.0.2 Homebrew)
+```
+❌ GAGAL dengan exit code 234
+[AVFilterGraph] No option name near '/Volumes/HDD/Dubbing/input/S2 Kota kecil
+yang mengaku miskin penuh harta, raja datang diam-diam lalu marah besar!.id.srt
+:force_style=Fontsize=18,...,Justify=2'
+Error : Invalid argument
+```
+SRT path: `S2 Kota kecil yang mengaku miskin penuh harta, raja datang diam-diam lalu marah besar!.id.srt` (ada **comma** "harta, raja" + `!` "besar!").
+
+### Root cause
+- mix-tui v3.11 escaping (line 1490) hanya escape `\ : '` — OK di ffmpeg 7.x sandbox.
+- **ffmpeg 9.x (Mac) berbeda**: comma di single-quoted path break quote pairing.
+  `'PATH,WITH,COMMA':force_style='STYLE'` di-parse sebagai ONE quoted block (inner `'` after PATH nggak recognized as closing) → "No option name" error.
+- Sandbox ffmpeg 7.1.5 nggak reproduce (single-quote protect comma OK di 7.x). **Version-specific parsing change di ffmpeg 9.x.**
+- Reproduce di sandbox: semua 5 escaping approach sukses di 7.x — nggak bisa differentiate tanpa ffmpeg 9.x.
+
+### Fix v3.11.1 (`scripts/mix-tui.py` line 1489-1503)
+Tambah escape comma (`,`) + semicolon (`;`) + bracket (`[ ]`) di `srt_escaped`:
+```python
+srt_escaped = (srt_path
+               .replace('\\', '\\\\')   # escape backslash (HARUS pertama)
+               .replace(':', '\\:')      # escape colon (option separator)
+               .replace("'", "\\'")      # escape single quote
+               .replace(',', '\\,')      # escape comma (filter separator) — FIX v3.11.1
+               .replace(';', '\\;')      # escape semicolon (filterchain separator)
+               .replace('[', '\\[')      # escape bracket (label start)
+               .replace(']', '\\]'))     # escape bracket (label end)
+```
+Escape ALL filtergraph special chars (level 1) + option separator colon (level 2). Order: backslash dulu supaya nggak double-escape backslash dari step lain.
+
+### Verify sandbox (path dengan comma + !, mirror case user)
+- Render SUCCESS (ffmpeg 7.x, full filterchain scale+subtitles+logo, exit 0).
+- Subtitle rendered: white text 4.38% di bottom area (27202 px) — subtitle visible dengan comma path intact.
+- Edge cases: comma ✓ semicolon ✓ bracket ✓ (quote `'` pre-existing fail — jarang di Mac filenames, bukan regression).
+
+### Pelajaran untuk AI next session
+- **ffmpeg version-specific parsing**: sandbox 7.x ≠ Mac 9.x. Kalau user report ffmpeg error di Mac tapi sandbox nggak reproduce, cek perbedaan version. Jangan asumsi "code OK di sandbox = OK di Mac".
+- **Escape ALL filtergraph special chars**, jangan rely on single-quote protection saja. Comma di path SRT bisa break quote pairing di ffmpeg 9.x.
+- mix-tui sekarang escape `\ : ' , ; [ ]` (lengkap). Edge case `'` (single quote di filename) masih fail — pre-existing, jarang di Mac.
+
+### Status
+- mix-tui v3.11.1: ✅ production (fix comma path, pending VLC feedback user di Mac).
+- Next: user re-download `mix-tui.py` di `~/Dubbing/`, test ulang dengan SRT path yang ada comma.
+- Test scripts persisted: `scripts/test-subtitle-escape.py`, `scripts/test-subtitle-fix.py`, `scripts/verify-subtitle-fix.py` (reproducible test harness untuk future debugging).

@@ -36,7 +36,7 @@ Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 4 | Web app | ⚠ Prototype |
 | 5 | SRT editor (web) | ⏳ Pending |
 | 6 | edge-tts-tui v7.5 (SRT + Narasi mode, ID only, paralel-safe) | ✅ Production default |
-| 7 | mix-tui v3.11 (force 1080p + audio 48000Hz stereo + 1:1 square mode) | ✅ (1:1 VLC confirmed 14 Nov 2026) |
+| 7 | mix-tui v3.11.1 (force 1080p + audio 48000Hz stereo + 1:1 square mode + fix comma escape ffmpeg 9.x) | ✅ (1:1 VLC confirmed 14 Nov 2026; v3.11.1 fix comma path 21 Nov 2026) |
 | 8 | whisper-tui v2.1 (Metal GPU) | ✅ |
 | 9 | srt-editor-tui v1.0.0 | ✅ |
 | 10 | shorts-tui v1.1 (Shorts + Part) | ✅ |
@@ -393,7 +393,7 @@ naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → talkinghead-tui v1.0 
 ## Status (3 Nov 2026, update 19 Nov 2026)
 
 - merge-tui v1.9: ✅ VLC confirmed (10 file × 24h, sync 100%, stream copy ~2 menit)
-- mix-tui v3.11: ✅ production (force 1080p + audio 48000Hz stereo + 1:1 square mode VLC confirmed 14 Nov 2026 — 2 test: (1) Mode F source 202x360 → 1080x1080 upscale 5.3x, 3j1m, 2789 MB, 19m2s, subs sharp; (2) Mode F source 1440x2560 4K → 1080x1080 downscale 1.33x, 2j30m, 2361 MB, 15m45s, speed 9.5x, background crisp + subs sharp. Resolusi rendah = sumber, bukan bug — high-res retest confirmed sharp.)
+- mix-tui v3.11.1: ✅ production (force 1080p + audio 48000Hz stereo + 1:1 square mode VLC confirmed 14 Nov 2026 — 2 test: (1) Mode F source 202x360 → 1080x1080 upscale 5.3x, 3j1m, 2789 MB, 19m2s, subs sharp; (2) Mode F source 1440x2560 4K → 1080x1080 downscale 1.33x, 2j30m, 2361 MB, 15m45s, speed 9.5x, background crisp + subs sharp. Resolusi rendah = sumber, bukan bug — high-res retest confirmed sharp. v3.11.1 fix 21 Nov 2026: escape comma + ; [ ] di SRT path — ffmpeg 9.x Mac break single-quote pairing kalau path ada comma, sandbox 7.x nggak reproduce).
 - yt-dlp v6.5: ✅ multi-SRT ID+EN, default 1080p preferred
 - edge-tts-tui v7.5: ✅ production default (SRT + Narasi, ID only, paralel-safe)
 - review-mix-tui v1.0: ⚠ UNTESTED (TUI #13, code di GitHub belum diuji di Mac)
@@ -455,6 +455,7 @@ SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
 - Source horizontal → opsi 1:1 tidak muncul, pakai force 1080p horizontal (1920x1080).
 - **Return tuple 3-elemen**: `pick_force_resolution()` return `(w, h, is_square)`, BUKAN 2-tuple lama. Indexing `[0]/[1]` tetap jalan, tapi unpacking `tw, th = ...` harus jadi `tw, th, is_square = ...`.
 - Escape koma ffmpeg: `min(iw\,ih)` di f-string Python = `min(iw\\,ih)` (backslash dobel). Tanpa escape, ffmpeg salah parse (koma = pemisah filter).
+- **v3.11.1 fix (21 Nov 2026, commit `9201d77`): escape comma + `;` `[` `]` di SRT path**. Sebelumnya hanya escape `\ : '` (OK di ffmpeg 7.x sandbox). ffmpeg 9.x (Mac Homebrew) break: comma di path SRT (mis. "harta, raja") break single-quote pairing → `'PATH':force_style='STYLE'` di-parse sebagai ONE quoted block → "No option name near" error exit 234. Sandbox 7.x nggak reproduce (single-quote protect comma OK di 7.x — version-specific parsing change 9.x). Fix: escape ALL filtergraph special chars (`, ; [ ]`) eksplisit, nggak rely on single-quote protection. Order: backslash dulu supaya nggak double-escape.
 - **Resolusi output = fungsi sumber, BUKAN bug.** Source 202x360 → crop 202x202 → upscale 5.3x ke 1080x1080 = background soft (subtitle tetap sharp). Source 1440x2560 → crop 1440x1440 → downscale 1.33x ke 1080x1080 = background crisp + subtitle sharp. **VLC confirmed kedua kasus 14 Nov 2026.**
 - Hasil test 14 Nov 2026 (2 run, dua-duanya VLC OK):
   - Run 1 (low-res): Mode F, source 202x360, 4182 cues, 3j1m32s video → 1080x1080, 2789 MB, encode 19m2s (speed 9.5x), subs sharp, ducking + hardsub + logo OK.
