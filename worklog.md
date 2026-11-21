@@ -7116,3 +7116,62 @@ Fallback: kalau symlink gagal (filesystem nggak support, mis. FAT32), pakai esca
 - v3.11.1 (`9201d77`) + v3.11.2 (`18980b1`) = DEPRECATED — insufficient fix, jangan pakai. Tetap di git history untuk referensi pelajaran.
 - Next: user re-download `mix-tui.py` v3.11.3, test ulang. Harusnya JALAN kali ini (symlink bypass = no escaping issue).
 - Test scripts persisted: `scripts/test-subtitle-escape.py`, `scripts/test-subtitle-fix.py`, `scripts/verify-subtitle-fix.py`, `scripts/test-subtitle-v3112.py`, `scripts/test-symlink-approach.py` (5 test harness).
+
+---
+
+## 21 Nov 2026 — mix-tui v3.11.4 fix REAL: satu single-quote bungkus path+force_style
+
+**Commit**: `3c18e50`
+
+### v3.11.3 MASIH FAIL — user verify (round 3) + PROVES root cause
+User re-download mix-tui v3.11.3 (`b9d768b`, symlink clean path) + test di Mac ffmpeg 9.0.2:
+```
+[AVFilterGraph] No option name near '/var/folders/vh/.../T/mix_tui_sub_b557aba1.srt
+:force_style=Fontsize=18,...,Justify=2'
+Error : Invalid argument (exit 234)
+```
+**Path SUDAH clean** — `/var/folders/.../mix_tui_sub_b557aba1.srt`, no comma/space/!/`:`. Tapi error pattern SAMA. **INI PROVES**: masalahnya BUKAN path SRT. Masalahnya struktur `'PATH':force_style='STYLE'` — **dua quoted segment terpisah**. ffmpeg 9.x gabungkan jadi ONE quoted block (abaikan inner quote #2 after PATH).
+
+### User critique valid: AI over-engineer
+User bilang: "path sudah jelas = user pilih di TUI = file ada. AI hanya over-engineer dgn parsing-parsing nama, lalu kacau, file yg ada = dianggap gak ada."
+
+Benar. v3.11.1 + v3.11.2 + v3.11.3 = 3x fix yg asumsi root cause di path escaping (escape comma, buang quote, symlink). Padahal root cause sebenarnya di **quote structure** (dua segment terpisah). Asumsi salah → 3x wasted round-trip user.
+
+### Fix v3.11.4 (`scripts/mix-tui.py`)
+**SATU single-quote bungkus SEMUA** → `'PATH:force_style=STYLE'`.
+
+```python
+# v3.11.3 (FAIL di 9.x — dua quoted segment):
+subtitle_filter = f"subtitles='{srt_for_filter}':force_style='{force_style}'"
+
+# v3.11.4 (FIX — satu quote bungkus semua):
+subtitle_filter = f"subtitles='{srt_for_filter}:force_style={force_style}'"
+```
+
+Kenapa work:
+- Path symlink clean (no `:`), subtitles filter split `:` di dalam quote OK
+- Comma di force_style aman: level 1 quote protect (nggak split filtergraph), level 2 comma bukan separator (cuma `:`) → pass through
+- No quote around force_style value (outer quote protect everything)
+
+Fallback (symlink gagal, rare): escape hanya `:` dan `'` (satu-quote protect `, ; [ ]` lainnya).
+
+### Perubahan code (3 tempat)
+1. Line ~1490-1510: update comment (v3.11.3 → v3.11.4) + simplify fallback escaping (hanya `:` `'`)
+2. Line ~1563, 1567: `subtitle_filter` pakai satu quote structure (buang quote sekitar force_style value)
+
+### Verify sandbox (exact code path, symlink Mac temp style path)
+- Render SUCCESS (full filterchain scale+subtitles+logo, exit 0)
+- Subtitle rendered: 23803 white pixels di bottom (3.83%) — subtitle visible
+- Symlink cleaned up setelah FFmpeg ✓
+
+### Pelajaran PENTING untuk AI next session
+1. **Baca error message pattern DULU, jangan asumsi root cause.** v3.11.3 error shows path SUDAH clean tapi error SAMA — proves root cause BUKAN path. Seharusnya setelah lihat v3.11.3 error (clean path masih fail), langsung identify: masalahnya quote structure, bukan path escaping.
+2. **User critique valid: path dipilih user di TUI = file pasti ada.** Jangan over-engineer dgn parsing nama file (escape comma, escape `; [ ]`, dll). Path simple, pass apa adanya.
+3. **ffmpeg 9.x nggak handle dua quoted segment terpisah di filter argument.** `'PATH':force_style='STYLE'` → gabung jadi one block. Fix: satu quote bungkus semua `'PATH:force_style=STYLE'`.
+4. **Stop tebak escaping berlapis.** v3.11.1 + v3.11.2 + v3.11.3 = 3x tebak escaping yg insufficient. Fix v3.11.4 minimal (satu quote), sesuai critique user.
+
+### Status
+- mix-tui v3.11.4: ✅ production (fix REAL ffmpeg 9.x, pending VLC feedback user di Mac).
+- v3.11.1 (`9201d77`) + v3.11.2 (`18980b1`) + v3.11.3 (`b9d768b`) = DEPRECATED — insufficient fix. Tetap di git history untuk referensi pelajaran.
+- Next: user re-download `mix-tui.py` v3.11.4, test ulang. Harusnya JALAN kali ini (satu quote = nggak ada dua segment issue).
+- Test scripts persisted: 5 test harness (test-subtitle-escape, test-subtitle-fix, verify-subtitle-fix, test-subtitle-v3112, test-symlink-approach).
