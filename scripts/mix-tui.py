@@ -1487,14 +1487,14 @@ def main():
             alignment = 2
             margin_v = int(srt_position.split(':')[1]) if ':' in srt_position else 40
 
-        # v3.11.3 FIX (21 Nov 2026): SYMLINK approach — bypass escaping issue entirely.
-        # v3.11.1 (escape comma) + v3.11.2 (buang single-quote) MASIH FAIL di ffmpeg 9.x Mac.
-        # Root cause: ffmpeg 9.x ubah filtergraph parsing behavior — escaping + quote handling
-        # beda dari 7.x (sandbox nggak reproduce). Daripada tebak escaping yg version-specific,
-        # buat symlink dgn nama CLEAN (no special char) → SRT path asli. Filter pakai symlink
-        # path → no escaping needed, work di ffmpeg version apapun.
-        # Symlink path: /tmp/mix_tui_sub_XXXXXXXX.srt (huruf, angka, slash, dot, underscore —
-        # semua safe di filtergraph). Single-quote wrap aman (no special char dlm path).
+        # v3.11.4 FIX (21 Nov 2026): SATU single-quote bungkus PATH + force_style.
+        # v3.11.3 (symlink clean path) MASIH FAIL di ffmpeg 9.x Mac — error pattern sama:
+        # 'CLEAN_PATH':force_style='STYLE' di-parse sebagai ONE quoted block. ffmpeg 9.x
+        # nggak handle DUA quoted segment terpisah (quote #2 after PATH nggak recognized closing).
+        # Fix: bungkus SEMUA dlm satu quote → 'PATH:force_style=STYLE'. Karena path symlink
+        # clean (no :), subtitles filter bisa split : di dalam quote. Comma di force_style
+        # aman (level 1 quote protect, level 2 comma bukan separator).
+        # Fallback (symlink gagal): escape hanya : dan ' (satu-quote protect , ; [ ] lainnya).
         import tempfile, uuid
         srt_symlink_path = os.path.join(tempfile.gettempdir(),
                                          f'mix_tui_sub_{uuid.uuid4().hex[:8]}.srt')
@@ -1504,10 +1504,8 @@ def main():
             os.symlink(srt_path, srt_symlink_path)
             srt_for_filter = srt_symlink_path  # clean path, no escaping needed
         except OSError:
-            # Fallback: kalau symlink gagal (mis. filesystem nggak support), pakai path asli
-            # dgn escaping v3.11.2 (last resort — mungkin masih fail di 9.x tapi better than nothing)
-            srt_for_filter = (srt_path.replace('\\', '\\\\').replace(':', '\\:').replace("'", "\\'")
-                              .replace(',', '\\,').replace(';', '\\;').replace('[', '\\[').replace(']', '\\]'))
+            # Fallback: symlink gagal (rare). Escape : dan ' saja (satu-quote protect rest).
+            srt_for_filter = srt_path.replace('\\', '\\\\').replace(':', '\\:').replace("'", "\\'")
             srt_symlink_path = None  # tandai: tidak pakai symlink, no cleanup
 
         # Style ASS: font 18, putih outline hitam, Alignment + MarginV
@@ -1562,11 +1560,11 @@ def main():
             # v3.8: Chain subtitle + logo overlay
             # [0:v]subtitles='...'[vsub];[vsub][logo_idx:v]overlay=top-right[vout]
             # Logo input index tergantung mode (Mode F: 4, Mode B/D: 3 atau 2)
-            subtitle_filter = f"[0:v]{scale_pre}subtitles='{srt_for_filter}':force_style='{force_style}'[vsub]"
+            subtitle_filter = f"[0:v]{scale_pre}subtitles='{srt_for_filter}:force_style={force_style}'[vsub]"
             # Logo overlay akan ditambah di cmd build (perlu tahu index input logo)
         else:
             # No logo → subtitle only (existing behavior, v3.9: + scale_pre kalau force)
-            subtitle_filter = f"[0:v]{scale_pre}subtitles='{srt_for_filter}':force_style='{force_style}'[vout]"
+            subtitle_filter = f"[0:v]{scale_pre}subtitles='{srt_for_filter}:force_style={force_style}'[vout]"
 
         if not simple_mode:
             # Full + Burn SRT (B) / Original + Burn SRT (F): 3 input + audio_filter + subtitle_filter
