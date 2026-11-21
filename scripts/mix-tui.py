@@ -1487,14 +1487,15 @@ def main():
             alignment = 2
             margin_v = int(srt_position.split(':')[1]) if ':' in srt_position else 40
 
-        # v3.11.4 FIX (21 Nov 2026): SATU single-quote bungkus PATH + force_style.
-        # v3.11.3 (symlink clean path) MASIH FAIL di ffmpeg 9.x Mac — error pattern sama:
-        # 'CLEAN_PATH':force_style='STYLE' di-parse sebagai ONE quoted block. ffmpeg 9.x
-        # nggak handle DUA quoted segment terpisah (quote #2 after PATH nggak recognized closing).
-        # Fix: bungkus SEMUA dlm satu quote → 'PATH:force_style=STYLE'. Karena path symlink
-        # clean (no :), subtitles filter bisa split : di dalam quote. Comma di force_style
-        # aman (level 1 quote protect, level 2 comma bukan separator).
-        # Fallback (symlink gagal): escape hanya : dan ' (satu-quote protect , ; [ ] lainnya).
+        # v3.11.5 FIX (21 Nov 2026): NO single-quote — path symlink clean + escape comma force_style.
+        # v3.11.4 (satu-quote 'PATH:force_style=STYLE') MASIH FAIL di ffmpeg 9.x Mac — error v3.11.3
+        # PROVES: ffmpeg 9.x TIDAK split : di dalam quoted content. Dua-quote 'PATH':'STYLE' sudah
+        # di-merge jadi satu blok 'PATH:force_style=STYLE' lalu "No option name" — artinya 9.x treat
+        # entire quoted content sebagai filename literal, no option split. Jadi satu-quote juga fail.
+        # Fix v3.11.5: HAPUS single-quote sama sekali. Path symlink clean (no special char) → no
+        # quote butuh. Escape HANYA comma di force_style (\, = level-1 escape, un-escape ke , setelah
+        # filtergraph split). : di filter (path:force_style) = level-2 separator, subtitles filter
+        # split sendiri. No quote = no quote pairing issue di version apapun.
         import tempfile, uuid
         srt_symlink_path = os.path.join(tempfile.gettempdir(),
                                          f'mix_tui_sub_{uuid.uuid4().hex[:8]}.srt')
@@ -1504,8 +1505,9 @@ def main():
             os.symlink(srt_path, srt_symlink_path)
             srt_for_filter = srt_symlink_path  # clean path, no escaping needed
         except OSError:
-            # Fallback: symlink gagal (rare). Escape : dan ' saja (satu-quote protect rest).
-            srt_for_filter = srt_path.replace('\\', '\\\\').replace(':', '\\:').replace("'", "\\'")
+            # Fallback: symlink gagal (rare). Escape : \ , di path (no quote protect).
+            srt_for_filter = (srt_path.replace('\\', '\\\\').replace(':', '\\:')
+                              .replace(',', '\\,'))
             srt_symlink_path = None  # tandai: tidak pakai symlink, no cleanup
 
         # Style ASS: font 18, putih outline hitam, Alignment + MarginV
@@ -1527,6 +1529,9 @@ def main():
             f"MarginV={margin_v},"
             f"Justify=2"  # v3.3 fix: rata tengah horizontal (fix rata kiri di Alignment=5)
         )
+        # v3.11.5: escape comma di force_style (\, = level-1 escape, un-escape ke , setelah split).
+        # No single-quote → comma adalah level-1 separator, harus escape supaya filtergraph nggak split.
+        force_style_esc = force_style.replace(',', '\\,')
 
         # Filter: [0:v] + subtitles → [vout]
         # subtitles filter butuh file path (escape), force_style untuk styling
@@ -1560,11 +1565,11 @@ def main():
             # v3.8: Chain subtitle + logo overlay
             # [0:v]subtitles='...'[vsub];[vsub][logo_idx:v]overlay=top-right[vout]
             # Logo input index tergantung mode (Mode F: 4, Mode B/D: 3 atau 2)
-            subtitle_filter = f"[0:v]{scale_pre}subtitles='{srt_for_filter}:force_style={force_style}'[vsub]"
+            subtitle_filter = f"[0:v]{scale_pre}subtitles={srt_for_filter}:force_style={force_style_esc}[vsub]"
             # Logo overlay akan ditambah di cmd build (perlu tahu index input logo)
         else:
             # No logo → subtitle only (existing behavior, v3.9: + scale_pre kalau force)
-            subtitle_filter = f"[0:v]{scale_pre}subtitles='{srt_for_filter}:force_style={force_style}'[vout]"
+            subtitle_filter = f"[0:v]{scale_pre}subtitles={srt_for_filter}:force_style={force_style_esc}[vout]"
 
         if not simple_mode:
             # Full + Burn SRT (B) / Original + Burn SRT (F): 3 input + audio_filter + subtitle_filter
