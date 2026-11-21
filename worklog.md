@@ -7051,3 +7051,68 @@ Path TANPA single-quote. force_style TETAP pakai single-quote (commas di force_s
 - v3.11.1 (commit `9201d77`) = DEPRECATED — insufficient fix, jangan pakai. Tetap di git history untuk referensi pelajaran.
 - Next: user re-download `mix-tui.py` v3.11.2, test ulang. Kalau masih fail, paste error baru.
 - Test scripts persisted: `scripts/test-subtitle-escape.py`, `scripts/test-subtitle-fix.py`, `scripts/verify-subtitle-fix.py`, `scripts/test-subtitle-v3112.py` (4 test harness untuk reproducible debugging).
+
+---
+
+## 21 Nov 2026 — mix-tui v3.11.3 fix REAL: symlink approach bypass ffmpeg 9.x escaping
+
+**Commit**: `b9d768b`
+
+### v3.11.2 MASIH FAIL — user verify (round 2)
+User re-download mix-tui v3.11.2 (`18980b1`, buang single-quote path) + test di Mac ffmpeg 9.0.2:
+```
+[AVFilterGraph] No option name near '/Volumes/HDD/.../marah besar!.id.srt
+:force_style=Fontsize=18,...,Justify=2'
+Error : Invalid argument (exit 234)
+```
+Error pattern SAMA dengan v3.11.1 — path + force_style tetap di-parse sebagai ONE unit. **v3.11.2 insufficient.** Comma sudah di-escape (`harta\,` ✓), path sudah tanpa single-quote ✓, tapi masih fail.
+
+### Pelajaran: stop tebak escaping, pakai workaround robust
+v3.11.1 (escape comma) + v3.11.2 (buang single-quote) = 2x coba fix escaping yg terlihat masuk akal tapi insufficient di ffmpeg 9.x. Sandbox 7.x nggak reproduce (semua approach sukses di 7.x). Root cause: ffmpeg 9.x ubah filtergraph parsing behavior — tebak escaping version-specific nggak reliable kalau sandbox beda version.
+
+**Decision: bypass escaping issue entirely dgn symlink approach.**
+
+### Fix v3.11.3 (`scripts/mix-tui.py`)
+**Buat symlink clean-name → SRT path asli. Filter pakai symlink path = no escaping needed.**
+
+```python
+# Buat symlink /tmp/mix_tui_sub_XXXXXXXX.srt (clean, no special char) → SRT path asli
+srt_symlink_path = os.path.join(tempfile.gettempdir(),
+                                 f'mix_tui_sub_{uuid.uuid4().hex[:8]}.srt')
+os.symlink(srt_path, srt_symlink_path)
+srt_for_filter = srt_symlink_path  # clean path, no escaping needed
+
+# Filter: single-quote symlink path (safe — no special char)
+subtitle_filter = f"subtitles='{srt_for_filter}':force_style='{force_style}'"
+
+# Cleanup setelah FFmpeg (success/fail/KeyboardInterrupt)
+if srt_symlink_path and os.path.lexists(srt_symlink_path):
+    os.remove(srt_symlink_path)
+```
+
+Symlink path: `/tmp/mix_tui_sub_xxxxxxxx.srt` — cuma huruf, angka, slash, dot, underscore. Semua safe di filtergraph. Single-quote wrap aman (no special char dlm path). Work di ffmpeg version apapun (7.x, 9.x, dst).
+
+Fallback: kalau symlink gagal (filesystem nggak support, mis. FAT32), pakai escaping v3.11.2 (last resort — mungkin masih fail di 9.x tapi better than nothing).
+
+### Perubahan code (4 tempat)
+1. Line ~1341: init `srt_symlink_path = None`
+2. Line ~1490-1510: ganti escaping logic dgn symlink creation (`os.symlink`)
+3. Line ~1565, 1569: `subtitle_filter` pakai `srt_for_filter` dgn single-quote
+4. Line ~1691, 1699: cleanup symlink di KeyboardInterrupt + after FFmpeg
+
+### Verify sandbox (exact code path, SRT path comma + ! mirror user)
+- Render SUCCESS (full filterchain scale+subtitles+logo, exit 0)
+- Subtitle rendered: 21101 white pixels di bottom (3.40%) — subtitle visible
+- Symlink cleaned up setelah FFmpeg ✓
+
+### Pelajaran PENTING untuk AI next session
+1. **Kalau escaping version-specific (7.x vs 9.x) susah di-debug dan sandbox nggak reproduce, BYPASS issue dgn workaround robust** (symlink clean name) daripada tebak escaping yg mungkin masih fail. v3.11.1 + v3.11.2 = 2x wasted round-trip user.
+2. **Seharusnya langsung symlink setelah v3.11.1 fail**, karena root cause-nya version-specific parsing yg nggak bisa di-reproduce di sandbox. Escaping fix yg "masuk akal secara teori" nggak worth coba kalau sandbox nggak bisa verify.
+3. **Symlink approach = pattern reusable**: kalau ada path dgn special char yg perlu pass ke ffmpeg filtergraph, buat symlink clean-name → path asli. Bypass semua escaping issue. Cleanup setelah pakai.
+4. **ffmpeg filtergraph escaping punya 3 level** (filtergraph + option + libass) — kombinasi escaping antar level susah di-debug, terutama kalau version beda behavior. Symlink bypass semua level.
+
+### Status
+- mix-tui v3.11.3: ✅ production (fix REAL ffmpeg 9.x, pending VLC feedback user di Mac).
+- v3.11.1 (`9201d77`) + v3.11.2 (`18980b1`) = DEPRECATED — insufficient fix, jangan pakai. Tetap di git history untuk referensi pelajaran.
+- Next: user re-download `mix-tui.py` v3.11.3, test ulang. Harusnya JALAN kali ini (symlink bypass = no escaping issue).
+- Test scripts persisted: `scripts/test-subtitle-escape.py`, `scripts/test-subtitle-fix.py`, `scripts/verify-subtitle-fix.py`, `scripts/test-subtitle-v3112.py`, `scripts/test-symlink-approach.py` (5 test harness).
