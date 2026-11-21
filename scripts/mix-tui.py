@@ -1487,15 +1487,17 @@ def main():
             alignment = 2
             margin_v = int(srt_position.split(':')[1]) if ':' in srt_position else 40
 
-        # v3.11.5 FIX (21 Nov 2026): NO single-quote — path symlink clean + escape comma force_style.
-        # v3.11.4 (satu-quote 'PATH:force_style=STYLE') MASIH FAIL di ffmpeg 9.x Mac — error v3.11.3
-        # PROVES: ffmpeg 9.x TIDAK split : di dalam quoted content. Dua-quote 'PATH':'STYLE' sudah
-        # di-merge jadi satu blok 'PATH:force_style=STYLE' lalu "No option name" — artinya 9.x treat
-        # entire quoted content sebagai filename literal, no option split. Jadi satu-quote juga fail.
-        # Fix v3.11.5: HAPUS single-quote sama sekali. Path symlink clean (no special char) → no
-        # quote butuh. Escape HANYA comma di force_style (\, = level-1 escape, un-escape ke , setelah
-        # filtergraph split). : di filter (path:force_style) = level-2 separator, subtitles filter
-        # split sendiri. No quote = no quote pairing issue di version apapun.
+        # v3.11.6 FIX (21 Nov 2026): ONE quote pair — path UNQUOTED (symlink clean), force_style QUOTED.
+        # Root cause (baca ffmpeg docs + error v3.11.5 PELAN-PELAN): '=' adalah level-1 special char
+        # (terminates unquoted argument). force_style value 'Fontsize=18,PrimaryColour=...' punya '='
+        # di dalamnya. Tanpa quote, '=' setelah Fontsize terminate value → force_style='Fontsize',
+        # lalu '18\,PrimaryColour=...' jadi garbage → "No option name". v3.11.5 escape comma TIDAK
+        # lindungi '='. Hanya QUOTE yang lindungi '=' dan ',' di value.
+        # Tapi v3.11.0/v3.11.3 (DUA quote: path + force_style) fail karena 9.x merge dua quote pair
+        # jadi satu blok (treat entire quoted content = filename literal).
+        # Fix v3.11.6: ONE quote pair saja — path symlink clean (no special char) UNQUOTED, force_style
+        # value QUOTED. Quote lindungi '='+',' di force_style, path clean tidak butuh quote, satu quote
+        # pair = no merging issue. Ini canonical ffmpeg subtitles form (jutaan user pakai ini).
         import tempfile, uuid
         srt_symlink_path = os.path.join(tempfile.gettempdir(),
                                          f'mix_tui_sub_{uuid.uuid4().hex[:8]}.srt')
@@ -1503,9 +1505,10 @@ def main():
             if os.path.lexists(srt_symlink_path):
                 os.remove(srt_symlink_path)
             os.symlink(srt_path, srt_symlink_path)
-            srt_for_filter = srt_symlink_path  # clean path, no escaping needed
+            srt_for_filter = srt_symlink_path  # clean path, no escaping, UNQUOTED
         except OSError:
-            # Fallback: symlink gagal (rare). Escape : \ , di path (no quote protect).
+            # Fallback: symlink gagal (rare). Escape : \ , di path (path UNQUOTED, no quote protect).
+            # force_style value tetap QUOTED (quote lindungi = dan ,).
             srt_for_filter = (srt_path.replace('\\', '\\\\').replace(':', '\\:')
                               .replace(',', '\\,'))
             srt_symlink_path = None  # tandai: tidak pakai symlink, no cleanup
@@ -1529,9 +1532,8 @@ def main():
             f"MarginV={margin_v},"
             f"Justify=2"  # v3.3 fix: rata tengah horizontal (fix rata kiri di Alignment=5)
         )
-        # v3.11.5: escape comma di force_style (\, = level-1 escape, un-escape ke , setelah split).
-        # No single-quote → comma adalah level-1 separator, harus escape supaya filtergraph nggak split.
-        force_style_esc = force_style.replace(',', '\\,')
+        # v3.11.6: force_style value akan di-QUOTE di subtitle_filter (quote lindungi = dan ,).
+        # Tidak escape comma — quote yang protect, bukan escape.
 
         # Filter: [0:v] + subtitles → [vout]
         # subtitles filter butuh file path (escape), force_style untuk styling
@@ -1565,11 +1567,11 @@ def main():
             # v3.8: Chain subtitle + logo overlay
             # [0:v]subtitles='...'[vsub];[vsub][logo_idx:v]overlay=top-right[vout]
             # Logo input index tergantung mode (Mode F: 4, Mode B/D: 3 atau 2)
-            subtitle_filter = f"[0:v]{scale_pre}subtitles={srt_for_filter}:force_style={force_style_esc}[vsub]"
+            subtitle_filter = f"[0:v]{scale_pre}subtitles={srt_for_filter}:force_style='{force_style}'[vsub]"
             # Logo overlay akan ditambah di cmd build (perlu tahu index input logo)
         else:
             # No logo → subtitle only (existing behavior, v3.9: + scale_pre kalau force)
-            subtitle_filter = f"[0:v]{scale_pre}subtitles={srt_for_filter}:force_style={force_style_esc}[vout]"
+            subtitle_filter = f"[0:v]{scale_pre}subtitles={srt_for_filter}:force_style='{force_style}'[vout]"
 
         if not simple_mode:
             # Full + Burn SRT (B) / Original + Burn SRT (F): 3 input + audio_filter + subtitle_filter
