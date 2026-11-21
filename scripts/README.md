@@ -22,7 +22,7 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 14 | konten-tui.py v1.0 (konten sejarah: narasi + images → Ken Burns video) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 15 | **gemini-tts-tui.py v1.1** (SRT + Narasi, ID + JV, OPSI TAMBAHAN) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 16 | **talkinghead-tui.py v1.0** (SadTalker via Replicate, green screen preserved) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
-| 17 | **manim-shorts-tui.py v0.1** (WAV + SRT → infografis Shorts video, manim animation vertical 9:16) | ⚠ UNTESTED (sandbox pipeline OK 19 Nov 2026, belum diuji di Mac) |
+| 17 | **manim-shorts-tui.py v0.1** (WAV + SRT → infografis Shorts video, manim animation vertical 9:16) | ⚠ UNTESTED (sandbox OK 19 Nov 2026 + fix 21 Nov 2026, belum diuji di Mac) |
 
 ## Pipeline
 
@@ -374,14 +374,14 @@ Generate video Shorts vertical 9:16 dari WAV narasi + SRT, dengan animasi manim 
 ### Cara kerja
 1. Input WAV (edge-tts/gemini-tts Narration atau manual ElevenLabs) + SRT (whisper-tui #8)
 2. Parse SRT → segments [{start, end, text}]
-3. Generate manim script temp (charcoal bg `#1C1C2E`, Write animation + hold + FadeOut per segment, adaptive font size 56/42/32)
+3. Generate manim script temp (charcoal bg `#1C1C2E`, FadeIn whole text 0.3s + word-by-word highlight via t2c+Transform (yellow berpindah per kata, text full tetap visible) + FadeOut 0.2s per segment, wrap_text ke multiple lines + adaptive font size 56/48/40)
 4. Render manim → video-only MP4 (no audio)
 5. Mux video + WAV → final MP4 (ffmpeg, video stream copy + audio aac 48kHz stereo)
 
 Output: `HDD/manim-shorts/{stem}-shorts.mp4` (1080x1920 vertical, 30fps, h264)
 
 ### Render time
-~0.7x realtime (30s video ≈ 19-25s render). Sandbox test 19 Nov 2026: dummy WAV 30s + 8 SRT segments → MP4 1.2MB, 29.93s, render 19s. Visual check 8/8 keyframe unique hash (text berganti per segment, animasi jalan).
+~0.9x realtime (30s video ≈ 26s render, sedikit lebih lambat dari v0.1 19s karena extra Text objects + Transforms per word untuk highlight). Sandbox test 21 Nov 2026 (fix clipping+highlight, commit 1623907): dummy WAV 30s + 8 SRT segments → MP4 1.5MB, 30.0s (perfect sync), render 26s. edgeClip 0% (text fit width, nggak terpotong), highlight yellow 0.03-0.07% per word terdeteksi.
 
 ### Setup & pakai
 ```bash

@@ -38,7 +38,7 @@ Kamus: kamus-tui → jv.wiktionary.json → Supabase
 | 14 | konten-tui v1.0 | ⚠ UNTESTED (konten sejarah: narasi + images → Ken Burns video, code di GitHub belum diuji di Mac) |
 | 15 | **gemini-tts-tui v1.1** | ⚠ UNTESTED (SRT + Narasi, ID + JV, OPSI TAMBAHAN, butuh GEMINI_API_KEY, code di GitHub belum diuji di Mac) |
 | 16 | **talkinghead-tui v1.0** | ⚠ UNTESTED (SadTalker via Replicate, green screen preserved, butuh REPLICATE_API_TOKEN, code di GitHub belum diuji di Mac) |
-| 17 | **manim-shorts-tui v0.1** | ⚠ UNTESTED (Shorts infografis: WAV + SRT → manim video vertical 9:16, sandbox pipeline OK 19 Nov 2026, code di GitHub belum diuji di Mac) |
+| 17 | **manim-shorts-tui v0.1** | ⚠ UNTESTED (Shorts infografis: WAV + SRT → manim video vertical 9:16, sandbox OK 19 Nov 2026 + fix 21 Nov 2026 commit 1623907, code di GitHub belum diuji di Mac) |
 
 ## Struktur Folder — 3 LOKASI BERBEDA (baca config.py LENGKAP)
 

@@ -26,7 +26,7 @@ ID jalan end-to-end (12 TUI production + 5 untested). Jawa jalan via Gemini TTS 
 | 14 | konten-tui.py v1.0 | Konten sejarah (narasi + images → Ken Burns video 1920x1080) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 15 | **gemini-tts-tui.py v1.1** | TTS SRT + Narasi (Indonesia + Jawa, OPSI TAMBAHAN, butuh GEMINI_API_KEY) | ⚠ UNTESTED (code di GitHub belum diuji di Mac) |
 | 16 | **talkinghead-tui.py v1.0** | Talking head video (foto green screen + narasi JV via SadTalker Replicate, green screen preserved) | ⚠ UNTESTED (code di GitHub belum diuji di Mac) |
-| 17 | **manim-shorts-tui.py v0.1** | Shorts infografis (WAV + SRT → manim animation video vertical 9:16, premium look gratis) | ⚠ UNTESTED (sandbox pipeline OK 19 Nov 2026, belum diuji di Mac) |
+| 17 | **manim-shorts-tui.py v0.1** | Shorts infografis (WAV + SRT → manim animation video vertical 9:16, premium look gratis) | ⚠ UNTESTED (sandbox OK 19 Nov 2026 + fix 21 Nov 2026, belum diuji di Mac) |
 
 ## Pipeline
 
@@ -231,7 +231,7 @@ Detail lengkap: lihat [scripts/TALKINGHEAD.md](scripts/TALKINGHEAD.md).
 
 ## manim-shorts-tui v0.1 — TUI #17 Shorts infografis (WAV + SRT → manim video)
 
-⚠ **UNTESTED** — sandbox pipeline OK 19 Nov 2026, belum diuji di Mac user.
+⚠ **UNTESTED** — sandbox pipeline OK 19 Nov 2026 + fix clipping+highlight 21 Nov 2026 (commit 1623907), belum diuji di Mac user.
 
 Generate video Shorts vertical 9:16 dari WAV narasi + SRT, dengan animasi manim (premium look, gratis, tanpa model AI video mahal).
 
@@ -239,7 +239,7 @@ Generate video Shorts vertical 9:16 dari WAV narasi + SRT, dengan animasi manim 
 
 1. Input WAV (edge-tts/gemini-tts Narration atau manual) + SRT (whisper-tui #8 output)
 2. Parse SRT → segments [{start, end, text}]
-3. Generate manim script temp (charcoal bg `#1C1C2E`, Write animation + hold + FadeOut per segment, adaptive font size)
+3. Generate manim script temp (charcoal bg `#1C1C2E`, FadeIn whole text 0.3s + word-by-word highlight via t2c+Transform (yellow per kata, text full tetap visible) + FadeOut 0.2s per segment, wrap_text + adaptive font size 56/48/40)
 4. Render manim → video-only MP4 (no audio)
 5. Mux video + WAV → final MP4 (ffmpeg, video stream copy + audio aac)
 
@@ -247,7 +247,7 @@ Output: `HDD/manim-shorts/{stem}-shorts.mp4` (1080x1920 vertical, 30fps, h264 + 
 
 ### Render time
 
-~0.7x realtime (30s video ≈ 19-25s render). Sandbox test 19 Nov 2026: dummy WAV 30s + 8 SRT segments → MP4 1.2MB, 29.93s, render 19s. Visual check 8/8 keyframe unique hash (text berganti per segment).
+~0.9x realtime (30s video ≈ 26s render). Sandbox test 21 Nov 2026 (fix clipping+highlight, commit 1623907): dummy WAV 30s + 8 SRT segments → MP4 1.5MB, 30.0s perfect sync, render 26s. edgeClip 0% (text fit width), highlight yellow 0.03-0.07% per word.
 
 ### Setup & pakai
 

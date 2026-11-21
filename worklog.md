@@ -6889,7 +6889,59 @@ h264 1080x1920 vertical 30fps + aac 48000Hz stereo.
 - Bukan dubbing workflow — workflow KONTEN ORIGINAL (infografis Shorts)
 - Input: WAV (edge-tts/gemini-tts Narration atau manual) + SRT (whisper-tui #8)
 - Output: HDD/manim-shorts/{stem}-shorts.mp4 (1080x1920 vertical 30fps)
-- Render: manim CE, ~0.7x realtime, charcoal bg + Write animation, NGGAK butuh LaTeX
+- Render: manim CE, ~0.9x realtime (post-fix 21 Nov 2026), charcoal bg + FadeIn whole text + word-by-word highlight (t2c+Transform), NGGAK butuh LaTeX
 - config.py: MANIM_SHORTS_DIR = HDD_BASE / 'manim-shorts' (path constant ke-12)
-- Sandbox tested: 30s dummy → MP4 1.2MB, 19s render, 8/8 frame unique hash
+- Sandbox tested: 30s dummy → MP4 1.5MB, 26s render (post-fix), 30.0s perfect sync, edgeClip 0% (text fit width), highlight yellow per word
 - Script: scripts/manim-shorts-tui.py + scripts/test-manim-shorts.py (test harness)
+
+---
+
+## 21 Nov 2026 — TUI #17 fix: text clipping + ganti animasi Write→FadeIn+word highlight
+
+**Commit**: `1623907` (code fix, sudah di-push sesi sebelumnya)
+**Docs sync**: entry ini + 4 file docs update (commit terpisah)
+
+**Trigger**: User feedback setelah lihat MP4 v1 (30s test): "banyak huruf terpotong di kanan dan kiri, huruf animasi baiknya hanya highlight saja, sementara text full = dari srt".
+
+### Fix 1 — Text clipping kiri/kanan (`scripts/manim-shorts-tui.py` template)
+- Tambah `wrap_text(s, max_chars)` function: wrap text ke multiple lines (max 22/26/30 chars berdasarkan font size 56/48/40)
+- Adaptive font size: 56 jika ≤2 lines, 48 jika 3 lines, 40 jika >3 lines
+- Verify: edgeClip 0% (0 non-bg pixels di 5px tepi kiri+kanan) — sebelumnya text nyentuh edge frame
+
+### Fix 2 — Animasi Write → FadeIn + word highlight
+- Ganti `Write` (stroke-by-stroke, text menghilang antar segment) → `FadeIn` whole text (0.3s, full text visible immediately)
+- Tambah word-by-word highlight: warna yellow (#F7D96F manim YELLOW) berpindah per kata via `t2c` parameter + `Transform` antar coloring
+- Text full dari SRT tetap visible selama segment, hanya highlight yang berpindah
+- Catatan teknis: manim CE 0.22.1 `Text` (Pango SVG) `set_color` di submobject/slice NGGAK jalan (glyph color baked saat render). 4 approach diuji sebelum nemu yang jalan:
+  1. `text[gs:ge].animate.set_color(YELLOW)` — gagal (slice = copy)
+  2. `t[i].set_color(YELLOW)` per-char — gagal
+  3. Direct `t[0:9].set_color(YELLOW)` — gagal
+  4. **`t2c={word: YELLOW}` + `Transform(t, t_next)` — JALAN** ✓ (yellow 514px terdeteksi di minimal test)
+
+### Test results sandbox (30s dummy, 8 segments, post-fix)
+- Render: 26s (0.9x realtime, sedikit lebih lambat dari v0.1 19s karena extra Text objects + Transforms per word — masih under realtime)
+- Durasi: 30.0s (perfect sync WAV, sebelumnya 29.93s)
+- Output: 1.5MB, h264 1080x1920 30fps + aac 48kHz stereo
+- edgeClip: OK 0% (semua frame, text fit width via wrap_text)
+- highlight: yellow 0.03-0.07% terdeteksi di end-of-Transform per word (4 word seg1 + seg3 wrapped long text)
+
+### Deliverable preview (download/)
+- manim-shorts-30s-v3.mp4 (1.5MB, 30s fix version)
+- manim-shorts-frames/ (4 keyframe JPG highlight per word)
+
+### Docs sync (4 file + worklog)
+- scripts/README.md: cara kerja point 3 (Write→FadeIn+highlight) + render time (0.7x→0.9x, 19s→26s) + table row #17
+- AGENTS.md: TUI #17 section cara kerja + render time + sandbox tested + status line + anti-amnesia bullet + table row #17
+- README.md root: TUI #17 section cara kerja + render time + UNTESTED line + table row #17
+- PROJECT_RULES.md: table row #17
+- worklog.md: entry ini + update anti-amnesia v0.1 block (Write→FadeIn+highlight, 19s→26s)
+
+### Sync issue terdeteksi awal session
+- Sandbox di-recycle antar session, lokal tertinggal 2 commit di belakang origin (a73f2e4 vs 1623907)
+- File `manim-shorts-tui.py` dll show sebagai `??` untracked lokal (karena HEAD lokal nggak tahu file itu)
+- Fix: `git fetch origin && git reset --hard origin/main` (working copy SAMA PERSIS dgn origin, nggak ada local changes yang hilang — verified via `git diff origin/main --stat` only show untracked files)
+- Pelajaran reinforce: SELALU fetch + compare lokal vs origin di awal session sebelum diagnose
+
+### Status
+- manim-shorts-tui v0.1 (post-fix 1623907): ⚠ UNTESTED (sandbox OK 21 Nov 2026, belum diuji di Mac user)
+- Next: user download `manim-shorts-tui.py` + `config.py` (re-download config karena updated dengan MANIM_SHORTS_DIR path constant ke-12), install manim CE + cairo + pango, test di Mac dengan WAV+SRT asli

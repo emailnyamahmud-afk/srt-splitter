@@ -46,7 +46,7 @@ Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 14 | konten-tui v1.0 (konten sejarah: images → video + narasi + Ken Burns) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 15 | **gemini-tts-tui v1.1** (SRT + Narasi, ID + JV, OPSI TAMBAHAN) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 16 | **talkinghead-tui v1.0** (SadTalker via Replicate, green screen preserved) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
-| 17 | **manim-shorts-tui v0.1** (WAV + SRT → infografis Shorts video, manim animation) | ⚠ UNTESTED (sandbox pipeline OK 19 Nov 2026, belum diuji di Mac) |
+| 17 | **manim-shorts-tui v0.1** (WAV + SRT → infografis Shorts video, manim animation) | ⚠ UNTESTED (sandbox OK 19 Nov 2026 + fix 21 Nov 2026, belum diuji di Mac) |
 
 ## TUI #13: review-mix-tui v1.0 — Review film (UNTESTED, code di GitHub belum diuji di Mac)
 
@@ -120,16 +120,16 @@ Output: `HDD/manim-shorts/{stem}-shorts.mp4` (1080x1920 vertical, 30fps, h264, m
 
 Cara kerja:
 1. Parse SRT → segments [{start, end, text, duration}]
-2. Generate manim script temp dengan Scene per segment (charcoal bg `#1C1C2E`, Write animation + hold + FadeOut, adaptive font size)
+2. Generate manim script temp dengan Scene per segment (charcoal bg `#1C1C2E`, FadeIn whole text 0.3s + word-by-word highlight via t2c+Transform + FadeOut 0.2s, wrap_text ke multiple lines + adaptive font size 56/48/40)
 3. Render manim → video-only MP4 (no audio)
 4. Mux video + WAV → final MP4 (ffmpeg, video stream copy + audio aac)
 5. Cleanup temp
 
-Render time: ~0.7x realtime (30s video ≈ 19-25s render, sandbox Linux CPU-only tested 19 Nov 2026). Di Mac M1 expected sama atau lebih cepat.
+Render time: ~0.9x realtime (30s video ≈ 26s render, sandbox Linux CPU-only tested 21 Nov 2026 fix clipping+highlight, commit 1623907). Di Mac M1 expected sama atau lebih cepat.
 
 **Install**: `pip3 install manim questionary` + `brew install cairo pango ffmpeg` (Mac system deps). Nggak butuh LaTeX (pakai Text class Pango, bukan Tex/MathTex). Opsional: `brew install font-noto-sans` untuk font default TUI ini.
 **Pakai**: `python3 manim-shorts-tui.py` (4 step TUI: WAV → SRT → output → konfirmasi)
-**Sandbox tested**: 19 Nov 2026, dummy WAV 30s + 8 SRT segments → MP4 1.2MB, 29.93s, h264 1080x1920 30fps + aac 48kHz stereo. Visual check 8/8 keyframe unique hash (text berganti per segment, animasi jalan). Belum diuji di Mac user.
+**Sandbox tested**: 19 Nov 2026 (v0.1 initial) + 21 Nov 2026 (fix clipping+highlight, commit 1623907), dummy WAV 30s + 8 SRT segments → MP4 1.5MB, 30.0s perfect sync, h264 1080x1920 30fps + aac 48kHz stereo. Fix 21 Nov: edgeClip 0% (text fit width via wrap_text), highlight yellow berpindah per kata via t2c+Transform (manim CE Text set_color di slice NGGAK jalan, harus pakai t2c). Belum diuji di Mac user.
 
 ## Struktur Folder — 3 LOKASI BERBEDA (baca config.py LENGKAP)
 
@@ -400,7 +400,7 @@ naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → talkinghead-tui v1.0 
 - konten-tui v1.0: ⚠ UNTESTED (TUI #14, code di GitHub belum diuji di Mac)
 - gemini-tts-tui v1.1: ⚠ UNTESTED (TUI #15, code di GitHub belum diuji di Mac, SRT + Narasi, ID + JV, butuh GEMINI_API_KEY)
 - talkinghead-tui v1.0: ⚠ UNTESTED (TUI #16, code di GitHub belum diuji di Mac, SadTalker via Replicate, butuh REPLICATE_API_TOKEN)
-- manim-shorts-tui v0.1: ⚠ UNTESTED (TUI #17, sandbox pipeline OK 19 Nov 2026 — 30s dummy test render 19s/0.7x realtime, 8/8 frame unique, MP4 1.2MB valid. Belum diuji di Mac. Butuh manim CE + cairo + pango, NGGAK butuh LaTeX)
+- manim-shorts-tui v0.1: ⚠ UNTESTED (TUI #17, sandbox pipeline OK 19 Nov 2026 + fix 21 Nov 2026 commit 1623907 — 30s dummy render 26s/0.9x realtime, 30.0s perfect sync, edgeClip 0% (text fit width), highlight yellow per word via t2c+Transform, MP4 1.5MB valid. Belum diuji di Mac. Butuh manim CE + cairo + pango, NGGAK butuh LaTeX)
 - Pipeline produksi Indonesia: 6 film tested, all TUI production-ready
 - Pipeline Jawa: experimental, tunggu user VLC feedback
 
@@ -436,7 +436,7 @@ SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
 - gemini-tts-tui v1.1 Narration mode (JV) → alternatif feed untuk review-mix-tui / konten-tui / talkinghead-tui / manim-shorts-tui (bahasa Jawa)
 - talkinghead-tui v1.0 (#16) = workflow KONTEN (BUKAN dubbing): foto green screen + narasi JV → SadTalker via Replicate → MP4 green screen preserved → user edit chroma key → final-konten.mp4
 - TUI #16 backend = Replicate.com `cjwbw/sadtalker` (cloud), butuh `REPLICATE_API_TOKEN` di HDD .env (BUKAN M1 lokal — sadtalker lambat + MPS partial)
-- manim-shorts-tui v0.1 (#17) = workflow KONTEN (BUKAN dubbing): WAV narasi + SRT → manim animation video Shorts vertical 9:16. Render ~0.7x realtime. Butuh manim CE + cairo + pango (NGGAK butuh LaTeX). Input WAV dari edge-tts/gemini-tts Narration atau manual, SRT dari whisper-tui #8
+- manim-shorts-tui v0.1 (#17) = workflow KONTEN (BUKAN dubbing): WAV narasi + SRT → manim animation video Shorts vertical 9:16. Render ~0.9x realtime (post-fix 21 Nov 2026). Animasi: FadeIn whole text + word-by-word highlight (t2c+Transform, text full tetap visible). Butuh manim CE + cairo + pango (NGGAK butuh LaTeX). Input WAV dari edge-tts/gemini-tts Narration atau manual, SRT dari whisper-tui #8
 
 ### Workflow (kesalahan saya sebelumnya: tidak push):
 
