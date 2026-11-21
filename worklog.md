@@ -6997,3 +6997,57 @@ Escape ALL filtergraph special chars (level 1) + option separator colon (level 2
 - mix-tui v3.11.1: ✅ production (fix comma path, pending VLC feedback user di Mac).
 - Next: user re-download `mix-tui.py` di `~/Dubbing/`, test ulang dengan SRT path yang ada comma.
 - Test scripts persisted: `scripts/test-subtitle-escape.py`, `scripts/test-subtitle-fix.py`, `scripts/verify-subtitle-fix.py` (reproducible test harness untuk future debugging).
+
+---
+
+## 21 Nov 2026 — mix-tui v3.11.2 fix REAL: buang single-quote di SRT path (ffmpeg 9.x)
+
+**Commit**: `18980b1`
+
+### v3.11.1 MASIH FAIL — user verify
+User re-download mix-tui v3.11.1 (`9201d77`) + test di Mac ffmpeg 9.0.2 dengan SRT path:
+`S1 Kota kecil yang mengaku miskin penuh harta, raja datang diam-diam lalu marah besar!.id.srt`
+
+Error baru (v3.11.1):
+```
+[AVFilterGraph] No option name near '/Volumes/HDD/Dubbing/input/S1 Kota kecil
+yang mengaku miskin penuh harta\, raja datang diam-diam lalu marah besar!.id.srt
+:force_style=Fontsize=18,...,Justify=2'
+```
+Comma SUDAH di-escape (`harta\,` ✓) tapi error pattern SAMA: `'PATH':force_style='STYLE'` di-parse sebagai ONE quoted block. **v3.11.1 insufficient.**
+
+### Root cause v3.11.2 (the REAL fix)
+v3.11.1 escape comma di DALAM single-quote — tapi quote pairing-nya sendiri yg rusak di ffmpeg 9.x. Escape comma nggak solve karena `'` after PATH tetap nggak recognized as closing quote.
+
+ffmpeg 9.x ubah behavior single-quote pairing: ketika path di-wrap `'PATH'` lalu diikuti `:force_style='STYLE'` (quoted segment lain), 9.x salah pair quote — treat sebagai ONE quoted block dari `'` pertama ke `'` terakhir.
+
+### Fix v3.11.2 (`scripts/mix-tui.py`)
+**BUANG single-quote wrap di path SRT.** Escape semua special char eksplisit (`\ : ' , ; [ ]`), filtergraph parser handle via escape — nggak rely on single-quote protection.
+
+```python
+# Sebelum v3.11.2 (v3.11.1, FAIL di 9.x):
+subtitle_filter = f"subtitles='{srt_escaped}':force_style='{force_style}'"
+
+# v3.11.2 (FIX):
+subtitle_filter = f"subtitles={srt_escaped}:force_style='{force_style}'"
+```
+Path TANPA single-quote. force_style TETAP pakai single-quote (commas di force_style adalah option separators di subtitles filter, perlu quote protection di filtergraph level — kalau di-escape `\,` jadi literal di option level, salah).
+
+2 tempat di-edit: line ~1558 (dengan logo) + line ~1562 (tanpa logo).
+
+### Verify sandbox (exact mix-tui code path, SRT path comma + ! mirror user)
+- Render SUCCESS (ffmpeg 7.x, full filterchain scale+subtitles+logo, exit 0).
+- Subtitle rendered: 25768 white pixels di bottom (4.15%) — subtitle visible.
+- Edge cases: comma ✓ semicolon ✓ bracket ✓ exclaim ✓ all ✓ (quote `'` pre-existing fail — jarang di Mac).
+
+### Pelajaran untuk AI next session (IMPORTANT)
+1. **v3.11.1 = contoh fix yg terlihat masuk akal tapi insufficient.** Escape comma di dalam single-quote masuk akal secara teori (docs bilang comma perlu escape), tapi nggak address root cause (quote pairing behavior change di 9.x). Harus verify fix dgn user BEFORE declare solved.
+2. **Jangan rely on single-quote protection di ffmpeg filtergraph.** Escape eksplisit (`\,` `\:` dll.) lebih robust across ffmpeg versions. Single-quote pairing behavior bisa beda antar version (7.x vs 9.x).
+3. **Sandbox 7.x nggak bisa reproduce 9.x issue.** Kalau user report error di Mac 9.x tapi sandbox 7.x OK, asumsi version-specific + design fix yg robust (nggak rely on version-specific quote behavior).
+4. **force_style vs path: beda escaping strategy.** Path = escape all, NO quote (filenamepassed ke subtitles filter, commas/colons literal). force_style = KEEP quote (commas adalah option separators, perlu quote protection di filtergraph level supaya subtitles filter terima sebagai separators).
+
+### Status
+- mix-tui v3.11.2: ✅ production (fix REAL ffmpeg 9.x, pending VLC feedback user di Mac).
+- v3.11.1 (commit `9201d77`) = DEPRECATED — insufficient fix, jangan pakai. Tetap di git history untuk referensi pelajaran.
+- Next: user re-download `mix-tui.py` v3.11.2, test ulang. Kalau masih fail, paste error baru.
+- Test scripts persisted: `scripts/test-subtitle-escape.py`, `scripts/test-subtitle-fix.py`, `scripts/verify-subtitle-fix.py`, `scripts/test-subtitle-v3112.py` (4 test harness untuk reproducible debugging).
