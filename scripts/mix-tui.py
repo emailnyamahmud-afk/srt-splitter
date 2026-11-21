@@ -1487,18 +1487,21 @@ def main():
             margin_v = int(srt_position.split(':')[1]) if ':' in srt_position else 40
 
         # Escape path untuk filter subtitles (semua filtergraph special chars + option separator)
-        # v3.11.1 FIX (21 Nov 2026): tambah escape comma (,) ; ; [ ] — sebelumnya hanya
-        # escape \ : ' yang OK di ffmpeg 7.x tapi break di ffmpeg 9.x (Mac Homebrew).
-        # Bug: SRT path berisi comma (mis. "harta, raja") → ffmpeg 9.x perlakukan
-        # 'PATH':force_style='STYLE' sebagai ONE quoted block (inner ' after PATH nggak
-        # recognized as closing) → "No option name near" error. Escape comma eksplisit
-        # (\,) supaya comma nggak break filtergraph parser, terlepas dari quote behavior.
+        # v3.11.2 FIX (21 Nov 2026): BUANG single-quote wrap di path — escape semua special char
+        # tanpa rely on single-quote protection. Root cause v3.11.1: escape comma di DALAM
+        # single-quote NGGAK solve ffmpeg 9.x (Mac Homebrew 9.0.2). ffmpeg 9.x ubah behavior
+        # single-quote pairing: 'PATH':force_style='STYLE' di-parse sebagai ONE quoted block
+        # (inner ' after PATH nggak recognized as closing) → "No option name near" error.
+        # v3.11.1 coba escape comma (\,) di dalam quote — masih FAIL (user verify 21 Nov 2026).
+        # v3.11.2: path TANPA single-quote, escape \ : ' , ; [ ] eksplisit. force_style tetap
+        # pakai single-quote (commas di force_style adalah option separators di subtitles filter,
+        # perlu quote protection di level filtergraph). Sandbox 7.x verify OK + subtitle rendered.
         # Order penting: backslash dulu supaya nggak double-escape backslash dari step lain.
         srt_escaped = (srt_path
                        .replace('\\', '\\\\')   # escape backslash (HARUS pertama)
                        .replace(':', '\\:')      # escape colon (option separator)
                        .replace("'", "\\'")      # escape single quote
-                       .replace(',', '\\,')      # escape comma (filter separator) — FIX v3.11.1
+                       .replace(',', '\\,')      # escape comma (filter separator)
                        .replace(';', '\\;')      # escape semicolon (filterchain separator)
                        .replace('[', '\\[')      # escape bracket (label start)
                        .replace(']', '\\]'))     # escape bracket (label end)
@@ -1555,11 +1558,11 @@ def main():
             # v3.8: Chain subtitle + logo overlay
             # [0:v]subtitles='...'[vsub];[vsub][logo_idx:v]overlay=top-right[vout]
             # Logo input index tergantung mode (Mode F: 4, Mode B/D: 3 atau 2)
-            subtitle_filter = f"[0:v]{scale_pre}subtitles='{srt_escaped}':force_style='{force_style}'[vsub]"
+            subtitle_filter = f"[0:v]{scale_pre}subtitles={srt_escaped}:force_style='{force_style}'[vsub]"
             # Logo overlay akan ditambah di cmd build (perlu tahu index input logo)
         else:
             # No logo → subtitle only (existing behavior, v3.9: + scale_pre kalau force)
-            subtitle_filter = f"[0:v]{scale_pre}subtitles='{srt_escaped}':force_style='{force_style}'[vout]"
+            subtitle_filter = f"[0:v]{scale_pre}subtitles={srt_escaped}:force_style='{force_style}'[vout]"
 
         if not simple_mode:
             # Full + Burn SRT (B) / Original + Burn SRT (F): 3 input + audio_filter + subtitle_filter
