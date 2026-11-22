@@ -7512,3 +7512,52 @@ cd ~/Dubbing && source venv/bin/activate && python3 piper-tts-tui.py
 - BUKAN pengganti edge-tts-tui v7.5 (tetap production default). Opsi tambahan untuk skenario offline murni.
 - Next: user download model Piper ID di Mac, test piper-tts-tui end-to-end (SRT 1 menit → WAV). VLC feedback.
 - Pelajaran AI: (1) JANGAN percaya riset subagent tanpa verifikasi langsung — kalau sandbox gak bisa reach, minta user kirim screenshot + pakai z-ai vision CLI baca literal. (2) JANGAN tebak "X tidak support Y" tanpa cek — edge-tts support Jawa (Dimas/Siti), saya tebak salah 2x. (3) Investigasi web di-balik Cloudflare: curl/WebFetch/r.jina.ai/allorigins/Wayback semua bisa fail — screenshot user + z-ai vision = solusi definitif.
+
+---
+
+## 22 Nov 2026 — piper-tts-tui v0.2: GPU Metal (CoreML EP) + Python API
+
+**File**: `scripts/piper-tts-tui.py` (rewrite v0.1 → v0.2)
+
+### Direktif user
+User sebelum download model uji: tahu mix-tui pakai GPU Metal (VideoToolbox ffmpeg encode) → cepat + Mac gak panas. Minta piper-tts-tui juga pakai GPU Metal, bukan CPU. Plus klarifikasi: mix mode (gabung TTS + audio ori) sudah ditangani mix-tui — piper cuma produksi dub WAV. Lalu user download + uji, error fix bareng.
+
+### Investigasi VoiceStudio (github.com/debpalash/voicestudio) — user minta cek sebelum download
+User nemu VoiceStudio (open source offline audio). Saya baca README + pyproject.toml + dub.py source + install.sh + struktur omnivoice/cli. Konklusi: **TIDAK adopsi apapun**. VoiceStudio = Electron+FastAPI+CLI+mobile studio (AGPL, heavy: torch+transformers+demucs+whisperx, ~5GB). Piper malah BUKAN engine inti mereka (OmniVoice/CosyVoice/mlx-audio). dub.py cuma thin HTTP client ke backend (algoritma smart-fit ada di backend, gak kelihatan). Hanya 1 insight: `mlx-audio` (Apple Silicon native) catat sebagai backend alternatif untuk v0.3 kalau Piper CoreML kurang cepat. Plan Piper tetap valid.
+
+### v0.2 implementasi — CLI subprocess → Python API + CoreML EP
+**Masalah v0.1**: piper CLI `--help` cuma punya flag `--cuda` (CUDA), TIDAK ada `--coreml`/`--metal`. CLI subprocess gak bisa pilih ExecutionProvider → CPU only. Plus CLI reload model per cue (lambat untuk ribuan cue).
+
+**Solusi v0.2**: switch ke Python API (`from piper import PiperVoice`). Verifikasi via `inspect.getsource()`:
+- `PiperVoice.load()` hardcoded `providers=['CUDAExecutionProvider']` atau `['CPUExecutionProvider']` — cuma accept `use_cuda: bool`, TIDAK ada param providers. Tidak bisa pakai CoreML via load().
+- Tapi constructor `PiperVoice(session, config, espeak_data_dir, download_dir)` accept session object langsung → **bypass load()**: baca config JSON sendiri + bangun `onnxruntime.InferenceSession(model_path, providers=[('CoreMLExecutionProvider', {'device_id': 0}), 'CPUExecutionProvider'])` + construct PiperVoice(session=...). CoreML duluan = Metal GPU di M1, CPU fallback otomatis untuk operator gak support CoreML.
+- `SynthesisConfig(length_scale=..., noise_scale=0.667, noise_w_scale=0.8)` = smart_fit control (length_scale <1 faster, >1 slower — persis inverse edge-tts rate).
+- `voice.synthesize(text, syn_config)` yield `AudioChunk` per sentence, `chunk.audio_float_array` = float32 [-1,1] + `chunk.sample_rate` (22050 untuk medium model). Output langsung array, no temp WAV + ffmpeg decode roundtrip.
+
+**Speedup v0.2**:
+- Model load SEKALI per session (v0.1 CLI reload ~1-2s per cue × ribuan cue = menit2 wasted). `_VOICE_CACHE` dict cache PiperVoice instance.
+- GPU Metal (CoreML EP) → estimasi ~0.15s/cue (vs v0.1 CPU ~0.4s/cue). Mirip mix-tui GPU path (Mac gak panas).
+- No subprocess per cue (v0.1 spawn piper process per cue) → no process startup overhead.
+- Cache array `.npy` (numpy save/load) bukan WAV — lebih cepat read/write + compact.
+
+**GPU detection**: `_HAS_COREML = 'CoreMLExecutionProvider' in ort.get_available_providers()`. Sandbox Linux = False (expected, no CoreML EP). Mac M1 = True (onnxruntime pip package untuk darwin/arm64 include CoreML EP). `print_banner()` + `load_piper_voice()` tampilkan EP status + warning kalau Mac tapi CoreML gak ada (reinstall onnxruntime).
+
+### Sandbox test v0.2 — fungsi core verified
+- compile OK (`py_compile`)
+- `_HAS_COREML=False`, `_ORT_PROVIDERS=['AzureExecutionProvider','CPUExecutionProvider']` (Linux sandbox, expected)
+- `get_gpu_status()` = ('CPU', False, [...])
+- `format_length_scale(1.5,1.5)=0.667`, `(2.0,1.5)=0.667 capped`, `(0.8,1.5)=1.0 natural` ✓
+- `parse_srt`, `normalize_tts_text`, `resample_audio` (22050→24000), `trim_silence_asymmetric`, `peak_normalize`, `compute_cache_key` semua ✓
+- `find_voice_models()` = [] (no model, HF rate-limit sandbox)
+- `load_piper_voice('/nonexistent.onnx', '/nonexistent.json')` → FileNotFoundError graceful (config read, expected)
+- End-to-end generate BLOCKED: HF rate-limit sandbox IP (429), gak bisa download model 63MB. Pending Mac user.
+
+### VoiceStudio takeaway untuk AI next session
+- VoiceStudio AGPL + heavy + BUKAN Piper-based + dub.py cuma HTTP client. JANGAN adopsi.
+- `mlx-audio>=0.4.4` (Apple Silicon native, Metal direct) = backend alternatif untuk v0.3 kalau Piper CoreML kurang cepat. Pattern backend-swap sudah modular di v0.2 (load_piper_voice function, gampang ganti).
+- mix-tui sudah handle mix dub+audio ori → piper-tts-tui CUMA produksi dub WAV. Jangan duplikasi mix logic.
+
+### Status
+- piper-tts-tui v0.2: ⚠ UNTESTED (sandbox fungsi core OK, generate pending Mac user dengan model + CoreML).
+- BUKAN pengganti edge-tts-tui v7.5. Opsi tambahan offline murni.
+- Next: user download model Piper ID di Mac + `pip3 install onnxruntime` (verify CoreML EP) → test piper-tts-tui v0.2 end-to-end. VLC feedback. Kalau error, fix bareng.

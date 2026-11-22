@@ -1,40 +1,60 @@
 #!/usr/bin/env python3
 """
-piper-tts-tui.py v0.1 — TUI TTS LOKAL (offline) via Piper TTS (VITS neural, ONNX runtime)
+piper-tts-tui.py v0.2 — TUI TTS LOKAL (offline) via Piper TTS (VITS neural, ONNX)
 
 TUI #18 — OPSI TAMBAHAN untuk skenario OFFLINE murni (tanpa internet).
 BUKAN pengganti edge-tts-tui v7.5 (tetap production default, Azure neural superior).
 
+v0.2 (22 Nov 2026) — GPU Metal via CoreML EP:
+  - Switch dari CLI subprocess (v0.1) → Python API (PiperVoice) supaya bisa
+    pilih onnxruntime ExecutionProvider.
+  - InferenceSession dibangun dengan providers=['CoreMLExecutionProvider',
+    'CPUExecutionProvider'] → Metal GPU di Apple Silicon (M1/M2/M3), fallback
+    CPU di Linux/Intel. Mac gak panas, lebih cepat (mirip mix-tui GPU path).
+  - Model load SEKALI per session (v0.1 CLI reload model per cue = lambat).
+    Speedup besar untuk SRT ribuan cue.
+  - Output audio langsung float32 array (no temp WAV + ffmpeg decode roundtrip).
+
 Adopsi dari 2 TUI existing (anti-amnesia pattern):
-  - whisper-tui.py v2.1 → pattern LOCAL MODEL: find_piper() binary + find_voice_model()
-    scan folder lokal untuk model .onnx (mirror find_whisper_cli + find_model).
-  - edge-tts-tui.py v7.5 → algoritma TTS: parse_srt, smart_fit_cue (per-cue generate +
-    stretch/compress fit durasi), trim/normalize/fade, mix_into_buffer, cache, lock, 2 mode.
+  - whisper-tui.py v2.1 → pattern LOCAL MODEL: find_voice_model() scan folder
+    lokal untuk .onnx + .onnx.json pair (mirror find_model scan ggml-*.bin).
+    whisper-tui pakai Metal via whisper.cpp native; piper-tts pakai Metal via
+    onnxruntime CoreMLExecutionProvider.
+  - edge-tts-tui.py v7.5 → algoritma TTS: parse_srt, smart_fit_cue (per-cue
+    generate + stretch/compress fit durasi), trim/normalize/fade, mix_into_buffer,
+    cache key + lock file, 2 mode (SRT + Narasi).
 
 Backend: Piper TTS (pip install piper-tts) — VITS neural TTS, model ONNX dari
 HuggingFace rhasspy/piper-voices. 100% offline setelah model download sekali.
+Python API: PiperVoice.load() cuma support use_cuda (CUDA). Untuk CoreML/Metal
+di M1, bypass load() — baca config JSON sendiri + bangun InferenceSession dengan
+providers list (CoreML duluan, CPU fallback) + construct PiperVoice langsung.
 
 Validasi approach: subtitlekit.com (web SRT-to-audio) pakai approach SAMA PERSIS
-(model 93MB download sekali, cached, jalan offline di browser, smart-fit per cue).
-Confirms Piper = pilihan benar untuk TTS lokal.
+(model 93MB download sekali, cached, jalan offline, smart-fit per cue).
 
 2 Mode (mirror edge-tts-tui v7.5):
   - SRT mode: SRT → HDD/tts/{prefix}-audio-id-dub.wav (24kHz mono 16-bit, mix-tui compatible)
   - Narration mode: naskah.txt → HDD/tts/{stem}-narasi.wav (48kHz stereo, review-mix/konten compatible)
 
 Setup user (Mac ~/Dubbing/):
-  pip3 install piper-tts questionary numpy     # piper-tts = Python package, provides `piper` CLI
+  pip3 install piper-tts questionary numpy
   mkdir -p ~/Dubbing/piper-voices && cd ~/Dubbing/piper-voices
-  # Download model Indonesia (id_ID-gadis-medium, perempuan, ~63MB):
   curl -LO https://huggingface.co/rhasspy/piper-voices/resolve/main/id/id_ID/gadis/medium/id_ID-gadis-medium.onnx
   curl -LO https://huggingface.co/rhasspy/piper-voices/resolve/main/id/id_ID/gadis/medium/id_ID-gadis-medium.onnx.json
 
 Pakai:
   cd ~/Dubbing && source venv/bin/activate && python3 piper-tts-tui.py
 
+GPU check (verifikasi Metal aktif):
+  python3 -c "import onnxruntime as ort; print(ort.get_available_providers())"
+  → harus ada 'CoreMLExecutionProvider' di Mac M1. Kalau cuma CPUExecutionProvider,
+    onnxruntime versi CPU-only (reinstall: pip3 install onnxruntime --force-reinstall).
+
 Trade-off vs edge-tts-tui v7.5:
   + 100% offline (no internet, no API key, no 429 rate limit)
-  + Latensi per cue ~0.3-0.5s (lokal, vs edge ~1-2s network)
+  + GPU Metal (CoreML EP) di M1 — Mac gak panas, cepat
+  + Model load sekali (vs CLI reload per cue)
   - Voice ID terbatas: gadis (perempuan), ml/MMS (netral) — vs edge Ardi+Gadis neural
   - Kualitas VITS bagus tapi sedikit di bawah Azure neural
   - Tidak support pitch (piper cuma length-scale + noise-scale)
@@ -42,18 +62,18 @@ Trade-off vs edge-tts-tui v7.5:
 
 import os
 import sys
+import json
 import shutil
 import time
 import wave
 import struct
 import hashlib
-import subprocess
-import tempfile
+from pathlib import Path
 
 # ============================================================
 # Version
 # ============================================================
-VERSION = 'v0.1'
+VERSION = 'v0.2'
 
 # ============================================================
 # Dependency check
@@ -71,33 +91,30 @@ try:
 except ImportError:
     HAS_NUMPY = False
     if not _MISSING_DEPS:
-        print('⚠ numpy belum terinstall. Pakai pure Python (lambat untuk audio >2 jam).')
-        print('   Install recommended: pip3 install numpy')
+        print('⚠ numpy belum terinstall. Install: pip3 install numpy')
         print()
     else:
         _MISSING_DEPS.append('numpy')
 
-# piper-tts package provides `piper` CLI binary. Kita pakai CLI (subprocess) bukan
-# Python API, supaya pattern = mirror whisper-tui (binary CLI + model file lokal).
-# Cek binary setelah import (binary ada di PATH setelah pip install piper-tts).
-def _find_piper_binary():
-    """Cari piper CLI binary. pip install piper-tts → binary `piper` di venv Scripts/bin."""
-    path = shutil.which('piper')
-    if path:
-        return path
-    # Fallback: cek venv path umum
-    candidates = [
-        os.path.join(sys.prefix, 'bin', 'piper'),
-        os.path.join(os.path.expanduser('~/Dubbing/venv/bin'), 'piper'),
-        '/opt/homebrew/bin/piper',
-        '/usr/local/bin/piper',
-    ]
-    for c in candidates:
-        if os.path.isfile(c):
-            return c
-    return None
+# piper Python package (provides PiperVoice + onnxruntime dependency)
+try:
+    import piper
+    from piper import PiperVoice
+    from piper.config import PiperConfig, SynthesisConfig
+    HAS_PIPER = True
+except ImportError:
+    HAS_PIPER = False
+    _MISSING_DEPS.append('piper-tts')
 
-PIPER_BINARY = _find_piper_binary()
+# onnxruntime (comes with piper-tts, check CoreML EP availability)
+try:
+    import onnxruntime as ort
+    _ORT_PROVIDERS = ort.get_available_providers()
+    _HAS_COREML = 'CoreMLExecutionProvider' in _ORT_PROVIDERS
+except ImportError:
+    _ORT_PROVIDERS = []
+    _HAS_COREML = False
+    _MISSING_DEPS.append('onnxruntime')
 
 if _MISSING_DEPS:
     print()
@@ -109,42 +126,7 @@ if _MISSING_DEPS:
     print()
     print('   Install dengan:')
     print()
-    print('   pip3 install ' + ' '.join(_MISSING_DEPS))
-    print()
-    print('   Install semua deps sekaligus:')
-    print()
     print('   pip3 install piper-tts questionary numpy')
-    print()
-    print('═' * 64)
-    sys.exit(1)
-
-if not PIPER_BINARY:
-    print()
-    print('═' * 64)
-    print('❌ piper CLI binary tidak ditemukan!')
-    print('═' * 64)
-    print()
-    print('   piper-tts Python package BELUM terinstall (provides `piper` CLI).')
-    print()
-    print('   Install:')
-    print()
-    print('   pip3 install piper-tts')
-    print()
-    print('   Verifikasi:')
-    print()
-    print('   piper --help')
-    print()
-    print('═' * 64)
-    sys.exit(1)
-
-# ffmpeg wajib (decode WAV → PCM resample 24000Hz)
-if not shutil.which('ffmpeg'):
-    print()
-    print('═' * 64)
-    print('❌ ffmpeg belum terinstall!')
-    print('═' * 64)
-    print()
-    print('   brew install ffmpeg-full   # keg-only, full codec (lihat mix-tui v3.11.7)')
     print()
     print('═' * 64)
     sys.exit(1)
@@ -154,43 +136,42 @@ if not shutil.which('ffmpeg'):
 # Constants — match edge-tts-tui v7.5 (mix-tui compatible)
 # ============================================================
 OUTPUT_SAMPLE_RATE = 24000  # SRT mode: match edge-tts-tui (mix-tui expects 24kHz)
-OUTPUT_CHANNELS = 1         # mono
-OUTPUT_BITS = 16            # 16-bit PCM
+OUTPUT_CHANNELS = 1
+OUTPUT_BITS = 16
 
-# Narration mode: 48kHz stereo (review-mix-tui / konten-tui compatible)
-NARR_SAMPLE_RATE = 48000
+NARR_SAMPLE_RATE = 48000  # Narration mode: stereo
 NARR_CHANNELS = 2
 
-CROSSFADE_MS = 150          # ms, match edge-tts-tui
+CROSSFADE_MS = 150
 TRIM_HEAD_DB = -30
 TRIM_TAIL_DB = -45
 TRIM_PADDING_MS = 50
 NORMALIZE_DBFS = -3.0
 NOISE_FLOOR_DB = -40.0
 
-# Piper length-scale cap untuk smart-fit (mirror edge-tts cap=1.5)
-# length_scale < 1.0 = faster/shorter. Cap 1.5x speedup → floor length_scale = 1/1.5 = 0.667.
 SMART_FIT_CAP_DEFAULT = 1.5
 
 
 # ============================================================
-# Find piper binary + voice model (mirror whisper-tui find_model)
+# GPU detection (CoreML EP = Metal di M1)
 # ============================================================
 
-def find_piper():
-    """Return piper CLI binary path."""
-    return PIPER_BINARY
+def get_gpu_status():
+    """Return (provider_label, has_coreml, providers_list)."""
+    if _HAS_COREML:
+        return ('CoreML (Metal GPU)', True, _ORT_PROVIDERS)
+    return ('CPU', False, _ORT_PROVIDERS)
 
+
+# ============================================================
+# Voice model discovery (mirror whisper-tui find_model)
+# ============================================================
 
 def find_voice_models(search_dirs=None):
     """Scan folder lokal untuk model Piper (.onnx + .onnx.json pair).
-    Mirror whisper-tui find_model() — cari ggml-*.bin di folder umum.
-
-    Return list of (model_path, config_path, voice_id) tuples.
-    voice_id = basename tanpa .onnx (e.g. 'id_ID-gadis-medium').
+    Return list of (model_path, config_path, voice_id).
     """
     if search_dirs is None:
-        # Mirror whisper-tui search dirs + edge-tts config TTS_DIR
         try:
             from config import TTS_DIR, SSD_HOME
             search_dirs = [
@@ -213,21 +194,19 @@ def find_voice_models(search_dirs=None):
         if not d or not os.path.isdir(d):
             continue
         for root, dirs, files in os.walk(d):
-            # Cek depth — jangan scan terlalu dalam (avoid venv dll)
             rel_depth = os.path.relpath(root, d).count(os.sep)
             if rel_depth > 3:
                 dirs[:] = []
                 continue
-            # Skip venv / cache dirs
             dirs[:] = [x for x in dirs if x not in ('venv', '.cache', '__pycache__', 'node_modules', '.git')]
             for f in sorted(files):
                 if f.endswith('.onnx') and not f.endswith('.onnx.json'):
                     model_path = os.path.join(root, f)
-                    # config companion: same name + .json
-                    config_candidates = [model_path + '.json']
-                    # Juga cek pattern {stem}.onnx.json
-                    stem = f[:-5]  # strip .onnx
-                    config_candidates.append(os.path.join(root, stem + '.onnx.json'))
+                    stem = f[:-5]
+                    config_candidates = [
+                        model_path + '.json',
+                        os.path.join(root, stem + '.onnx.json'),
+                    ]
                     config_path = None
                     for c in config_candidates:
                         if os.path.isfile(c):
@@ -242,7 +221,6 @@ def find_voice_models(search_dirs=None):
 
 
 def label_for_voice(voice_id):
-    """Human label untuk voice ID (e.g. id_ID-gadis-medium → 'Gadis — Indonesia, perempuan')."""
     vid = voice_id.lower()
     if 'gadis' in vid:
         return f'Gadis — Indonesia, perempuan ({voice_id})'
@@ -254,24 +232,74 @@ def label_for_voice(voice_id):
         return f'Dimas — Indonesia, laki-laki ({voice_id})'
     if 'siti' in vid:
         return f'Siti — Indonesia, perempuan ({voice_id})'
-    # Generic fallback
-    parts = voice_id.split('-')
-    return f'{voice_id}'
+    return voice_id
+
+
+# ============================================================
+# Load Piper voice with CoreML EP (bypass PiperVoice.load untuk GPU Metal)
+# ============================================================
+
+_VOICE_CACHE = {}
+
+
+def load_piper_voice(model_path, config_path, use_gpu=True):
+    """Load PiperVoice dengan ExecutionProvider pilihan.
+    Bypass PiperVoice.load() (cuma support use_cuda) — bangun InferenceSession
+    sendiri dengan providers=['CoreMLExecutionProvider', 'CPUExecutionProvider'].
+
+    use_gpu=True + CoreML EP available → Metal GPU di M1.
+    use_gpu=False atau no CoreML → CPU.
+    """
+    cache_key = (model_path, use_gpu)
+    if cache_key in _VOICE_CACHE:
+        return _VOICE_CACHE[cache_key]
+
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config_dict = json.load(f)
+    config = PiperConfig.from_dict(config_dict)
+
+    if use_gpu and _HAS_COREML:
+        providers = [
+            ('CoreMLExecutionProvider', {'device_id': 0}),
+            'CPUExecutionProvider',
+        ]
+        ep_label = 'CoreML (Metal GPU)'
+    else:
+        providers = ['CPUExecutionProvider']
+        ep_label = 'CPU'
+
+    sess_options = ort.SessionOptions()
+    sess_options.intra_op_num_threads = 4
+    sess_options.inter_op_num_threads = 1
+
+    session = ort.InferenceSession(
+        model_path,
+        sess_options=sess_options,
+        providers=providers,
+    )
+
+    actual_eps = session.get_providers()
+    voice = PiperVoice(
+        session=session,
+        config=config,
+        espeak_data_dir=Path(piper.__path__[0]) / 'espeak-ng-data',
+        download_dir=Path(os.getcwd()),
+    )
+    _VOICE_CACHE[cache_key] = (voice, config, ep_label, actual_eps)
+    return voice, config, ep_label, actual_eps
 
 
 # ============================================================
 # SRT parsing + formatting (port verbatim dari edge-tts-tui v7.5)
 # ============================================================
 
-def parse_srt(content: str):
-    """Parse SRT content → list of {index, start, end, textLines}."""
+def parse_srt(content):
     entries = []
     blocks = content.strip().replace('\r\n', '\n').replace('\r', '\n').split('\n\n')
     for block in blocks:
         lines = [l for l in block.split('\n') if l.strip()]
         if len(lines) < 2:
             continue
-        # First line = index (optional, skip kalau bukan digit)
         idx = 0
         time_line_idx = 0
         if lines[0].strip().isdigit():
@@ -292,8 +320,7 @@ def parse_srt(content: str):
     return entries
 
 
-def _parse_time(ts: str):
-    """Parse SRT timestamp '00:01:23,456' → seconds float."""
+def _parse_time(ts):
     try:
         ts = ts.replace(',', '.')
         h, m, s = ts.split(':')
@@ -302,14 +329,14 @@ def _parse_time(ts: str):
         return None
 
 
-def format_timestamp(seconds: float) -> str:
+def format_timestamp(seconds):
     h = int(seconds // 3600)
     m = int((seconds % 3600) // 60)
     s = seconds % 60
     return f'{h:02d}:{m:02d}:{s:06.3f}'
 
 
-def format_duration(seconds: float) -> str:
+def format_duration(seconds):
     if seconds < 0:
         seconds = 0
     h = int(seconds // 3600)
@@ -322,99 +349,70 @@ def format_duration(seconds: float) -> str:
     return f'{s}s'
 
 
-def normalize_tts_text(text: str) -> str:
-    """Normalize text untuk TTS: strip tags, collapse whitespace, dll (port edge-tts)."""
+def normalize_tts_text(text):
     import re
-    # Strip HTML-ish tags <i>...</i>, <b>, dll
     text = re.sub(r'<[^>]+>', '', text)
-    # Strip {...} style tags (ASS)
     text = re.sub(r'\{[^}]*\}', '', text)
-    # Collapse whitespace
     text = ' '.join(text.split())
     return text.strip()
 
 
 # ============================================================
-# Audio processing (port verbatim dari edge-tts-tui v7.5)
+# Audio processing (port dari edge-tts-tui v7.5 + resample helper)
 # ============================================================
 
-def decode_audio_to_pcm(audio_path: str, target_sr: int = OUTPUT_SAMPLE_RATE) -> 'np.ndarray':
-    """Decode audio file (WAV/MP3/etc) → PCM float32 numpy array via ffmpeg.
-    Port dari edge-tts-tui decode_mp3_to_pcm, generalized (piper output WAV, edge output MP3).
-    """
-    if HAS_NUMPY:
-        cmd = [
-            'ffmpeg', '-i', audio_path,
-            '-f', 'f32le',         # raw float32 little-endian
-            '-acodec', 'pcm_f32le',
-            '-ar', str(target_sr),
-            '-ac', '1',            # mono
-            '-y', '-loglevel', 'error',
-            'pipe:1',
-        ]
-        result = subprocess.run(cmd, capture_output=True)
-        if result.returncode != 0 or len(result.stdout) == 0:
-            raise RuntimeError(f'ffmpeg decode gagal: {result.stderr.decode("utf-8", errors="replace")[:200]}')
-        audio = np.frombuffer(result.stdout, dtype=np.float32)
-        if len(audio) == 0:
-            raise RuntimeError('ffmpeg decode: output kosong')
+def resample_audio(audio, src_sr, target_sr):
+    """Resample float32 array via linear interpolation (numpy). Cepat, cukup
+    untuk TTS audio (tidak ada high-freq content)."""
+    if src_sr == target_sr or len(audio) == 0:
         return audio
+    if HAS_NUMPY:
+        ratio = target_sr / src_sr
+        new_len = int(len(audio) * ratio)
+        if new_len < 1:
+            return np.zeros(1, dtype=np.float32)
+        indices = np.linspace(0, len(audio) - 1, new_len)
+        lo = indices.astype(np.int32)
+        hi = np.minimum(lo + 1, len(audio) - 1)
+        frac = (indices - lo).astype(np.float32)
+        return (audio[lo] * (1 - frac) + audio[hi] * frac).astype(np.float32)
     else:
-        # Pure Python fallback (slow): pakai wave module untuk WAV
-        with wave.open(audio_path, 'rb') as wf:
-            n = wf.getnframes()
-            raw = wf.readframes(n)
-            sw = wf.getsampwidth()
-            sr = wf.getframerate()
-        if sw == 2:
-            data = list(struct.unpack(f'<{n}h', raw))
-            data = [v / 32768.0 for v in data]
-        elif sw == 1:
-            data = [(b - 128) / 128.0 for b in raw]
-        else:
-            raise RuntimeError(f'unsupported sample width: {sw}')
-        # Resample naive (linear) kalau sr != target_sr
-        if sr != target_sr:
-            ratio = target_sr / sr
-            new_n = int(len(data) * ratio)
-            resampled = []
-            for i in range(new_n):
-                src_idx = i / ratio
-                lo = int(src_idx)
-                hi = min(lo + 1, len(data) - 1)
-                frac = src_idx - lo
-                resampled.append(data[lo] * (1 - frac) + data[hi] * frac)
-            data = resampled
-        return data
+        ratio = target_sr / src_sr
+        new_len = int(len(audio) * ratio)
+        resampled = []
+        for i in range(new_len):
+            src_idx = i / ratio
+            lo = int(src_idx)
+            hi = min(lo + 1, len(audio) - 1)
+            frac = src_idx - lo
+            resampled.append(audio[lo] * (1 - frac) + audio[hi] * frac)
+        return resampled
 
 
-def db_to_linear(db: float) -> float:
+def db_to_linear(db):
     return 10 ** (db / 20.0)
 
 
-def trim_silence_asymmetric(audio: 'np.ndarray', sr: int, padding_ms: int = TRIM_PADDING_MS) -> 'np.ndarray':
-    """Trim silence head (head -30dB) + tail (-45dB) dengan padding kecil."""
+def trim_silence_asymmetric(audio, sr, padding_ms=TRIM_PADDING_MS):
     if HAS_NUMPY:
+        if len(audio) == 0:
+            return np.zeros(0, dtype=np.float32)
         head_thresh = db_to_linear(TRIM_HEAD_DB)
         tail_thresh = db_to_linear(TRIM_TAIL_DB)
         abs_audio = np.abs(audio)
-        # Head
-        head_idx = np.argmax(abs_audio > head_thresh)
+        head_idx = int(np.argmax(abs_audio > head_thresh))
         if abs_audio[head_idx] <= head_thresh:
-            # All silence
-            return np.zeros(0, dtype=np.float32) if hasattr(audio, 'dtype') else []
-        # Tail
+            return np.zeros(0, dtype=np.float32)
         rev_abs = abs_audio[::-1]
-        tail_idx_from_end = np.argmax(rev_abs > tail_thresh)
+        tail_idx_from_end = int(np.argmax(rev_abs > tail_thresh))
         tail_idx = len(audio) - tail_idx_from_end
         if tail_idx <= head_idx:
-            return audio[head_idx:head_idx + 1] if len(audio) > head_idx else np.zeros(0, dtype=np.float32)
+            return audio[head_idx:head_idx + 1]
         pad = int(sr * padding_ms / 1000)
         head = max(0, head_idx - pad)
         tail = min(len(audio), tail_idx + pad)
         return audio[head:tail].copy()
     else:
-        # Pure Python
         head_thresh = db_to_linear(TRIM_HEAD_DB)
         tail_thresh = db_to_linear(TRIM_TAIL_DB)
         abs_audio = [abs(v) for v in audio]
@@ -436,14 +434,13 @@ def trim_silence_asymmetric(audio: 'np.ndarray', sr: int, padding_ms: int = TRIM
         return audio[head:tail]
 
 
-def peak_normalize(audio: 'np.ndarray', target_db: float = NORMALIZE_DBFS, noise_floor_db: float = NOISE_FLOOR_DB) -> 'np.ndarray':
-    """Peak normalize ke target dBFS, skip kalau di bawah noise floor."""
+def peak_normalize(audio, target_db=NORMALIZE_DBFS, noise_floor_db=NOISE_FLOOR_DB):
     if HAS_NUMPY:
         if len(audio) == 0:
             return audio
         peak = float(np.max(np.abs(audio)))
         if peak < db_to_linear(noise_floor_db):
-            return audio  # below noise floor, skip
+            return audio
         target = db_to_linear(target_db)
         gain = target / max(peak, 1e-9)
         return (audio * gain).astype(np.float32)
@@ -458,8 +455,7 @@ def peak_normalize(audio: 'np.ndarray', target_db: float = NORMALIZE_DBFS, noise
         return [v * gain for v in audio]
 
 
-def apply_fade_out(audio, fade_start: int, fade_end: int):
-    """Linear fade out dari fade_start ke fade_end."""
+def apply_fade_out(audio, fade_start, fade_end):
     if fade_end <= fade_start or len(audio) == 0:
         return audio
     fade_len = fade_end - fade_start
@@ -475,7 +471,7 @@ def apply_fade_out(audio, fade_start: int, fade_end: int):
         return audio
 
 
-def apply_fade_in(audio, fade_start: int, fade_end: int):
+def apply_fade_in(audio, fade_start, fade_end):
     if fade_end <= fade_start or len(audio) == 0:
         return audio
     fade_len = fade_end - fade_start
@@ -491,30 +487,30 @@ def apply_fade_in(audio, fade_start: int, fade_end: int):
         return audio
 
 
-def mix_into_buffer(all_audio, audio, position: int, fade_out_end: int = None, fade_in_start: int = None, fade_len: int = 0):
-    """Mix ADD audio ke all_audio pada position, dengan optional fade."""
+def mix_into_buffer(all_audio, audio, position, fade_out_end=None, fade_in_start=None, fade_len=0):
     if len(audio) == 0:
         return all_audio
     end = position + len(audio)
-    # Fade out tail kalau extend past next cue
     if fade_out_end is not None and end > fade_out_end:
         audio_len = len(audio)
         fade_start_in_audio = fade_out_end - position
         if fade_start_in_audio < audio_len:
-            audio = apply_fade_out(audio.copy() if HAS_NUMPY else list(audio), fade_start_in_audio, audio_len)
+            audio = apply_fade_out(
+                audio.copy() if HAS_NUMPY else list(audio),
+                fade_start_in_audio, audio_len,
+            )
             end = position + len(audio)
-    # Fade in head kalau overlap dengan prev
     if fade_in_start is not None and fade_len > 0:
-        audio = apply_fade_in(audio.copy() if HAS_NUMPY else list(audio), 0, min(fade_len, len(audio)))
-
+        audio = apply_fade_in(
+            audio.copy() if HAS_NUMPY else list(audio),
+            0, min(fade_len, len(audio)),
+        )
     if end > len(all_audio):
-        # Truncate ke buffer (jangan overflow)
         audio = audio[:len(all_audio) - position]
         end = len(all_audio)
     if position < 0:
         audio = audio[-position:]
         position = 0
-
     if HAS_NUMPY:
         all_audio[position:end] += audio
     else:
@@ -523,8 +519,7 @@ def mix_into_buffer(all_audio, audio, position: int, fade_out_end: int = None, f
     return all_audio
 
 
-def encode_wav(audio, sample_rate: int = OUTPUT_SAMPLE_RATE, channels: int = OUTPUT_CHANNELS, output_path: str = None):
-    """Encode float32 → WAV 16-bit PCM."""
+def encode_wav(audio, sample_rate=OUTPUT_SAMPLE_RATE, channels=OUTPUT_CHANNELS, output_path=None):
     if HAS_NUMPY:
         clipped = np.clip(audio, -1.0, 1.0)
         int_audio = (clipped * 32767).astype(np.int16)
@@ -541,13 +536,15 @@ def encode_wav(audio, sample_rate: int = OUTPUT_SAMPLE_RATE, channels: int = OUT
             wf.setsampwidth(OUTPUT_BITS // 8)
             wf.setframerate(sample_rate)
             if HAS_NUMPY:
-                # Kalau stereo + 1D audio, duplikasi ke 2 channel
                 if channels == 2 and int_audio.ndim == 1:
                     int_audio = np.column_stack([int_audio, int_audio]).flatten()
                 wf.writeframes(int_audio.tobytes())
             else:
                 if channels == 2:
-                    int_audio = b''.join(struct.pack('<hh', v, v) for v in struct.unpack(f'<{len(int_audio)//2}h', int_audio))
+                    int_audio = b''.join(
+                        struct.pack('<hh', v, v)
+                        for v in struct.unpack(f'<{len(int_audio)//2}h', int_audio)
+                    )
                 wf.writeframes(int_audio)
         return None
     else:
@@ -565,109 +562,128 @@ def encode_wav(audio, sample_rate: int = OUTPUT_SAMPLE_RATE, channels: int = OUT
 
 
 # ============================================================
-# Piper TTS generate (backend swap dari edge_tts)
+# Piper TTS generate (Python API, CoreML EP) — v0.2
 # ============================================================
 
-def format_length_scale(need: float, cap: float) -> float:
-    """Konversi need ratio (natural_dur/cue_dur) → piper length_scale.
-    length_scale: >1.0 = slower (longer), <1.0 = faster (shorter).
-    Inverse dari edge-tts rate (rate>1 = faster).
-
-    need>1.0 (audio terlalu panjang) → speedup → length_scale < 1.0.
-    length_scale = max(1.0/need, 1.0/cap) — cap limit speedup.
-    Contoh: need=1.5, cap=1.5 → length_scale = max(0.667, 0.667) = 0.667 (1.5x faster).
+def format_length_scale(need, cap):
+    """need (natural_dur/cue_dur) → piper length_scale.
+    length_scale: <1.0 faster, >1.0 slower. need>1.0 (too long) → speedup → ls<1.
     """
     if need <= 1.0:
-        return 1.0  # natural, no change
+        return 1.0
     speedup = min(need, cap)
-    return max(0.1, 1.0 / speedup)  # floor 0.1 (10x) safety
+    return max(0.1, 1.0 / speedup)
 
 
-def generate_cue_tts(text: str, model_path: str, config_path: str,
-                     length_scale: float, output_wav: str, cue_idx: int = 0) -> bool:
-    """Generate 1 cue via piper CLI → WAV file. Return True sukses.
+def generate_cue_audio(text, voice, config, length_scale, target_sr=OUTPUT_SAMPLE_RATE):
+    """Generate 1 cue via PiperVoice.synthesize (in-process, CoreML EP).
+    Return float32 numpy array at target_sr, mono.
 
-    piper -m model.onnx -c config.json -f out.wav -i text.txt --length-scale X
+    voice.synthesize yields AudioChunk per sentence. Concatenate audio_float_array
+    from each chunk, resample from model native sr → target_sr.
     """
-    # Write text ke temp file (piper -i baca dari file)
-    text_fd, text_path = tempfile.mkstemp(suffix='.txt', prefix=f'piper_cue{cue_idx:04d}_')
+    syn_config = SynthesisConfig(
+        length_scale=length_scale,
+        noise_scale=0.667,
+        noise_w_scale=0.8,
+        normalize_audio=True,
+    )
+
+    chunks_audio = []
+    native_sr = None
     try:
-        with os.fdopen(text_fd, 'w', encoding='utf-8') as f:
-            f.write(text)
-        cmd = [
-            PIPER_BINARY,
-            '-m', model_path,
-            '-c', config_path,
-            '-i', text_path,
-            '-f', output_wav,
-            '--length-scale', f'{length_scale:.4f}',
-        ]
-        try:
-            result = subprocess.run(cmd, capture_output=True, timeout=60)
-        except subprocess.TimeoutExpired:
-            print(f'  ⚠ Piper timeout cue {cue_idx} (60s)')
-            return False
-        if result.returncode != 0:
-            err = result.stderr.decode('utf-8', errors='replace')[:200]
-            print(f'  ⚠ Piper gagal cue {cue_idx}: {err}')
-            return False
-        if not (os.path.isfile(output_wav) and os.path.getsize(output_wav) > 0):
-            print(f'  ⚠ Piper cue {cue_idx}: output WAV kosong/tidak terbentuk')
-            return False
-        return True
-    finally:
-        try:
-            os.unlink(text_path)
-        except OSError:
-            pass
+        for chunk in voice.synthesize(text, syn_config=syn_config):
+            if native_sr is None:
+                native_sr = chunk.sample_rate
+            if chunk.audio_float_array is not None and len(chunk.audio_float_array) > 0:
+                chunks_audio.append(chunk.audio_float_array.astype(np.float32))
+    except Exception as e:
+        raise RuntimeError(f'Piper synthesize gagal: {e}')
+
+    if not chunks_audio:
+        return np.zeros(0, dtype=np.float32)
+
+    if HAS_NUMPY:
+        audio = np.concatenate(chunks_audio)
+    else:
+        audio = []
+        for c in chunks_audio:
+            audio.extend(c)
+
+    if native_sr and native_sr != target_sr:
+        audio = resample_audio(audio, native_sr, target_sr)
+    return audio
 
 
 # ============================================================
-# Smart Fit (port edge-tts-tui, swap rate → length_scale)
+# Smart Fit (port edge-tts-tui, cache .npy array bukan WAV)
 # ============================================================
 
-def smart_fit_cue(
-    text: str,
-    cue_dur: float,
-    model_path: str,
-    config_path: str,
-    cap: float,
-    cache_path: str,        # natural WAV cache (length_scale=1.0)
-    cache_key: str,
-    cue_idx: int = 0,
-) -> 'np.ndarray':
-    """Smart Fit untuk 1 cue:
-    1. Generate natural (length_scale=1.0)
-    2. Trim + compute need
-    3. Kalau need > 1.0 → re-generate dengan length_scale = format_length_scale(need, cap)
-    4. Peak normalize
+def smart_fit_cue(text, cue_dur, voice, config, cap, cache_dir, cache_key, prefix, cue_idx,
+                  baseline_ls=1.0):
+    """Smart Fit 1 cue:
+    1. Cache check: natural .npy (baseline_ls) ada?
+    2. Generate natural (baseline_ls) kalau belum → trim → compute need
+    3. need <= 1.0 → peak normalize natural
+    4. need > 1.0 → generate speedup (ls = baseline_ls/speedup) → trim → peak normalize
     """
-    smart_wav = cache_path.replace('.wav', '_smart.wav')
+    natural_npy = os.path.join(cache_dir, f'{prefix}-cue-{cue_idx:04d}-{cache_key}.npy')
 
-    # === Pass 1: natural (length_scale=1.0) ===
-    if not (os.path.isfile(cache_path) and os.path.getsize(cache_path) > 0):
-        ok = generate_cue_tts(text, model_path, config_path, 1.0, cache_path, cue_idx=cue_idx)
-        if not ok:
-            raise RuntimeError(f'Pass 1 gagal untuk cue {cue_idx}')
+    # Pass 1: natural (baseline_ls)
+    if not (os.path.isfile(natural_npy) and os.path.getsize(natural_npy) > 0):
+        audio = generate_cue_audio(text, voice, config, baseline_ls)
+        if len(audio) == 0:
+            raise RuntimeError(f'Pass 1 gagal cue {cue_idx} (output kosong)')
+        if HAS_NUMPY:
+            np.save(natural_npy, audio)
+        else:
+            import pickle
+            with open(natural_npy, 'wb') as f:
+                pickle.dump(audio, f)
 
-    audio1 = decode_audio_to_pcm(cache_path, OUTPUT_SAMPLE_RATE)
-    natural_audio = trim_silence_asymmetric(audio1, OUTPUT_SAMPLE_RATE)
+    if HAS_NUMPY:
+        natural_audio_raw = np.load(natural_npy)
+    else:
+        import pickle
+        with open(natural_npy, 'rb') as f:
+            natural_audio_raw = pickle.load(f)
+
+    natural_audio = trim_silence_asymmetric(natural_audio_raw, OUTPUT_SAMPLE_RATE)
     natural_dur = len(natural_audio) / OUTPUT_SAMPLE_RATE
     need = natural_dur / max(0.001, cue_dur)
 
     if need <= 1.0:
         return peak_normalize(natural_audio)
 
-    # === Pass 2: smart fit dengan length_scale ===
-    ls = format_length_scale(need, cap)
-    smart_cache_key = cache_key + f'_ls{ls:.4f}'
-    if not (os.path.isfile(smart_wav) and os.path.getsize(smart_wav) > 0):
-        ok = generate_cue_tts(text, model_path, config_path, ls, smart_wav, cue_idx=cue_idx)
-        if not ok:
-            print(f'  ⚠ Pass 2 gagal cue {cue_idx} (ls={ls}), pakai natural')
+    # Pass 2: speedup
+    speedup = min(need, cap)
+    total_ls = max(0.1, baseline_ls / speedup)
+    smart_key = cache_key + f'_ls{total_ls:.4f}'
+    smart_npy = os.path.join(cache_dir, f'{prefix}-cue-{cue_idx:04d}-{smart_key}.npy')
+
+    if not (os.path.isfile(smart_npy) and os.path.getsize(smart_npy) > 0):
+        try:
+            smart_audio_raw = generate_cue_audio(text, voice, config, total_ls)
+            if len(smart_audio_raw) == 0:
+                print(f'  ⚠ Pass 2 gagal cue {cue_idx} (ls={total_ls}, output kosong), pakai natural')
+                return peak_normalize(natural_audio)
+            if HAS_NUMPY:
+                np.save(smart_npy, smart_audio_raw)
+            else:
+                import pickle
+                with open(smart_npy, 'wb') as f:
+                    pickle.dump(smart_audio_raw, f)
+        except Exception as e:
+            print(f'  ⚠ Pass 2 gagal cue {cue_idx} (ls={total_ls}): {e}, pakai natural')
             return peak_normalize(natural_audio)
-    audio2 = decode_audio_to_pcm(smart_wav, OUTPUT_SAMPLE_RATE)
-    smart_audio = trim_silence_asymmetric(audio2, OUTPUT_SAMPLE_RATE)
+
+    if HAS_NUMPY:
+        smart_audio_raw = np.load(smart_npy)
+    else:
+        import pickle
+        with open(smart_npy, 'rb') as f:
+            smart_audio_raw = pickle.load(f)
+    smart_audio = trim_silence_asymmetric(smart_audio_raw, OUTPUT_SAMPLE_RATE)
     return peak_normalize(smart_audio)
 
 
@@ -675,15 +691,15 @@ def smart_fit_cue(
 # Cache key + lock (port edge-tts-tui)
 # ============================================================
 
-def compute_cache_key(text: str, model_name: str, length_scale: float = 1.0) -> str:
+def compute_cache_key(text, voice_id, length_scale=1.0):
     h = hashlib.sha256()
     h.update(text.encode('utf-8'))
-    h.update(model_name.encode('utf-8'))
+    h.update(voice_id.encode('utf-8'))
     h.update(f'{length_scale:.4f}'.encode('utf-8'))
     return h.hexdigest()[:16]
 
 
-def _pid_alive(pid: int) -> bool:
+def _pid_alive(pid):
     try:
         os.kill(pid, 0)
         return True
@@ -691,21 +707,20 @@ def _pid_alive(pid: int) -> bool:
         return False
 
 
-def lock_path_for(output_dir: str, prefix: str) -> str:
+def lock_path_for(output_dir, prefix):
     return os.path.join(output_dir, f'.{prefix}.piper.lock')
 
 
-def acquire_lock(output_dir: str, prefix: str) -> tuple:
-    """Acquire lock file untuk paralel-safe (anti bentrok multi-instance)."""
+def acquire_lock(output_dir, prefix):
     lock_path = lock_path_for(output_dir, prefix)
     if os.path.isfile(lock_path):
         try:
             with open(lock_path, 'r') as f:
                 pid = int(f.read().strip())
             if _pid_alive(pid):
-                return (False, f'Lock aktif (PID {pid}). Instance lain sedang jalan untuk prefix "{prefix}".')
+                return (False, f'Lock aktif (PID {pid}). Instance lain jalan untuk prefix "{prefix}".')
         except (ValueError, IOError):
-            pass  # stale lock, overwrite
+            pass
     try:
         with open(lock_path, 'w') as f:
             f.write(str(os.getpid()))
@@ -714,7 +729,7 @@ def acquire_lock(output_dir: str, prefix: str) -> tuple:
         return (False, f'Tidak bisa tulis lock: {e}')
 
 
-def release_lock(output_dir: str, prefix: str) -> None:
+def release_lock(output_dir, prefix):
     lock_path = lock_path_for(output_dir, prefix)
     try:
         if os.path.isfile(lock_path):
@@ -723,7 +738,7 @@ def release_lock(output_dir: str, prefix: str) -> None:
         pass
 
 
-def suggest_unique_prefix(output_dir: str, prefix: str, max_attempts: int = 99) -> str:
+def suggest_unique_prefix(output_dir, prefix, max_attempts=99):
     if not os.path.isfile(os.path.join(output_dir, f'{prefix}-audio-id-dub.wav')):
         return prefix
     for i in range(2, max_attempts + 1):
@@ -742,12 +757,21 @@ def clear_screen():
 
 
 def print_banner():
+    gpu_label, has_coreml, _ = get_gpu_status()
+    gpu_line = f'GPU: {gpu_label}'
     print('╔' + '═' * 64 + '╗')
-    print('║  🗣️  Piper TTS TUI v0.1 — TTS LOKAL OFFLINE (VITS neural)   ║')
+    print('║  🗣️  Piper TTS TUI v0.2 — TTS LOKAL OFFLINE (VITS neural)   ║')
     print('║' + ' ' * 64 + '║')
-    print('║  Backend : Piper TTS (ONNX) — 100% offline                  ║')
-    print('║  Pattern : adopsi whisper-tui (local model) + edge-tts algoritma ║')
+    print(f'║  Backend : Piper TTS (ONNX) + {gpu_line:<37}║')
+    print('║  Pattern : whisper-tui (local model) + edge-tts algoritma   ║')
     print('╚' + '═' * 64 + '╝')
+    if not has_coreml and sys.platform == 'darwin':
+        print()
+        print('⚠ CoreMLExecutionProvider TIDAK terdeteksi (CPU mode).')
+        print('  Di Mac M1, reinstall onnxruntime untuk aktifkan Metal GPU:')
+        print('  pip3 install onnxruntime --force-reinstall')
+        print('  Verify: python3 -c "import onnxruntime;print(onnxruntime.get_available_providers())"')
+        print('  Harus ada "CoreMLExecutionProvider".')
     print()
 
 
@@ -769,7 +793,6 @@ def main():
     print('   Navigasi: ↑↓ arrow keys, Enter konfirmasi, Ctrl+C batal')
     print()
 
-    # Mode selection (mirror edge-tts v7.5)
     mode = questionary.select(
         'Mode:',
         choices=[
@@ -783,7 +806,7 @@ def main():
         main_narration()
         return
 
-    # === Cari voice model duluan (mirror whisper-tui find_model) ===
+    # Cari voice model
     voices = find_voice_models()
     if not voices:
         print()
@@ -800,7 +823,7 @@ def main():
         print('═' * 64)
         sys.exit(1)
 
-    # === Step 1: Pilih SRT ===
+    # Step 1: SRT
     print('▶ Step 1/7: Pilih SRT')
     try:
         from config import INPUT_DIR, TTS_DIR, ensure_hdd
@@ -811,7 +834,6 @@ def main():
     except ImportError:
         default_srt_dir = os.getcwd()
         TTS_DIR = os.getcwd()
-
     srt_files = find_srt_files(default_srt_dir)
     if srt_files:
         srt_choice = questionary.select(
@@ -831,7 +853,7 @@ def main():
     print(f'  ✓ {srt_path}')
     print()
 
-    # === Step 2: Output dir ===
+    # Step 2: output dir
     print('▶ Step 2/7: Output directory')
     try:
         default_out = str(TTS_DIR)
@@ -844,7 +866,7 @@ def main():
     print(f'  ✓ {output_dir}')
     print()
 
-    # === Step 3: Voice (piper local model) ===
+    # Step 3: voice
     print('▶ Step 3/7: Pilih voice (model Piper lokal)')
     voice_labels = [label_for_voice(v[2]) for v in voices]
     voice_choice = questionary.select(
@@ -858,10 +880,10 @@ def main():
     print(f'    config: {config_path}')
     print()
 
-    # === Step 4: Length-scale baseline (rate) ===
+    # Step 4: rate baseline
     print('▶ Step 4/7: Rate baseline (length-scale)')
     rate_choice = questionary.select(
-        'Rate (1.0 = natural, >1.0 = lebih pelan/panjang, <1.0 = lebih cepat):',
+        'Rate (1.0 = natural, >1.0 pelan/panjang, <1.0 cepat):',
         choices=[
             '1.00 (natural)',
             '0.90 (sedikit cepat)',
@@ -882,16 +904,16 @@ def main():
     print(f'  ✓ length-scale baseline = {baseline_ls}')
     print()
 
-    # === Step 5: Smart Fit ===
+    # Step 5: smart fit
     print('▶ Step 5/7: Smart Fit')
     smart_fit = questionary.confirm(
-        'Aktifkan Smart Fit? (re-generate cue yang terlalu panjang dengan rate lebih cepat agar fit durasi SRT)',
+        'Aktifkan Smart Fit? (re-generate cue terlalu panjang dengan rate lebih cepat agar fit durasi SRT)',
         default=True,
     ).ask()
     cap = SMART_FIT_CAP_DEFAULT
     if smart_fit:
         cap_str = questionary.text(
-            f'Max speedup cap (default {SMART_FIT_CAP_DEFAULT}, contoh 1.5 = max 1.5x lebih cepat):',
+            f'Max speedup cap (default {SMART_FIT_CAP_DEFAULT}, 1.5 = max 1.5x cepat):',
             default=str(SMART_FIT_CAP_DEFAULT),
         ).ask()
         try:
@@ -901,7 +923,7 @@ def main():
     print(f'  ✓ Smart Fit: {"ON" if smart_fit else "OFF"}, cap={cap}')
     print()
 
-    # === Step 6: Prefix ===
+    # Step 6: prefix
     print('▶ Step 6/7: Prefix output')
     default_prefix = os.path.splitext(os.path.basename(srt_path))[0]
     prefix = questionary.text('Prefix (output: {prefix}-audio-id-dub.wav):', default=default_prefix).ask()
@@ -911,7 +933,7 @@ def main():
     print(f'  ✓ {prefix}')
     print()
 
-    # === Parse SRT ===
+    # Parse SRT
     with open(srt_path, 'r', encoding='utf-8-sig') as f:
         content = f.read()
     entries = parse_srt(content)
@@ -920,11 +942,22 @@ def main():
         sys.exit(1)
     total_dur = entries[-1]['end']
 
-    # Estimasi (piper lokal ~0.3-0.5x realtime per cue, tanpa network)
-    est_per_cue = 0.4
+    # Step 7: load model (show GPU status)
+    print('▶ Step 7/7: Load model Piper')
+    print(f'  Loading {os.path.basename(model_path)}...')
+    t0 = time.time()
+    voice, pconfig, ep_label, actual_eps = load_piper_voice(model_path, config_path, use_gpu=True)
+    load_time = time.time() - t0
+    print(f'  ✓ Model loaded ({load_time:.1f}s)')
+    print(f'    ExecutionProvider: {ep_label} (actual: {", ".join(actual_eps)})')
+    print()
+
+    # Estimasi
+    gpu_label, has_coreml, _ = get_gpu_status()
+    est_per_cue = 0.15 if has_coreml else 0.4
     est_total_sec = len(entries) * est_per_cue
     if smart_fit:
-        est_total_sec *= 1.3  # extra pass untuk cue yang need>1.0
+        est_total_sec *= 1.3
 
     print('═' * 64)
     print('📋 Ringkasan:')
@@ -932,11 +965,12 @@ def main():
     print(f'  SRT      : {os.path.basename(srt_path)}')
     print(f'  Output   : {os.path.join(output_dir, prefix + "-audio-id-dub.wav")}')
     print(f'  Voice    : {voice_id}')
+    print(f'  EP       : {ep_label}')
     print(f'  L-scale  : {baseline_ls} (baseline)')
     print(f'  Smart Fit: {"ON" if smart_fit else "OFF"}, cap={cap}')
     print(f'  Cues     : {len(entries)}')
     print(f'  Durasi   : {format_duration(total_dur)}')
-    print(f'  Estimasi : {format_duration(est_total_sec)} (lokal, ~0.4s/cue)')
+    print(f'  Estimasi : {format_duration(est_total_sec)} ({gpu_label})')
     print('═' * 64)
     print()
 
@@ -944,17 +978,15 @@ def main():
         print('Batal.')
         sys.exit(0)
 
-    # === Lock (paralel-safe) ===
     ok, lock_info = acquire_lock(output_dir, prefix)
     if not ok:
         print(f'❌ {lock_info}')
         sys.exit(1)
 
     try:
-        # === Generate per cue + mix inline ===
         print()
         print('═' * 64)
-        print('🚀 Mulai generate TTS (Piper lokal) + mix inline...')
+        print(f'🚀 Mulai generate TTS (Piper {ep_label}) + mix inline...')
         print('═' * 64)
         print()
 
@@ -980,7 +1012,6 @@ def main():
             cue_dur = entry['end'] - entry['start']
             position = int(entry['start'] * OUTPUT_SAMPLE_RATE)
 
-            # Fade overlap handling
             prev_entry = entries[i - 1] if i > 0 else None
             fade_in_start = None
             fade_len = 0
@@ -991,56 +1022,40 @@ def main():
                     fade_len = min(crossfade_samples, prev_end_samples - position)
 
             next_entry = entries[i + 1] if i + 1 < len(entries) else None
-            fade_out_end = None
-            if next_entry:
-                fade_out_end = int(next_entry['start'] * OUTPUT_SAMPLE_RATE)
+            fade_out_end = int(next_entry['start'] * OUTPUT_SAMPLE_RATE) if next_entry else None
 
             if not text:
                 continue
 
             cache_key = compute_cache_key(text, voice_id, baseline_ls)
-            cache_path = os.path.join(cache_dir, f'{prefix}-cue-{cue_idx:04d}-{cache_key}.wav')
 
-            # Baseline length-scale diterapkan ke natural cache (kalau != 1.0)
-            natural_ls = baseline_ls
-
-            cached_audio = None
-            if os.path.isfile(cache_path) and os.path.getsize(cache_path) > 0:
-                try:
-                    audio1 = decode_audio_to_pcm(cache_path, OUTPUT_SAMPLE_RATE)
-                    natural_audio = trim_silence_asymmetric(audio1, OUTPUT_SAMPLE_RATE)
-                    natural_dur = len(natural_audio) / OUTPUT_SAMPLE_RATE
-                    need = natural_dur / max(0.001, cue_dur)
-                    if not smart_fit or need <= 1.0:
-                        cached_audio = peak_normalize(natural_audio)
-                except Exception as e:
-                    print(f'  ⚠ Cache corrupt cue {cue_idx}, regenerate: {e}')
-
-            if cached_audio is None:
-                try:
-                    if smart_fit:
-                        # Smart fit: pass 1 natural (baseline_ls), pass 2 speedup kalau need>1.0
-                        # Note: smart_fit_cue pakai natural_ls=1.0 internal; kalau baseline_ls != 1.0,
-                        # apply baseline ke smart result via post-process speed (kompleks). Untuk v0.1,
-                        # baseline_ls != 1.0 + smart_fit → smart_fit pakai baseline_ls sebagai natural.
-                        final_audio = _smart_fit_cue_with_baseline(
-                            text, cue_dur, model_path, config_path, baseline_ls, cap,
-                            cache_path, cache_key, cue_idx=cue_idx,
-                        )
+            try:
+                if smart_fit:
+                    final_audio = smart_fit_cue(
+                        text, cue_dur, voice, pconfig, cap,
+                        cache_dir, cache_key, prefix, cue_idx, baseline_ls=baseline_ls,
+                    )
+                else:
+                    natural_npy = os.path.join(cache_dir, f'{prefix}-cue-{cue_idx:04d}-{cache_key}.npy')
+                    if not (os.path.isfile(natural_npy) and os.path.getsize(natural_npy) > 0):
+                        audio = generate_cue_audio(text, voice, pconfig, baseline_ls)
+                        if len(audio) == 0:
+                            fail_count += 1
+                            continue
+                        if HAS_NUMPY:
+                            np.save(natural_npy, audio)
+                    if HAS_NUMPY:
+                        raw = np.load(natural_npy)
                     else:
-                        if not (os.path.isfile(cache_path) and os.path.getsize(cache_path) > 0):
-                            if not generate_cue_tts(text, model_path, config_path, natural_ls, cache_path, cue_idx=cue_idx):
-                                fail_count += 1
-                                continue
-                        audio1 = decode_audio_to_pcm(cache_path, OUTPUT_SAMPLE_RATE)
-                        natural_audio = trim_silence_asymmetric(audio1, OUTPUT_SAMPLE_RATE)
-                        final_audio = peak_normalize(natural_audio)
-                except Exception as e:
-                    print(f'  ⚠ Cue {cue_idx} gagal: {e}')
-                    fail_count += 1
-                    continue
-            else:
-                final_audio = cached_audio
+                        import pickle
+                        with open(natural_npy, 'rb') as f:
+                            raw = pickle.load(f)
+                    natural_audio = trim_silence_asymmetric(raw, OUTPUT_SAMPLE_RATE)
+                    final_audio = peak_normalize(natural_audio)
+            except Exception as e:
+                print(f'\n  ⚠ Cue {cue_idx} gagal: {e}')
+                fail_count += 1
+                continue
 
             mix_into_buffer(all_audio, final_audio, position,
                             fade_out_end=fade_out_end, fade_in_start=fade_in_start, fade_len=fade_len)
@@ -1062,7 +1077,6 @@ def main():
         print()
         print(f'  ✓ Selesai generate: {success_count} cue ok, {fail_count} fail ({format_duration(elapsed)})')
 
-        # === Encode output ===
         output_path = os.path.join(output_dir, f'{prefix}-audio-id-dub.wav')
         print(f'  Encoding WAV → {output_path}...')
         encode_wav(all_audio, OUTPUT_SAMPLE_RATE, OUTPUT_CHANNELS, output_path)
@@ -1075,8 +1089,9 @@ def main():
             print(f'   Output : {output_path}')
             print(f'   Size   : {size_mb:.1f} MB')
             print(f'   Format : {OUTPUT_SAMPLE_RATE}Hz mono 16-bit PCM (mix-tui compatible)')
+            print(f'   EP     : {ep_label}')
             print(f'   Cues   : {success_count} ok / {fail_count} fail / {len(entries)} total')
-            print(f'   Waktu  : {format_duration(elapsed)}')
+            print(f'   Waktu  : {format_duration(elapsed)} (model load {load_time:.1f}s + generate)')
             print()
             print('🎬 Langkah berikutnya:')
             print(f'   1. Preview: open {output_path}')
@@ -1091,37 +1106,6 @@ def main():
         release_lock(output_dir, prefix)
 
 
-def _smart_fit_cue_with_baseline(text, cue_dur, model_path, config_path, baseline_ls, cap,
-                                  cache_path, cache_key, cue_idx=0):
-    """Smart fit dengan baseline length-scale diterapkan.
-    Pass 1: natural = baseline_ls (bukan 1.0). need diukur relatif.
-    Pass 2: speedup tambahan kalau masih need>1.0.
-    """
-    if not (os.path.isfile(cache_path) and os.path.getsize(cache_path) > 0):
-        if not generate_cue_tts(text, model_path, config_path, baseline_ls, cache_path, cue_idx=cue_idx):
-            raise RuntimeError(f'Pass 1 gagal cue {cue_idx}')
-
-    audio1 = decode_audio_to_pcm(cache_path, OUTPUT_SAMPLE_RATE)
-    natural_audio = trim_silence_asymmetric(audio1, OUTPUT_SAMPLE_RATE)
-    natural_dur = len(natural_audio) / OUTPUT_SAMPLE_RATE
-    need = natural_dur / max(0.001, cue_dur)
-
-    if need <= 1.0:
-        return peak_normalize(natural_audio)
-
-    # Pass 2: speedup tambahan. Total length_scale = baseline_ls / speedup
-    speedup = min(need, cap)
-    total_ls = max(0.1, baseline_ls / speedup)
-    smart_wav = cache_path.replace('.wav', f'_smart_ls{total_ls:.4f}.wav')
-    if not (os.path.isfile(smart_wav) and os.path.getsize(smart_wav) > 0):
-        if not generate_cue_tts(text, model_path, config_path, total_ls, smart_wav, cue_idx=cue_idx):
-            print(f'  ⚠ Pass 2 gagal cue {cue_idx} (ls={total_ls}), pakai natural')
-            return peak_normalize(natural_audio)
-    audio2 = decode_audio_to_pcm(smart_wav, OUTPUT_SAMPLE_RATE)
-    smart_audio = trim_silence_asymmetric(audio2, OUTPUT_SAMPLE_RATE)
-    return peak_normalize(smart_audio)
-
-
 # ============================================================
 # Narration mode (mirror edge-tts-tui main_narration, 48kHz stereo)
 # ============================================================
@@ -1132,7 +1116,6 @@ def main_narration():
     print('═' * 64)
     print()
 
-    # Voice model
     voices = find_voice_models()
     if not voices:
         print('❌ Tidak ada model Piper ditemukan. Download model dulu.')
@@ -1149,7 +1132,6 @@ def main_narration():
     except ImportError:
         default_dirs = [os.getcwd()]
         TTS_DIR = os.getcwd()
-
     txt_files = []
     for d in default_dirs:
         if os.path.isdir(d):
@@ -1207,7 +1189,7 @@ def main_narration():
     print(f'  ✓ {length_scale}')
     print()
 
-    # Step 5: output filename
+    # Step 5: filename
     print('▶ Step 5/6: Output filename')
     stem = os.path.splitext(os.path.basename(naskah_path))[0]
     default_name = f'{stem}-narasi.wav'
@@ -1218,7 +1200,15 @@ def main_narration():
     print(f'  ✓ {output_path}')
     print()
 
-    # Split naskah jadi kalimat (piper proses per kalimat, concat hasil)
+    # Step 6: load model
+    print('▶ Step 6/6: Load model Piper')
+    print(f'  Loading {os.path.basename(model_path)}...')
+    t0 = time.time()
+    voice, pconfig, ep_label, actual_eps = load_piper_voice(model_path, config_path, use_gpu=True)
+    load_time = time.time() - t0
+    print(f'  ✓ Model loaded ({load_time:.1f}s), EP: {ep_label}')
+    print()
+
     import re
     sentences = re.split(r'(?<=[.!?。])\s+', naskah.strip())
     sentences = [s.strip() for s in sentences if s.strip()]
@@ -1230,6 +1220,7 @@ def main_narration():
     print('📋 Ringkasan:')
     print(f'  Naskah   : {os.path.basename(naskah_path)} ({len(sentences)} kalimat)')
     print(f'  Voice    : {voice_id}')
+    print(f'  EP       : {ep_label}')
     print(f'  L-scale  : {length_scale}')
     print(f'  Output   : {output_path} (48kHz stereo)')
     print('═' * 64)
@@ -1239,66 +1230,62 @@ def main_narration():
         print('Batal.')
         sys.exit(0)
 
-    print('🚀 Mulai generate narasi (Piper lokal)...')
+    print(f'🚀 Mulai generate narasi (Piper {ep_label})...')
     print()
     start_time = time.time()
 
-    # Generate per kalimat, concat
     all_chunks = []
-    tmp_dir = tempfile.mkdtemp(prefix='piper_narr_')
-    try:
-        for i, sent in enumerate(sentences):
-            chunk_wav = os.path.join(tmp_dir, f'chunk_{i:05d}.wav')
-            ok = generate_cue_tts(sent, model_path, config_path, length_scale, chunk_wav, cue_idx=i + 1)
-            if not ok:
-                continue
-            audio = decode_audio_to_pcm(chunk_wav, NARR_SAMPLE_RATE)
-            audio = trim_silence_asymmetric(audio, NARR_SAMPLE_RATE)
-            audio = peak_normalize(audio)
-            # Tambah silence antar kalimat (200ms)
-            sil = int(NARR_SAMPLE_RATE * 0.2)
-            if HAS_NUMPY:
-                audio = np.concatenate([audio, np.zeros(sil, dtype=np.float32)])
-            else:
-                audio = audio + [0.0] * sil
-            all_chunks.append(audio)
-            if (i + 1) % 5 == 0 or i + 1 == len(sentences):
-                elapsed = time.time() - start_time
-                pct = (i + 1) / len(sentences) * 100
-                sys.stdout.write(f'\r  [{i+1}/{len(sentences)}] {pct:5.1f}% | elapsed={format_duration(elapsed)}   ')
-                sys.stdout.flush()
-        print()
-        print()
-
-        if not all_chunks:
-            print('❌ Tidak ada chunk berhasil di-generate.')
-            sys.exit(1)
-
-        # Concat
+    for i, sent in enumerate(sentences):
+        try:
+            audio = generate_cue_audio(sent, voice, pconfig, length_scale, target_sr=NARR_SAMPLE_RATE)
+        except Exception as e:
+            print(f'\n  ⚠ Kalimat {i+1} gagal: {e}')
+            continue
+        if len(audio) == 0:
+            continue
+        audio = trim_silence_asymmetric(audio, NARR_SAMPLE_RATE)
+        audio = peak_normalize(audio)
+        sil = int(NARR_SAMPLE_RATE * 0.2)
         if HAS_NUMPY:
-            final = np.concatenate(all_chunks)
+            audio = np.concatenate([audio, np.zeros(sil, dtype=np.float32)])
         else:
-            final = []
-            for c in all_chunks:
-                final.extend(c)
+            audio = audio + [0.0] * sil
+        all_chunks.append(audio)
+        if (i + 1) % 5 == 0 or i + 1 == len(sentences):
+            elapsed = time.time() - start_time
+            pct = (i + 1) / len(sentences) * 100
+            sys.stdout.write(f'\r  [{i+1}/{len(sentences)}] {pct:5.1f}% | elapsed={format_duration(elapsed)}   ')
+            sys.stdout.flush()
+    print()
+    print()
 
-        encode_wav(final, NARR_SAMPLE_RATE, NARR_CHANNELS, output_path)
-        elapsed = time.time() - start_time
+    if not all_chunks:
+        print('❌ Tidak ada chunk berhasil di-generate.')
+        sys.exit(1)
 
-        if os.path.isfile(output_path):
-            size_mb = os.path.getsize(output_path) / 1024 / 1024
-            print('═' * 64)
-            print('✅ SELESAI!')
-            print(f'   Output : {output_path}')
-            print(f'   Size   : {size_mb:.1f} MB')
-            print(f'   Format : {NARR_SAMPLE_RATE}Hz stereo 16-bit PCM (review-mix/konten-tui compatible)')
-            print(f'   Waktu  : {format_duration(elapsed)}')
-            print()
-            print('🎬 Langkah berikutnya:')
-            print(f'   Feed ke review-mix-tui / konten-tui / talkinghead-tui / manim-shorts-tui')
-            print('═' * 64)
-    finally:
-        shutil.rmtree(tmp_dir, ignore_errors=True)
+    if HAS_NUMPY:
+        final = np.concatenate(all_chunks)
+    else:
+        final = []
+        for c in all_chunks:
+            final.extend(c)
+
+    encode_wav(final, NARR_SAMPLE_RATE, NARR_CHANNELS, output_path)
+    elapsed = time.time() - start_time
+
+    if os.path.isfile(output_path):
+        size_mb = os.path.getsize(output_path) / 1024 / 1024
+        print('═' * 64)
+        print('✅ SELESAI!')
+        print(f'   Output : {output_path}')
+        print(f'   Size   : {size_mb:.1f} MB')
+        print(f'   Format : {NARR_SAMPLE_RATE}Hz stereo 16-bit PCM (review-mix/konten-tui compatible)')
+        print(f'   EP     : {ep_label}')
+        print(f'   Waktu  : {format_duration(elapsed)} (model load {load_time:.1f}s + generate)')
+        print()
+        print('🎬 Langkah berikutnya:')
+        print(f'   Feed ke review-mix-tui / konten-tui / talkinghead-tui / manim-shorts-tui')
+        print('═' * 64)
 
 
 # ============================================================

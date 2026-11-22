@@ -23,7 +23,7 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 15 | **gemini-tts-tui.py v1.1** (SRT + Narasi, ID + JV, OPSI TAMBAHAN) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 16 | **talkinghead-tui.py v1.0** (SadTalker via Replicate, green screen preserved) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 17 | **manim-shorts-tui.py v0.1** (WAV + SRT → infografis Shorts video, manim animation vertical 9:16) | ⚠ UNTESTED (sandbox OK 19 Nov 2026 + fix 21 Nov 2026, belum diuji di Mac) |
-| 18 | **piper-tts-tui.py v0.1** (TTS LOKAL offline via Piper VITS ONNX, SRT + Narasi mode) | ⚠ UNTESTED (sandbox fungsi core OK 22 Nov 2026, generate test pending HF rate-limit, belum diuji di Mac) |
+| 18 | **piper-tts-tui.py v0.2** (TTS LOKAL offline via Piper VITS ONNX, GPU Metal CoreML EP, SRT + Narasi mode) | ⚠ UNTESTED (sandbox fungsi core OK 22 Nov 2026, generate test pending HF rate-limit, belum diuji di Mac) |
 
 ## Pipeline
 
@@ -62,7 +62,7 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | talkinghead-tui.py v1.0 | 16 | Talking head video (SadTalker via Replicate, green screen preserved) | HDD/konten/ |
 | talkinghead_backend.py | 16 | Backend modul untuk talkinghead-tui (Replicate API) | — |
 | manim-shorts-tui.py v0.1 | 17 | Shorts infografis (WAV + SRT → manim animation video vertical 9:16) | HDD/manim-shorts/ |
-| piper-tts-tui.py v0.1 | 18 | TTS LOKAL offline (Piper VITS ONNX, SRT + Narasi mode, adopsi edge-tts algoritma) | HDD/tts/ |
+| piper-tts-tui.py v0.2 | 18 | TTS LOKAL offline (Piper VITS ONNX, GPU Metal CoreML EP, SRT + Narasi mode) | HDD/tts/ |
 | config.py | — | Base path SSD/HDD | — |
 | upload-supabase.py | — | Upload kamus ke Supabase | — |
 | GEMINI_TTS.md | 15 | Dokumentasi TUI #15 (cara pakai, kapan pakai) | — |

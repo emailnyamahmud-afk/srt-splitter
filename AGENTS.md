@@ -47,7 +47,7 @@ Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 15 | **gemini-tts-tui v1.1** (SRT + Narasi, ID + JV, OPSI TAMBAHAN) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 16 | **talkinghead-tui v1.0** (SadTalker via Replicate, green screen preserved) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 17 | **manim-shorts-tui v0.1** (WAV + SRT → infografis Shorts video, manim animation) | ⚠ UNTESTED (sandbox OK 19 Nov 2026 + fix 21 Nov 2026, belum diuji di Mac) |
-| 18 | **piper-tts-tui v0.1** (TTS LOKAL offline via Piper TTS VITS ONNX, SRT + Narasi mode, adopsi edge-tts algoritma + whisper-tui local model pattern) | ⚠ UNTESTED (sandbox fungsi core OK 22 Nov 2026, generate test pending HF rate-limit sandbox, belum diuji di Mac) |
+| 18 | **piper-tts-tui v0.2** (TTS LOKAL offline via Piper TTS VITS ONNX, GPU Metal CoreML EP, SRT + Narasi mode, Python API) | ⚠ UNTESTED (sandbox fungsi core OK 22 Nov 2026, generate test pending HF rate-limit sandbox, belum diuji di Mac) |
 
 ## TUI #13: review-mix-tui v1.0 — Review film (UNTESTED, code di GitHub belum diuji di Mac)
 
@@ -132,7 +132,7 @@ Render time: ~0.9x realtime (30s video ≈ 26s render, sandbox Linux CPU-only te
 **Pakai**: `python3 manim-shorts-tui.py` (4 step TUI: WAV → SRT → output → konfirmasi)
 **Sandbox tested**: 19 Nov 2026 (v0.1 initial) + 21 Nov 2026 (fix clipping+highlight, commit 1623907), dummy WAV 30s + 8 SRT segments → MP4 1.5MB, 30.0s perfect sync, h264 1080x1920 30fps + aac 48kHz stereo. Fix 21 Nov: edgeClip 0% (text fit width via wrap_text), highlight yellow berpindah per kata via t2c+Transform (manim CE Text set_color di slice NGGAK jalan, harus pakai t2c). Belum diuji di Mac user.
 
-## TUI #18: piper-tts-tui v0.1 — TTS LOKAL offline (Piper VITS ONNX)
+## TUI #18: piper-tts-tui v0.2 — TTS LOKAL offline (Piper VITS ONNX, GPU Metal)
 
 **BUKAN pengganti edge-tts-tui v7.5.** edge-tts-tui v7.5 tetap production default (Azure neural superior, voice Ardi+Gadis). piper-tts-tui untuk skenario **OFFLINE murni** (tanpa internet sama sekali — mode pesawat, laut, hemat bandwidth).
 
@@ -140,7 +140,9 @@ Render time: ~0.9x realtime (30s video ≈ 26s render, sandbox Linux CPU-only te
 - whisper-tui v2.1 → pattern LOCAL MODEL: `find_piper()` binary CLI + `find_voice_models()` scan folder lokal untuk `.onnx` + `.onnx.json` pair (mirror `find_whisper_cli` + `find_model`).
 - edge-tts-tui v7.5 → algoritma TTS: `parse_srt`, `smart_fit_cue` (per-cue generate + stretch/compress fit durasi), `trim_silence_asymmetric`/`peak_normalize`/`fade`, `mix_into_buffer`, cache key + lock file, 2 mode (SRT + Narasi).
 
-**Backend**: Piper TTS (`pip install piper-tts`, v1.8.0) — VITS neural TTS, model ONNX dari HuggingFace `rhasspy/piper-voices`. 100% offline setelah model download sekali. CLI: `piper -m model.onnx -c config.json -f out.wav -i text.txt --length-scale 1.0`.
+**Backend**: Piper TTS (`pip install piper-tts`, v1.8.0) — VITS neural TTS, model ONNX dari HuggingFace `rhasspy/piper-voices`. 100% offline setelah model download sekali.
+
+**v0.2 GPU Metal (CoreML EP)**: Switch dari CLI subprocess (v0.1) → Python API (`PiperVoice`) supaya bisa pilih onnxruntime ExecutionProvider. `PiperVoice.load()` cuma support `use_cuda` (CUDA) — untuk CoreML/Metal di M1, **bypass `load()`**: baca config JSON sendiri + bangun `onnxruntime.InferenceSession(providers=['CoreMLExecutionProvider', 'CPUExecutionProvider'])` + construct `PiperVoice(session=..., config=...)` langsung. CoreML EP = Metal GPU di Apple Silicon (M1/M2/M3), Mac gak panas, lebih cepat (mirip mix-tui GPU path). Fallback CPU otomatis kalau operator tertentu gak support CoreML. Bonus: model load SEKALI per session (v0.1 CLI reload model per cue = lambat) — speedup besar untuk SRT ribuan cue. Output audio langsung float32 array (no temp WAV + ffmpeg decode roundtrip). GPU check: `python3 -c "import onnxruntime;print(onnxruntime.get_available_providers())"` → harus ada `CoreMLExecutionProvider` di Mac M1.
 
 **Validasi approach**: subtitlekit.com (web SRT-to-audio yang user temukan) pakai approach SAMA PERSIS — screenshot konfirmasi: "93 MB AI voice model downloads once, then stays cached, works with no internet connection" + "each cue's narration is stretched or compressed to fit the original cue duration". subtitlekit kemungkinan = Piper compiled ke WASM. TUI lokal kita pakai model yang sama persis, via binary Python (lebih cepat dari WASM browser, akses Metal GPU M1).
 
@@ -213,7 +215,7 @@ Repo root:
 │   ├── talkinghead_backend.py         # TUI #16 backend modul (Replicate SadTalker)
 │   ├── TALKINGHEAD.md                 # TUI #16 docs
 │   ├── manim-shorts-tui.py v0.1 # TUI #17 (WAV+SRT → manim Shorts)
-│   ├── piper-tts-tui.py v0.1 # TUI #18 (TTS LOKAL offline, Piper VITS ONNX)
+│   ├── piper-tts-tui.py v0.2 # TUI #18 (TTS LOKAL offline, Piper VITS ONNX, GPU Metal)
 │   └── ... (script kamus + tools lain)
 ├── srt-splitter-clone/                # git submodule (repo clone untuk eksperimen)
 ├── srt-splitter-work/                 # git submodule (repo working)
@@ -448,7 +450,7 @@ naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → talkinghead-tui v1.0 
 - gemini-tts-tui v1.1: ⚠ UNTESTED (TUI #15, code di GitHub belum diuji di Mac, SRT + Narasi, ID + JV, butuh GEMINI_API_KEY)
 - talkinghead-tui v1.0: ⚠ UNTESTED (TUI #16, code di GitHub belum diuji di Mac, SadTalker via Replicate, butuh REPLICATE_API_TOKEN)
 - manim-shorts-tui v0.1: ⚠ UNTESTED (TUI #17, sandbox pipeline OK 19 Nov 2026 + fix 21 Nov 2026 commit 1623907 — 30s dummy render 26s/0.9x realtime, 30.0s perfect sync, edgeClip 0% (text fit width), highlight yellow per kata via t2c+Transform, MP4 1.5MB valid. Belum diuji di Mac. Butuh manim CE + cairo + pango, NGGAK butuh LaTeX)
-- piper-tts-tui v0.1: ⚠ UNTESTED (TUI #18, sandbox fungsi core OK 22 Nov 2026 — compile OK, parse_srt/normalize/cache_key/format_length_scale/find_voice_models/label_for_voice/piper CLI binary detect semua verified. End-to-end generate test BLOCKED: HuggingFace rate-limit sandbox IP (429, sandbox tidak bisa download model 63MB). Generate test pending di Mac user. Backend Piper TTS VITS ONNX via `pip install piper-tts` v1.8.0, model `id_ID-gadis-medium` + `id_ID-ml-medium` dari HF rhasspy/piper-voices. Adopsi edge-tts-tui algoritma (smart_fit per cue, mix_into_buffer, cache, lock, 2 mode) + whisper-tui local model pattern (find_piper binary + find_voice_models scan .onnx). 100% offline. BUKAN pengganti edge-tts-tui v7.5 — opsi tambahan untuk skenario offline murni)
+- piper-tts-tui v0.2: ⚠ UNTESTED (TUI #18, sandbox fungsi core OK 22 Nov 2026 — compile OK, parse_srt/normalize/cache_key/format_length_scale/find_voice_models/label_for_voice/resample_audio/peak_normalize semua verified. v0.2 GPU Metal: Python API (PiperVoice) + onnxruntime CoreMLExecutionProvider (bypass PiperVoice.load cuma support use_cuda) → Metal GPU di M1, fallback CPU. Model load sekali (vs v0.1 CLI reload per cue). _HAS_COREML False di sandbox Linux (expected, no CoreML EP) → True di Mac M1. End-to-end generate test BLOCKED: HuggingFace rate-limit sandbox IP (429, sandbox tidak bisa download model 63MB). Generate test pending di Mac user. Backend Piper TTS VITS ONNX via `pip install piper-tts` v1.8.0, model `id_ID-gadis-medium` dari HF rhasspy/piper-voices. Adopsi edge-tts-tui algoritma (smart_fit per cue, mix_into_buffer, cache .npy, lock, 2 mode) + whisper-tui local model pattern (find_voice_models scan .onnx). 100% offline. BUKAN pengganti edge-tts-tui v7.5 — opsi tambahan untuk skenario offline murni)
 - Pipeline produksi Indonesia: 6 film tested, all TUI production-ready
 - Pipeline Jawa: experimental, tunggu user VLC feedback
 
