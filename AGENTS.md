@@ -26,7 +26,7 @@ Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 - Jawa: pipeline dub (gemini-tts-tui v1.1 SRT mode) + narasi (gemini-tts-tui v1.1 Narration mode) jalan
 - Sunda: nunggu kamus Supabase
 
-## 17 TUI
+## 18 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -47,6 +47,7 @@ Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 15 | **gemini-tts-tui v1.1** (SRT + Narasi, ID + JV, OPSI TAMBAHAN) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 16 | **talkinghead-tui v1.0** (SadTalker via Replicate, green screen preserved) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 17 | **manim-shorts-tui v0.1** (WAV + SRT → infografis Shorts video, manim animation) | ⚠ UNTESTED (sandbox OK 19 Nov 2026 + fix 21 Nov 2026, belum diuji di Mac) |
+| 18 | **piper-tts-tui v0.1** (TTS LOKAL offline via Piper TTS VITS ONNX, SRT + Narasi mode, adopsi edge-tts algoritma + whisper-tui local model pattern) | ⚠ UNTESTED (sandbox fungsi core OK 22 Nov 2026, generate test pending HF rate-limit sandbox, belum diuji di Mac) |
 
 ## TUI #13: review-mix-tui v1.0 — Review film (UNTESTED, code di GitHub belum diuji di Mac)
 
@@ -131,6 +132,45 @@ Render time: ~0.9x realtime (30s video ≈ 26s render, sandbox Linux CPU-only te
 **Pakai**: `python3 manim-shorts-tui.py` (4 step TUI: WAV → SRT → output → konfirmasi)
 **Sandbox tested**: 19 Nov 2026 (v0.1 initial) + 21 Nov 2026 (fix clipping+highlight, commit 1623907), dummy WAV 30s + 8 SRT segments → MP4 1.5MB, 30.0s perfect sync, h264 1080x1920 30fps + aac 48kHz stereo. Fix 21 Nov: edgeClip 0% (text fit width via wrap_text), highlight yellow berpindah per kata via t2c+Transform (manim CE Text set_color di slice NGGAK jalan, harus pakai t2c). Belum diuji di Mac user.
 
+## TUI #18: piper-tts-tui v0.1 — TTS LOKAL offline (Piper VITS ONNX)
+
+**BUKAN pengganti edge-tts-tui v7.5.** edge-tts-tui v7.5 tetap production default (Azure neural superior, voice Ardi+Gadis). piper-tts-tui untuk skenario **OFFLINE murni** (tanpa internet sama sekali — mode pesawat, laut, hemat bandwidth).
+
+**Adopsi dari 2 TUI existing (pattern hybrid):**
+- whisper-tui v2.1 → pattern LOCAL MODEL: `find_piper()` binary CLI + `find_voice_models()` scan folder lokal untuk `.onnx` + `.onnx.json` pair (mirror `find_whisper_cli` + `find_model`).
+- edge-tts-tui v7.5 → algoritma TTS: `parse_srt`, `smart_fit_cue` (per-cue generate + stretch/compress fit durasi), `trim_silence_asymmetric`/`peak_normalize`/`fade`, `mix_into_buffer`, cache key + lock file, 2 mode (SRT + Narasi).
+
+**Backend**: Piper TTS (`pip install piper-tts`, v1.8.0) — VITS neural TTS, model ONNX dari HuggingFace `rhasspy/piper-voices`. 100% offline setelah model download sekali. CLI: `piper -m model.onnx -c config.json -f out.wav -i text.txt --length-scale 1.0`.
+
+**Validasi approach**: subtitlekit.com (web SRT-to-audio yang user temukan) pakai approach SAMA PERSIS — screenshot konfirmasi: "93 MB AI voice model downloads once, then stays cached, works with no internet connection" + "each cue's narration is stretched or compressed to fit the original cue duration". subtitlekit kemungkinan = Piper compiled ke WASM. TUI lokal kita pakai model yang sama persis, via binary Python (lebih cepat dari WASM browser, akses Metal GPU M1).
+
+**2 Mode (mirror edge-tts-tui v7.5)**:
+- **SRT mode** (7 step TUI): SRT → output → voice → rate (length-scale) → Smart Fit → prefix
+  → Output: `HDD/tts/{prefix}-audio-id-dub.wav` (24kHz mono 16-bit, mix-tui compatible)
+- **Narration mode** (6 step TUI): naskah.txt → output → voice → rate → filename
+  → Output: `HDD/tts/{stem}-narasi.wav` (48kHz stereo 16-bit, review-mix/konten/talkinghead/manim-shorts compatible)
+
+**Voice ID awal** (dari HuggingFace rhasspy/piper-voices):
+- `id_ID-gadis-medium` (perempuan, ~63MB) ✅
+- `id_ID-ml-medium` (MMS multilingual, netral, ~63MB) ✅
+- (voice lain kalau di-download user ke ~/Dubbing/piper-voices/, auto-detect via find_voice_models)
+
+**Jawa**: edge-tts-tui v7.5 sudah support JV (`jv-ID-DimasNeural` laki + `jv-ID-SitiNeural` perempuan). Piper TTS belum punya model JV (low-resource). piper-tts-tui fokus ID saja; JV tetap pakai edge-tts-tui.
+
+**Trade-off vs edge-tts-tui v7.5**: + 100% offline (no internet/key/429), + latensi ~0.3-0.5s/cue (lokal vs ~1-2s network), - voice ID terbatas (gadis+MMS vs Ardi+Gadis neural), - kualitas VITS bagus tapi sedikit di bawah Azure, - tidak support pitch (piper cuma length-scale).
+
+**Setup user** (Mac ~/Dubbing/):
+```
+pip3 install piper-tts questionary numpy     # piper-tts = Python package, provides `piper` CLI
+mkdir -p ~/Dubbing/piper-voices && cd ~/Dubbing/piper-voices
+curl -LO https://huggingface.co/rhasspy/piper-voices/resolve/main/id/id_ID/gadis/medium/id_ID-gadis-medium.onnx
+curl -LO https://huggingface.co/rhasspy/piper-voices/resolve/main/id/id_ID/gadis/medium/id_ID-gadis-medium.onnx.json
+```
+**Pakai**: `cd ~/Dubbing && source venv/bin/activate && python3 piper-tts-tui.py`
+
+**Sandbox tested**: 22 Nov 2026 — compile OK, fungsi core semua verified (parse_srt, normalize, cache_key, format_length_scale, find_voice_models scan, label_for_voice, piper CLI binary detect). End-to-end generate test BLOCKED karena HuggingFace rate-limit sandbox IP (429, sandbox tidak bisa download model 63MB). Generate test pending di Mac user (no rate limit di Mac).
+
+
 ## Struktur Folder — 3 LOKASI BERBEDA (baca config.py LENGKAP)
 
 ### 1. Repo srt-splitter (folder git, untuk DEV — edit code + docs)
@@ -151,7 +191,7 @@ Repo root:
 ├── src/                               # Next.js web app (translate SRT Indonesia → Jawa via Supabase)
 ├── api/                               # Vercel serverless functions (edge-tts proxy dll)
 ├── public/                            # static assets + kamus JSON (jv.wiktionary.json dll)
-├── scripts/                           # Python TUI (17 TUI) — DIDOWNLOAD USER ke ~/Dubbing/
+├── scripts/                           # Python TUI (18 TUI) — DIDOWNLOAD USER ke ~/Dubbing/
 │   ├── config.py                      # base path USER (~/Dubbing/ + /Volumes/HDD/Dubbing/)
 │   ├── README.md                      # docs scripts (untuk user working dir ~/Dubbing/)
 │   ├── yt-dlp-tui.py  # TUI #1
@@ -172,6 +212,8 @@ Repo root:
 │   ├── talkinghead-tui.py v1.0 # TUI #16 (BARU)
 │   ├── talkinghead_backend.py         # TUI #16 backend modul (Replicate SadTalker)
 │   ├── TALKINGHEAD.md                 # TUI #16 docs
+│   ├── manim-shorts-tui.py v0.1 # TUI #17 (WAV+SRT → manim Shorts)
+│   ├── piper-tts-tui.py v0.1 # TUI #18 (TTS LOKAL offline, Piper VITS ONNX)
 │   └── ... (script kamus + tools lain)
 ├── srt-splitter-clone/                # git submodule (repo clone untuk eksperimen)
 ├── srt-splitter-work/                 # git submodule (repo working)
@@ -206,6 +248,9 @@ SSD ~/Dubbing/                          → scripts (.py) + venv + jv.wiktionary
   ├── gemini_tts_backend.py             # didownload dari scripts/ repo via curl
   ├── talkinghead-tui.py                # didownload dari scripts/ repo via curl (TUI #16)
   ├── talkinghead_backend.py            # didownload dari scripts/ repo via curl (Replicate SadTalker)
+  ├── manim-shorts-tui.py               # didownload dari scripts/ repo via curl (TUI #17)
+  ├── piper-tts-tui.py                  # didownload dari scripts/ repo via curl (TUI #18, TTS lokal offline)
+  ├── piper-voices/                     # model Piper ONNX (id_ID-gadis-medium.onnx + .json, download dari HF)
   ├── config.py                         # didownload dari scripts/ repo via curl (BASE PATH USER)
   ├── jv.wiktionary.json                # kamus (download dari public/ repo)
   └── venv/                             # Python virtual env (pip3 install)
@@ -286,6 +331,8 @@ SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
 | 15 | gemini-tts-tui Narasi | naskah.txt (`TTS_DIR`/`REVIEW_DIR`/cwd) | `TTS_DIR`/{stem}-narasi.wav |
 | 16 | talkinghead-tui | `KONTEN_DIR`/`INPUT_DIR`/cwd (*.jpg/*.png foto green screen) + `TTS_DIR`/cwd (*.wav narasi JV) | `KONTEN_DIR`/{audio-stem}-talking-green.mp4 |
 | 17 | manim-shorts-tui | `TTS_DIR`/`INPUT_DIR`/cwd (*.wav narasi) + `INPUT_DIR`/`TTS_DIR`/cwd (*.srt dari whisper-tui) | `MANIM_SHORTS_DIR`/{stem}-shorts.mp4 |
+| 18 | piper-tts-tui SRT | `INPUT_DIR` (*.srt) | `TTS_DIR`/{prefix}-audio-id-dub.wav + cache + lock |
+| 18 | piper-tts-tui Narasi | naskah.txt (`TTS_DIR`/cwd) | `TTS_DIR`/{stem}-narasi.wav |
 
 ### Pipeline alur data (visual flow)
 
@@ -390,7 +437,7 @@ naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → konten-tui v1.0 (kont
 naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → talkinghead-tui v1.0 (talking head JV, green screen) → editor chroma key → final-konten.mp4
 ```
 
-## Status (3 Nov 2026, update 19 Nov 2026)
+## Status (3 Nov 2026, update 22 Nov 2026)
 
 - merge-tui v1.9: ✅ VLC confirmed (10 file × 24h, sync 100%, stream copy ~2 menit)
 - mix-tui v3.11.7: ✅ production (force 1080p + audio 48000Hz stereo + 1:1 square mode VLC confirmed 14 Nov 2026 — 2 test: (1) Mode F source 202x360 → 1080x1080 upscale 5.3x, 3j1m, 2789 MB, 19m2s, subs sharp; (2) Mode F source 1440x2560 4K → 1080x1080 downscale 1.33x, 2j30m, 2361 MB, 15m45s, speed 9.5x, background crisp + subs sharp. Resolusi rendah = sumber, bukan bug — high-res retest confirmed sharp. v3.11.7 fix 21 Nov 2026: ROOT CAUSE SEBENARNYA = ffmpeg build user TIDAK punya libass (config line tidak ada `--enable-libass`, formula `ffmpeg` regular minimal). BUKAN quoting/escaping (6x fix v3.11.0-v3.11.6 salah diagnosis — semua patch valid, tapi ffmpeg bahkan tidak kenal `subtitles` filter → "Unknown filter 'subtitles'" → error "No option name" cuma misleading parse error). User install `ffmpeg-full` (keg-only, binary ke `/opt/homebrew/opt/ffmpeg-full/bin/`, bukan symlink ke PATH). `shutil.which('ffmpeg')` gagal kalau script jalan dari GUI/IDE/cron (PATH tidak load). Fix: `find_ffmpeg()`/`find_ffprobe()` cek path explicit ffmpeg-full duluan sebelum `which()` + fallback. Bonus fix: `run_ffmpeg_with_progress` return tuple `(returncode, stderr_text)` — failure path pakai stderr asli dari run yang gagal (sebelumnya buggy: re-run cmd + timeout=30 → pasti timeout video panjang → "Tidak bisa capture stderr")).
@@ -400,7 +447,8 @@ naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → talkinghead-tui v1.0 
 - konten-tui v1.0: ⚠ UNTESTED (TUI #14, code di GitHub belum diuji di Mac)
 - gemini-tts-tui v1.1: ⚠ UNTESTED (TUI #15, code di GitHub belum diuji di Mac, SRT + Narasi, ID + JV, butuh GEMINI_API_KEY)
 - talkinghead-tui v1.0: ⚠ UNTESTED (TUI #16, code di GitHub belum diuji di Mac, SadTalker via Replicate, butuh REPLICATE_API_TOKEN)
-- manim-shorts-tui v0.1: ⚠ UNTESTED (TUI #17, sandbox pipeline OK 19 Nov 2026 + fix 21 Nov 2026 commit 1623907 — 30s dummy render 26s/0.9x realtime, 30.0s perfect sync, edgeClip 0% (text fit width), highlight yellow per word via t2c+Transform, MP4 1.5MB valid. Belum diuji di Mac. Butuh manim CE + cairo + pango, NGGAK butuh LaTeX)
+- manim-shorts-tui v0.1: ⚠ UNTESTED (TUI #17, sandbox pipeline OK 19 Nov 2026 + fix 21 Nov 2026 commit 1623907 — 30s dummy render 26s/0.9x realtime, 30.0s perfect sync, edgeClip 0% (text fit width), highlight yellow per kata via t2c+Transform, MP4 1.5MB valid. Belum diuji di Mac. Butuh manim CE + cairo + pango, NGGAK butuh LaTeX)
+- piper-tts-tui v0.1: ⚠ UNTESTED (TUI #18, sandbox fungsi core OK 22 Nov 2026 — compile OK, parse_srt/normalize/cache_key/format_length_scale/find_voice_models/label_for_voice/piper CLI binary detect semua verified. End-to-end generate test BLOCKED: HuggingFace rate-limit sandbox IP (429, sandbox tidak bisa download model 63MB). Generate test pending di Mac user. Backend Piper TTS VITS ONNX via `pip install piper-tts` v1.8.0, model `id_ID-gadis-medium` + `id_ID-ml-medium` dari HF rhasspy/piper-voices. Adopsi edge-tts-tui algoritma (smart_fit per cue, mix_into_buffer, cache, lock, 2 mode) + whisper-tui local model pattern (find_piper binary + find_voice_models scan .onnx). 100% offline. BUKAN pengganti edge-tts-tui v7.5 — opsi tambahan untuk skenario offline murni)
 - Pipeline produksi Indonesia: 6 film tested, all TUI production-ready
 - Pipeline Jawa: experimental, tunggu user VLC feedback
 
@@ -429,7 +477,7 @@ SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
 
 ### TUI (ada 17, BUKAN 12/13/15/16):
 
-- Jangan amnesia: ada **17 TUI**. Baca `git ls-tree origin/main scripts/` untuk verifikasi sebelum pilih nomor TUI baru
+- Jangan amnesia: ada **18 TUI**. Baca `git ls-tree origin/main scripts/` untuk verifikasi sebelum pilih nomor TUI baru
 - TUI #13 = review-mix-tui (UNTESTED), TUI #14 = konten-tui (UNTESTED), TUI #15 = gemini-tts-tui (UNTESTED), TUI #16 = talkinghead-tui (UNTESTED), TUI #17 = manim-shorts-tui (UNTESTED sandbox OK)
 - `REVIEW_DIR` di config.py untuk review-mix-tui (#13), `KONTEN_DIR` untuk konten-tui (#14) + talkinghead-tui (#16 output ke KONTEN_DIR), `MANIM_SHORTS_DIR` untuk manim-shorts-tui (#17)
 - edge-tts-tui v7.5 Narration mode → feed review-mix-tui / konten-tui / manim-shorts-tui (BUKAN langsung ke user)
