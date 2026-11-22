@@ -38,10 +38,22 @@ Validasi approach: subtitlekit.com (web SRT-to-audio) pakai approach SAMA PERSIS
   - Narration mode: naskah.txt → HDD/tts/{stem}-narasi.wav (48kHz stereo, review-mix/konten compatible)
 
 Setup user (Mac ~/Dubbing/):
-  pip3 install piper-tts questionary numpy
+  pip3 install piper-tts questionary numpy huggingface_hub
   mkdir -p ~/Dubbing/piper-voices && cd ~/Dubbing/piper-voices
-  curl -LO https://huggingface.co/rhasspy/piper-voices/resolve/main/id/id_ID/gadis/medium/id_ID-gadis-medium.onnx
-  curl -LO https://huggingface.co/rhasspy/piper-voices/resolve/main/id/id_ID/gadis/medium/id_ID-gadis-medium.onnx.json
+  # Download voice Indonesia (hanya id_ID-news_tts-medium yang tersedia di repo
+  # resmi rhasspy/piper-voices per Nov 2026; curl -L kena "Entry not found"
+  # karena HF LFS redirect, pakai huggingface_hub):
+  python3 -c "
+from huggingface_hub import hf_hub_download
+import shutil, os
+for path in [
+    'id/id_ID/news_tts/medium/id_ID-news_tts-medium.onnx',
+    'id/id_ID/news_tts/medium/id_ID-news_tts-medium.onnx.json',
+]:
+    p = hf_hub_download(repo_id='rhasspy/piper-voices', filename=path)
+    shutil.copy(p, os.path.basename(p))
+    print('downloaded', os.path.basename(p))
+"
 
 Pakai:
   cd ~/Dubbing && source venv/bin/activate && python3 piper-tts-tui.py
@@ -55,7 +67,9 @@ Trade-off vs edge-tts-tui v7.5:
   + 100% offline (no internet, no API key, no 429 rate limit)
   + GPU Metal (CoreML EP) di M1 — Mac gak panas, cepat
   + Model load sekali (vs CLI reload per cue)
-  - Voice ID terbatas: gadis (perempuan), ml/MMS (netral) — vs edge Ardi+Gadis neural
+  - Voice ID terbatas: hanya id_ID-news_tts-medium di repo HF resmi (Nov 2026)
+    — vs edge Ardi+Gadis neural. Voice lain (gadis/arjun/ayu) tidak ada di repo
+    rhasspy/piper-voices (404 Entry not found). Cari mirror community kalau perlu.
   - Kualitas VITS bagus tapi sedikit di bawah Azure neural
   - Tidak support pitch (piper cuma length-scale + noise-scale)
 """
@@ -222,10 +236,18 @@ def find_voice_models(search_dirs=None):
 
 def label_for_voice(voice_id):
     vid = voice_id.lower()
+    if 'news_tts' in vid or 'news-tts' in vid:
+        return f'News TTS — Indonesia, netral/news ({voice_id})'
     if 'gadis' in vid:
         return f'Gadis — Indonesia, perempuan ({voice_id})'
     if 'bahu' in vid:
         return f'Bahu — Indonesia, laki-laki ({voice_id})'
+    if 'arjun' in vid:
+        return f'Arjun — Indonesia, laki-laki ({voice_id})'
+    if 'ayu' in vid:
+        return f'Ayu — Indonesia, perempuan ({voice_id})'
+    if 'sari' in vid:
+        return f'Sari — Indonesia, perempuan ({voice_id})'
     if '-ml-' in vid or 'mms' in vid:
         return f'MMS Multilingual — Indonesia, netral ({voice_id})'
     if 'dimas' in vid:
@@ -814,11 +836,15 @@ def main():
         print('❌ Tidak ada model Piper ditemukan!')
         print('═' * 64)
         print()
-        print('   Download model Indonesia ke ~/Dubbing/piper-voices/:')
+        print('   Download voice Indonesia (id_ID-news_tts-medium, satu-satunya')
+        print('   yang tersedia di repo HF resmi Nov 2026) ke ~/Dubbing/piper-voices/:')
         print()
+        print('   pip3 install huggingface_hub')
         print('   mkdir -p ~/Dubbing/piper-voices && cd ~/Dubbing/piper-voices')
-        print('   curl -LO https://huggingface.co/rhasspy/piper-voices/resolve/main/id/id_ID/gadis/medium/id_ID-gadis-medium.onnx')
-        print('   curl -LO https://huggingface.co/rhasspy/piper-voices/resolve/main/id/id_ID/gadis/medium/id_ID-gadis-medium.onnx.json')
+        print('   python3 -c "from huggingface_hub import hf_hub_download as d; import shutil,os; \\')
+        print('     [shutil.copy(d(repo_id=\\\"rhasspy/piper-voices\\\", filename=p), os.path.basename(p)) \\')
+        print('      for p in [\\\"id/id_ID/news_tts/medium/id_ID-news_tts-medium.onnx\\", \\')
+        print('                \\\"id/id_ID/news_tts/medium/id_ID-news_tts-medium.onnx.json\\\"]]"')
         print()
         print('═' * 64)
         sys.exit(1)
