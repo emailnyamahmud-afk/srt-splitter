@@ -7323,3 +7323,97 @@ Semua render SUCCESS + subtitle rendered + symlink cleaned up.
 - v3.11.1 (`9201d77`) + v3.11.2 (`18980b1`) + v3.11.3 (`b9d768b`) + v3.11.4 (`3c18e50`) + v3.11.5 (`cd5ce01`) = DEPRECATED — insufficient fix. Tetap di git history untuk referensi pelajaran.
 - Next: user re-download `mix-tui.py` v3.11.6, test ulang. Harusnya JALAN kali ini (canonical form = one quote pair, `=`+`,` protected, no merge issue).
 - Test scripts persisted: 7 test harness (test-subtitle-escape, test-subtitle-fix, verify-subtitle-fix, test-subtitle-v3112, test-symlink-approach, test-noquote-v3115, test-v3116).
+
+---
+
+## 21 Nov 2026 — mix-tui v3.11.7: ROOT CAUSE SEBENARNYA = libass missing (BUKAN quoting). 6x salah diagnosis.
+
+**Commit**: `756caa4` (user push dari Mac)
+
+### Plot twist — v3.11.6 MASIH FAIL, lalu diagnostic membongkar kebenaran
+
+User re-download mix-tui v3.11.6 (one quote pair, canonical form) + test di Mac ffmpeg 9.0.2. **MASIH FAIL** dengan error identik:
+```
+No option name near '...mix_tui_sub_17783792.srt:force_style=Fontsize=18,PrimaryColour=...,...,Justify=2'
+```
+
+Quote ADA di filterchain (`force_style='Fontsize=18,...'`), tapi ffmpeg strip quote lalu tetap "No option name". Error identik dari v3.11.0 sampai v3.11.6 walau quoting beda-beda. **Kalau masalahnya quoting, hasilnya beda. Tapi selalu sama. Artinya: BUKAN quoting issue.**
+
+### Diagnostic (akhirnya user run, setelah AI 6x tebak)
+```bash
+ffmpeg -filters 2>&1 | grep -iE 'subt|ass'        # → TIDAK ADA subtitles/ass filter
+ffmpeg -h filter=subtitles 2>&1 | head -40         # → "Unknown filter 'subtitles'."
+```
+
+**`subtitles` filter TIDAK ADA di build ffmpeg user.** Config line:
+```
+--enable-libsvtav1 --enable-libopus --enable-libx264 --enable-libmp3lame --enable-libdav1d
+--enable-libvmaf --enable-libvpx --enable-libx265 --enable-openssl --enable-videotoolbox
+--enable-audiotoolbox --enable-neon
+```
+**TIDAK ADA `--enable-libass`** (11 `--enable-lib*` flags, minimal build).
+
+Formula `ffmpeg` regular homebrew (9.0.2_1, 290 files, 53.9MB) **TIDAK compile libass**. Tanpa libass → `subtitles` filter tidak ter-register → `ffmpeg -h filter=subtitles` = "Unknown filter" → filtergraph error "No option name near '...'" (misleading, terlihat kayak quoting bug).
+
+### User install ffmpeg-full (keg-only, libass ✔)
+```bash
+brew info ffmpeg-full
+# Dependencies Required (47): ... libass ✔, libbluray ✔, fontconfig ✔, freetype ✔, ...
+/opt/homebrew/opt/ffmpeg-full/bin/ffmpeg -filters | grep subtitles
+# → .. subtitles   V->V   Render text subtitles on input video using the libass library.
+```
+
+ffmpeg-full punya libass + `subtitles` filter jalan. TAPI **keg-only** — binary ke `/opt/homebrew/opt/ffmpeg-full/bin/`, BUKAN symlink ke `/opt/homebrew/bin/` (Homebrew tidak symlink biar tidak bentrok formula `ffmpeg` biasa).
+
+### Konsekuensi keg-only yang ditangani v3.11.7
+`shutil.which('ffmpeg')` cuma nemu ffmpeg-full KALAU:
+1. User sudah `export PATH="/opt/homebrew/opt/ffmpeg-full/bin:$PATH"` ke `.zshrc`, DAN
+2. Script jalan dari shell yang source `.zshrc`
+
+Kalau script jalan dari GUI/IDE/cron (PATH tidak load) → `which()` gagal → fallback lama pakai ffmpeg regular (tanpa libass) → error lagi.
+
+### Fix v3.11.7 (user tulis di Mac, commit `756caa4`)
+1. **`find_ffmpeg()`/`find_ffprobe()` cek path explicit ffmpeg-full duluan** sebelum `which()` + fallback list:
+   ```python
+   FFMPEG_FULL_CANDIDATES = [
+       '/opt/homebrew/opt/ffmpeg-full/bin/ffmpeg',   # Apple Silicon (M1/M2/M3)
+       '/usr/local/opt/ffmpeg-full/bin/ffmpeg',      # Intel Mac
+   ]
+   def find_ffmpeg():
+       for loc in FFMPEG_FULL_CANDIDATES:    # cek ffmpeg-full duluan
+           if os.path.isfile(loc): return loc
+       path = shutil.which('ffmpeg')         # baru which()
+       if path: return path
+       for loc in ['/opt/homebrew/bin/ffmpeg', '/usr/local/bin/ffmpeg', '/usr/bin/ffmpeg']:
+           if os.path.isfile(loc): return loc
+       # ... error message install instruction
+   ```
+   Auto-detect tanpa perlu edit `.zshrc`. Same pattern untuk `find_ffprobe()`.
+
+2. **`run_ffmpeg_with_progress` return tuple `(returncode, stderr_text)`**:
+   ```python
+   stderr_lines = []  # simpan semua stderr sejak awal run
+   def stderr_reader():
+       for line in proc.stderr:
+           line_queue.put(line)
+           stderr_lines.append(line)
+   # ...
+   return proc.returncode, ''.join(stderr_lines)  # tuple
+   ```
+   Caller: `exit_code, ffmpeg_stderr = run_ffmpeg_with_progress(cmd, mp4_dur)`
+   Failure path pakai `ffmpeg_stderr` asli dari run yang gagal — TIDAK perlu re-run (sebelumnya buggy: re-run `cmd` + timeout=30 → pasti timeout video 2 jam → print "Tidak bisa capture stderr" → user tidak pernah lihat error ffmpeg asli).
+
+### Pelajaran SANGAT PENTING untuk AI next session
+1. **Kalau error IDENTIK walau fix berbeda = BUKAN code issue, CEK ENVIRONMENT.** 6x quoting patch (v3.11.0-v3.11.6) semua hasil error sama persis. Seharusnya dari attempt ke-2, AI curiga "ini bukan quoting" dan cek `ffmpeg -filters`. Tapi AI over-engineer tebak escape/quote 6x.
+2. **"No option name near 'X'" di ffmpeg bisa berarti filter TIDAK ADA (Unknown filter), bukan cuma quoting bug.** Error message ffmpeg misleading — parse error muncul di filtergraph level, bukan filter level, jadi terlihat kayak option parsing padahal filter-nya tidak ter-register.
+3. **`subtitles`/`ass` filter REQUIRES `--enable-libass` di config.** Formula homebrew `ffmpeg` regular (minimal, 11 deps) TIDAK punya libass. User butuh `ffmpeg-full` (keg-only, 47 deps include libass). Cek dengan `ffmpeg -filters | grep subtitles` + config line.
+4. **Sebelum diagnose "quoting bug" atau "sync problem", SELALU cek dulu**: `ffmpeg -filters | grep -iE 'subt|ass'` + `ffmpeg -h filter=subtitles` + grep `--enable-libass` di config line. **30 detik, hemat 6 round-trip user.**
+5. **v3.11.0-v3.11.6 patch quoting TETAP ADA di git history (DEPRECATED tapi valid syntax).** Patch v3.11.6 (one quote pair, canonical form `subtitles=path:force_style='val'`) tetap benar untuk ffmpeg yang punya libass — tidak perlu revert. Hanya saja, tanpa libass, patch apapun tidak ada gunanya.
+6. **Over-engineering trap**: AI 6x fokus di syntax quoting (escape comma, satu quote, dua quote, symlink, no quote) tanpa cek apakah filter-nya ada. User critique valid: "AI over engineer nebak parsing, padahal semua patch valid, wong file jelas ada, 20x sebelumnya sukses, sejak update ffmpeg error — sederhana."
+7. **Koreksi root cause di AGENTS.md + worklog**: pelajaran v3.11.0-v3.11.6 tentang `=` level-1 special char + canonical quote form TETAP VALID sebagai pengetahuan ffmpeg, tapi **BUKAN root cause error user**. Root cause sebenarnya = libass missing. Update doc supaya AI next session tidak amnesia salah diagnosis lagi.
+
+### Status
+- mix-tui v3.11.7: ✅ production (fix REAL ffmpeg 9.x + libass: ffmpeg-full path detection + stderr capture).
+- v3.11.0 + v3.11.1 (`9201d77`) + v3.11.2 (`18980b1`) + v3.11.3 (`b9d768b`) + v3.11.4 (`3c18e50`) + v3.11.5 (`cd5ce01`) + v3.11.6 (`bca8f55`) = DEPRECATED — semua SALAH DIAGNOSIS (quoting fix valid syntax tapi bukan root cause). Tetap di git history untuk referensi pelajaran.
+- Next: user test mix-tui v3.11.7 di Mac (dengan ffmpeg-full terinstall + path detection). Harusnya JALAN — ffmpeg-full punya libass, find_ffmpeg() auto-detect path keg-only.
+- Test scripts persisted: 7 test harness. Sandbox test tetap valid (sandbox ffmpeg 7.x punya libass, jadi semua test pass — tapi tidak bisa reproduce error user karena root cause di environment, bukan code).
