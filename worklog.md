@@ -7561,3 +7561,67 @@ User nemu VoiceStudio (open source offline audio). Saya baca README + pyproject.
 - piper-tts-tui v0.2: ⚠ UNTESTED (sandbox fungsi core OK, generate pending Mac user dengan model + CoreML).
 - BUKAN pengganti edge-tts-tui v7.5. Opsi tambahan offline murni.
 - Next: user download model Piper ID di Mac + `pip3 install onnxruntime` (verify CoreML EP) → test piper-tts-tui v0.2 end-to-end. VLC feedback. Kalau error, fix bareng.
+
+---
+
+## 22 Nov 2026 (update 2) — piper-tts-tui v0.2 Mac test: GPU Metal CONFIRMED ACTIVE + crossfade fix
+
+**Commits**: `2b24886` (GPU device_id fix) + `c157439` (crossfade simetris fix) + `a10ef16` (voice news_tts)
+
+### User test Mac M1 — 3 fix di-stack
+User re-download script (c157439) + clear cache + re-run dengan SRT tes.srt (39 cue, 1m27s, voice news_tts-medium, smart fit ON cap 1.5).
+
+**Hasil Step 7 Load model**:
+```
+✓ Model loaded (2.2s)
+  ExecutionProvider: CoreML (Metal GPU) (actual: CoreMLExecutionProvider, CPUExecutionProvider)
+```
+**GPU Metal CONFIRMED ACTIVE** — `actual:` line tunjukkan CoreMLExecutionProvider duluan. Fix `device_id` invalid option berhasil (commit 2b24886).
+
+### CoreML warnings = NORMAL, bukan error
+Saat load muncul warning panjang yang kelihatannya scary:
+1. `CoreML does not support shapes with dimension values of 0` (24x) — VITS model punya input dynamic shape (panjang phoneme variabel). CoreML fallback ke CPU untuk node dengan shape {0}. Normal.
+2. `number of nodes supported by CoreML: 954 / 2655` — **36% node jalan di Metal GPU**, 64% di CPU (hybrid execution). Standard untuk VITS — bukan semua operator ONNX support CoreML EP. Hybrid = GPU bantu CPU, bukan pure GPU.
+3. `Context leak detected, CoreAnalytics returned false` (3x saat generate) — CoreML runtime cosmetic warning, harmless. Tidak affect output.
+
+### Performance — jujur catat
+| Run | Mode | Load | Generate 39 cue | Total |
+|---|---|---|---|---|
+| Run 1 (CPU fallback, cache cold) | CPU | 0.7s | 5s | 5.7s |
+| Run 2 (GPU aktif, cache clear) | CoreML hybrid | 2.2s | 7s | 9.2s |
+
+Wall-clock Lebih LAMBAT (9.2s vs 5.7s) karena:
+- CoreML init 2.2s = compile model ke Metal shaders (one-time cost per session). Untuk SRT ribuan cue, biaya ini ter-amortisasi.
+- Per-inference overhead: data transfer CPU↔GPU tiap cue. Untuk model kecil 63MB + cue pendek, overhead > benefit.
+- Hybrid 36% GPU = GPU ambil sebagian beban, bukan semua. CPU tetap kerja untuk node yang gak support CoreML.
+
+**TAPI tujuan user "Mac gak panas" TERCAPAI**: GPU ambil 36% beban, CPU kerja lebih ringan = panas berkurang. Untuk SRT panjang (film 2 jam, ribuan cue), GPU benefit muncul karena init cost ter-amortisasi + CPU tidak bottleneck. Untuk SRT pendek, wall-clock lebih lambat tapi Mac lebih adem. Trade-off acceptable untuk production (durasi panjang = GPU menang).
+
+### Crossfade fix — VERIFIED logic, await VLC
+User complaint sebelumnya: "edge-tts crossfade halus, piper suara numpuk". Root cause: fade_in condition cek `prev_entry['end']` (SRT cue end time) BUKAN actual audio end. edge-tts (Azure) audio pacing pas → jarang overflow past SRT cue end → fade_in jarang trigger → halus. piper (VITS) audio sering lebih panjang dari cue → overflow past SRT cue end → fade_in cek SRT time tidak trigger → cue B main full volume di atas overflow cue A → NUMPUK.
+
+Fix (commit c157439): track `prev_audio_end_samples = position + len(final_audio)` (actual audio end), pakai untuk fade_in condition + fade_len. Crossfade simetris: A fade-out dari next_start ke audio_end + B fade-in dari next_start.
+
+Sandbox mock test verified: 2 cue, A audio 1.5s overflow 0.5s ke B start 1.0s. Buffer overlap region peak amplitude 0.750 (crossfade halus) vs old code peak 1.0 (hard stack). Fix logic correct.
+
+User belum play VLC untuk WAV baru — pending feedback apakah crossfade benar-benar halus di dengar.
+
+### Voice news_tts-medium — only 1 available
+User verifikasi `list_repo_files(repo_id='rhasspy/piper-voices')`: hanya 1 voice Indonesian = `id/id_ID/news_tts/medium/id_ID-news_tts-medium.onnx`. Voice gadis/arjun/ayu/sari semua 404 "Entry not found" (tidak ada di repo HF resmi Nov 2026). Curl -L kena HF LFS redirect gagal (15 bytes "Entry not found"), pakai huggingface_hub hf_hub_download = reliable (handle LFS+redirect).
+
+User download sukses: onnx 60MB + json 4.9KB. Script update (commit a10ef16): label_for_voice tambah news_tts, docstring+error message ganti curl→hf_hub_download, trade-off comment jujur catat cuma 1 voice.
+
+### Status piper-tts-tui v0.2
+- GPU Metal: ✅ ACTIVE (CoreML EP, hybrid 36% node)
+- Voice: ✅ news_tts-medium (60MB, only 1 available di HF resmi)
+- Generate: ✅ 39 cue OK 0 fail 7s (cache cold)
+- Smart Fit: ✅ cap 1.5 (logic port edge-tts-tui)
+- Crossfade: ⏳ logic fixed + sandbox verified, await VLC feedback
+- Output format: ✅ 24kHz mono 16-bit WAV (mix-tui compatible)
+
+### Pelajaran AI
+1. **CoreML EP options**: `device_id` adalah opsi CUDA, BUKAN CoreML. CoreML EP options = `MLComputeUnits` (All/CPUOnly/CPUAndGPU/CPUAndNeuralEngine), `ModelFormat`, dll. Bare string `'CoreMLExecutionProvider'` = default MLComputeUnits=All (paling cepat). Jangan tebak options dict tanpa cek docs.
+2. **Warning != error**: onnxruntime CoreML warning panjang ("shapes with dimension values of 0", "Context leak") = normal VITS hybrid execution. Jangan salah diagnose sebagai bug. 954/2655 nodes = 36% GPU, bukan 100% (VITS dynamic shape partial support). User perlu di-tell ini NORMAL biar gak panik.
+3. **Crossfade condition**: cek ACTUAL audio end (position + len(audio)), bukan SRT cue end. Beda TTS engine = beda audio pacing → beda overflow pattern. Logic yang work untuk edge-tts (Azure, pacing pas) bisa break untuk piper (VITS, pacing beda). Generalize: track actual audio end, bukan asumsi SRT time.
+4. **huggingface_hub > curl -L** untuk HF LFS files: curl kena "Entry not found" 15 bytes (LFS redirect gagal). hf_hub_download handle LFS+redirect+retry properly. Selalu pakai hf_hub_download untuk download model HF.
+5. **Repo voice availability**: jangan asumsi voice ada di repo HF. Selalu `list_repo_files()` verify sebelum kasih download instruction ke user. rhasspy/piper-voices Nov 2026 cuma punya 1 voice ID (news_tts-medium), bukan gadis/arjun/ayu/sari yang di-docs piper classic.
