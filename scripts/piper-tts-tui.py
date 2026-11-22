@@ -163,7 +163,15 @@ TRIM_PADDING_MS = 50
 NORMALIZE_DBFS = -3.0
 NOISE_FLOOR_DB = -40.0
 
-SMART_FIT_CAP_DEFAULT = 1.5
+# Cap default 2.0 (bukan 1.5 seperti edge-tts). Alasan: piper VITS pacing lebih
+# lambat dari Azure neural → natural_dur >> cue_dur untuk text Indo hasil
+# translate dari Mandarin (Indo lebih panjang, timestamp sama). Cap 1.5 tidak
+# cukup → audio overflow → numpuk. VITS length-scale preserve pitch (bukan
+# resampling), jadi speedup 2x tidak chipmunk. Cap 2.0 fit kasus typical
+# Mandarin→Indo (need 1.5-2.2). User bisa naikkan sampai 3.0 untuk kasus extreme.
+SMART_FIT_CAP_DEFAULT = 2.0
+SMART_FIT_CAP_MAX = 3.0
+SMART_FIT_DEBUG = os.environ.get('PIPER_SMART_FIT_DEBUG') == '1'
 
 
 # ============================================================
@@ -682,12 +690,18 @@ def smart_fit_cue(text, cue_dur, voice, config, cap, cache_dir, cache_key, prefi
     natural_dur = len(natural_audio) / OUTPUT_SAMPLE_RATE
     need = natural_dur / max(0.001, cue_dur)
 
+    if SMART_FIT_DEBUG:
+        fit_status = 'FIT' if need <= 1.0 else f'OVERFLOW need={need:.2f}'
+        print(f'  [cue {cue_idx}] dur={cue_dur:.2f}s nat={natural_dur:.2f}s {fit_status}')
+
     if need <= 1.0:
         return peak_normalize(natural_audio)
 
     # Pass 2: speedup
     speedup = min(need, cap)
     total_ls = max(0.1, baseline_ls / speedup)
+    if SMART_FIT_DEBUG:
+        print(f'  [cue {cue_idx}] Pass 2: need={need:.2f} cap={cap} speedup={speedup:.2f} ls={total_ls:.3f}')
     smart_key = cache_key + f'_ls{total_ls:.4f}'
     smart_npy = os.path.join(cache_dir, f'{prefix}-cue-{cue_idx:04d}-{smart_key}.npy')
 
@@ -947,11 +961,18 @@ def main():
     cap = SMART_FIT_CAP_DEFAULT
     if smart_fit:
         cap_str = questionary.text(
-            f'Max speedup cap (default {SMART_FIT_CAP_DEFAULT}, 1.5 = max 1.5x cepat):',
+            f'Max speedup cap (default {SMART_FIT_CAP_DEFAULT}, max {SMART_FIT_CAP_MAX}; '
+            f'untuk SRT Mandarin→Indo translate, Indo lebih panjang, timestamp sama, '
+            f'naikkan ke 2.0-2.5 agar semua kata masuk):',
             default=str(SMART_FIT_CAP_DEFAULT),
         ).ask()
         try:
             cap = float(cap_str)
+            if cap < 1.0:
+                cap = 1.0
+            elif cap > SMART_FIT_CAP_MAX:
+                print(f'  ⚠ Cap {cap} > max {SMART_FIT_CAP_MAX}, pakai max.')
+                cap = SMART_FIT_CAP_MAX
         except ValueError:
             cap = SMART_FIT_CAP_DEFAULT
     print(f'  ✓ Smart Fit: {"ON" if smart_fit else "OFF"}, cap={cap}')
@@ -1109,11 +1130,29 @@ def main():
 
             # Fade out tail: kalau audio extends past next cue start → fade out
             # dari next_start ke audio_end. Conditional on ACTUAL overflow.
+            # TRUNCATION: cap overflow ke crossfade window (next_start +
+            # crossfade_samples) supaya crossfade simetris 150ms, bukan overlap
+            # panjang yang bikin numpuk. Tanpa truncate, fade_out cover full
+            # overflow (bisa 1-2s) tapi fade_in cuma 150ms → region 150ms-end
+            # still numpuk (prev fading + next full volume).
+            # Dengan truncate: prev faded 150ms + next faded 150ms = clean crossfade.
+            # Tradeoff: kata di tail overflow terpotong. Tapi smart_fit cap 2.0
+            # sudah minimize overflow (need>2.0 jarang). Untuk kasus extreme,
+            # user naikkan cap ke 2.5-3.0.
             fade_out_end = None
             if next_entry:
                 next_start_samples = int(next_entry['start'] * OUTPUT_SAMPLE_RATE)
                 if this_audio_end > next_start_samples:
                     fade_out_end = next_start_samples
+                    # Truncate audio ke next_start + crossfade_samples
+                    max_end = next_start_samples + crossfade_samples
+                    if this_audio_end > max_end:
+                        cut_idx = max_end - position
+                        if 0 < cut_idx < len(final_audio):
+                            final_audio = final_audio[:cut_idx]
+                            this_audio_end = position + len(final_audio)
+                            if SMART_FIT_DEBUG:
+                                print(f'  [cue {cue_idx}] TRUNCATE overflow to {crossfade_samples/OUTPUT_SAMPLE_RATE:.3f}s window')
 
             mix_into_buffer(all_audio, final_audio, position,
                             fade_out_end=fade_out_end, fade_in_start=fade_in_start, fade_len=fade_len)
