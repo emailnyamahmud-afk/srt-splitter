@@ -1040,25 +1040,38 @@ def main():
         start_time = time.time()
         crossfade_samples = int(OUTPUT_SAMPLE_RATE * CROSSFADE_MS / 1000)
 
+        # Track actual audio end (bukan SRT cue end) untuk crossfade simetris.
+        # edge-tts-tui cek prev_entry['end'] (SRT time) — OK untuk Azure (audio
+        # pacing pas, jarang overflow). Tapi piper VITS sering lebih panjang dari
+        # cue → overflow past SRT cue end. Kalau fade_in cek SRT time (bukan
+        # actual audio), tidak trigger → cue B main full volume di atas overflow
+        # cue A → SUARA NUMPUK. Fix: track prev_audio_end_samples = position +
+        # len(final_audio), pakai untuk fade_in condition + fade_len.
+        prev_audio_end_samples = 0
+
         for i, entry in enumerate(entries):
             cue_idx = i + 1
             text = normalize_tts_text(' '.join(entry['textLines']))
             cue_dur = entry['end'] - entry['start']
             position = int(entry['start'] * OUTPUT_SAMPLE_RATE)
 
-            prev_entry = entries[i - 1] if i > 0 else None
+            # Fade in head: crossfade dengan prev ACTUAL audio (bukan SRT time).
+            # Kalau prev audio overflow ke region cue ini → fade in head agar
+            # transisi halus (A fade out + B fade in = crossfade simetris).
             fade_in_start = None
             fade_len = 0
-            if prev_entry:
-                prev_end_samples = int(prev_entry['end'] * OUTPUT_SAMPLE_RATE)
-                if position < prev_end_samples:
-                    fade_in_start = position
-                    fade_len = min(crossfade_samples, prev_end_samples - position)
+            if i > 0 and position < prev_audio_end_samples:
+                overlap = prev_audio_end_samples - position
+                fade_in_start = position
+                fade_len = min(overlap, crossfade_samples)
 
             next_entry = entries[i + 1] if i + 1 < len(entries) else None
-            fade_out_end = int(next_entry['start'] * OUTPUT_SAMPLE_RATE) if next_entry else None
+            # fade_out_end di-set SETELAH generate (conditional on actual overflow),
+            # mirror edge-tts-tui pattern (line 1081-1083).
 
             if not text:
+                # Empty cue — skip, tapi update prev_audio_end (tidak ada audio baru)
+                prev_audio_end_samples = max(prev_audio_end_samples, position)
                 continue
 
             cache_key = compute_cache_key(text, voice_id, baseline_ls)
@@ -1091,8 +1104,23 @@ def main():
                 fail_count += 1
                 continue
 
+            # Track actual audio end SEBELUM fade_out (untuk crossfade cue berikutnya)
+            this_audio_end = position + len(final_audio)
+
+            # Fade out tail: kalau audio extends past next cue start → fade out
+            # dari next_start ke audio_end. Conditional on ACTUAL overflow.
+            fade_out_end = None
+            if next_entry:
+                next_start_samples = int(next_entry['start'] * OUTPUT_SAMPLE_RATE)
+                if this_audio_end > next_start_samples:
+                    fade_out_end = next_start_samples
+
             mix_into_buffer(all_audio, final_audio, position,
                             fade_out_end=fade_out_end, fade_in_start=fade_in_start, fade_len=fade_len)
+
+            # Update prev_audio_end untuk cue berikutnya (actual audio end,
+            # bukan SRT cue end — supaya fade_in trigger kalau ada overflow)
+            prev_audio_end_samples = this_audio_end
             success_count += 1
 
             if cue_idx % 10 == 0 or cue_idx == len(entries):
