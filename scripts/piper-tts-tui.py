@@ -281,14 +281,16 @@ def load_piper_voice(model_path, config_path, use_gpu=True):
     config = PiperConfig.from_dict(config_dict)
 
     if use_gpu and _HAS_COREML:
+        # CoreML EP = Metal GPU di Apple Silicon. CoreML EP TIDAK accept
+        # 'device_id' option (itu opsi CUDA). Pakai bare string, atau opsional
+        # 'MLComputeUnits': 'All'/'CPUAndGPU'/'CPUOnly'/'CPUAndNeuralEngine'.
+        # Default 'All' = GPU+ANE+CPU, paling cepat. Bare string = default juga.
         providers = [
-            ('CoreMLExecutionProvider', {'device_id': 0}),
+            'CoreMLExecutionProvider',
             'CPUExecutionProvider',
         ]
-        ep_label = 'CoreML (Metal GPU)'
     else:
         providers = ['CPUExecutionProvider']
-        ep_label = 'CPU'
 
     sess_options = ort.SessionOptions()
     sess_options.intra_op_num_threads = 4
@@ -300,7 +302,13 @@ def load_piper_voice(model_path, config_path, use_gpu=True):
         providers=providers,
     )
 
+    # Ambil EP ACTUAL dari session (bukan asumsi). CoreML bisa di-reject onnxruntime
+    # kalau operator tertentu gak support → fallback CPU otomatis. Label harus jujur.
     actual_eps = session.get_providers()
+    if 'CoreMLExecutionProvider' in actual_eps:
+        ep_label = 'CoreML (Metal GPU)'
+    else:
+        ep_label = 'CPU (CoreML fallback)' if (_HAS_COREML and use_gpu) else 'CPU'
     voice = PiperVoice(
         session=session,
         config=config,
