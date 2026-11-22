@@ -158,19 +158,16 @@ NARR_CHANNELS = 2
 
 CROSSFADE_MS = 150
 TRIM_HEAD_DB = -30
-TRIM_TAIL_DB = -45
-TRIM_PADDING_MS = 50
-NORMALIZE_DBFS = -3.0
-NOISE_FLOOR_DB = -40.0
+TRIM_TAIL_DB = -30          # match edge-tts-tui (was -45, kept too much trailing audio → overflow → numpuk)
+TRIM_PADDING_MS = 30        # match edge-tts-tui (was 50, added too much padding)
+NORMALIZE_DBFS = -2.0       # match edge-tts-tui (was -3.0)
+NOISE_FLOOR_DB = -50.0      # match edge-tts-tui (was -40.0)
 
-# Cap default 2.0 (bukan 1.5 seperti edge-tts). Alasan: piper VITS pacing lebih
-# lambat dari Azure neural → natural_dur >> cue_dur untuk text Indo hasil
-# translate dari Mandarin (Indo lebih panjang, timestamp sama). Cap 1.5 tidak
-# cukup → audio overflow → numpuk. VITS length-scale preserve pitch (bukan
-# resampling), jadi speedup 2x tidak chipmunk. Cap 2.0 fit kasus typical
-# Mandarin→Indo (need 1.5-2.2). User bisa naikkan sampai 3.0 untuk kasus extreme.
-SMART_FIT_CAP_DEFAULT = 2.0
-SMART_FIT_CAP_MAX = 3.0
+# Smart Fit cap — SELECT match edge-tts-tui (4 opsi). Default 1.5x = config
+# clean yang user pakai (2x = cepat seperti robot, 1.25x = paling natural tapi
+# sering overflow). VITS length-scale preserve pitch, jadi 1.5x tidak chipmunk.
+# JANGAN default ke 2x/3x — 1.5x adalah sweet spot naturalness (user verified).
+SMART_FIT_CAP_DEFAULT = 1.5
 SMART_FIT_DEBUG = os.environ.get('PIPER_SMART_FIT_DEBUG') == '1'
 
 
@@ -952,30 +949,25 @@ def main():
     print(f'  ✓ length-scale baseline = {baseline_ls}')
     print()
 
-    # Step 5: smart fit
-    print('▶ Step 5/7: Smart Fit')
-    smart_fit = questionary.confirm(
-        'Aktifkan Smart Fit? (re-generate cue terlalu panjang dengan rate lebih cepat agar fit durasi SRT)',
-        default=True,
+    # Step 5: Smart Fit cap — SELECT match edge-tts-tui (4 opsi, default 1.5x)
+    print('▶ Step 5/7: Smart Fit cap')
+    cap_choice = questionary.select(
+        'Smart Fit cap (max audio rate):',
+        choices=[
+            '1.5x (clean, recommended — match edge-tts user config)',
+            '2.0x (voicertool cap, cepat seperti robot)',
+            '1.25x (paling natural, lebih sering overflow)',
+            'OFF (no smart fit, natural only)',
+        ],
+        default='1.5x (clean, recommended — match edge-tts user config)',
     ).ask()
-    cap = SMART_FIT_CAP_DEFAULT
-    if smart_fit:
-        cap_str = questionary.text(
-            f'Max speedup cap (default {SMART_FIT_CAP_DEFAULT}, max {SMART_FIT_CAP_MAX}; '
-            f'untuk SRT Mandarin→Indo translate, Indo lebih panjang, timestamp sama, '
-            f'naikkan ke 2.0-2.5 agar semua kata masuk):',
-            default=str(SMART_FIT_CAP_DEFAULT),
-        ).ask()
-        try:
-            cap = float(cap_str)
-            if cap < 1.0:
-                cap = 1.0
-            elif cap > SMART_FIT_CAP_MAX:
-                print(f'  ⚠ Cap {cap} > max {SMART_FIT_CAP_MAX}, pakai max.')
-                cap = SMART_FIT_CAP_MAX
-        except ValueError:
-            cap = SMART_FIT_CAP_DEFAULT
-    print(f'  ✓ Smart Fit: {"ON" if smart_fit else "OFF"}, cap={cap}')
+    if 'OFF' in cap_choice:
+        smart_fit = False
+        cap = 1.0
+    else:
+        smart_fit = True
+        cap = float(cap_choice.split('x')[0])
+    print(f'  ✓ cap={cap}, smart_fit={smart_fit}')
     print()
 
     # Step 6: prefix
