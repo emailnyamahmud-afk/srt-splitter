@@ -825,7 +825,7 @@ def find_srt_files(search_dir):
 
 
 # ============================================================
-# SRT mode (mirror edge-tts-tui main, 7 step)
+# SRT mode (mirror edge-tts-tui main, 6 step — rate baseline dihapus, match edge-tts)
 # ============================================================
 
 def main():
@@ -869,7 +869,7 @@ def main():
         sys.exit(1)
 
     # Step 1: SRT
-    print('▶ Step 1/7: Pilih SRT')
+    print('▶ Step 1/6: Pilih SRT')
     try:
         from config import INPUT_DIR, TTS_DIR, ensure_hdd
         if ensure_hdd():
@@ -899,7 +899,7 @@ def main():
     print()
 
     # Step 2: output dir
-    print('▶ Step 2/7: Output directory')
+    print('▶ Step 2/6: Output directory')
     try:
         default_out = str(TTS_DIR)
     except NameError:
@@ -912,7 +912,7 @@ def main():
     print()
 
     # Step 3: voice
-    print('▶ Step 3/7: Pilih voice (model Piper lokal)')
+    print('▶ Step 3/6: Pilih voice (model Piper lokal)')
     voice_labels = [label_for_voice(v[2]) for v in voices]
     voice_choice = questionary.select(
         f'Voice ({len(voices)} model ditemukan):',
@@ -925,32 +925,14 @@ def main():
     print(f'    config: {config_path}')
     print()
 
-    # Step 4: rate baseline
-    print('▶ Step 4/7: Rate baseline (length-scale)')
-    rate_choice = questionary.select(
-        'Rate (1.0 = natural, >1.0 pelan/panjang, <1.0 cepat):',
-        choices=[
-            '1.00 (natural)',
-            '0.90 (sedikit cepat)',
-            '1.10 (sedikit pelan)',
-            '1.20 (lebih pelan)',
-            '[Ketik manual]',
-        ],
-        default='1.00 (natural)',
-    ).ask()
-    if rate_choice == '[Ketik manual]':
-        ls_str = questionary.text('Length-scale (0.1 - 3.0):', default='1.0').ask()
-        try:
-            baseline_ls = float(ls_str)
-        except ValueError:
-            baseline_ls = 1.0
-    else:
-        baseline_ls = float(rate_choice.split(' ')[0])
-    print(f'  ✓ length-scale baseline = {baseline_ls}')
-    print()
+    # Rate baseline dihardcode 1.0 (natural) — match edge-tts-tui yang TIDAK punya
+    # rate baseline step (rate dikontrol smart_fit cap saja). User complained
+    # pilihan "1.00 (natural)" di Step 4 bikin bingung + redundant. VITS
+    # length-scale 1.0 = natural, smart_fit cap (Step 4 berikut) handle speedup.
+    baseline_ls = 1.0
 
-    # Step 5: Smart Fit cap — SELECT match edge-tts-tui (4 opsi, default 1.5x)
-    print('▶ Step 5/7: Smart Fit cap')
+    # Step 4: Smart Fit cap — SELECT match edge-tts-tui (4 opsi, default 1.5x)
+    print('▶ Step 4/6: Smart Fit cap')
     cap_choice = questionary.select(
         'Smart Fit cap (max audio rate):',
         choices=[
@@ -970,8 +952,8 @@ def main():
     print(f'  ✓ cap={cap}, smart_fit={smart_fit}')
     print()
 
-    # Step 6: prefix
-    print('▶ Step 6/7: Prefix output')
+    # Step 5: prefix
+    print('▶ Step 5/6: Prefix output')
     default_prefix = os.path.splitext(os.path.basename(srt_path))[0]
     prefix = questionary.text('Prefix (output: {prefix}-audio-id-dub.wav):', default=default_prefix).ask()
     if not prefix:
@@ -990,7 +972,7 @@ def main():
     total_dur = entries[-1]['end']
 
     # Step 7: load model (show GPU status)
-    print('▶ Step 7/7: Load model Piper')
+    print('▶ Step 6/6: Load model Piper')
     print(f'  Loading {os.path.basename(model_path)}...')
     t0 = time.time()
     voice, pconfig, ep_label, actual_eps = load_piper_voice(model_path, config_path, use_gpu=True)
@@ -1013,7 +995,7 @@ def main():
     print(f'  Output   : {os.path.join(output_dir, prefix + "-audio-id-dub.wav")}')
     print(f'  Voice    : {voice_id}')
     print(f'  EP       : {ep_label}')
-    print(f'  L-scale  : {baseline_ls} (baseline)')
+    print(f'  Rate     : natural (length-scale {baseline_ls}, smart fit handles speedup)')
     print(f'  Smart Fit: {"ON" if smart_fit else "OFF"}, cap={cap}')
     print(f'  Cues     : {len(entries)}')
     print(f'  Durasi   : {format_duration(total_dur)}')
