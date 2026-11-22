@@ -1,6 +1,19 @@
 #!/usr/bin/env python3
 """
-mix-tui.py v3.11 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn + logo overlay + force 1080p + audio 48000Hz stereo standardize + mode 1:1 square)
+mix-tui.py v3.11.7 — TUI interaktif untuk mix MP4 + audio_dub (+ optional SFX/MP3 ori + optional SRT burn + logo overlay + force 1080p + audio 48000Hz stereo standardize + mode 1:1 square)
+
+v3.11.7 update (21 Nov 2026) — fix ffmpeg-full (Homebrew keg-only) path detection:
+  - User install `brew install ffmpeg-full` → binary ke /opt/homebrew/opt/ffmpeg-full/bin/
+    (BUKAN symlink ke /opt/homebrew/bin/, biar tidak bentrok formula `ffmpeg` biasa).
+  - Konsekuensi: shutil.which('ffmpeg') cuma nemu ffmpeg-full KALAU user sudah tambah
+    `export PATH="/opt/homebrew/opt/ffmpeg-full/bin:$PATH"` ke .zshrc DAN script jalan
+    dari shell yang source .zshrc. Dari GUI/IDE/cron → which() gagal → fallback lama
+    tidak include path ffmpeg-full → code pakai ffmpeg biasa/old/lama.
+  - Fix: find_ffmpeg()/find_ffprobe() cek path explicit ffmpeg-full duluan sebelum
+    which() dan fallback list. Auto-detect tanpa perlu edit .zshrc.
+  - Bonus fix: run_ffmpeg_with_progress sekarang return (returncode, stderr_text).
+    Failure path print stderr asli dari run yang gagal (sebelumnya buggy: re-run `cmd`
+    + timeout=30 → pasti timeout untuk video panjang → "Tidak bisa capture stderr").
 
 v3.11 update (13 Nov 2026) — mode 1:1 square (center crop) untuk source vertical:
   - Opsi baru "1:1 square (1080x1080)" muncul di Step 4.10 HANYA kalau source vertical (h > w)
@@ -175,7 +188,7 @@ Usage: python3 mix-tui.py (pilih file pakai arrow keys)
 """
 
 # === Version ===
-VERSION = 'v3.11'
+VERSION = 'v3.11.7'
 
 import os
 import sys
@@ -250,12 +263,31 @@ def select_file(prompt, extensions, search_dir=None, default=None):
     return os.path.join(search_dir, selected)
 
 
+FFMPEG_FULL_CANDIDATES = [
+    # v3.11.7: ffmpeg-full (Homebrew keg-only formula) install binary ke
+    # /opt/homebrew/opt/ffmpeg-full/bin/, BUKAN di-symlink ke /opt/homebrew/bin/
+    # (biar tidak bentrok sama formula `ffmpeg` biasa). Homebrew sendiri kasih
+    # instruksi: "printf 'export PATH=/opt/homebrew/opt/ffmpeg-full/bin:$PATH' >> ~/.zshrc".
+    # Konsekuensinya: shutil.which('ffmpeg') cuma nemu ffmpeg-full KALAU user sudah
+    # tambah export itu DAN script jalan dari shell yang source .zshrc. Kalau script
+    # dijalankan dari GUI/IDE/cron (PATH tidak load), which() gagal → fallback lama
+    # tidak include path ffmpeg-full sama sekali → code pakai ffmpeg biasa/old.
+    # Fix: cek path explicit ffmpeg-full duluan, sebelum which() dan fallback list.
+    '/opt/homebrew/opt/ffmpeg-full/bin/ffmpeg',   # Apple Silicon (M1/M2/M3)
+    '/usr/local/opt/ffmpeg-full/bin/ffmpeg',      # Intel Mac
+]
+
+
 def find_ffmpeg():
     import shutil
+    # v3.11.7: prioritaskan ffmpeg-full (keg-only) sebelum which()
+    for loc in FFMPEG_FULL_CANDIDATES:
+        if os.path.isfile(loc):
+            return loc
     path = shutil.which('ffmpeg')
     if path:
         return path
-    for loc in ['/usr/local/bin/ffmpeg', '/usr/bin/ffmpeg', '/opt/homebrew/bin/ffmpeg']:
+    for loc in ['/opt/homebrew/bin/ffmpeg', '/usr/local/bin/ffmpeg', '/usr/bin/ffmpeg']:
         if os.path.isfile(loc):
             return loc
     print()
@@ -265,18 +297,36 @@ def find_ffmpeg():
     print()
     print('   Install dengan Homebrew:')
     print()
-    print('   brew install ffmpeg')
+    print('   brew install ffmpeg          # formula biasa')
+    print('   brew install ffmpeg-full     # keg-only, full codec (butuh path, lihat bawah)')
+    print()
+    print('   Kalau sudah install ffmpeg-full (keg-only), tambah ke PATH:')
+    print()
+    print("     echo 'export PATH=\"/opt/homebrew/opt/ffmpeg-full/bin:$PATH\"' >> ~/.zshrc")
+    print('     source ~/.zshrc')
+    print()
+    print('   ATAU script ini sudah auto-detect path ffmpeg-full tanpa edit .zshrc.')
     print()
     print('═' * 64)
     sys.exit(1)
 
 
+FFPROBE_FULL_CANDIDATES = [
+    '/opt/homebrew/opt/ffmpeg-full/bin/ffprobe',   # Apple Silicon
+    '/usr/local/opt/ffmpeg-full/bin/ffprobe',      # Intel Mac
+]
+
+
 def find_ffprobe():
     import shutil
+    # v3.11.7: prioritaskan ffprobe dari ffmpeg-full (keg-only) sebelum which()
+    for loc in FFPROBE_FULL_CANDIDATES:
+        if os.path.isfile(loc):
+            return loc
     path = shutil.which('ffprobe')
     if path:
         return path
-    for loc in ['/usr/local/bin/ffprobe', '/usr/bin/ffprobe', '/opt/homebrew/bin/ffprobe']:
+    for loc in ['/opt/homebrew/bin/ffprobe', '/usr/local/bin/ffprobe', '/usr/bin/ffprobe']:
         if os.path.isfile(loc):
             return loc
     print()
@@ -395,6 +445,12 @@ def run_ffmpeg_with_progress(cmd, total_dur: float):
     Jalankan FFmpeg dengan stderr parsing untuk progress bar real-time.
     Pakai threading untuk baca stderr line-by-line — hindari deadlock
     yang bisa terjadi kalau FFmpeg output > 64KB pipe buffer (Mac default).
+
+    v3.11.7: Return tuple (returncode, stderr_text) supaya caller punya akses ke
+    stderr asli dari run yang gagal — tidak perlu re-run ffmpeg (yang lama + rapuh).
+    Sebelumnya return int saja, dan failure path re-run cmd dengan timeout=30 (pasti
+    timeout untuk video 2 jam) lalu print "Tidak bisa capture stderr" → user tidak
+    pernah lihat error ffmpeg asli.
     """
     import threading
     import queue
@@ -410,11 +466,13 @@ def run_ffmpeg_with_progress(cmd, total_dur: float):
     # Thread pembaca stderr → queue (avoid deadlock)
     line_queue: queue.Queue = queue.Queue()
     reader_done = threading.Event()
+    stderr_lines = []  # v3.11.7: simpan semua stderr untuk failure diagnostics
 
     def stderr_reader():
         try:
             for line in proc.stderr:
                 line_queue.put(line)
+                stderr_lines.append(line)
         finally:
             reader_done.set()
 
@@ -456,7 +514,7 @@ def run_ffmpeg_with_progress(cmd, total_dur: float):
     reader_thread.join(timeout=2)
     sys.stdout.write('\n')
     sys.stdout.flush()
-    return proc.returncode
+    return proc.returncode, ''.join(stderr_lines)
 
 
 def prompt_ducking():
@@ -1683,7 +1741,8 @@ def main():
 
     try:
         # Bug #8 fix: progress bar real-time
-        exit_code = run_ffmpeg_with_progress(cmd, mp4_dur)
+        # v3.11.7: run_ffmpeg_with_progress sekarang return (returncode, stderr_text)
+        exit_code, ffmpeg_stderr = run_ffmpeg_with_progress(cmd, mp4_dur)
     except KeyboardInterrupt:
         print('\n\n⏹ Dibatalkan user.')
         # Hapus output partial
@@ -1740,23 +1799,20 @@ def main():
         print('═' * 64)
         print(f'❌ GAGAL dengan exit code {exit_code}')
         print()
-        # v3.7.3: jalankan ulang FFmpeg dengan stderr di-print untuk debug
-        print('🔍 FFmpeg stderr (untuk debug):')
+        # v3.11.7: stderr asli dari run yang gagal sudah di-capture oleh
+        # run_ffmpeg_with_progress. Tidak perlu re-run ffmpeg (yang sebelumnya
+        # buggy: jalankan `cmd` (bukan `debug_cmd`) + timeout=30 → pasti timeout
+        # untuk video panjang → print "Tidak bisa capture stderr" → user tidak
+        # pernah lihat error asli).
+        print('🔍 FFmpeg stderr (dari run yang gagal):')
         print('─' * 64)
-        try:
-            debug_cmd = cmd + ['-v', 'error']  # verbose error
-            # Hapus output file dari cmd supaya tidak overwrite existing
-            # Cari output path (argumen terakhir yang bukan flag)
-            # Sebenarnya cmd terakhir = output, kita ganti ke /dev/null untuk debug
-            # Tapi lebih simple: jalankan ulang, capture stderr, print
-            debug_result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-            # Print stderr (FFmpeg error messages)
-            stderr_lines = debug_result.stderr.strip().split('\n')
-            # Print last 30 lines supaya tidak terlalu panjang
-            for line in stderr_lines[-30:]:
+        stderr_lines = (ffmpeg_stderr or '').rstrip().split('\n')
+        # Print last 40 lines supaya tidak terlalu panjang
+        for line in stderr_lines[-40:]:
+            if line.strip():
                 print(f'  {line}')
-        except Exception as e:
-            print(f'  Tidak bisa capture stderr: {e}')
+        if not any(l.strip() for l in stderr_lines):
+            print('  (stderr kosong — exit code non-zero tanpa pesan. Cek argumen cmd.)')
         print('─' * 64)
         print()
         print('Cek error message di atas. Umumnya:')
@@ -1765,6 +1821,9 @@ def main():
         print('  - "Cannot allocate memory" → audio terlalu panjang, split dulu')
         print('  - "Filter not found" → nama filter salah atau ffmpeg versi lama')
         print('  - "Invalid argument" → filter syntax error')
+        print('  - "Error while opening encoder" / "maybe incorrect parameters"')
+        print('    → encoder (mis. h264_videotoolbox) tidak terima pixel format/bitrate,')
+        print('      coba tambah -pix_fmt yuv420p sebelum output, atau ganti -b:v ke -q:v')
         print('═' * 64)
 
     sys.exit(exit_code)
