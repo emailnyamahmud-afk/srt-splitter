@@ -1174,6 +1174,35 @@ def main():
         print(f'  Encoding WAV → {output_path}...')
         encode_wav(all_audio, OUTPUT_SAMPLE_RATE, OUTPUT_CHANNELS, output_path)
 
+        # Cleanup cache (opsional) — port edge-tts-tui line 1131-1144
+        # Kalau selesai = cache gak diperlukan, user bisa hapus (default No, supaya
+        # bisa resume kalau Ctrl+C di tengah jalan). Kalau generate ulang SRT sama
+        # di terminal yg sama → cache dipakai (skip generate, langsung mix).
+        try:
+            cache_files = [f for f in os.listdir(cache_dir) if f.startswith(prefix)]
+            cache_size_mb = sum(os.path.getsize(os.path.join(cache_dir, f)) for f in cache_files) / 1024 / 1024
+            if cache_files:
+                if questionary.confirm(
+                    f'Hapus cache ({len(cache_files)} NPY, {cache_size_mb:.1f} MB)? '
+                    f'(No = simpan untuk resume kalau generate ulang SRT sama)',
+                    default=False,
+                ).ask():
+                    for f in cache_files:
+                        try:
+                            os.unlink(os.path.join(cache_dir, f))
+                        except OSError:
+                            pass
+                    try:
+                        os.rmdir(cache_dir)
+                    except OSError:
+                        pass
+                    print('  ✓ Cache dihapus')
+                else:
+                    print(f'  Cache disimpan: {cache_dir} ({cache_size_mb:.1f} MB)')
+                    print(f'  Kalau generate ulang SRT sama → cache dipakai (resume)')
+        except Exception:
+            pass
+
         if os.path.isfile(output_path):
             size_mb = os.path.getsize(output_path) / 1024 / 1024
             print()
