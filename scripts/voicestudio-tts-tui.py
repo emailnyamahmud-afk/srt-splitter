@@ -156,12 +156,44 @@ def voicestudio_list_profiles():
         return []
 
 
+def _extract_audio_bytes(raw):
+    """Robust: response bisa raw WAV bytes (RIFF), JSON {audio: base64}, atau raw audio.
+    Verified dari OpenAPI spec VoiceStudio 0.5.8 — response 200 schema generic {},
+    jadi handle 3 kasus: RIFF header → WAV langsung; JSON → extract base64; else raw."""
+    if not raw or len(raw) < 4:
+        return raw
+    # Case 1: raw WAV (RIFF header)
+    if raw[:4] == b'RIFF':
+        return raw
+    # Case 2: JSON response (mungkin {audio: base64, ...} atau {data: ...})
+    if raw[:1] in (b'{', b'['):
+        try:
+            data = json.loads(raw.decode('utf-8', errors='replace'))
+            # Cari field audio base64 di beberapa nama umum
+            for key in ('audio', 'data', 'wav', 'content', 'bytes'):
+                if isinstance(data, dict) and key in data:
+                    val = data[key]
+                    if isinstance(val, str):
+                        import base64
+                        return base64.b64decode(val)
+                    if isinstance(val, (bytes, bytearray)):
+                        return bytes(val)
+            # Kalau JSON tapi tidak ada field audio → error informatif
+            raise RuntimeError(f'Response JSON tanpa field audio. Keys: {list(data.keys()) if isinstance(data, dict) else type(data)}')
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            pass  # bukan JSON valid → lanjut case 3
+    # Case 3: raw audio bytes lain (mp3 ID3, dll) → return as-is
+    return raw
+
+
 def voicestudio_generate_speech(text, voice_id, speed=1.0, fmt='wav'):
-    """POST /v1/audio/speech → return WAV bytes (atau None kalau gagal).
+    """POST /v1/audio/speech → return audio bytes (WAV/MP3/PCM, atau None kalau gagal).
 
     OpenAI-compatible endpoint. Body JSON:
-      {model: tts-1, voice: profile_id, input: text, response_format: wav, speed: speed}
-    Response: raw WAV bytes.
+      {model: tts-1, voice: profile_id|name, input: text, response_format: wav, speed: speed}
+    Voice param: profile ID atau profile name (case-insensitive, ID wins) — per OpenAPI spec.
+    Response: raw audio bytes (RIFF WAV kalau fmt=wav). Robust handler untuk JSON base64.
+    No auth needed (local API, no security scheme per OpenAPI spec).
     """
     body = json.dumps({
         'model': 'tts-1',
@@ -181,7 +213,8 @@ def voicestudio_generate_speech(text, voice_id, speed=1.0, fmt='wav'):
     )
     try:
         with urllib.request.urlopen(req, timeout=VOICESTUDIO_TTS_TIMEOUT) as resp:
-            return resp.read()
+            raw = resp.read()
+            return _extract_audio_bytes(raw)
     except urllib.error.HTTPError as e:
         err_body = ''
         try:
@@ -582,34 +615,58 @@ def release_lock(output_dir, prefix):
 # ============================================================
 
 def pick_voice(profiles):
-    """Filter + display voice profiles. Return (profile_id, label) atau None."""
+    """Filter + display voice profiles. Return (voice_param, label) atau None.
+
+    voice_param: dikirim ke /v1/audio/speech voice field. Per OpenAPI spec 0.5.8,
+    voice param accept profile ID atau profile NAME (case-insensitive, ID wins).
+    Jadi kalau field id tidak ada, pakai name (tetap valid).
+    """
     if not profiles:
         print('  ❌ Tidak ada voice profile di VoiceStudio.')
         print('     Buat voice dulu via VoiceStudio app (anton_id, sari_id, anton_jw, sari_jw).')
         return None
 
-    # Filter by keyword (anton, sari) kalau ada. Kalau tidak ada match → tampilkan semua.
+    # Debug: dump keys profile pertama supaya user tahu struktur asli VoiceStudio
+    if SMART_FIT_DEBUG and profiles:
+        first = profiles[0]
+        keys = list(first.keys()) if isinstance(first, dict) else type(first)
+        print(f'  [debug] profile[0] keys: {keys}')
+        print(f'  [debug] profile[0] sample: {str(first)[:200]}')
+
+    # Normalisasi: pastikan list of dict
+    if isinstance(profiles, dict):
+        # Mungkin {profiles: [...]} atau {voices: [...]}
+        profiles = profiles.get('profiles') or profiles.get('voices') or list(profiles.values())
+
+    # Filter by keyword (anton, sari) kalau ada match. Kalau tidak → semua.
     filtered = []
     for p in profiles:
-        name = (p.get('name') or p.get('label') or p.get('id') or '').lower()
+        if not isinstance(p, dict):
+            continue
+        name = str(p.get('name') or p.get('label') or p.get('id') or p.get('profile_id') or '').lower()
         if any(kw in name for kw in VOICE_NAME_KEYWORDS):
             filtered.append(p)
     if not filtered:
-        filtered = profiles  # fallback: semua
+        filtered = [p for p in profiles if isinstance(p, dict)]
 
-    # Build labels
+    # Build (voice_param, label). voice_param = id atau name (spec accept keduanya).
     labels = []
     for p in filtered:
         pid = p.get('id') or p.get('profile_id') or p.get('name')
         name = p.get('name') or p.get('label') or pid
         lang = p.get('language') or p.get('lang') or ''
-        label = f'{name} ({pid})'
+        # voice_param: prefer id, fallback name (spec accept name case-insensitive)
+        voice_param = pid
+        label = f'{name}'
+        if pid and pid != name:
+            label += f' ({pid})'
         if lang:
             label += f' [{lang}]'
-        labels.append((pid, label))
+        labels.append((voice_param, label))
 
     if not labels:
         print('  ❌ Voice profile tidak punya field id/name.')
+        print(f'     Profile sample: {str(profiles[:1])[:300]}')
         return None
 
     label_strs = [l[1] for l in labels]
