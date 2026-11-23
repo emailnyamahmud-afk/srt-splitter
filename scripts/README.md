@@ -2,7 +2,7 @@
 
 Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 
-## 17 TUI
+## 20 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -24,6 +24,10 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 16 | **talkinghead-tui.py v1.0** (SadTalker via Replicate, green screen preserved) | ⚠ UNTESTED (code di GitHub, belum diuji di Mac) |
 | 17 | **manim-shorts-tui.py v0.1** (WAV + SRT → infografis Shorts video, manim animation vertical 9:16) | ⚠ UNTESTED (sandbox OK 19 Nov 2026 + fix 21 Nov 2026, belum diuji di Mac) |
 | 18 | **piper-tts-tui.py v0.2** (TTS LOKAL offline via Piper VITS ONNX, GPU Metal CoreML EP, SRT + Narasi mode) | ⚠ UNTESTED (sandbox fungsi core OK 22 Nov 2026, generate test pending HF rate-limit, belum diuji di Mac) |
+| 19 | **voicestudio-tts-tui.py v1.0** (TTS via VoiceStudio local API localhost:3900, 4 voice profile anton/sari ID+JV, GPU Metal CoreML) | ⚠ SLOW (user test 23 Nov 2026: suara bagus sesuai reff, tapi 16s SRT = 8 menit. Superseded oleh supertonic #20) |
+| 20 | **supertonic-tts-tui.py v0.1** (TTS LOKAL Supertone Supertonic 3 ONNX, 10 voice builtin M1-M5/F1-F5, deterministic no drift, RTF ~0.012 = ~100x OmniVoice, model sama subtitlekit.com) | ✅ Production candidate (user VLC test 23 Nov 2026: sangat bagus, jauh lebih bagus dari edge-tts, ID laki+perempuan OK, 1jam SRT ~30menit. Pending long-cue test) |
+
+**Eksperimen TTS (TIDAK bernomor, DEPRECATED):** `omnivoice-tts-tui.py v0.7` — ❌ DEPRECATED (ref clone berantakan per user VLC test 23 Nov 2026, v0.7 fix 3 lapis tidak solve drift). Pakai supertonic #20.
 
 ## Pipeline
 

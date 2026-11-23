@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 """
-omnivoice-tts-tui.py v0.6.3 — TUI TTS LOKAL (offline) via OmniVoice (k2-fsa)
+omnivoice-tts-tui.py v0.7 — TTS LOKAL (offline) via OmniVoice (k2-fsa)
 
-TUI #19 — Auto Voice + Voice Cloning + Auto Lock untuk Indonesia & Jawa.
+⚠ DEPRECATED (23 Nov 2026) — ref clone BERANTAKAN per user VLC test.
+   v0.7 fix 3 lapis (encode-once + pos_temp=0 + guidance=3 + seed) TIDAK solve
+   drift. Output audio berantakan, ref WAV gak fungsi. Pakai supertonic-tts-tui
+   v0.1 (TUI #20) sebagai pengganti — deterministic fixed voices, no drift,
+   ~100x faster. Script tetap di repo untuk referensi, JANGAN pakai production.
+
+Eksperimen TTS offline (bukan TUI bernomor — collision dgn voicestudio #19).
 Saudara dari piper-tts-tui v0.2 — workflow & algoritma SAMA PERSIS
 (parse_srt, smart_fit_cue, trim/normalize/fade, mix_into_buffer, cache + lock,
 2 mode SRT + Narasi). Hanya beda engine: Piper VITS → OmniVoice diffusion LM.

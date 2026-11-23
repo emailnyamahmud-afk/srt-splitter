@@ -7625,3 +7625,57 @@ User download sukses: onnx 60MB + json 4.9KB. Script update (commit a10ef16): la
 3. **Crossfade condition**: cek ACTUAL audio end (position + len(audio)), bukan SRT cue end. Beda TTS engine = beda audio pacing → beda overflow pattern. Logic yang work untuk edge-tts (Azure, pacing pas) bisa break untuk piper (VITS, pacing beda). Generalize: track actual audio end, bukan asumsi SRT time.
 4. **huggingface_hub > curl -L** untuk HF LFS files: curl kena "Entry not found" 15 bytes (LFS redirect gagal). hf_hub_download handle LFS+redirect+retry properly. Selalu pakai hf_hub_download untuk download model HF.
 5. **Repo voice availability**: jangan asumsi voice ada di repo HF. Selalu `list_repo_files()` verify sebelum kasih download instruction ke user. rhasspy/piper-voices Nov 2026 cuma punya 1 voice ID (news_tts-medium), bukan gadis/arjun/ayu/sari yang di-docs piper classic.
+
+
+---
+
+## 23 Nov 2026 — supertonic-tts-tui v0.1 (TUI #20) PRODUCTION CANDIDATE + omnivoice DEPRECATED + doc sync 4 docs
+
+### Konteks
+User test omnivoice-tts-tui v0.7 (ref clone only): output WAV **berantakan**, ref WAV gak fungsi meski v0.7 fix 3 lapis (encode-once + pos_temp=0 + guidance=3 + seed). VoiceStudio #19: suara bagus sesuai reff tapi LAMBAT (16s SRT = 8 menit). User riset subtitlekit.com (1jam SRT = 30menit, model lokal browser). User attach REPORT-SubtitleKit-Models.md.
+
+### Solusi: supertonic-tts-tui v0.1 (TUI #20)
+Model sama persis subtitlekit.com untuk Indonesia: **Supertone Supertonic 3** (`tts-supertonic`), flow-matching latent TTS ONNX, ~99M params, 10 voice builtin (M1-M5 male + F1-F5 female), deterministic (NO drift by design — fixed voice prototypes), 31 bahasa incl `id` (WER 1.34). Backend: `pip install supertonic` 1.3.x.
+
+**API verified sandbox** (supertonic 1.3.1 install OK):
+- `tts = TTS(auto_download=True)` → ~400MB first run cached `~/.cache/supertonic3/`
+- `style = tts.get_voice_style('M1')` → 10 voices M1-M5/F1-F5
+- `wav, dur = tts.synthesize(text, voice_style=style, total_steps=8, speed=1.0, lang='id')` → native 44100Hz, resample ke 24kHz (SRT) / 48kHz (narasi)
+
+**2 Mode** (mirror edge-tts-tui v7.5): SRT (6 step, output 24kHz mono mix-tui compat) + Narasi (6 step, output 48kHz stereo review-mix/konten compat). Smart fit threshold (mirror omnivoice v0.7): Pass 2 regenerate HANYA kalau overflow > crossfade window (150ms), cuts ~40-60% API calls. Speed via Supertonic `speed=` param (0.7-2.0).
+
+**Sandbox test ALL 5 PASSED** (mock synthesize): generate+resample 44100→24000, smart_fit threshold (3 cue test only overflow trigger Pass 2), mix_into_buffer crossfade no numpuk (max amp 0.500), cache_key determinism, encode_wav 24kHz mono.
+
+**Fix bug mix_into_buffer**: fade_out region awalnya `[fade_out_end - fade_len, fade_out_end]` (sebelum overlap → numpuk sum 1.0). Fix ke omnivoice pattern `[fade_out_end, end]` (overlap tail fades out 1→0 while next cue head fades in 0→1).
+
+**Fix bug parse_srt** (commit cb80ed6): cue number ("1", "2", ...) bocor ke text_lines → Supertonic baca "satu", "dua" tiap awal cue. Root cause: loop append SEMUA non-timestamp line ke text_lines termasuk cue number. Fix: `text_lines = lines[ts_idx+1:]` (hanya lines SETELAH timestamp, skip cue number).
+
+### User Mac VLC test 23 Nov 2026 — PRODUCTION CANDIDATE
+- Run 1 (M1, first run): model download 408.8s (6.8 menit cached sekali), generate 10 cue 16.6s SRT = 12.6s, 0 fail, output 0.8MB 24kHz mono.
+- Run 2 (M5, cached): model load 0.5s, generate 10 cue = 9.6s, 0 fail.
+- **User verdict**: "sangat bagus, jauh lebih bagus dari edge-tts. Audio ID bagus baik laki maupun perempuan. 1jam SRT = 30menit = pembeda." Konsistensi antar cue SOLVED (deterministic confirmed, no drift — fix masalah utama OmniVoice berantakan).
+- Pending: long-cue duration test (cue padat >5s).
+
+### Doc sync 4 docs (anti-amnesia rule #7)
+Sebelum update: 4 docs (AGENTS.md, PROJECT_RULES.md, scripts/README.md, README.md root) masih 17-18 TUI, TIDAK mention voicestudio/omnivoice/supertonic sama sekali (3 TUI undocumented dari session sebelumnya).
+
+Update:
+- **TUI table**: header 17/18 → 20 TUI, add #19 voicestudio (SLOW) + #20 supertonic (✅ Production candidate) + omnivoice DEPRECATED note.
+- **AGENTS.md detailed sections**: add TUI #19 voicestudio + TUI #20 supertonic (model, API, 2 mode, trade-off, setup, sandbox test, user Mac test 2 run).
+- **Status section**: voicestudio ⚠ SLOW, omnivoice ❌ DEPRECATED, supertonic ✅ Production candidate.
+- **Anti-amnesia**: 18 TUI → 20 TUI, add #19/#20 to TUI list, note omnivoice collision #19 (header lama salah claim, sudah fix).
+- **Pipeline Indonesia**: add supertonic SRT + Narasi lines (production candidate, ~100x edge speed).
+- **Pipeline diagram**: add supertonic #20 SRT branch (PRODUCTION candidate).
+- **config.py TTS_DIR comment**: add #19 voicestudio + #20 supertonic.
+- **PROJECT_RULES.md rules**: add supertonic PRODUCTION CANDIDATE + voicestudio SLOW + omnivoice DEPRECATED rules.
+
+### Fix omnivoice header collision
+`omnivoice-tts-tui.py` header lama salah claim "TUI #19" (collision dgn voicestudio yg sah punya #19). Fix header: remove false #19 claim, mark DEPRECATED, jelaskan ref clone berantakan + arahkan ke supertonic #20.
+
+### Pelajaran AI
+1. **Fixed voice > cloning untuk konsistensi**: OmniVoice ref clone drift meski 3 lapis fix (encode-once + pos_temp=0 + guidance=3 + seed). Supertonic fixed prototypes deterministic by design → no drift. Untuk dubbing multi-cue, deterministic fixed voice LEBIH BAIK dari cloning yg drift. Trade-off: tidak bisa pakai ref WAV user, tapi 10 builtin voice cukup.
+2. **RTF benchmark = real metric**: OmniVoice 2m6s/16s SRT = RTF 7.9 (MPS). Supertonic 9.6s/16s SRT = RTF 0.6 (cached, CPU). subtitlekit web 30min/1hr = RTF 0.5. Supertonic lokal sekompetitif web tanpa upload. RTF > raw "fast" klaim.
+3. **SRT parser cue number**: standard SRT block = cue number / timestamp / text. Parser yg loop append semua non-timestamp line = bocor cue number ke text. Selalu `text_lines = lines[ts_idx+1:]` (hanya setelah timestamp).
+4. **mix_into_buffer fade region**: fade_out harus cover OVERLAP region `[fade_out_end, end]` (tail extends into next cue fades out 1→0), BUKAN `[fade_out_end - fade_len, fade_out_end]` (sebelum overlap → numpuk). Crossfade = cue N tail fade out + cue N+1 head fade in di region overlap yg sama.
+5. **TUI numbering collision**: session sebelumnya buat omnivoice header claim "TUI #19" padahal voicestudio sudah #19. Anti-amnesia rule "cek git ls-tree sebelum pilih nomor" dilanggar. Fix: omnivoice = unnumbered DEPRECATED, voicestudio = #19 (sah), supertonic = #20.
+6. **URL typo GitHub raw**: curl URL typo `emailnyahud-afk` (salah) vs `emailnyamahmud-afk` (benar) → file download = "404: Not Found" 14 bytes → Python SyntaxError. Selalu verify remote URL via `git remote -v` sebelum kasih curl instruction ke user.

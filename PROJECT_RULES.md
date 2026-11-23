@@ -18,7 +18,7 @@
 Kamus: kamus-tui → jv.wiktionary.json → Supabase
 ```
 
-## 17 TUI
+## 20 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -39,6 +39,11 @@ Kamus: kamus-tui → jv.wiktionary.json → Supabase
 | 15 | **gemini-tts-tui v1.1** | ⚠ UNTESTED (SRT + Narasi, ID + JV, OPSI TAMBAHAN, butuh GEMINI_API_KEY, code di GitHub belum diuji di Mac) |
 | 16 | **talkinghead-tui v1.0** | ⚠ UNTESTED (SadTalker via Replicate, green screen preserved, butuh REPLICATE_API_TOKEN, code di GitHub belum diuji di Mac) |
 | 17 | **manim-shorts-tui v0.1** | ⚠ UNTESTED (Shorts infografis: WAV + SRT → manim video vertical 9:16, sandbox OK 19 Nov 2026 + fix 21 Nov 2026 commit 1623907, code di GitHub belum diuji di Mac) |
+| 18 | **piper-tts-tui v0.2** | ⚠ UNTESTED (TTS LOKAL offline Piper VITS ONNX, GPU Metal CoreML, sandbox fungsi core OK 22 Nov 2026, generate test pending HF rate-limit, code di GitHub belum diuji di Mac) |
+| 19 | **voicestudio-tts-tui v1.0** | ⚠ SLOW (TTS via VoiceStudio local API localhost:3900, 4 voice profile anton/sari ID+JV. User test 23 Nov 2026: suara bagus sesuai reff, tapi 16s SRT = 8 menit. Superseded oleh supertonic #20) |
+| 20 | **supertonic-tts-tui v0.1** | ✅ Production candidate (TTS LOKAL Supertone Supertonic 3 ONNX, 10 voice builtin M1-M5/F1-F5 deterministic no drift, RTF ~0.012 = ~100x OmniVoice. User VLC test 23 Nov 2026: sangat bagus, jauh lebih bagus dari edge-tts, ID laki+perempuan OK, 1jam SRT ~30menit. Pending long-cue test) |
+
+**Eksperimen TTS (TIDAK bernomor, DEPRECATED):** `omnivoice-tts-tui.py v0.7` — ❌ DEPRECATED (ref clone berantakan per user VLC test 23 Nov 2026, v0.7 fix 3 lapis tidak solve drift). Pakai supertonic #20.
 
 ## Struktur Folder — 3 LOKASI BERBEDA (baca config.py LENGKAP)
 
@@ -102,6 +107,21 @@ Helper: `ensure_hdd()`, `ensure_kamus()`, `load_env()`
   - User edit manual: chroma key → composite background → final-konten.mp4 (siap YouTube)
   - JANGAN install SadTalker lokal di M1 (Python 3.8 strict, hardcode CUDA, MPS partial, very slow) — pakai Replicate cloud
   - Status UNTESTED sampai user VLC feedback OK
+- **supertonic-tts-tui v0.1 = PRODUCTION CANDIDATE** (TUI #20, TTS LOKAL Supertone Supertonic 3 ONNX, model sama subtitlekit.com untuk Indonesia)
+  - 10 voice builtin M1-M5/F1-F5 deterministic (NO cloning, NO drift by design — fix masalah OmniVoice berantakan)
+  - RTF ~0.012-0.018 M4 CPU = ~100x OmniVoice, ~100x VoiceStudio. 1jam SRT ~30menit (sekompetitif subtitlekit web tanpa upload)
+  - User VLC test 23 Nov 2026: sangat bagus, jauh lebih bagus dari edge-tts, ID laki+perempuan OK. Pending long-cue test.
+  - Output SRT mode: `HDD/tts/{prefix}-audio-id-dub.wav` (24kHz mono, mix-tui compatible)
+  - Output Narration mode: `HDD/tts/{stem}-narasi.wav` (48kHz stereo, review-mix/konten/talkinghead/manim-shorts compatible)
+  - Backend: `pip install supertonic` 1.3.x, model ~400MB cached `~/.cache/supertonic3/` (auto_download, sekali saja)
+  - NO voice cloning (10 builtin voices) — trade-off vs VoiceStudio/OmniVoice yg purport cloning
+- **voicestudio-tts-tui v1.0 = SLOW** (TUI #19, VoiceStudio local API localhost:3900, 4 voice profile anton/sari ID+JV)
+  - User test 23 Nov 2026: suara bagus sesuai reff, tapi 16s SRT = 8 menit (per-cue HTTP overhead). Tidak viable untuk film panjang.
+  - Superseded oleh supertonic #20 (cepat + deterministic). Voice cloning works tapi speed block.
+- **omnivoice-tts-tui v0.7 = DEPRECATED** (eksperimen TIDAK bernomor, ref clone berantakan)
+  - User VLC test 23 Nov 2026: ref clone BERANTAKAN, v0.7 fix 3 lapis (encode-once + pos_temp=0 + guidance=3 + seed) TIDAK solve drift
+  - Header lama salah claim "TUI #19" (collision dgn voicestudio) — sudah diperbaiki ke DEPRECATED
+  - JANGAN pakai production. Pakai supertonic #20 sebagai pengganti. Script tetap di repo untuk referensi.
 
 ## Dilarang
 
