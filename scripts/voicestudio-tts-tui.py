@@ -46,6 +46,7 @@ import os
 import sys
 import time
 import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 import struct
 import shutil
@@ -115,6 +116,11 @@ NOISE_FLOOR_DB = -50.0
 
 SMART_FIT_CAP_DEFAULT = 1.5
 SMART_FIT_DEBUG = os.environ.get('VS_SMART_FIT_DEBUG') == '1'
+
+# Parallel generation: VoiceStudio local API handle concurrent requests (MPS
+# pipeline). Default 3 workers (balance speed vs memory). Override via env
+# VS_WORKERS=1 untuk sequential (debug), VS_WORKERS=4 untuk lebih agresif.
+MAX_WORKERS = int(os.environ.get('VS_WORKERS', '3'))
 
 
 # ============================================================
@@ -454,14 +460,28 @@ def smart_fit_cue(text, cue_dur, voice_id, cap, cache_dir, cache_key, prefix, cu
     natural_dur = len(natural_audio) / OUTPUT_SAMPLE_RATE
     need = natural_dur / max(0.001, cue_dur)
 
+    # Threshold: regenerate HANYA kalau overflow melebihi crossfade window.
+    # Mix loop truncate audio ke next_start + crossfade_samples, jadi audio
+    # sampai cue_dur + crossfade tidak ada audible cut. need 1.0-1.15 (overflow
+    # kecil) → pakai natural, hemat 1 API call (Pass 2 skip). cuts ~40-60% calls.
+    cue_samples = int(cue_dur * OUTPUT_SAMPLE_RATE)
+    crossfade_samples = int(OUTPUT_SAMPLE_RATE * CROSSFADE_MS / 1000)
+    overflow_samples = len(natural_audio) - cue_samples
+    fits_in_crossfade = overflow_samples <= crossfade_samples
+
     if SMART_FIT_DEBUG:
-        fit_status = 'FIT' if need <= 1.0 else f'OVERFLOW need={need:.2f}'
+        if overflow_samples <= 0:
+            fit_status = 'FIT'
+        elif fits_in_crossfade:
+            fit_status = f'OVERFLOW+xfade need={need:.2f} (no regen)'
+        else:
+            fit_status = f'OVERFLOW need={need:.2f} (regen)'
         print(f'  [cue {cue_idx}] dur={cue_dur:.2f}s nat={natural_dur:.2f}s {fit_status}')
 
-    if need <= 1.0:
+    if fits_in_crossfade:
         return peak_normalize(natural_audio)
 
-    # Pass 2: smart fit dengan speed
+    # Pass 2: smart fit dengan speed (overflow melebihi crossfade window)
     speed = min(need, cap)
     if SMART_FIT_DEBUG:
         print(f'  [cue {cue_idx}] Pass 2: need={need:.2f} cap={cap} speed={speed:.2f}')
@@ -476,6 +496,44 @@ def smart_fit_cue(text, cue_dur, voice_id, cap, cache_dir, cache_key, prefix, cu
     audio2 = decode_wav_bytes_to_pcm(wav_bytes, OUTPUT_SAMPLE_RATE)
     smart_audio = trim_silence_asymmetric(audio2, OUTPUT_SAMPLE_RATE)
     return peak_normalize(smart_audio)
+
+
+# ============================================================
+# Parallel cue worker (Phase 1: generate, thread-safe via cache files)
+# ============================================================
+
+def _generate_cue_worker(args):
+    """Worker: generate 1 cue → return (i, final_audio or None, error_str).
+
+    Thread-safe: setiap cue punya cache file unik ({prefix}-cue-{NNN}-{hash}.wav),
+    jadi concurrent worker tidak bentrok. smart_fit_cue cek cache dulu sebelum
+    call API. Return audio array (float32) atau None+error.
+    """
+    i, entry, voice_id, cap, smart_fit, cache_dir, prefix = args
+    cue_idx = i + 1
+    text = normalize_tts_text(' '.join(entry['textLines']))
+    cue_dur = entry['end'] - entry['start']
+
+    if not text:
+        return (i, None, None)  # empty cue, skip di mix phase
+
+    cache_key = compute_cache_key(text, voice_id, 1.0)
+    try:
+        if smart_fit:
+            final_audio = smart_fit_cue(text, cue_dur, voice_id, cap, cache_dir, cache_key, prefix, cue_idx)
+        else:
+            natural_wav = os.path.join(cache_dir, f'{prefix}-cue-{cue_idx:04d}-{cache_key}.wav')
+            if not (os.path.isfile(natural_wav) and os.path.getsize(natural_wav) > 0):
+                if not generate_cue_tts(text, voice_id, 1.0, natural_wav, cue_idx=cue_idx):
+                    raise RuntimeError('VoiceStudio gagal')
+            with open(natural_wav, 'rb') as f:
+                wav_bytes = f.read()
+            audio1 = decode_wav_bytes_to_pcm(wav_bytes, OUTPUT_SAMPLE_RATE)
+            natural_audio = trim_silence_asymmetric(audio1, OUTPUT_SAMPLE_RATE)
+            final_audio = peak_normalize(natural_audio)
+        return (i, final_audio, None)
+    except Exception as e:
+        return (i, None, str(e))
 
 
 # ============================================================
@@ -842,6 +900,7 @@ def main():
         print(f'  Device   : {device}')
         print(f'  Rate     : natural (smart fit handles speedup)')
         print(f'  Smart Fit: {"ON" if smart_fit else "OFF"}, cap={cap}')
+        print(f'  Workers  : {MAX_WORKERS} (parallel, env VS_WORKERS)')
         print(f'  Cues     : {len(entries)}')
         print(f'  Durasi   : {format_duration(total_dur)}')
         print('═' * 64)
@@ -854,7 +913,7 @@ def main():
 
         print()
         print('═' * 64)
-        print(f'🚀 Mulai generate TTS (VoiceStudio {device}) + mix inline...')
+        print(f'🚀 Mulai generate TTS (VoiceStudio {device}, {MAX_WORKERS} parallel workers)...')
         print('═' * 64)
         print()
 
@@ -864,9 +923,45 @@ def main():
         first_error = ''
         start_time = time.time()
         crossfade_samples = int(OUTPUT_SAMPLE_RATE * CROSSFADE_MS / 1000)
+        n_entries = len(entries)
 
-        # Track actual audio end (bukan SRT cue end) untuk crossfade simetris.
-        # Port piper iterasi 3 fix: fade_in cek actual audio + truncate overflow.
+        # ============================================================
+        # Phase 1: PARALLEL generate semua cue (ThreadPoolExecutor).
+        # VoiceStudio local API handle concurrent requests (MPS pipeline).
+        # Cache file unik per cue → thread-safe. Worker return audio array.
+        # ============================================================
+        print(f'⚡ Phase 1/2: Generate {n_entries} cue paralel ({MAX_WORKERS} workers)...')
+        print()
+        worker_args = [(i, entries[i], voice_id, cap, smart_fit, cache_dir, prefix) for i in range(n_entries)]
+        cue_audios = {}  # i → (audio or None, error or None)
+
+        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
+            futures = {ex.submit(_generate_cue_worker, arg): arg[0] for arg in worker_args}
+            done = 0
+            for fut in as_completed(futures):
+                i, audio, err = fut.result()
+                cue_audios[i] = (audio, err)
+                done += 1
+                elapsed = time.time() - start_time
+                pct = done / n_entries * 100
+                eta = (elapsed / done) * (n_entries - done) if done > 0 else 0
+                status = '❌' if err else ('⏭' if audio is None else '✓')
+                sys.stdout.write(
+                    f'\r  [{done}/{n_entries}] {pct:5.1f}% {status} | '
+                    f'elapsed={format_duration(elapsed)} | ETA={format_duration(eta)}   '
+                )
+                sys.stdout.flush()
+
+        print()
+        gen_elapsed = time.time() - start_time
+        print(f'  ✓ Phase 1 selesai: {format_duration(gen_elapsed)}')
+        print()
+
+        # ============================================================
+        # Phase 2: SEQUENTIAL mix (crossfade + truncate, pure numpy, cepat).
+        # Harus sequential karena position/crossfade depend on prev audio end.
+        # ============================================================
+        print(f'🎚 Phase 2/2: Mix inline + crossfade...')
         prev_audio_end_samples = 0
 
         for i, entry in enumerate(entries):
@@ -874,43 +969,33 @@ def main():
             text = normalize_tts_text(' '.join(entry['textLines']))
             cue_dur = entry['end'] - entry['start']
             position = int(entry['start'] * OUTPUT_SAMPLE_RATE)
+            next_entry = entries[i + 1] if i + 1 < len(entries) else None
 
+            audio, err = cue_audios.get(i, (None, None))
+
+            if err:
+                fail_count += 1
+                if not first_error:
+                    first_error = err
+                print(f'  [{cue_idx}/{n_entries}] ❌ {text[:30]:<30} | {err}')
+                prev_audio_end_samples = max(prev_audio_end_samples, position)
+                continue
+
+            if audio is None:
+                # empty cue (no text)
+                prev_audio_end_samples = max(prev_audio_end_samples, position)
+                continue
+
+            final_audio = audio
+            this_audio_end = position + len(final_audio)
+
+            # fade_in kalau overlap dengan prev audio end
             fade_in_start = None
             fade_len = 0
             if i > 0 and position < prev_audio_end_samples:
                 overlap = prev_audio_end_samples - position
                 fade_in_start = position
                 fade_len = min(overlap, crossfade_samples)
-
-            next_entry = entries[i + 1] if i + 1 < len(entries) else None
-
-            if not text:
-                prev_audio_end_samples = max(prev_audio_end_samples, position)
-                continue
-
-            cache_key = compute_cache_key(text, voice_id, 1.0)
-
-            try:
-                if smart_fit:
-                    final_audio = smart_fit_cue(text, cue_dur, voice_id, cap, cache_dir, cache_key, prefix, cue_idx)
-                else:
-                    natural_wav = os.path.join(cache_dir, f'{prefix}-cue-{cue_idx:04d}-{cache_key}.wav')
-                    if not (os.path.isfile(natural_wav) and os.path.getsize(natural_wav) > 0):
-                        if not generate_cue_tts(text, voice_id, 1.0, natural_wav, cue_idx=cue_idx):
-                            raise RuntimeError('VoiceStudio gagal')
-                    with open(natural_wav, 'rb') as f:
-                        wav_bytes = f.read()
-                    audio1 = decode_wav_bytes_to_pcm(wav_bytes, OUTPUT_SAMPLE_RATE)
-                    natural_audio = trim_silence_asymmetric(audio1, OUTPUT_SAMPLE_RATE)
-                    final_audio = peak_normalize(natural_audio)
-            except Exception as e:
-                fail_count += 1
-                if not first_error:
-                    first_error = str(e)
-                print(f'  [{cue_idx}/{len(entries)}] ❌ {text[:30]:<30} | {e}')
-                continue
-
-            this_audio_end = position + len(final_audio)
 
             # Truncate overflow ke crossfade window (simetris crossfade, no numpuk)
             fade_out_end = None
@@ -932,17 +1017,6 @@ def main():
 
             prev_audio_end_samples = this_audio_end
             success_count += 1
-
-            if cue_idx % 5 == 0 or cue_idx == len(entries):
-                elapsed = time.time() - start_time
-                pct = cue_idx / len(entries) * 100
-                eta = (elapsed / cue_idx) * (len(entries) - cue_idx) if cue_idx > 0 else 0
-                sys.stdout.write(
-                    f'\r  [{cue_idx}/{len(entries)}] {pct:5.1f}% | '
-                    f'ok={success_count} fail={fail_count} | '
-                    f'elapsed={format_duration(elapsed)} | ETA={format_duration(eta)}   '
-                )
-                sys.stdout.flush()
 
         print()
         print()
