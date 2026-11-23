@@ -187,27 +187,34 @@ LANGUAGE_OPTIONS = [
 # ============================================================
 
 def parse_srt(content):
+    """Parse SRT → list of {start, end, textLines}.
+
+    Standard SRT block:
+        1                           ← cue number (SKIP)
+        00:00:01,000 --> 00:00:03,000  ← timestamp
+        Halo dunia                  ← text (KEEP, lines after timestamp only)
+
+    Bug lama (v0.1): loop append SEMUA non-timestamp line ke text_lines,
+    termasuk cue number → Supertonic baca "satu", "dua", ... di awal tiap cue.
+    Fix: text_lines = lines[ts_idx+1:] (hanya lines SETELAH timestamp).
+    """
     entries = []
     blocks = content.strip().split('\n\n')
     for block in blocks:
         lines = [l for l in block.split('\n') if l.strip()]
         if len(lines) < 2:
             continue
-        ts_line = None
-        text_lines = []
-        for line in lines:
+        # Find timestamp line index
+        ts_idx = -1
+        for i, line in enumerate(lines):
             if ' --> ' in line:
-                ts_line = line
-            else:
-                text_lines.append(line)
-        if not ts_line:
-            idx = 0
-            for i, line in enumerate(lines):
-                if ' --> ' in line:
-                    idx = i
-                    break
-            text_lines = lines[idx + 1:]
-        if not ts_line:
+                ts_idx = i
+                break
+        if ts_idx < 0:
+            continue  # no timestamp, skip block
+        ts_line = lines[ts_idx]
+        text_lines = lines[ts_idx + 1:]  # ONLY lines after timestamp (skip cue number)
+        if not text_lines:
             continue
         try:
             start_str, end_str = ts_line.split(' --> ')
