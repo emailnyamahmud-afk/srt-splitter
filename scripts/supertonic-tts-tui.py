@@ -1,22 +1,28 @@
 #!/usr/bin/env python3
-"""supertonic-tts-tui.py — TTS LOKAL via Supertone Supertonic 3 (TUI #20)
+"""supertonic-tts-tui.py v0.2 — TTS LOKAL via Supertone Supertonic 3 (TUI #20)
 
 Subtitlekit.com pakai model ini (tts-supertonic) untuk Bahasa Indonesia.
 Flow-matching latent TTS, ONNX, ~99M params, 10 voice builtin (M1-M5/F1-F5).
 Deterministic (no drift) + cepat (RTF ~0.012-0.018 di M4 CPU = ~100x OmniVoice).
 
-2 Mode (mirror edge-tts-tui v7.5 pattern):
-- SRT mode (6 step): SRT → output → voice → smart fit → prefix → generate
+3 Mode (v0.2 — mode Standar tidak berubah, Pro tambahan):
+- SRT Standar (6 step, existing): SRT → output → voice → smart fit → prefix → generate
   Output: HDD/tts/{prefix}-audio-id-dub.wav (24kHz mono 16-bit, mix-tui compat)
+- SRT Pro (8 step, BARU v0.2): multi-voice auto-gender via inaSpeechSegmenter.
+  Baca WAV original → deteksi gender per segment → map cue ke voice pria/wanita
+  → tagged SRT preview → generate multi-voice (cue laki=M5, perempuan=F1 default).
+  Output: HDD/tts/{prefix}-audio-id-dub.wav + {prefix}-tagged.srt (preview/edit)
 - Narration mode (6 step): naskah → output → voice → speed → filename → generate
   Output: HDD/tts/{stem}-narasi.wav (48kHz stereo 16-bit, review-mix/konten compat)
 
 Voice: 10 builtin (NO cloning):
   M1-M5 (Male), F1-F5 (Female) — fixed prototypes, always consistent.
+  Pro mode: switch voice per cue FREE (get_voice_style cached, synthesize per-call).
 Language: 31 ISO codes incl 'id' (Indonesian, WER 1.34). Default 'id'.
 
 Backend: supertonic PyPI 1.3.x (pip install supertonic). Model ~400MB download
 sekali ke ~/.cache/supertonic3/ (auto_download=True). 100% offline setelah itu.
+Pro mode butuh tambahan: pip install inaSpeechSegmenter (TensorFlow ~700MB-1GB Mac).
 
 Pipeline integrasi:
 - SRT mode → feed mix-tui (sama dengan edge/piper/omnivoice SRT output)
@@ -646,6 +652,437 @@ def prompt_language(default='id'):
 
 
 # ============================================================
+# Pro mode: gender detection + multi-voice (inaSpeechSegmenter)
+# v0.2 — mode tambahan, main_srt (standar) tidak berubah
+# ============================================================
+
+def _srt_ts(sec):
+    """SRT timestamp HH:MM:SS,mmm (comma, VLC standard)."""
+    h = int(sec // 3600)
+    m = int((sec % 3600) // 60)
+    s = sec % 60
+    return f'{h:02d}:{m:02d}:{int(s):02d},{int(round((s - int(s)) * 1000)):03d}'
+
+
+def _detect_gender_segments(wav_path):
+    """Run inaSpeechSegmenter on wav_path → list of (start, end, gender).
+    gender = 'male' | 'female'. Returns [] on failure (caller exits with install hint).
+    """
+    try:
+        from inaSpeechSegmenter import Segmenter
+    except ImportError:
+        print('  ❌ inaSpeechSegmenter tidak terinstall.')
+        print('     Install: pip install inaSpeechSegmenter')
+        print('     (butuh TensorFlow ~700MB-1GB di Mac M1; kalau bermasalah pakai mode Standar)')
+        return []
+    try:
+        print(f'  Load inaSpeechSegmenter model (first run download ~200MB, cached)...')
+        seg = Segmenter()
+        print(f'  Analyze {os.path.basename(wav_path)} (bisa beberapa menit untuk file panjang)...')
+        raw = seg(wav_path)  # list of (label, start, end)
+    except Exception as e:
+        print(f'  ❌ Gender detection error: {e}')
+        return []
+    gender_segs = [(float(s), float(e), lbl) for lbl, s, e in raw if lbl in ('male', 'female')]
+    male_n = sum(1 for _, _, g in gender_segs if g == 'male')
+    female_n = sum(1 for _, _, g in gender_segs if g == 'female')
+    print(f'  ✓ {len(gender_segs)} gender segment ({male_n} male, {female_n} female)')
+    return gender_segs
+
+
+def _map_cues_to_voices(entries, gender_segs, male_voice, female_voice):
+    """Map each SRT cue to male_voice/female_voice based on max overlap with gender segments.
+    Cue tanpa overlap gender → default male_voice (user bisa edit tagged SRT).
+    """
+    cue_voices = []
+    for entry in entries:
+        cue_start, cue_end = entry['start'], entry['end']
+        best_gender = None
+        best_overlap = 0.0
+        for gstart, gend, gender in gender_segs:
+            ov = max(0.0, min(cue_end, gend) - max(cue_start, gstart))
+            if ov > best_overlap:
+                best_overlap = ov
+                best_gender = gender
+        if best_gender == 'female':
+            cue_voices.append(female_voice)
+        else:
+            cue_voices.append(male_voice)  # male or no-overlap default
+    return cue_voices
+
+
+def _save_tagged_srt(entries, cue_voices, out_path):
+    """Write tagged SRT (preview/edit-friendly). Tag [M5]/[F1] prepended ke tiap cue text.
+    Human-readable preview — TUI internal pakai cue_voices list, bukan re-parse tag ini.
+    """
+    with open(out_path, 'w', encoding='utf-8') as f:
+        for i, entry in enumerate(entries):
+            tag = cue_voices[i]
+            text = ' '.join(entry['textLines'])
+            f.write(f'{i + 1}\n')
+            f.write(f'{_srt_ts(entry["start"])} --> {_srt_ts(entry["end"])}\n')
+            f.write(f'[{tag}] {text}\n\n')
+
+
+def _run_generate(entries, cue_voices, output_dir, prefix, language, smart_fit, cap,
+                  tts, ep_label, native_sr, load_time, total_dur, voice_display,
+                  multi_voice=False):
+    """Shared generate loop (dipakai main_srt_pro). cue_voices[i] = voice per cue.
+    Acquire lock → per-cue TTS w/ smart_fit → mix inline → encode WAV → cleanup cache.
+    Mirror main_srt inline loop (supertonic deterministic, no drift antar voice).
+    """
+    ok, lock_info = acquire_lock(output_dir, prefix)
+    if not ok:
+        print(f'❌ {lock_info}')
+        sys.exit(1)
+    try:
+        print()
+        print('═' * 64)
+        tag = 'multi-voice auto-gender' if multi_voice else 'single voice'
+        print(f'🚀 Mulai generate TTS (Supertonic 3 {ep_label}, {tag}) + mix inline...')
+        print('═' * 64)
+        print()
+
+        cache_dir = os.path.join(output_dir, '.supertonic-cache')
+        os.makedirs(cache_dir, exist_ok=True)
+
+        total_samples = int(total_dur * OUTPUT_SAMPLE_RATE) + int(OUTPUT_SAMPLE_RATE * 2)
+        all_audio = np.zeros(total_samples, dtype=np.float32)
+        print(f'  Buffer: {total_samples} samples = {format_duration(total_samples/OUTPUT_SAMPLE_RATE)} = {total_samples*4/1024/1024:.0f} MB')
+        print()
+
+        success_count = 0
+        fail_count = 0
+        start_time = time.time()
+        crossfade_samples = int(OUTPUT_SAMPLE_RATE * CROSSFADE_MS / 1000)
+        prev_audio_end_samples = 0
+
+        for i, entry in enumerate(entries):
+            cue_idx = i + 1
+            text = normalize_tts_text(' '.join(entry['textLines']))
+            cue_dur = entry['end'] - entry['start']
+            position = int(entry['start'] * OUTPUT_SAMPLE_RATE)
+            next_entry = entries[i + 1] if i + 1 < len(entries) else None
+
+            fade_in_start = None
+            fade_len = 0
+            if i > 0 and position < prev_audio_end_samples:
+                overlap = prev_audio_end_samples - position
+                fade_in_start = position
+                fade_len = min(overlap, crossfade_samples)
+
+            if not text:
+                prev_audio_end_samples = max(prev_audio_end_samples, position)
+                continue
+
+            cache_key = compute_cache_key(text, cue_voices[i], 1.0, language, DEFAULT_TOTAL_STEPS)
+
+            try:
+                if smart_fit:
+                    final_audio = smart_fit_cue(
+                        text, cue_dur, cue_voices[i], cap, language, DEFAULT_TOTAL_STEPS,
+                        cache_dir, cache_key, prefix, cue_idx, native_sr)
+                else:
+                    natural_npy = os.path.join(cache_dir, f'{prefix}-cue-{cue_idx:04d}-{cache_key}.npy')
+                    if not (os.path.isfile(natural_npy) and os.path.getsize(natural_npy) > 0):
+                        audio = generate_cue_audio(text, cue_voices[i], speed=1.0, lang=language,
+                                                   steps=DEFAULT_TOTAL_STEPS, target_sr=OUTPUT_SAMPLE_RATE,
+                                                   native_sr=native_sr)
+                        if len(audio) == 0:
+                            fail_count += 1
+                            print(f'\n  ⚠ Cue {cue_idx} gagal (output kosong)')
+                            continue
+                        np.save(natural_npy, audio)
+                    natural_audio = np.load(natural_npy)
+                    natural_audio = trim_silence_asymmetric(natural_audio, OUTPUT_SAMPLE_RATE)
+                    final_audio = peak_normalize(natural_audio)
+            except Exception as e:
+                print(f'\n  ⚠ Cue {cue_idx} gagal: {e}')
+                fail_count += 1
+                continue
+
+            if len(final_audio) == 0:
+                fail_count += 1
+                continue
+
+            this_audio_end = position + len(final_audio)
+
+            fade_out_end = None
+            if next_entry:
+                next_start_samples = int(next_entry['start'] * OUTPUT_SAMPLE_RATE)
+                if this_audio_end > next_start_samples:
+                    fade_out_end = next_start_samples
+                    max_end = next_start_samples + crossfade_samples
+                    if this_audio_end > max_end:
+                        cut_idx = max_end - position
+                        if 0 < cut_idx < len(final_audio):
+                            final_audio = final_audio[:cut_idx]
+                            this_audio_end = position + len(final_audio)
+                            if SMART_FIT_DEBUG:
+                                print(f'  [cue {cue_idx}] TRUNCATE overflow to {crossfade_samples/OUTPUT_SAMPLE_RATE:.3f}s window')
+
+            mix_into_buffer(all_audio, final_audio, position,
+                            fade_out_end=fade_out_end, fade_in_start=fade_in_start, fade_len=fade_len)
+
+            prev_audio_end_samples = this_audio_end
+            success_count += 1
+
+            if cue_idx % 5 == 0 or cue_idx == len(entries):
+                elapsed = time.time() - start_time
+                pct = cue_idx / len(entries) * 100
+                eta = (elapsed / cue_idx) * (len(entries) - cue_idx) if cue_idx > 0 else 0
+                sys.stdout.write(
+                    f'\r  [{cue_idx}/{len(entries)}] {pct:5.1f}% | '
+                    f'ok={success_count} fail={fail_count} | '
+                    f'elapsed={format_duration(elapsed)} | ETA={format_duration(eta)}   '
+                )
+                sys.stdout.flush()
+
+        print()
+        elapsed = time.time() - start_time
+        print()
+        print(f'  ✓ Selesai generate: {success_count} cue ok, {fail_count} fail ({format_duration(elapsed)})')
+
+        final_end = int(total_dur * OUTPUT_SAMPLE_RATE) + int(OUTPUT_SAMPLE_RATE * 0.3)
+        all_audio = all_audio[:final_end]
+
+        output_path = os.path.join(output_dir, f'{prefix}-audio-id-dub.wav')
+        print(f'  Encoding WAV {OUTPUT_SAMPLE_RATE}Hz mono → {output_path}...')
+        encode_wav(all_audio, OUTPUT_SAMPLE_RATE, OUTPUT_CHANNELS, output_path)
+
+        try:
+            cache_files = [f for f in os.listdir(cache_dir) if f.startswith(prefix)]
+            cache_size_mb = sum(os.path.getsize(os.path.join(cache_dir, f)) for f in cache_files) / 1024 / 1024
+            if cache_files:
+                if questionary.confirm(
+                    f'Hapus cache ({len(cache_files)} NPY, {cache_size_mb:.1f} MB)? '
+                    f'(No = simpan untuk resume kalau generate ulang SRT sama)',
+                    default=False,
+                ).ask():
+                    for f in cache_files:
+                        try:
+                            os.unlink(os.path.join(cache_dir, f))
+                        except OSError:
+                            pass
+                    try:
+                        os.rmdir(cache_dir)
+                    except OSError:
+                        pass
+                    print('  ✓ Cache dihapus')
+                else:
+                    print(f'  Cache disimpan: {cache_dir} ({cache_size_mb:.1f} MB)')
+        except Exception:
+            pass
+
+        if os.path.isfile(output_path):
+            size_mb = os.path.getsize(output_path) / 1024 / 1024
+            print()
+            print('═' * 64)
+            print('✅ SELESAI!')
+            print(f'   Output : {output_path}')
+            print(f'   Size   : {size_mb:.1f} MB')
+            print(f'   Format : {OUTPUT_SAMPLE_RATE}Hz mono 16-bit PCM (mix-tui compatible)')
+            print(f'   Engine : Supertonic 3')
+            print(f'   Voice  : {voice_display}')
+            print(f'   Cues   : {success_count} ok / {fail_count} fail / {len(entries)} total')
+            print(f'   Waktu  : {format_duration(elapsed)} (model load {load_time:.1f}s + generate)')
+            print('═' * 64)
+            print()
+            print('🎬 Langkah berikutnya:')
+            print(f'   1. Preview: open {output_path}')
+            print(f'   2. Feed ke mix-tui (sama dengan edge-tts/piper/omnivoice SRT output)')
+    finally:
+        release_lock(output_dir, prefix)
+
+
+def main_srt_pro():
+    """Mode Pro: multi-voice auto-gender via inaSpeechSegmenter.
+    Cue laki → voice pria (default M5), cue perempuan → voice wanita (default F1),
+    auto-detect dari WAV original. Standar mode (main_srt) tidak berubah — ini mode tambahan.
+    """
+    print_banner()
+    print('📋 Mode: SRT Pro (multi-voice auto-gender via inaSpeechSegmenter)')
+    print('   Cue laki → voice pria, cue perempuan → voice wanita (auto-detect dari WAV original)')
+    print('   Navigasi: ↑↓ arrow keys, Enter konfirmasi, Ctrl+C batal')
+    print()
+
+    # Step 1: SRT (Indonesia, dari pipeline)
+    print('▶ Step 1/8: Pilih SRT (bahasa Indonesia)')
+    if ensure_hdd():
+        default_srt_dir = str(INPUT_DIR)
+    else:
+        default_srt_dir = os.getcwd()
+    srt_files = find_srt_files(default_srt_dir)
+    if srt_files:
+        srt_choice = questionary.select(
+            f'File SRT (ditemukan {len(srt_files)} di {default_srt_dir}):',
+            choices=srt_files + ['[Ketik path manual]'],
+            default=srt_files[0],
+        ).ask()
+        if srt_choice == '[Ketik path manual]':
+            srt_path = questionary.text('Path SRT:').ask()
+        else:
+            srt_path = os.path.join(default_srt_dir, srt_choice)
+    else:
+        srt_path = questionary.text(f'Tidak ada SRT di {default_srt_dir}. Ketik path lengkap:').ask()
+    if not srt_path or not os.path.isfile(srt_path):
+        print('❌ File SRT tidak ditemukan.')
+        sys.exit(1)
+    print(f'  ✓ {srt_path}')
+    print()
+
+    # Step 2: WAV original (untuk gender detection — audio source film)
+    print('▶ Step 2/8: Pilih WAV original (audio source untuk gender detection)')
+    default_wav_dir = default_srt_dir
+    wav_files = sorted([f for f in os.listdir(default_wav_dir)
+                        if f.lower().endswith(('.wav', '.mp3', '.m4a', '.aac', '.flac'))]) if os.path.isdir(default_wav_dir) else []
+    if wav_files:
+        wav_choice = questionary.select(
+            f'File audio (ditemukan {len(wav_files)} di {default_wav_dir}):',
+            choices=wav_files + ['[Ketik path manual]'],
+            default=wav_files[0],
+        ).ask()
+        if wav_choice == '[Ketik path manual]':
+            wav_path = questionary.text('Path audio:').ask()
+        else:
+            wav_path = os.path.join(default_wav_dir, wav_choice)
+    else:
+        wav_path = questionary.text(f'Tidak ada audio di {default_wav_dir}. Ketik path lengkap:').ask()
+    if not wav_path or not os.path.isfile(wav_path):
+        print('❌ File audio tidak ditemukan.')
+        sys.exit(1)
+    print(f'  ✓ {wav_path}')
+    print()
+
+    # Step 3: voice mapping (laki + perempuan)
+    print('▶ Step 3/8: Pilih voice mapping')
+    male_labels = [f'{c} — {d}' for c, d in VOICE_OPTIONS if c.startswith('M')]
+    female_labels = [f'{c} — {d}' for c, d in VOICE_OPTIONS if c.startswith('F')]
+    default_male = next((l for l in male_labels if l.startswith('M5')), male_labels[0])
+    default_female = next((l for l in female_labels if l.startswith('F1')), female_labels[0])
+    male_voice = questionary.select(
+        'Voice laki-laki (M1-M5):', choices=male_labels, default=default_male,
+    ).ask().split(' —')[0].strip()
+    female_voice = questionary.select(
+        'Voice perempuan (F1-F5):', choices=female_labels, default=default_female,
+    ).ask().split(' —')[0].strip()
+    print(f'  ✓ laki={male_voice}, perempuan={female_voice}')
+    language = prompt_language(default='id')
+    print(f'  ✓ language: {language}')
+    print()
+
+    # Step 4: Smart Fit cap
+    print('▶ Step 4/8: Smart Fit cap')
+    cap_choice = questionary.select(
+        'Smart Fit cap (max speed):',
+        choices=[
+            '1.5x (clean, recommended)',
+            '2.0x (cepat, sedikit robotik untuk cue padat)',
+            '1.25x (paling natural, lebih sering overflow)',
+            'OFF (no smart fit, natural only)',
+        ],
+        default='1.5x (clean, recommended)',
+    ).ask()
+    if 'OFF' in cap_choice:
+        smart_fit = False
+        cap = 1.0
+    else:
+        smart_fit = True
+        cap = float(cap_choice.split('x')[0])
+    print(f'  ✓ cap={cap}, smart_fit={smart_fit}')
+    print()
+
+    # Step 5: prefix
+    print('▶ Step 5/8: Prefix output')
+    default_prefix = os.path.splitext(os.path.basename(srt_path))[0]
+    prefix = questionary.text('Prefix (output: {prefix}-audio-id-dub.wav + {prefix}-tagged.srt):', default=default_prefix).ask()
+    if not prefix:
+        prefix = default_prefix
+
+    # Step 6: output dir
+    print('▶ Step 6/8: Output directory')
+    default_out = str(TTS_DIR)
+    output_dir = questionary.text('Output directory:', default=default_out).ask()
+    if not output_dir:
+        output_dir = default_out
+    os.makedirs(output_dir, exist_ok=True)
+    prefix = suggest_unique_prefix(output_dir, prefix)
+    print(f'  ✓ {prefix} → {output_dir}')
+    print()
+
+    # Step 7: gender detection + map cues
+    print('▶ Step 7/8: Gender detection (inaSpeechSegmenter)')
+    gender_segs = _detect_gender_segments(wav_path)
+    if not gender_segs:
+        sys.exit(1)
+
+    with open(srt_path, 'r', encoding='utf-8-sig') as f:
+        content = f.read()
+    entries = parse_srt(content)
+    if not entries:
+        print('❌ SRT kosong/tidak terparse.')
+        sys.exit(1)
+    total_dur = entries[-1]['end']
+
+    cue_voices = _map_cues_to_voices(entries, gender_segs, male_voice, female_voice)
+    male_count = sum(1 for v in cue_voices if v == male_voice)
+    female_count = sum(1 for v in cue_voices if v == female_voice)
+
+    tagged_path = os.path.join(output_dir, f'{prefix}-tagged.srt')
+    _save_tagged_srt(entries, cue_voices, tagged_path)
+    print(f'  ✓ Tagged SRT (preview/edit): {tagged_path}')
+    print(f'  Stats: {male_count} cue laki ({male_voice}), {female_count} cue perempuan ({female_voice})')
+    print(f'  ⚠ Kalau detection salah, edit tagged SRT manual lalu pakai mode Standar dgn voice per-cue')
+    print()
+    print('  Contoh tagged SRT:')
+    for i in range(min(3, len(entries))):
+        print(f'    cue {i+1}: [{cue_voices[i]}] {" ".join(entries[i]["textLines"])[:50]}')
+    print()
+
+    # Step 8: load model + generate
+    print('▶ Step 8/8: Load model Supertonic')
+    tts, load_time, ep_label, native_sr = load_supertonic_model()
+    print(f'  ✓ Model loaded ({load_time:.1f}s), {ep_label}')
+    print(f'  Native SR: {native_sr}Hz → resample ke {OUTPUT_SAMPLE_RATE}Hz (mix-tui compat)')
+    print()
+
+    voice_display = f'{male_voice}+{female_voice} (auto-gender: {male_count}M/{female_count}F)'
+
+    per_generate = 0.8
+    pass2_ratio = 0.6 if smart_fit else 0.0
+    est_total_sec = len(entries) * per_generate * (1 + pass2_ratio)
+
+    print('═' * 64)
+    print('📋 Ringkasan (Pro mode):')
+    print('═' * 64)
+    print(f'  SRT      : {os.path.basename(srt_path)}')
+    print(f'  WAV ref  : {os.path.basename(wav_path)}')
+    print(f'  Tagged   : {tagged_path}')
+    print(f'  Output   : {os.path.join(output_dir, prefix + "-audio-id-dub.wav")}')
+    print(f'  Voice    : {voice_display}')
+    print(f'  Language : {language} (DI-LOCK)')
+    print(f'  Engine   : Supertonic 3 ({ep_label})')
+    print(f'  Smart Fit: {"ON" if smart_fit else "OFF"}, cap={cap}')
+    print(f'  Cues     : {len(entries)}')
+    print(f'  Durasi   : {format_duration(total_dur)}')
+    print(f'  Estimasi : {format_duration(est_total_sec)}')
+    print('═' * 64)
+    print()
+    print('⚠ Pro mode v0.2: gender detection via inaSpeechSegmenter (TF backend).')
+    print('  Cue tanpa overlap gender → default laki. Edit tagged SRT untuk koreksi manual.')
+    print('  Deterministic by design → no drift antar cue + antar voice.')
+    print()
+
+    if not questionary.confirm('Lanjut generate multi-voice?', default=True).ask():
+        print('Batal. Tagged SRT tetap disimpan untuk review.')
+        sys.exit(0)
+
+    _run_generate(entries, cue_voices, output_dir, prefix, language, smart_fit, cap,
+                  tts, ep_label, native_sr, load_time, total_dur, voice_display,
+                  multi_voice=True)
+
+
+# ============================================================
 # SRT mode (6 step, mirror edge-tts-tui)
 # ============================================================
 
@@ -807,6 +1244,7 @@ def main_srt():
         start_time = time.time()
         crossfade_samples = int(OUTPUT_SAMPLE_RATE * CROSSFADE_MS / 1000)
         prev_audio_end_samples = 0
+        cue_voices = [voice_name] * len(entries)  # standard: same voice all cues (pro mode injects per-cue)
 
         for i, entry in enumerate(entries):
             cue_idx = i + 1
@@ -826,17 +1264,17 @@ def main_srt():
                 prev_audio_end_samples = max(prev_audio_end_samples, position)
                 continue
 
-            cache_key = compute_cache_key(text, voice_name, 1.0, language, DEFAULT_TOTAL_STEPS)
+            cache_key = compute_cache_key(text, cue_voices[i], 1.0, language, DEFAULT_TOTAL_STEPS)
 
             try:
                 if smart_fit:
                     final_audio = smart_fit_cue(
-                        text, cue_dur, voice_name, cap, language, DEFAULT_TOTAL_STEPS,
+                        text, cue_dur, cue_voices[i], cap, language, DEFAULT_TOTAL_STEPS,
                         cache_dir, cache_key, prefix, cue_idx, native_sr)
                 else:
                     natural_npy = os.path.join(cache_dir, f'{prefix}-cue-{cue_idx:04d}-{cache_key}.npy')
                     if not (os.path.isfile(natural_npy) and os.path.getsize(natural_npy) > 0):
-                        audio = generate_cue_audio(text, voice_name, speed=1.0, lang=language,
+                        audio = generate_cue_audio(text, cue_voices[i], speed=1.0, lang=language,
                                                    steps=DEFAULT_TOTAL_STEPS, target_sr=OUTPUT_SAMPLE_RATE,
                                                    native_sr=native_sr)
                         if len(audio) == 0:
@@ -1118,7 +1556,7 @@ def main_narration():
 
 def main():
     parser = argparse.ArgumentParser(description='Supertonic TTS TUI — subtitlekit model lokal')
-    parser.add_argument('--mode', choices=['srt', 'narasi'], help='Langsung ke mode (skip picker)')
+    parser.add_argument('--mode', choices=['srt', 'srt-pro', 'narasi'], help='Langsung ke mode (skip picker)')
     args = parser.parse_args()
 
     mode = args.mode
@@ -1128,18 +1566,23 @@ def main():
         mode = questionary.select(
             'Mode:',
             choices=[
-                'SRT (dub per cue dari subtitle)',
+                'SRT Standar (1 voice — dub per cue dari subtitle)',
+                'SRT Pro (multi-voice auto-gender via inaSpeechSegmenter)',
                 'Narasi (naskah → 1 WAV panjang)',
             ],
-            default='SRT (dub per cue dari subtitle)',
+            default='SRT Standar (1 voice — dub per cue dari subtitle)',
         ).ask()
-        if mode.startswith('SRT'):
+        if mode.startswith('SRT Pro'):
+            mode = 'srt-pro'
+        elif mode.startswith('SRT'):
             mode = 'srt'
         else:
             mode = 'narasi'
 
     if mode == 'srt':
         main_srt()
+    elif mode == 'srt-pro':
+        main_srt_pro()
     else:
         main_narration()
 
