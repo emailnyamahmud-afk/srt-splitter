@@ -26,7 +26,7 @@ Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 - Jawa: pipeline dub (gemini-tts-tui v1.1 SRT mode) + narasi (gemini-tts-tui v1.1 Narration mode) jalan
 - Sunda: nunggu kamus Supabase
 
-## 20 TUI
+## 21 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -49,7 +49,8 @@ Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | 17 | **manim-shorts-tui v0.1** (WAV + SRT → infografis Shorts video, manim animation) | ⚠ UNTESTED (sandbox OK 19 Nov 2026 + fix 21 Nov 2026, belum diuji di Mac) |
 | 18 | **piper-tts-tui v0.2** (TTS LOKAL offline via Piper TTS VITS ONNX, GPU Metal CoreML EP, SRT + Narasi mode, Python API) | ⚠ UNTESTED (sandbox fungsi core OK 22 Nov 2026, generate test pending HF rate-limit sandbox, belum diuji di Mac) |
 | 19 | **voicestudio-tts-tui v1.0** (TTS via VoiceStudio local API localhost:3900, 4 voice profile anton/sari ID+JV, GPU Metal CoreML) | ⚠ SLOW (user test 23 Nov 2026: suara bagus sesuai reff, tapi 16s SRT = 8 menit. VoiceStudio API per-cue HTTP overhead) |
-| 20 | **supertonic-tts-tui v0.1** (TTS LOKAL Supertone Supertonic 3 ONNX, 10 voice builtin M1-M5/F1-F5, deterministic no drift, RTF ~0.012 = ~100x OmniVoice) | ✅ Production candidate (user VLC test 23 Nov 2026: sangat bagus, jauh lebih bagus dari edge-tts, ID laki+perempuan OK. 1jam SRT ~30menit. Pending long-cue test) |
+| 20 | **supertonic-tts-tui v0.2** (TTS LOKAL Supertone Supertonic 3 ONNX, 10 voice builtin M1-M5/F1-F5, deterministic no drift, RTF ~0.012 = ~100x OmniVoice. v0.2: SRT Pro mode multi-voice auto-gender via inaSpeechSegmenter) | ✅ Production candidate (user VLC test 23 Nov 2026: sangat bagus, jauh lebih bagus dari edge-tts, ID laki+perempuan OK. 1jam SRT ~30menit. Pending long-cue test. v0.2 Pro mode pending Mac test) |
+| 21 | **mix-audiobook-tui v0.1** (Audiobook MP4 generator: text/WAV + thumbnail → MP4 + Ken Burns + burn subtitle. 3 mode auto-detect: A text→supertonic→whisper→render / B wav→whisper→render / C ready→render) | ⚠ UNTESTED (sandbox logic 55/55 test passed 25 Nov 2026, belum diuji di Mac) |
 
 **Eksperimen TTS (TIDAK bernomor, DEPRECATED):**
 - `omnivoice-tts-tui.py v0.7` — ❌ DEPRECATED (user VLC test 23 Nov 2026: ref clone BERANTAKAN, v0.7 fix 3 lapis encode-once+pos_temp=0+guidance=3 TIDAK solve drift. Pakai supertonic-tts-tui #20 sebagai pengganti). Script tetap di repo untuk referensi.
@@ -550,7 +551,7 @@ SCRIPTS_DIR = SSD_HOME                       # scripts di SSD
 
 ### TUI (ada 20, BUKAN 12/13/15/16/17/18):
 
-- Jangan amnesia: ada **20 TUI** (#1-#20). Baca `git ls-tree origin/main scripts/` untuk verifikasi sebelum pilih nomor TUI baru
+- Jangan amnesia: ada **21 TUI** (#1-#21). Baca `git ls-tree origin/main scripts/` untuk verifikasi sebelum pilih nomor TUI baru
 - TUI #13 = review-mix-tui (UNTESTED), TUI #14 = konten-tui (UNTESTED), TUI #15 = gemini-tts-tui (UNTESTED), TUI #16 = talkinghead-tui (UNTESTED), TUI #17 = manim-shorts-tui (UNTESTED sandbox OK), TUI #18 = piper-tts-tui (UNTESTED sandbox OK), TUI #19 = voicestudio-tts-tui (SLOW — user test 23 Nov 2026, suara bagus tapi 16s SRT = 8 menit), TUI #20 = supertonic-tts-tui (✅ Production candidate — user VLC test 23 Nov 2026 sangat bagus + cepat 1jam=30menit + deterministic no drift)
 - `omnivoice-tts-tui.py v0.7` = EKSPERIMEN TIDAK bernomor, DEPRECATED (ref clone berantakan per user test 23 Nov 2026, v0.7 fix 3 lapis tidak solve drift). Header lama salah claim "TUI #19" (collision dgn voicestudio) — sudah diperbaiki. JANGAN pakai production, pakai supertonic #20.
 - `REVIEW_DIR` di config.py untuk review-mix-tui (#13), `KONTEN_DIR` untuk konten-tui (#14) + talkinghead-tui (#16 output ke KONTEN_DIR), `MANIM_SHORTS_DIR` untuk manim-shorts-tui (#17)

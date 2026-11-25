@@ -29,6 +29,8 @@ MERGED_DIR = HDD_BASE / 'merged'             # merge-tui output (gabungan multi-
 REVIEW_DIR = HDD_BASE / 'review'             # review-mix-tui output (review film)
 KONTEN_DIR = HDD_BASE / 'konten'             # konten-tui output (konten sejarah, images→video)
 MANIM_SHORTS_DIR = HDD_BASE / 'manim-shorts' # manim-shorts-tui output (infografis Shorts, WAV+SRT→video)
+AUDIOBOOK_DIR = HDD_BASE / 'audiobook'       # mix-audiobook-tui output (audiobook MP4 per bab, TUI #21)
+AUDIOBOOK_INPUT_DIR = INPUT_DIR / 'audiobook' # mix-audiobook-tui input (HDD/input/audiobook/{judul}/season-N/)
 
 # Kamus + config
 KAMUS_JSON = SSD_HOME / 'jv.wiktionary.json' # Kamus di SSD (kecil, cepat load)
@@ -47,7 +49,7 @@ def ensure_hdd():
         return False
     
     # Buat subfolder kalau belum ada
-    for d in [INPUT_DIR, DEMUCS_DIR, TTS_DIR, MIX_DIR, SHORTS_DIR, PARTS_DIR, MERGED_DIR, REVIEW_DIR, KONTEN_DIR, MANIM_SHORTS_DIR]:
+    for d in [INPUT_DIR, DEMUCS_DIR, TTS_DIR, MIX_DIR, SHORTS_DIR, PARTS_DIR, MERGED_DIR, REVIEW_DIR, KONTEN_DIR, MANIM_SHORTS_DIR, AUDIOBOOK_DIR]:
         d.mkdir(parents=True, exist_ok=True)
     return True
 

@@ -18,7 +18,7 @@
 Kamus: kamus-tui → jv.wiktionary.json → Supabase
 ```
 
-## 20 TUI
+## 21 TUI
 
 | # | TUI | Status |
 |---|-----|--------|
@@ -41,7 +41,8 @@ Kamus: kamus-tui → jv.wiktionary.json → Supabase
 | 17 | **manim-shorts-tui v0.1** | ⚠ UNTESTED (Shorts infografis: WAV + SRT → manim video vertical 9:16, sandbox OK 19 Nov 2026 + fix 21 Nov 2026 commit 1623907, code di GitHub belum diuji di Mac) |
 | 18 | **piper-tts-tui v0.2** | ⚠ UNTESTED (TTS LOKAL offline Piper VITS ONNX, GPU Metal CoreML, sandbox fungsi core OK 22 Nov 2026, generate test pending HF rate-limit, code di GitHub belum diuji di Mac) |
 | 19 | **voicestudio-tts-tui v1.0** | ⚠ SLOW (TTS via VoiceStudio local API localhost:3900, 4 voice profile anton/sari ID+JV. User test 23 Nov 2026: suara bagus sesuai reff, tapi 16s SRT = 8 menit. Superseded oleh supertonic #20) |
-| 20 | **supertonic-tts-tui v0.1** | ✅ Production candidate (TTS LOKAL Supertone Supertonic 3 ONNX, 10 voice builtin M1-M5/F1-F5 deterministic no drift, RTF ~0.012 = ~100x OmniVoice. User VLC test 23 Nov 2026: sangat bagus, jauh lebih bagus dari edge-tts, ID laki+perempuan OK, 1jam SRT ~30menit. Pending long-cue test) |
+| 20 | **supertonic-tts-tui v0.2** | ✅ Production candidate (TTS LOKAL Supertone Supertonic 3 ONNX, 10 voice builtin M1-M5/F1-F5 deterministic no drift, RTF ~0.012 = ~100x OmniVoice. v0.2: SRT Pro mode multi-voice auto-gender via inaSpeechSegmenter. User VLC test 23 Nov 2026: sangat bagus, jauh lebih bagus dari edge-tts, ID laki+perempuan OK, 1jam SRT ~30menit. v0.2 Pro pending Mac test) |
+| 21 | **mix-audiobook-tui v0.1** | ⚠ UNTESTED (Audiobook MP4 generator: text/WAV + thumbnail → MP4 + Ken Burns + burn subtitle. 3 mode auto-detect A/B/C. Backend supertonic + whisper-cli + ffmpeg loudnorm -16 LUFS. Sandbox logic 55/55 passed 25 Nov 2026, belum diuji di Mac) |
 
 **Eksperimen TTS (TIDAK bernomor, DEPRECATED):** `omnivoice-tts-tui.py v0.7` — ❌ DEPRECATED (ref clone berantakan per user VLC test 23 Nov 2026, v0.7 fix 3 lapis tidak solve drift). Pakai supertonic #20.
 

@@ -6,7 +6,7 @@ ID jalan end-to-end (12 TUI production + 5 untested). Jawa jalan via Gemini TTS 
 
 **Live:** https://srt-splitter.vercel.app/
 
-## 20 TUI
+## 21 TUI
 
 | # | TUI | Tugas | Status |
 |---|-----|-------|--------|
@@ -29,7 +29,8 @@ ID jalan end-to-end (12 TUI production + 5 untested). Jawa jalan via Gemini TTS 
 | 17 | **manim-shorts-tui.py v0.1** | Shorts infografis (WAV + SRT → manim animation video vertical 9:16, premium look gratis) | ⚠ UNTESTED (sandbox OK 19 Nov 2026 + fix 21 Nov 2026, belum diuji di Mac) |
 | 18 | **piper-tts-tui.py v0.2** | TTS LOKAL offline (Piper VITS ONNX, GPU Metal CoreML, SRT + Narasi mode) | ⚠ UNTESTED (sandbox OK 22 Nov 2026, generate test pending HF rate-limit, belum diuji di Mac) |
 | 19 | **voicestudio-tts-tui.py v1.0** | TTS via VoiceStudio local API (localhost:3900, 4 voice profile anton/sari ID+JV, GPU Metal) | ⚠ SLOW (user test 23 Nov 2026: suara bagus tapi 16s SRT = 8 menit. Superseded #20) |
-| 20 | **supertonic-tts-tui.py v0.1** | TTS LOKAL Supertone Supertonic 3 ONNX (10 voice M1-M5/F1-F5 deterministic, model sama subtitlekit.com, ~100x edge speed) | ✅ Production candidate (user VLC 23 Nov 2026: sangat bagus, ID laki+perempuan OK, 1jam SRT ~30menit. Pending long-cue) |
+| 20 | **supertonic-tts-tui.py v0.2** | TTS LOKAL Supertone Supertonic 3 ONNX (10 voice M1-M5/F1-F5 deterministic, model sama subtitlekit.com, ~100x edge speed. v0.2: SRT Pro mode multi-voice auto-gender via inaSpeechSegmenter) | ✅ Production candidate (user VLC 23 Nov 2026: sangat bagus, ID laki+perempuan OK, 1jam SRT ~30menit. v0.2 Pro pending Mac test) |
+| 21 | **mix-audiobook-tui.py v0.1** | Audiobook MP4 generator (text/WAV + thumbnail → MP4 + Ken Burns + burn subtitle, 3 mode auto-detect A/B/C, supertonic + whisper-cli + ffmpeg loudnorm -16 LUFS) | ⚠ UNTESTED (sandbox logic 55/55 passed 25 Nov 2026, belum diuji di Mac) |
 
 **Eksperimen DEPRECATED:** `omnivoice-tts-tui.py v0.7` — ❌ ref clone berantakan (user VLC 23 Nov 2026, v0.7 fix tidak solve drift). Pakai supertonic #20.
 

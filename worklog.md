@@ -7679,3 +7679,43 @@ Update:
 4. **mix_into_buffer fade region**: fade_out harus cover OVERLAP region `[fade_out_end, end]` (tail extends into next cue fades out 1→0), BUKAN `[fade_out_end - fade_len, fade_out_end]` (sebelum overlap → numpuk). Crossfade = cue N tail fade out + cue N+1 head fade in di region overlap yg sama.
 5. **TUI numbering collision**: session sebelumnya buat omnivoice header claim "TUI #19" padahal voicestudio sudah #19. Anti-amnesia rule "cek git ls-tree sebelum pilih nomor" dilanggar. Fix: omnivoice = unnumbered DEPRECATED, voicestudio = #19 (sah), supertonic = #20.
 6. **URL typo GitHub raw**: curl URL typo `emailnyahud-afk` (salah) vs `emailnyamahmud-afk` (benar) → file download = "404: Not Found" 14 bytes → Python SyntaxError. Selalu verify remote URL via `git remote -v` sebelum kasih curl instruction ke user.
+
+---
+
+## 25 Nov 2026 — TUI #21 mix-audiobook-tui v0.1 + supertonic v0.2 Pro mode + anti-amnesia sync
+
+### Anti-amnesia sync fix
+Awal session: `git fetch origin` → local HEAD `a73f2e4` TERTINGGAL vs origin `316ca3b` (v0.2 Pro mode saya push session sebelumnya). Sandbox di-recycle antar session, file persisten tapi git HEAD reset. Verified on-disk supertonic-tts-tui.py == origin/main 316ca3b (identical via `diff`). Fix: `git reset --hard origin/main` (prescribed anti-amnesia protocol). No data loss — disk sudah == origin, hanya git metadata usang.
+
+### supertonic-tts-tui v0.2 — SRT Pro mode (multi-voice auto-gender)
+Commit `316ca3b` (session sebelumnya, sudah di origin). Mode tambahan (main_srt Standar TIDAK berubah — zero behavior change):
+- SRT Standar (existing, 6 step, 1 voice) — behavior IDENTIK
+- SRT Pro (BARU, 8 step): inaSpeechSegmenter deteksi gender dari WAV original → map cue ke voice pria/wanita → tagged SRT preview → generate multi-voice (M5/F1 default).
+- Arsitektur: `get_voice_style()` cached + `synthesize(voice_style=...)` per-call → switch voice per cue FREE (no model reload). `generate_cue_audio/smart_fit_cue/compute_cache_key` SUDAH parameterized voice_name → multi-voice auto-work dgn E1-E4 minimal edit (cue_voices list, 3 spot voice_name→cue_voices[i]).
+- User Mac: inaSpeechSegmenter 0.7.6 + tensorflow 2.22rc1 terinstall bersih. Smoke test 3/3 OK. Pro mode pending run test dgn WAV + SRT.
+
+### TUI #21 mix-audiobook-tui v0.1 — Audiobook MP4 generator
+Input: text/WAV + thumbnail → Output: MP4 + Ken Burns + burn subtitle.
+- 3 mode auto-detect per bab: A (text→supertonic→whisper→render) / B (wav→whisper→render) / C (ready→render)
+- Backend: supertonic (TTS M5 default) + whisper-cli (SRT gen, Metal GPU) + ffmpeg (zoompan Ken Burns + subtitles burn + loudnorm -16 LUFS)
+- Input path: `HDD/input/audiobook/{judul}/season-N/S1_B001.{txt,md,wav,jpg,srt}`
+- Output path: `HDD/audiobook/{judul}/season-N/S1_B001.mp4`
+- Resolution auto-detect thumbnail aspect: vertical 1080x1920 / horizontal 1920x1080 / square 1080x1080 (default vertical, HP-friendly)
+- config.py +2 konstanta: `AUDIOBOOK_DIR` (output) + `AUDIOBOOK_INPUT_DIR` (input nested di INPUT_DIR)
+- Markdown preprocessing: strip YAML frontmatter + heading # (keep text, ·→,) + blockquote + HR + bold/italic/link → plain text. Chunk per paragraph (max 1500 chars), long para split per sentence, concat WAV dgn 50ms crossfade.
+- Ken Burns: slow zoom 1.0→1.08 over full duration + center pan (zoompan filter, pre-scale 2x). Untuk audiobook 15min single image, zoom step 0.08/total_frames = sangat subtle.
+- Test sandbox 55/55 PASSED (test-mix-audiobook.py): strip_markdown (YAML/heading/·/HR/paragraph/curly-quotes), chunk_paragraphs (merge/split/long), detect_bab_mode (A/B/C/PNG-fallback), detect_thumb_resolution (vertical/horizontal/square/invalid-fallback), find_whisper_cli/model (graceful None), argparse + all functions defined.
+- Estimasi per bab 15 menit: supertonic ~11s + whisper ~3min + ffmpeg ~5min ≈ 8 menit. Batch 10 bab ~80 menit unattended.
+
+### Docs sync (batch dlm 1 commit)
+- AGENTS.md / PROJECT_RULES.md / scripts/README.md / README.md root: tabel "20 TUI" → "21 TUI" + add TUI #21 row + fix supertonic v0.1→v0.2 (gap fix dari session sebelumnya yg commit code v0.2 tapi belum update docs).
+- AGENTS.md amnesia mention: "ada 20 TUI (#1-#20)" → "ada 21 TUI (#1-#21)".
+- config.py: +AUDIOBOOK_DIR +AUDIOBOOK_INPUT_DIR + ensure_hdd mkdir list.
+
+### Pelajaran AI
+1. **Auto-detect mode per bab > mode flag global**: TUI #21 pakai 3 mode auto-detect (A/B/C) berdasarkan file yg ada per bab, BUKAN global `--mode` flag. User campur mode dlm 1 season (bab 1 text, bab 2 wav siap) tanpa konfigurasi. Pattern reusable utk TUI pipeline lain.
+2. **Markdown strip keep text buang syntax**: heading `#` di-strip marker TAPI text dipertahankan ("Volume 1" dibaca TTS sbg intro). Middle dot `·` → `,` (TTS baca natural). Curly quotes " " dipreserve (TTS handle sbg punctuation pause). Paragraph break `\n\n` = pause cue natural.
+3. **Ken Burns untuk durasi panjang**: zoompan konten-tui pakai per-segment pendek (zoom step 0.0015/frame). Untuk audiobook 15min single image, zoom step harus 0.08/total_frames = ~0.000003/frame (sangat slow). Kalau pakai 0.0015/frame → zoom cap 1.5 dalam 333 frame (11 detik), sisanya static. Selalu calc zoom_step = target_zoom / total_frames.
+4. **Subprocess whisper-cli > import whisper-tui**: whisper-tui.py TUI only (no argparse CLI). mix-audiobook-tui call `whisper-cli` binary langsung (subprocess, mirror whisper-tui cmd: `-m model -l id -f wav -t 8 -osrt -of base`). Self-contained, gak break whisper-tui existing, gak duplikasi import risk.
+5. **loudnorm -16 LUFS = YouTube target**: ffmpeg `loudnorm=I=-16:TP=-1.5:LRA=11` = standar YouTube audiobook/music. Konsisten antar bab (supertonic output bisa beda level). Single-pass loudnorm cukup untuk audiobook (tidak butuh 2-pass dynamic).
+
