@@ -329,16 +329,27 @@ def generate_wav_supertonic(text, voice, out_wav, lang='id'):
     total_dur = 0.0
     for i, chunk in enumerate(chunks):
         try:
+            # Mirror supertonic-tts-tui proven signature: verbose=False, NO silence_duration
             wav, dur = tts.synthesize(
-                chunk, voice_style=style, total_steps=DEFAULT_STEPS,
-                speed=DEFAULT_SPEED, lang=lang, silence_duration=0.3)
-            # wav = float32 mono at SUPERTONIC_NATIVE_SR
-            if hasattr(wav, 'shape') and wav.ndim > 1:
-                wav = wav.mean(axis=1) if wav.ndim == 2 else wav.ravel()
-            wav = wav.astype(np.float32)
-            all_audio.append(wav)
-            total_dur += float(dur)
-            print(f'  [{i + 1}/{len(chunks)}] {float(dur):.1f}s')
+                text=chunk, voice_style=style, total_steps=DEFAULT_STEPS,
+                speed=DEFAULT_SPEED, lang=lang, verbose=False)
+            # wav = np.ndarray mono float32 at SUPERTONIC_NATIVE_SR. dur = np.ndarray (BUKAN float).
+            if wav is None or len(wav) == 0:
+                continue
+            audio_arr = wav
+            if isinstance(audio_arr, list):
+                audio_arr = np.array(audio_arr, dtype=np.float32)
+            # Squeeze dims → mono 1D (mirror generate_cue_audio)
+            if audio_arr.ndim > 1:
+                audio_arr = audio_arr.squeeze()
+                if audio_arr.ndim > 1:
+                    audio_arr = audio_arr[0] if isinstance(audio_arr[0], np.ndarray) else audio_arr
+            audio_arr = audio_arr.astype(np.float32)
+            all_audio.append(audio_arr)
+            # dur is np.ndarray → squeeze to scalar then float (avoid "only 0-dim" error)
+            dur_f = float(np.squeeze(dur)) if hasattr(dur, 'shape') else float(dur)
+            total_dur += dur_f
+            print(f'  [{i + 1}/{len(chunks)}] {dur_f:.1f}s')
         except Exception as e:
             print(f'  ⚠ Chunk {i + 1} gagal: {e}')
             continue
