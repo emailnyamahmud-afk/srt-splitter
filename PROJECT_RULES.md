@@ -22,7 +22,7 @@ Kamus: kamus-tui → jv.wiktionary.json → Supabase
 
 | # | TUI | Status |
 |---|-----|--------|
-| 1 | yt-dlp-tui v6.5 | ✅ (default 1080p, multi-SRT ID+EN) |
+| 1 | yt-dlp-tui v6.6 | ✅ (default 1080p, multi-SRT ID+EN, SABR bypass + n-challenge fix) |
 | 2 | demucs-tui | ✅ |
 | 3 | kamus-tui v16 | ✅ (audit) |
 | 4 | Web app | ⚠ Prototype |
@@ -74,9 +74,10 @@ Kamus: kamus-tui → jv.wiktionary.json → Supabase
 
 ### config.py (di repo `scripts/config.py`, base path USER working dir)
 
-11 path constants, semua untuk USER working dir, BUKAN repo path:
+17 path constants, semua untuk USER working dir, BUKAN repo path:
 `SSD_HOME`, `HDD_BASE`, `INPUT_DIR`, `DEMUCS_DIR`, `TTS_DIR`, `MIX_DIR`,
 `SHORTS_DIR`, `PARTS_DIR`, `MERGED_DIR`, `REVIEW_DIR`, `KONTEN_DIR`,
+`MANIM_SHORTS_DIR`, `AUDIOBOOK_DIR`, `AUDIOBOOK_INPUT_DIR`,
 `KAMUS_JSON`, `ENV_FILE`, `SCRIPTS_DIR`
 
 Helper: `ensure_hdd()`, `ensure_kamus()`, `load_env()`
@@ -108,7 +109,7 @@ Helper: `ensure_hdd()`, `ensure_kamus()`, `load_env()`
   - User edit manual: chroma key → composite background → final-konten.mp4 (siap YouTube)
   - JANGAN install SadTalker lokal di M1 (Python 3.8 strict, hardcode CUDA, MPS partial, very slow) — pakai Replicate cloud
   - Status UNTESTED sampai user VLC feedback OK
-- **supertonic-tts-tui v0.1 = PRODUCTION CANDIDATE** (TUI #20, TTS LOKAL Supertone Supertonic 3 ONNX, model sama subtitlekit.com untuk Indonesia)
+- **supertonic-tts-tui v0.2 = PRODUCTION CANDIDATE** (TUI #20, TTS LOKAL Supertone Supertonic 3 ONNX, model sama subtitlekit.com untuk Indonesia)
   - 10 voice builtin M1-M5/F1-F5 deterministic (NO cloning, NO drift by design — fix masalah OmniVoice berantakan)
   - RTF ~0.012-0.018 M4 CPU = ~100x OmniVoice, ~100x VoiceStudio. 1jam SRT ~30menit (sekompetitif subtitlekit web tanpa upload)
   - User VLC test 23 Nov 2026: sangat bagus, jauh lebih bagus dari edge-tts, ID laki+perempuan OK. Pending long-cue test.
@@ -134,7 +135,7 @@ Helper: `ensure_hdd()`, `ensure_kamus()`, `load_env()`
 - Hapus / ganti edge-tts-tui v7.5 dengan gemini-tts-tui (kedua TUI harus hidup berdampingan)
 - Bikin TUI baru tanpa cek file yang sudah ada di repo (jangan pakai nomor TUI yang sudah dipakai)
 - Bikin TUI baru tanpa update docs utama (AGENTS/PROJECT_RULES/scripts/README/README root/worklog)
-- Asumsi struktur folder tanpa baca config.py LENGKAP (11 path constants, semua dipakai TUI berbeda)
+- Asumsi struktur folder tanpa baca config.py LENGKAP (17 path constants, semua dipakai TUI berbeda)
 - **Campur aduk repo srt-splitter dengan user working dir `~/Dubbing/`** — repo = folder git untuk dev, working dir = tempat TUI jalan, scripts didownload dari repo via curl
 - **Bikin file di `~/Dubbing/`** — itu user working dir, AI kerja di repo path (`/home/z/my-project/` sandbox atau `~/srt-splitter/` Mac dev)
 - **Pikir web app Vercel = TUI Dubbing** — web app terpisah, translate SRT via Supabase, BUKAN pipeline TUI

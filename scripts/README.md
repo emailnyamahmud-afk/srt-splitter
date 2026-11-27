@@ -6,7 +6,7 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 
 | # | TUI | Status |
 |---|-----|--------|
-| 1 | yt-dlp-tui.py v6.5 (MP4+MP3+multi-SRT ID+EN, cookies anti-bot, default 1080p) | ✅ Production |
+| 1 | yt-dlp-tui.py v6.6 (MP4+MP3+multi-SRT ID+EN, cookies anti-bot, default 1080p, SABR bypass + n-challenge fix) | ✅ Production |
 | 2 | demucs-tui.py (M1 MPS) | ✅ Production |
 | 3 | kamus-tui.py v16 | ✅ Production (audit) |
 | 4 | Web app | ⚠ Prototype |
@@ -50,7 +50,7 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 
 | Script | TUI # | Fungsi | Output |
 |--------|-------|--------|--------|
-| yt-dlp-tui.py v6.5 | 1 | Download MP4 + MP3 + multi-SRT (ID+EN) | HDD/input/ |
+| yt-dlp-tui.py v6.6 | 1 | Download MP4 + MP3 + multi-SRT (ID+EN, SABR bypass) | HDD/input/ |
 | demucs-tui.py | 2 | Vocal separation (M1 MPS) | HDD/demucs/ |
 | kamus-tui.py v16 | 3 | TUI editor jv.wiktionary.json | SSD |
 | edge-tts-tui.py v7.5 | 6 | TTS SRT + Narasi (Indonesia, paralel-safe) | HDD/tts/ |
@@ -68,6 +68,9 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 | talkinghead_backend.py | 16 | Backend modul untuk talkinghead-tui (Replicate API) | — |
 | manim-shorts-tui.py v0.1 | 17 | Shorts infografis (WAV + SRT → manim animation video vertical 9:16) | HDD/manim-shorts/ |
 | piper-tts-tui.py v0.2 | 18 | TTS LOKAL offline (Piper VITS ONNX, GPU Metal CoreML EP, SRT + Narasi mode) | HDD/tts/ |
+| voicestudio-tts-tui.py v1.0 | 19 | TTS via VoiceStudio local API (localhost:3900, 4 voice anton/sari ID+JV, SLOW) | HDD/tts/ |
+| supertonic-tts-tui.py v0.2 | 20 | TTS LOKAL Supertone Supertonic 3 ONNX (10 voice M1-M5/F1-F5 deterministic, ~100x edge speed) | HDD/tts/ |
+| mix-audiobook-tui.py v0.1 | 21 | Audiobook MP4 generator (text/WAV + thumbnail → MP4 + Ken Burns + burn subtitle) | HDD/audiobook/ |
 | config.py | — | Base path SSD/HDD | — |
 | upload-supabase.py | — | Upload kamus ke Supabase | — |
 | GEMINI_TTS.md | 15 | Dokumentasi TUI #15 (cara pakai, kapan pakai) | — |
@@ -77,14 +80,15 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 
 ```
 SSD ~/Dubbing/                          → scripts + venv + jv.wiktionary.json
-HDD /Volumes/HDD/Dubbing/              → input/ demucs/ tts/ mix/ shorts/ parts/ merged/ review/ konten/ .env
+HDD /Volumes/HDD/Dubbing/              → input/ demucs/ tts/ mix/ shorts/ parts/ merged/ review/ konten/ manim-shorts/ audiobook/ .env
 ```
 
 config.py menyediakan (baca LENGKAP sebelum kerja):
 - `ensure_hdd()`, `ensure_kamus()`, `load_env()` — helper functions
 - `SSD_HOME`, `HDD_BASE` — base paths
 - `INPUT_DIR`, `DEMUCS_DIR`, `TTS_DIR`, `MIX_DIR`, `SHORTS_DIR`, `PARTS_DIR`,
-  `MERGED_DIR`, `REVIEW_DIR`, `KONTEN_DIR` — 9 subfolder HDD
+  `MERGED_DIR`, `REVIEW_DIR`, `KONTEN_DIR`, `MANIM_SHORTS_DIR`,
+  `AUDIOBOOK_DIR`, `AUDIOBOOK_INPUT_DIR` — 11 subfolder HDD
 - `KAMUS_JSON`, `ENV_FILE`, `SCRIPTS_DIR` — config paths
 
 ### Tabel INPUT + OUTPUT per TUI (alur data lengkap)
@@ -111,6 +115,13 @@ config.py menyediakan (baca LENGKAP sebelum kerja):
 | 17 | manim-shorts-tui | `TTS_DIR`/`INPUT_DIR`/cwd (*.wav narasi) + `INPUT_DIR`/`TTS_DIR`/cwd (*.srt dari whisper-tui) | `MANIM_SHORTS_DIR`/{stem}-shorts.mp4 |
 | 18 | piper-tts-tui SRT | `INPUT_DIR` (*.srt) | `TTS_DIR`/{prefix}-audio-id-dub.wav |
 | 18 | piper-tts-tui Narasi | naskah.txt | `TTS_DIR`/{stem}-narasi.wav |
+| 19 | voicestudio-tts-tui SRT | `INPUT_DIR` (*.srt) | `TTS_DIR`/{prefix}-audio-id-dub.wav |
+| 19 | voicestudio-tts-tui Narasi | naskah.txt | `TTS_DIR`/{stem}-narasi.wav |
+| 20 | supertonic-tts-tui SRT | `INPUT_DIR` (*.srt) | `TTS_DIR`/{prefix}-audio-id-dub.wav |
+| 20 | supertonic-tts-tui Narasi | naskah.txt | `TTS_DIR`/{stem}-narasi.wav |
+| 21 | mix-audiobook-tui A | `AUDIOBOOK_INPUT_DIR` (*.txt/*.md + thumbnail) | `AUDIOBOOK_DIR`/{stem}.mp4 (text→supertonic→whisper→render) |
+| 21 | mix-audiobook-tui B | `AUDIOBOOK_DIR`/cwd (*.wav + thumbnail, no SRT) | `AUDIOBOOK_DIR`/{stem}.mp4 (wav→whisper→render) |
+| 21 | mix-audiobook-tui C | `AUDIOBOOK_DIR`/cwd (*.wav + *.srt + thumbnail) | `AUDIOBOOK_DIR`/{stem}.mp4 (langsung render) |
 
 ### Pipeline alur data (visual flow)
 
