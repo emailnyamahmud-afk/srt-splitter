@@ -7719,3 +7719,43 @@ Input: text/WAV + thumbnail → Output: MP4 + Ken Burns + burn subtitle.
 4. **Subprocess whisper-cli > import whisper-tui**: whisper-tui.py TUI only (no argparse CLI). mix-audiobook-tui call `whisper-cli` binary langsung (subprocess, mirror whisper-tui cmd: `-m model -l id -f wav -t 8 -osrt -of base`). Self-contained, gak break whisper-tui existing, gak duplikasi import risk.
 5. **loudnorm -16 LUFS = YouTube target**: ffmpeg `loudnorm=I=-16:TP=-1.5:LRA=11` = standar YouTube audiobook/music. Konsisten antar bab (supertonic output bisa beda level). Single-pass loudnorm cukup untuk audiobook (tidak butuh 2-pass dynamic).
 
+---
+
+## 27 Nov 2026 — yt-dlp-tui v6.6: FIX YouTube n-challenge + SABR-only streaming
+
+### User error (Mac test)
+```
+[youtube] [jsc:deno] Solving JS challenges using deno
+WARNING: [jsc] Error solving n challenge request using "deno" provider:
+  TypeError: a.addOnDisposeCallback is not a function
+WARNING: SABR-only streaming experiment (issue #12482)
+ERROR: The page needs to be reloaded.
+```
+
+### Diagnosis (3 layer, berurutan)
+1. **yt-dlp outdated** (2026.08.19, >90 hari) — YouTube update n-challenge code mingguan.
+2. **EJS plugin + Deno lama**: yt-dlp sekarang pakai EJS (External JavaScript Scripts, ganti JSInterp/PhantomJS). Butuh `yt-dlp-ejs` package + Deno 2.3.0+ (API `addOnDisposeCallback` ada di 2.3+). User Deno lama → crash.
+3. **SABR-only streaming experiment** (issue #12482): YouTube A/B test hide direct URLs di WEB client. Fix: pakai player_client `tv`/`ios` (belum kena SABR).
+
+### Fix TUI v6.6
+- Tambah `--extractor-args "youtube:player-client=tv,ios"` ke SEMUA 3 command builder (video/audio/srt). Client `tv`+`ios` dapat direct URLs, bypass SABR.
+- Harmless untuk non-YouTube (yt-dlp ignore `youtube:` args di site lain — FB/TikTok/IG tetap jalan).
+- VERSION v6.5 → v6.6, banner auto-update via constant.
+
+### Fix ENVIRONMENT (WAJIB user jalankan — TUI gak bisa auto-fix)
+```bash
+source ~/Dubbing/venv/bin/activate
+pip install -U "yt-dlp[default]"   # extra [default] auto-pull yt-dlp-ejs plugin
+deno upgrade                        # butuh Deno 2.3.0+
+yt-dlp --version                    # verify tanggal baru (post Nov 2026)
+deno --version                      # verify >= 2.3.0
+```
+Tanpa langkah env ini, extractor-args pun gak solve n-challenge (solver crash di Deno lama). v6.6 TUI = belt-and-suspenders, env update = root fix.
+
+### Pelajaran AI
+1. **YouTube break = pattern berulang**: v6.2 (26 Okt) fix 429 cookies, v6.4 (29 Okt) fix subtitle dump-json fallback, v6.6 (27 Nov) fix n-challenge+SABR. Setiap ~1 bulan YouTube ganti anti-bot. TUI yt-dlp WAJIB di-maintain, bukan set-and-forget.
+2. **EJS ganti JSInterp**: yt-dlp lama pakai JSInterp (Python interpreter for JS) → sekarang EJS (external JS runtime: Deno/Node/QuickJS/Bun). User install `yt-dlp[default]` extra auto-pull `yt-dlp-ejs`. Wiki: https://github.com/yt-dlp/yt-dlp/wiki/ejs
+3. **player_client = SABR bypass**: YouTube SABR = custom streaming protocol, hide direct URLs di WEB client. Client `tv`+`ios` belum kena (dapat direct URLs). `mweb` butuh PO token, `web_creator` butuh cookies login. `tv,ios` = paling simple.
+4. **Baca sandbox docs dulu sebelum web search** (anti-amnesia): user scold "bodoh, cek dokumentasi di sandbox" karena saya langsung web search tanpa cek yt-dlp-tui.py header + worklog. Padahal repo ada v6.2/v6.4 changelog pattern YouTube-fix. Prosedur: baca TUI header + grep worklog issue-related → kalau tidak ada → baru web search untuk root cause terbaru.
+
+
