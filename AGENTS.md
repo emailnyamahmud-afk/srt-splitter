@@ -491,8 +491,8 @@ gemini-tts #15 Narasi ┤
 
 ### Pipeline Indonesia (production):
 ```
-yt-dlp v6.6 → srt-editor v1.0.1 → edge-tts v7.5 SRT → mix-tui v3.11 → merge-tui v1.9
-yt-dlp v6.6 → srt-editor v1.0.1 → supertonic-tts v0.2 SRT → mix-tui v3.11 → merge-tui v1.9  (PRODUCTION candidate — ~100x edge speed, deterministic)
+yt-dlp v6.6.1 → srt-editor v1.0.1 → edge-tts v7.5 SRT → mix-tui v3.11 → merge-tui v1.9
+yt-dlp v6.6.1 → srt-editor v1.0.1 → supertonic-tts v0.2 SRT → mix-tui v3.11 → merge-tui v1.9  (PRODUCTION candidate — ~100x edge speed, deterministic)
                                                                                       ↘ shorts-tui → shorts-csv-tui → YouTube
 edge-tts v7.5 Narasi (ID) → review-mix-tui v1.0 (review film ID)
 edge-tts v7.5 Narasi (ID) → konten-tui v1.0 (konten sejarah ID)
@@ -502,7 +502,7 @@ supertonic-tts v0.2 Narasi (ID) → konten-tui v1.0 (konten sejarah ID — fast 
 
 ### Pipeline Jawa (experimental, opsional via Gemini):
 ```
-yt-dlp v6.6 → srt-editor v1.0.1 → gemini-tts-tui v1.1 SRT mode (JV) → mix-tui v3.11
+yt-dlp v6.6.1 → srt-editor v1.0.1 → gemini-tts-tui v1.1 SRT mode (JV) → mix-tui v3.11
 naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → review-mix-tui v1.0 (review film JV)
 naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → konten-tui v1.0 (konten sejarah JV)
 naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → talkinghead-tui v1.0 (talking head JV, green screen) → editor chroma key → final-konten.mp4
@@ -512,7 +512,7 @@ naskah.txt → gemini-tts-tui v1.1 Narration mode (JV) → talkinghead-tui v1.0 
 
 - merge-tui v1.9: ✅ VLC confirmed (10 file × 24h, sync 100%, stream copy ~2 menit)
 - mix-tui v3.11.7: ✅ production (force 1080p + audio 48000Hz stereo + 1:1 square mode VLC confirmed 14 Nov 2026 — 2 test: (1) Mode F source 202x360 → 1080x1080 upscale 5.3x, 3j1m, 2789 MB, 19m2s, subs sharp; (2) Mode F source 1440x2560 4K → 1080x1080 downscale 1.33x, 2j30m, 2361 MB, 15m45s, speed 9.5x, background crisp + subs sharp. Resolusi rendah = sumber, bukan bug — high-res retest confirmed sharp. v3.11.7 fix 21 Nov 2026: ROOT CAUSE SEBENARNYA = ffmpeg build user TIDAK punya libass (config line tidak ada `--enable-libass`, formula `ffmpeg` regular minimal). BUKAN quoting/escaping (6x fix v3.11.0-v3.11.6 salah diagnosis — semua patch valid, tapi ffmpeg bahkan tidak kenal `subtitles` filter → "Unknown filter 'subtitles'" → error "No option name" cuma misleading parse error). User install `ffmpeg-full` (keg-only, binary ke `/opt/homebrew/opt/ffmpeg-full/bin/`, bukan symlink ke PATH). `shutil.which('ffmpeg')` gagal kalau script jalan dari GUI/IDE/cron (PATH tidak load). Fix: `find_ffmpeg()`/`find_ffprobe()` cek path explicit ffmpeg-full duluan sebelum `which()` + fallback. Bonus fix: `run_ffmpeg_with_progress` return tuple `(returncode, stderr_text)` — failure path pakai stderr asli dari run yang gagal (sebelumnya buggy: re-run cmd + timeout=30 → pasti timeout video panjang → "Tidak bisa capture stderr")).
-- yt-dlp v6.6: ✅ multi-SRT ID+EN, default 1080p preferred, SABR bypass + n-challenge fix (v6.6 27 Nov 2026: --extractor-args youtube:player-client=tv,ios. User WAJIB pip install -U "yt-dlp[default]" + deno upgrade 2.3+)
+- yt-dlp v6.6.1: ✅ multi-SRT ID+EN, default 1080p preferred, SABR bypass + n-challenge fix + tv+cookies reload fix (v6.6 27 Nov 2026: --extractor-args youtube:player-client=tv,ios. v6.6.1 27 Nov 2026 sore: broad client list tv,ios,web_creator,default — tv+ios cookieless SABR bypass, web_creator cookie fallback, default catch-all. User WAJIB pip install -U "yt-dlp[default]" + deno upgrade 2.3+)
 - edge-tts-tui v7.5: ✅ production default (SRT + Narasi, ID only, paralel-safe)
 - review-mix-tui v1.0: ⚠ UNTESTED (TUI #13, code di GitHub belum diuji di Mac)
 - konten-tui v1.0: ⚠ UNTESTED (TUI #14, code di GitHub belum diuji di Mac)
