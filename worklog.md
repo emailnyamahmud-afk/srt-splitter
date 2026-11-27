@@ -7758,4 +7758,38 @@ Tanpa langkah env ini, extractor-args pun gak solve n-challenge (solver crash di
 3. **player_client = SABR bypass**: YouTube SABR = custom streaming protocol, hide direct URLs di WEB client. Client `tv`+`ios` belum kena (dapat direct URLs). `mweb` butuh PO token, `web_creator` butuh cookies login. `tv,ios` = paling simple.
 4. **Baca sandbox docs dulu sebelum web search** (anti-amnesia): user scold "bodoh, cek dokumentasi di sandbox" karena saya langsung web search tanpa cek yt-dlp-tui.py header + worklog. Padahal repo ada v6.2/v6.4 changelog pattern YouTube-fix. Prosedur: baca TUI header + grep worklog issue-related → kalau tidak ada → baru web search untuk root cause terbaru.
 
+---
+
+## 27 Nov 2026 — yt-dlp-tui v6.6.1: FIX "The page needs to be reloaded" (tv client + cookies)
+
+### User error (Mac test, setelah v6.6 + env update yt-dlp fresh + deno 2.3+)
+```
+WARNING: [youtube] Skipping client "ios" since it does not support cookies
+[youtube] Downloading tv client config
+[youtube] Downloading player b485e332-tv
+ERROR: [youtube] 7B30gXFMGxU: The page needs to be reloaded.
+```
+
+### Diagnosis
+- v6.6 SABR bypass WORKS (log: `Downloading tv client config`, bukan `web embedded client` lagi).
+- Tapi `tv`+`ios` = cookieless app clients. Pas pakai cookies brave (web session 1502 cookies),
+  ios di-skip (no cookies support), tv jalan tapi MISMATCH (web cookies vs tv app context)
+  → YouTube return "The page needs to be reloaded".
+- Progress: n-challenge solved (deno 2.3+ OK), SABR bypassed (tv client), tapi tv+cookies konflik.
+
+### Fix v6.6.1
+- Broad client list `tv,ios,web_creator,default` (sebelumnya `tv,ios`):
+  * `tv`,`ios` = cookieless SABR bypass (fallback kalau no cookies / cookies skip)
+  * `web_creator` = SABR-safe + SUPPORT cookies logged-in (user brave 1502 cookies match)
+  * `default` = catch-all (yt-dlp coba chain default-nya sendiri sebagai last resort)
+- yt-dlp coba tiap client berurutan, fallback ke berikutnya kalau gagal → maximum resilience.
+- Harmless untuk non-YouTube (FB/TikTok/IG tetap jalan, yt-dlp ignore `youtube:` args).
+
+### Pelajaran AI
+1. **tv client ≠ cookies compatible**: `tv`+`ios` adalah app clients (smart TV / iOS app), designed cookieless. Pas dipaksa pakai web cookies → mismatch → "page needs reloaded". Solusi: campur cookieless (tv,ios) + cookie-compatible (web_creator) + default.
+2. **web_creator = best cookie client**: dari issue #12482, `web_creator` butuh logged-in cookies (user punya brave) + SABR-safe. Ini client utama yg akan succeed untuk user pakai cookies.
+3. **Broad client list > single client**: daripada tebak 1 client yg work, kasih yt-dlp 4 opsi + auto-fallback. Resilience > presisi untuk YouTube anti-bot yg berubah mingguan.
+4. **Patch v6.6 → v6.6.1 = same day iteration**: v6.6 fix SABR (27 Nov pagi), v6.6.1 fix tv+cookies reload (27 Nov sore). YouTube anti-bot = moving target, iterate cepat.
+
+
 

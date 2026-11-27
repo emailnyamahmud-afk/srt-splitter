@@ -1,6 +1,20 @@
 #!/usr/bin/env python3
 """
-yt-dlp-tui.py v6.6 — TUI download YouTube/Facebook/TikTok/IG: video + audio + SRT
+yt-dlp-tui.py v6.6.1 — TUI download YouTube/Facebook/TikTok/IG: video + audio + SRT
+
+Perubahan v6.6.1 (27 Nov 2026):
+  FIX "The page needs to be reloaded" di tv client + cookies brave.
+  - User error setelah v6.6 + env update (yt-dlp fresh + deno 2.3+):
+    `WARNING: Skipping client "ios" since it does not support cookies`
+    + `Downloading tv client config` + `ERROR: The page needs to be reloaded.`
+  - Root cause: `tv`+`ios` = cookieless app clients. Pas pakai cookies brave
+    (web session), ios di-skip (no cookies support), tv jalan tapi mismatch
+    (web cookies vs tv app context) → YouTube return "page needs reloaded".
+  - Fix: broad client list `tv,ios,web_creator,default`:
+    * tv,ios = cookieless SABR bypass (fallback kalau no cookies)
+    * web_creator = SABR-safe + SUPPORT cookies logged-in (user brave 1502 cookies)
+    * default = catch-all (yt-dlp coba chain default-nya sendiri)
+    yt-dlp coba tiap client berurutan, fallback ke berikutnya kalau gagal.
 
 Perubahan v6.6 (27 Nov 2026):
   FIX YouTube n-challenge + SABR-only streaming (YouTube ganti player code ~akhir Nov 2026).
@@ -77,7 +91,7 @@ except ImportError:
     sys.exit(1)
 
 
-VERSION = 'v6.6'
+VERSION = 'v6.6.1'
 
 # Browser support matrix (urutan = prioritas)
 # Brave dipertama karena user pakai Brave (FB confirmed working)
@@ -401,11 +415,12 @@ def main():
     print('═' * 64 + '\n')
 
     # Download video (MP4, tanpa audio)
-    # v6.6: --extractor-args youtube:player-client=tv,ios bypass SABR-only streaming
+    # v6.6.1: --extractor-args youtube:player-client=tv,ios,web_creator,default
+    # (tv+ios cookieless SABR bypass, web_creator cookie fallback, default catch-all)
     print('▶ Download video (MP4, tanpa audio)...')
     cmd_video = [ytdlp, '-f', video_fmt, '-o', video_template,
                  '--no-playlist', '--newline',
-                 '--extractor-args', 'youtube:player-client=tv,ios'] + cookie_args + [url]
+                 '--extractor-args', 'youtube:player-client=tv,ios,web_creator,default'] + cookie_args + [url]
     try:
         subprocess.run(cmd_video)
     except KeyboardInterrupt:
@@ -413,14 +428,15 @@ def main():
         sys.exit(130)
 
     # Download audio (MP3, via yt-dlp post-process convert)
-    # v6.6: --extractor-args youtube:player-client=tv,ios bypass SABR-only streaming
+    # v6.6.1: --extractor-args youtube:player-client=tv,ios,web_creator,default
+    # (tv+ios cookieless SABR bypass, web_creator cookie fallback, default catch-all)
     print('\n▶ Download audio (MP3 via yt-dlp convert)...')
     cmd_audio = [ytdlp, '-f', 'bestaudio/best',
                  '-x', '--audio-format', 'mp3',
                  '--audio-quality', '0',
                  '-o', audio_template,
                  '--no-playlist', '--newline',
-                 '--extractor-args', 'youtube:player-client=tv,ios'] + cookie_args + [url]
+                 '--extractor-args', 'youtube:player-client=tv,ios,web_creator,default'] + cookie_args + [url]
     try:
         subprocess.run(cmd_audio)
     except KeyboardInterrupt:
@@ -432,13 +448,14 @@ def main():
         srt_template = os.path.join(output_dir, f'{base_name}.%(ext)s')
         for lang in selected_srt_langs:
             print(f'\n▶ Download SRT ({lang})...')
-            # v6.6: --extractor-args youtube:player-client=tv,ios bypass SABR-only streaming
+            # v6.6.1: --extractor-args youtube:player-client=tv,ios,web_creator,default
+    # (tv+ios cookieless SABR bypass, web_creator cookie fallback, default catch-all)
             cmd_srt = [ytdlp, '--write-sub', '--sub-lang', lang,
                        '--sub-format', 'srt', '--convert-subs', 'srt',
                        '--skip-download',
                        '-o', srt_template,
                        '--no-playlist',
-                       '--extractor-args', 'youtube:player-client=tv,ios'] + cookie_args + [url]
+                       '--extractor-args', 'youtube:player-client=tv,ios,web_creator,default'] + cookie_args + [url]
             try:
                 subprocess.run(cmd_srt)
             except KeyboardInterrupt:

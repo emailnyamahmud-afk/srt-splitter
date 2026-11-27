@@ -10,7 +10,7 @@ ID jalan end-to-end (12 TUI production + 5 untested). Jawa jalan via Gemini TTS 
 
 | # | TUI | Tugas | Status |
 |---|-----|-------|--------|
-| 1 | yt-dlp-tui.py v6.6 | Download MP4 + MP3 + multi-SRT (ID+EN, default 1080p preferred, SABR bypass + n-challenge fix) | ✅ Production (v6.6 YouTube anti-bot fix) |
+| 1 | yt-dlp-tui.py v6.6.1 | Download MP4 + MP3 + multi-SRT (ID+EN, default 1080p preferred, SABR bypass + n-challenge fix + tv+cookies reload fix) | ✅ Production (v6.6.1 YouTube anti-bot fix) |
 | 2 | demucs-tui.py | Split audio → no_vocals.mp3 (SFX bersih) | ✅ Production |
 | 3 | kamus-tui.py | User edit kamus JSON manual (sebelum DB) | ✅ Production (audit) |
 | 4 | Web app | Translate SRT Indonesia → Jawa (kamus Supabase) | ⚠ Prototype |

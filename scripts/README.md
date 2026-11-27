@@ -6,7 +6,7 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 
 | # | TUI | Status |
 |---|-----|--------|
-| 1 | yt-dlp-tui.py v6.6 (MP4+MP3+multi-SRT ID+EN, cookies anti-bot, default 1080p, SABR bypass + n-challenge fix) | ✅ Production |
+| 1 | yt-dlp-tui.py v6.6.1 (MP4+MP3+multi-SRT ID+EN, cookies anti-bot, default 1080p, SABR bypass + n-challenge fix + tv+cookies reload fix) | ✅ Production |
 | 2 | demucs-tui.py (M1 MPS) | ✅ Production |
 | 3 | kamus-tui.py v16 | ✅ Production (audit) |
 | 4 | Web app | ⚠ Prototype |
@@ -50,7 +50,7 @@ Python TUI untuk workflow dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 
 | Script | TUI # | Fungsi | Output |
 |--------|-------|--------|--------|
-| yt-dlp-tui.py v6.6 | 1 | Download MP4 + MP3 + multi-SRT (ID+EN, SABR bypass) | HDD/input/ |
+| yt-dlp-tui.py v6.6.1 | 1 | Download MP4 + MP3 + multi-SRT (ID+EN, SABR bypass + reload fix) | HDD/input/ |
 | demucs-tui.py | 2 | Vocal separation (M1 MPS) | HDD/demucs/ |
 | kamus-tui.py v16 | 3 | TUI editor jv.wiktionary.json | SSD |
 | edge-tts-tui.py v7.5 | 6 | TTS SRT + Narasi (Indonesia, paralel-safe) | HDD/tts/ |

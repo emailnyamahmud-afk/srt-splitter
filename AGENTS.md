@@ -30,7 +30,7 @@ Pipeline dubbing bahasa eksternal → Indonesia / Jawa / Sunda.
 
 | # | TUI | Status |
 |---|-----|--------|
-| 1 | yt-dlp-tui v6.6 (MP4+MP3+multi-SRT ID+EN, default 1080p, SABR bypass + n-challenge fix) | ✅ |
+| 1 | yt-dlp-tui v6.6.1 (MP4+MP3+multi-SRT ID+EN, default 1080p, SABR bypass + n-challenge fix + tv+cookies reload fix) | ✅ |
 | 2 | demucs-tui | ✅ |
 | 3 | kamus-tui v16 | ✅ (audit) |
 | 4 | Web app | ⚠ Prototype |

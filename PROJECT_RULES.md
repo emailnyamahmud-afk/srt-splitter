@@ -22,7 +22,7 @@ Kamus: kamus-tui → jv.wiktionary.json → Supabase
 
 | # | TUI | Status |
 |---|-----|--------|
-| 1 | yt-dlp-tui v6.6 | ✅ (default 1080p, multi-SRT ID+EN, SABR bypass + n-challenge fix) |
+| 1 | yt-dlp-tui v6.6.1 | ✅ (default 1080p, multi-SRT ID+EN, SABR bypass + n-challenge fix + tv+cookies reload fix) |
 | 2 | demucs-tui | ✅ |
 | 3 | kamus-tui v16 | ✅ (audit) |
 | 4 | Web app | ⚠ Prototype |
